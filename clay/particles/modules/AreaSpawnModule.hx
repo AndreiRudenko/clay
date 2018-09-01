@@ -6,6 +6,8 @@ import clay.particles.core.ParticleModule;
 import clay.particles.core.Components;
 import clay.math.Vector;
 
+using clay.particles.utils.VectorExtender;
+
 
 class AreaSpawnModule extends ParticleModule {
 

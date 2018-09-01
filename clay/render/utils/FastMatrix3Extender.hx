@@ -47,6 +47,25 @@ class FastMatrix3Extender {
 
 	}
 
+	public static function append_matrix(m:FastMatrix3, other:clay.math.Matrix):FastMatrix3 {
+
+        var _00 = m._00;
+        var _01 = m._01;
+        var _10 = m._10;
+        var _11 = m._11;
+
+        m._00 = (other.a * _00) + (other.b * _10);
+        m._01 = (other.a * _01) + (other.b * _11);
+        m._10 = (other.c * _00) + (other.d * _10);
+        m._11 = (other.c * _01) + (other.d * _11);
+
+        m._20 = (other.tx * _00) + (other.ty * _10) + m._20;
+        m._21 = (other.tx * _01) + (other.ty * _11) + m._21;
+
+		return m;
+
+	}
+
 	public static function rotate(m:FastMatrix3, radians:Float):FastMatrix3 {
 		
 		var _sin:Float = Math.sin(radians);

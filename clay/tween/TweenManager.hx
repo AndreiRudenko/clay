@@ -1,14 +1,14 @@
 package clay.tween;
 
-
+import haxe.ds.ObjectMap;
 import clay.tween.TweenSequence;
 import clay.tween.tweens.FuncTween;
 
 class TweenManager {
 
 
-	// var sequences_tb:Array<TweenSequence>;
-	// var sequences_fb:Array<TweenSequence>;
+	var sequences_tb:Array<TweenSequence>;
+	var sequences_fb:Array<TweenSequence>;
 
 	public var sequences(default, null):Array<TweenSequence>;
 

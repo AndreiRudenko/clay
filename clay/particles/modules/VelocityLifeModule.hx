@@ -8,6 +8,8 @@ import clay.particles.components.Velocity;
 import clay.particles.modules.VelocityModule;
 import clay.math.Vector;
 
+using clay.particles.utils.VectorExtender;
+
 
 class VelocityLifeModule extends VelocityModule {
 

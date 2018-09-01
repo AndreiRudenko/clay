@@ -7,22 +7,22 @@ class VectorCallback {
     public var x(get, set):Float;
     public var y(get, set):Float;
 
-    public var ignore_listeners : Bool = false;
-    @:isVar public var listen_x(default,default) : Float -> Void;
-    @:isVar public var listen_y(default,default) : Float -> Void;
+    public var ignore_listeners:Bool = false;
+    @:isVar public var listen_x(default,default):Float -> Void;
+    @:isVar public var listen_y(default,default):Float -> Void;
 
     var _x:Float;
     var _y:Float;
 
 
-    public function new( x_:Float = 0, y_:Float = 0 ) {
+    public function new(x_:Float = 0, y_:Float = 0) {
 
         _x = x_;
         _y = y_;
         
     }
 
-    public inline function set( x_:Float, y_:Float ) {
+    public inline function set(x_:Float, y_:Float) {
 
         _x = x_;
         _y = y_;
@@ -34,7 +34,7 @@ class VectorCallback {
         
     }
 
-    public inline function copy_from( _other:VectorCallback ) {
+    public inline function copy_from(_other:VectorCallback) {
 
         set(_other.x, _other.y);
 
@@ -42,7 +42,7 @@ class VectorCallback {
         
     }
 
-    public inline function copy_from_vec( _other:Vector ) {
+    public inline function copy_from_vec(_other:Vector) {
 
         set(_other.x, _other.y);
 
@@ -64,17 +64,17 @@ class VectorCallback {
 
     public inline function normalize() {
 
-        return divide_scalar( length() );
+        return divide_scalar(length());
         
     }
 
-    public inline function dot( _other:VectorCallback ) {
+    public inline function dot(_other:VectorCallback) {
 
         return _x * _other.x + _y * _other.y;
 
     }
 
-    public inline function dot_vec( _other:Vector ) {
+    public inline function dot_vec(_other:Vector) {
 
         return _x * _other.x + _y * _other.y;
 
@@ -97,7 +97,7 @@ class VectorCallback {
 
     public inline function length() {
 
-        return Math.sqrt( _x * _x + _y * _y );
+        return Math.sqrt(_x * _x + _y * _y);
 
     }
 
@@ -107,7 +107,7 @@ class VectorCallback {
 
     }
 
-    public inline function add( _other:VectorCallback ) {
+    public inline function add(_other:VectorCallback) {
 
         set(_x + _other.x, _y + _other.y);
 
@@ -115,7 +115,7 @@ class VectorCallback {
         
     }
 
-    public inline function add_vec( _other:Vector ) {
+    public inline function add_vec(_other:Vector) {
 
         set(_x + _other.x, _y + _other.y);
 
@@ -123,7 +123,7 @@ class VectorCallback {
         
     }
 
-    public inline function add_xy( x_:Float, y_:Float ) {
+    public inline function add_xy(x_:Float, y_:Float) {
 
         set(_x + x_, _y + y_);
 
@@ -131,7 +131,7 @@ class VectorCallback {
         
     }
 
-    public inline function add_scalar( _v:Float ) {
+    public inline function add_scalar(_v:Float) {
 
         set(_x + _v, _y + _v);
 
@@ -139,7 +139,7 @@ class VectorCallback {
         
     }
 
-    public inline function subtract( _other:VectorCallback ) {
+    public inline function subtract(_other:VectorCallback) {
 
         set(_x - _other.x, _y - _other.y);
 
@@ -147,7 +147,7 @@ class VectorCallback {
         
     }
 
-    public inline function subtract_vec( _other:Vector ) {
+    public inline function subtract_vec(_other:Vector) {
 
         set(_x - _other.x, _y - _other.y);
 
@@ -155,7 +155,7 @@ class VectorCallback {
         
     }
 
-    public inline function subtract_xy( x_:Float, y_:Float ) {
+    public inline function subtract_xy(x_:Float, y_:Float) {
 
         set(_x - x_, _y - y_);
 
@@ -163,7 +163,7 @@ class VectorCallback {
         
     }
 
-    public inline function subtract_scalar( _v:Float ) {
+    public inline function subtract_scalar(_v:Float) {
 
         set(_x - _v, _y - _v);
 
@@ -171,7 +171,7 @@ class VectorCallback {
         
     }
 
-    public inline function multiply( _other:VectorCallback ) {
+    public inline function multiply(_other:VectorCallback) {
 
         set(_x * _other.x, _y * _other.y);
 
@@ -179,7 +179,7 @@ class VectorCallback {
         
     }
 
-    public inline function multiply_vec( _other:Vector ) {
+    public inline function multiply_vec(_other:Vector) {
 
         set(_x * _other.x, _y * _other.y);
 
@@ -187,7 +187,7 @@ class VectorCallback {
         
     }
 
-    public inline function multiply_xy( x_:Float, y_:Float ) {
+    public inline function multiply_xy(x_:Float, y_:Float) {
 
         set(_x * x_, _y * y_);
 
@@ -195,7 +195,7 @@ class VectorCallback {
         
     }
 
-    public inline function multiply_scalar( _v:Float ) {
+    public inline function multiply_scalar(_v:Float) {
 
         set(_x * _v, _y * _v);
 
@@ -203,7 +203,7 @@ class VectorCallback {
         
     }
 
-    public inline function divide( _other:VectorCallback ) {
+    public inline function divide(_other:VectorCallback) {
 
         set(_x / _other.x, _y / _other.y);
 
@@ -211,7 +211,7 @@ class VectorCallback {
         
     }
 
-    public inline function divide_vec( _other:Vector ) {
+    public inline function divide_vec(_other:Vector) {
 
         set(_x / _other.x, _y / _other.y);
 
@@ -219,7 +219,7 @@ class VectorCallback {
         
     }
 
-    public inline function divide_xy( x_:Float, y_:Float ) {
+    public inline function divide_xy(x_:Float, y_:Float) {
 
         set(_x / x_, _y / y_);
 
@@ -227,7 +227,7 @@ class VectorCallback {
         
     }
 
-    public inline function divide_scalar( _v:Float ) {
+    public inline function divide_scalar(_v:Float) {
 
         set(_x / _v, _y / _v);
 
@@ -242,15 +242,9 @@ class VectorCallback {
         
     }
 
-    public inline function to_json() {
+    public function transform(_m:Matrix) {
 
-        return {x:_x, y:_y};
-        
-    }
-
-    public inline function from_json(d:Dynamic) {
-
-        set(d.x, d.y);
+        set(_m.a * x + _m.c * y + _m.tx, _m.b * x + _m.d * y + _m.ty);
 
         return this;
         
@@ -262,7 +256,7 @@ class VectorCallback {
         
     }
 
-    inline function set_x(v:Float) : Float {
+    inline function set_x(v:Float):Float {
 
         _x = v;
 
@@ -280,7 +274,7 @@ class VectorCallback {
         
     }
 
-    inline function set_y(v:Float) : Float {
+    inline function set_y(v:Float):Float {
 
         _y = v;
 

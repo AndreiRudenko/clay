@@ -4,6 +4,7 @@ package clay.components;
 import kha.math.FastMatrix3;
 import kha.graphics4.Graphics;
 
+import clay.math.Matrix;
 import clay.math.Vector;
 import clay.math.Rectangle;
 import clay.math.Mathf;
@@ -27,8 +28,8 @@ class Camera {
 
 	@:noCompletion public var transform:Transform;
 
-	@:noCompletion public var view_matrix:FastMatrix3;
-	@:noCompletion public var view_matrix_inverted:FastMatrix3;
+	@:noCompletion public var view_matrix:Matrix;
+	@:noCompletion public var view_matrix_inverted:Matrix;
 	@:noCompletion public var projection_matrix:FastMatrix3;
 
 	public var zoom(default, set):Float;
@@ -49,8 +50,8 @@ class Camera {
 
 		viewport = new Rectangle(_x, _y, w, h);
 
-		view_matrix = FastMatrix3.identity();
-		view_matrix_inverted = FastMatrix3.identity();
+		view_matrix = new Matrix();
+		view_matrix_inverted = new Matrix();
 		projection_matrix = FastMatrix3.identity();
 
 		visible_layers_mask = new BitVector(Clay.renderer.layers_max);
@@ -105,8 +106,7 @@ class Camera {
 
 		update();
 
-		var m = view_matrix;
-		into.set(m._00 * into.x + m._10 * into.y + m._20, m._01 * into.x + m._11 * into.y + m._21);
+		into.transform(view_matrix);
 
 		return into;
 		
@@ -120,8 +120,7 @@ class Camera {
 
 		update();
 
-		var m = view_matrix_inverted;
-		into.set(m._00 * into.x + m._10 * into.y + m._20, m._01 * into.x + m._11 * into.y + m._21);
+		into.transform(view_matrix_inverted);
 
 		return into;
 		
@@ -136,7 +135,7 @@ class Camera {
 
 	inline function update_matrices() {
 		
-		view_matrix_inverted.setFrom(view_matrix);
+		view_matrix_inverted.copy(view_matrix);
 		view_matrix_inverted.invert();
 		projection_matrix.identity();
 		
@@ -147,7 +146,7 @@ class Camera {
 			projection_matrix.orto(0, viewport.w, viewport.h, 0);
 		}
 
-		projection_matrix.append(view_matrix_inverted);
+		projection_matrix.append_matrix(view_matrix_inverted);
 
 	}
 
@@ -226,7 +225,7 @@ class CameraTransform extends Transform {
 			world.copy(local);
 		}
 
-		camera.view_matrix.from_matrix(world);
+		camera.view_matrix.copy(world);
 
 	}
 

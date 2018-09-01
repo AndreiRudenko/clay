@@ -7,6 +7,8 @@ import clay.particles.components.Velocity;
 import clay.particles.modules.helpers.VelocityUpdateModule;
 import clay.math.Vector;
 
+using clay.particles.utils.VectorExtender;
+
 
 class ForceModule extends ParticleModule {
 

@@ -1,13 +1,8 @@
 package clay.math;
 
 
-// import snow.api.buffers.Float32Array;
-
 
 class Matrix {
-
-
-	public var elements:Array<Float>;
 
 
 	public var a:Float;
@@ -16,15 +11,27 @@ class Matrix {
 	public var d:Float;
 	public var tx:Float;
 	public var ty:Float;
-	
-
-	// var matrix:Float32Array;
 
 
 	public function new(_a:Float = 1, _b:Float = 0, _c:Float = 0, _d:Float = 1, _tx:Float = 0, _ty:Float = 0) {
 
 		set(_a, _b, _c, _d, _tx, _ty);
 		
+	}
+
+	/**
+	 * Set the matrix to the identity matrix - when appending or prepending this matrix to another there will be no change in the resulting matrix
+	 * @return This matrix. Good for chaining method calls.
+	 */
+	public function identity():Matrix {
+
+		set(
+			1, 0,
+			0, 1,
+			0, 0
+		);
+
+		return  this;
 	}
 
 	/**
@@ -120,32 +127,26 @@ class Matrix {
 		
 	}	
 
+	/**
+	 * Append a matrix to this matrix.
+	 * 
+	 * @param m The matrix to append.
+	 * @return This matrix. Good for chaining method calls.
+	 */
 	public function append(m:Matrix):Matrix {
 		
-        var a1 = a;
-        var b1 = b;
-        var c1 = c;
-        var d1 = d;
+		var a1 = a;
+		var b1 = b;
+		var c1 = c;
+		var d1 = d;
 
-        a = (m.a * a1) + (m.b * c1);
-        b = (m.a * b1) + (m.b * d1);
-        c = (m.c * a1) + (m.d * c1);
-        d = (m.c * b1) + (m.d * d1);
+		a = (m.a * a1) + (m.b * c1);
+		b = (m.a * b1) + (m.b * d1);
+		c = (m.c * a1) + (m.d * c1);
+		d = (m.c * b1) + (m.d * d1);
 
-        tx = (m.tx * a1) + (m.ty * c1) + tx;
-        ty = (m.tx * b1) + (m.ty * d1) + ty;
-
-		return this;
-
-	}
-
-	public function projection(_w:Float, _h:Float):Matrix {
-
-		set(
-			2/_w, 0,
-			0, -2/_h,
-			-1, 1
-		);
+		tx = (m.tx * a1) + (m.ty * c1) + tx;
+		ty = (m.tx * b1) + (m.ty * d1) + ty;
 
 		return this;
 
@@ -166,17 +167,6 @@ class Matrix {
 
 	}
 
-	public function identity():Matrix {
-
-		set(
-			1, 0,
-			0, 1,
-			0, 0
-		);
-
-		return  this;
-	}
-
 	public function multiply(m:Matrix):Matrix {
 
 		a = a * m.a + b * m.c;
@@ -185,6 +175,30 @@ class Matrix {
 		d = c * m.b + d * m.d;
 		tx = tx * m.a + ty * m.c + m.tx;
 		ty = tx * m.b + ty * m.d + m.ty;
+
+		return this;
+
+	}
+	/**
+	 * Invert this matrix so that it represents the opposite of its orginal tranformation.
+	 * 
+	 * @return This matrix. Good for chaining method calls.
+	 */
+	public function invert():Matrix {
+
+		var a1:Float = a;
+		var b1:Float = b;
+		var c1:Float = c;
+		var d1:Float = d;
+		var tx1:Float = tx;
+		var n:Float = a1 * d1 - b1 * c1;
+
+		a = d1 / n;
+		b = -b1 / n;
+		c = -c1 / n;
+		d = a1 / n;
+		tx = (c1 * ty - d1 * tx1) / n;
+		ty = -(a1 * ty - b1 * tx1) / n;
 
 		return this;
 
@@ -202,24 +216,5 @@ class Matrix {
 
 	}
 
-	// public function tofloat32array(?into:Float32Array):Float32Array {
-
-	// 	if(into == null) {
-	// 		into = new Float32Array(9);
-	// 	}
-
-	// 	into[0] = a;
-	// 	into[1] = b;
-	// 	into[2] = 0;
-	// 	into[3] = c;
-	// 	into[4] = d;
-	// 	into[5] = 0;
-	// 	into[6] = tx;
-	// 	into[7] = ty;
-	// 	into[8] = 1;
-
-	// 	return into;
-
-	// }
 
 }
