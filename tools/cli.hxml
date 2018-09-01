@@ -1,0 +1,6 @@
+-main CLI
+
+-lib hxnodejs
+
+-js bin/cli.js
+-dce full

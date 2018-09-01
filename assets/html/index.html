@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>{name}</title>
+    <link rel="shortcut icon" type="image/png" href="/favicon.png"/>
+
+	<style type="text/css">
+		canvas {
+			position: absolute;
+			left: 50%;
+			margin-left: -{canvas_half_width}px;
+			border: none;
+			outline: none;
+		}
+		body {
+			background-color: #dcdbdd;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="{canvas_id}" width="{canvas_width}" height="{canvas_height}"></canvas>
+	<script src="{script_name}.js"></script>
+</body>
+</html>

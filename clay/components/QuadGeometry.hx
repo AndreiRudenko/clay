@@ -1,0 +1,155 @@
+package clay.components;
+
+
+import kha.Kravur.AlignedQuad;
+
+import clay.math.VectorCallback;
+import clay.math.Vector;
+import clay.math.Matrix;
+import clay.data.Color;
+import clay.render.Vertex;
+import clay.resources.FontResource;
+import clay.components.Texture;
+import clay.components.Geometry;
+import clay.utils.Log.*;
+
+
+class QuadGeometry extends Geometry {
+
+
+	public var size(default, null):VectorCallback;
+	public var flipx(default, set):Bool = false;
+	public var flipy(default, set):Bool = false;
+	public var centered(default, set):Bool = false;
+
+	var _setup:Bool = true;
+
+
+	public function new(_options:QuadGeometryOptions) {
+
+		size = new VectorCallback(32,32);
+		if(_options.size != null) {
+			size.copy_from_vec(_options.size);
+		}
+		size.listen(size_changed);
+
+		var verts:Array<Vertex> = [];
+		var _w:Float = size.x;
+		var _h:Float = size.y;
+
+		verts.push(new Vertex(new Vector(0, 0), null, new Vector(0,0)));
+		verts.push(new Vertex(new Vector(_w, 0), null, new Vector(1,0)));
+		verts.push(new Vertex(new Vector(_w, _h), null, new Vector(1,1)));
+		verts.push(new Vertex( new Vector(0, _h), null, new Vector(0,1)));
+		
+		indices = [0,1,2,2,3,0];
+
+		_options.vertices = verts;
+		_options.indices = indices;
+
+		super(_options);
+
+		flipx = def(_options.flipx, false);
+		flipy = def(_options.flipy, false);
+		centered = def(_options.centered, false);
+
+		_setup = false;
+
+		geometry_type = GeometryType.quad;
+
+		update_tcoord();
+
+	}
+
+	function set_flipx(v:Bool):Bool {
+
+		flipx = v;
+
+		update_tcoord();
+
+		return flipx;
+
+	}
+
+	function set_centered(v:Bool):Bool {
+
+		dirty = true;
+
+		return centered = v;
+
+	}
+
+	function set_flipy(v:Bool):Bool {
+
+		flipy = v;
+
+		update_tcoord();
+
+		return flipy;
+
+	}
+
+	function size_changed(v:Float) {
+		
+		var _w:Float = size.x;
+		var _h:Float = size.y;
+
+		vertices[0].pos.set(0, 0);
+		vertices[1].pos.set(_w, 0);
+		vertices[2].pos.set(_w, _h);
+		vertices[3].pos.set(0, _h);
+
+	}
+
+	function update_tcoord() {
+
+		if(_setup) {
+			return;
+		}
+		
+		var tl:Vector = vertices[0].tcoord;
+		var tr:Vector = vertices[1].tcoord;
+		var br:Vector = vertices[2].tcoord;
+		var bl:Vector = vertices[3].tcoord;
+
+		if(flipx) {
+			var tmp:Vector = tl;
+			tl = tr;
+			tr = tmp;
+			tmp = bl;
+			bl = br;
+			br = tmp;
+		}
+
+		if(flipy) {
+			var tmp:Vector = tl;
+			tl = bl;
+			bl = tmp;
+			tmp = tr;
+			tr = br;
+			br = tmp;
+		}
+
+		vertices[0].tcoord = tl;
+		vertices[1].tcoord = tr;
+		vertices[2].tcoord = br;
+		vertices[3].tcoord = bl;
+
+	}
+
+	override function destroy() {
+
+	}
+
+}
+
+typedef QuadGeometryOptions = {
+
+	>GeometryOptions,
+
+	@:optional var size:Vector;
+	@:optional var flipx:Bool;
+	@:optional var flipy:Bool;
+	@:optional var centered:Bool;
+
+}

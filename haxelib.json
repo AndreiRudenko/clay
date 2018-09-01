@@ -1,0 +1,13 @@
+{
+	"name": "clay2d",
+	"url": "https://github.com/RudenkoArts/clay2d",
+	"license": "MIT",
+	"tags": ["engine","cross","clay"],
+	"description": "engine",
+	"version": "0.0.1",
+	"releasenote": "",
+	"contributors": ["RudenkoArts"],
+	"dependencies": {
+		"kha": ""
+	}
+}
