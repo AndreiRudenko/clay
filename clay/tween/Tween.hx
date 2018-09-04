@@ -9,9 +9,10 @@ class Tween {
 	public var action(default, null):TweenAction;
 	public var complete(default, null):Bool;
 	public var inited(default, null):Bool;
+
+	public var start_time(default, null):Float;
 	public var duration(default, null):Float;
 	public var duration_inv(default, null):Float;
-	public var time(default, null):Float;
 
 	var target:Dynamic;
 	var need_setup:Bool;
@@ -20,11 +21,10 @@ class Tween {
 	public function new(_action:TweenAction, _duration:Float) {
 
 		action = _action;
-		target = _action.sequence.target;
+		target = _action.node.target;
 		complete = false;
 		inited = false;
 		need_setup = true;
-		time = 0;
 
 		if(_duration > 0) {
 			duration = _duration;
@@ -36,31 +36,26 @@ class Tween {
 
 	}
 
-	public function init() {}
-	public function onenter() {}
-	public function onleave() {}
+	function onstart(t:Float) {}
+	function onfinish() {}
 
-	public function onsetup() {}
-	public function onupdateprops() {}
-	public function onfinish() {}
+	function onsetup() {}
+	function onupdateprops(t:Float) {}
 
 	public function reset() {}
 
-	public function step(dt:Float) {
+	public function step(t:Float) {
 
 		if(complete) {
 			return;
 		}
 
-		time += dt;
-
-		if (time > duration) {
-			action.sequence.time_remains = time - duration;
-			time = duration;
-			onfinish();
+		if (start_time + duration < t) {
+			action.sequence.next_time = start_time + duration;
             complete = true;
+			onfinish();
 		} else {
-			onupdateprops();
+			onupdateprops(t);
 		}
 
 	}
@@ -77,10 +72,11 @@ class Tween {
 		
 	}
 
-	inline function _enter() {
+	inline function _start(t:Float) {
 
-		time = action.sequence.time_remains;
-		onenter();
+		start_time = t;
+
+		onstart(t);
 
 		if(need_setup) {
 			onsetup();
@@ -89,23 +85,11 @@ class Tween {
 
 	}
 
-	inline function _init() {
-
-		if(inited) {
-			return;
-		}
-		inited = true;
-
-		init();
-
-	}
-
 	inline function _reset() {
 
 		complete = false;
 		inited = false;
 		need_setup = true;
-		time = 0;
 		reset();
 
 	}

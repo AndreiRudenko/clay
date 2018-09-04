@@ -32,25 +32,25 @@ class FuncTween extends Tween {
 
 	}
 
-	override function onenter() {
+	override function onstart(t:Float) {
 
 		complete = false;
 
 	}
 
-	override function onupdateprops() {
+	override function onupdateprops(_time:Float) {
 
 		var t:Float = 0;
 		var n:Float = 0;
 
-		if(!action.sequence.reverse) {
-			t = time * duration_inv;
+		if(!action.node.reverse) {
+			t = (_time - start_time) * duration_inv;
 		} else {
-			t = 1 - time * duration_inv;
+			t = 1 - (_time - start_time) * duration_inv;
 		}
 
 		for (i in 0...from.length) {
-			n = action.sequence.easing(from[i], difference[i], t);
+			n = action.node.easing(from[i], difference[i], t);
 			current[i] = n;
 		}
 
@@ -60,7 +60,7 @@ class FuncTween extends Tween {
 
 	override function onfinish() {
 
-		if(!action.sequence.reverse) {
+		if(!action.node.reverse) {
 			Reflect.callMethod(null, fn, to);
 		} else {
 			Reflect.callMethod(null, fn, from);

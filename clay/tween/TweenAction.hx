@@ -1,31 +1,43 @@
 package clay.tween;
 
+import clay.tween.TweenNode;
 import clay.tween.TweenSequence;
 import clay.tween.tweens.NumTween;
 import clay.tween.tweens.FuncTween;
 import clay.tween.actions.CallAction;
-import clay.tween.actions.EmptyAction;
 import clay.tween.Tween;
 
 
-@:allow(clay.tween.TweenSequence, clay.tween.Tween)
+@:allow(
+	clay.tween.TweenSequence, 
+	clay.tween.Tween, 
+	clay.tween.TweenNode, 
+	clay.tween.TweenManager
+)
 class TweenAction {
 
 
+	public var sequence(get, never):TweenSequence;
+	public var node(default, null):TweenNode;
 	public var complete(default, null):Bool;
 
-	public var sequence(default, null):TweenSequence;
 	public var tweens(default, null):Array<Tween>;
 
 	var next:TweenAction;
 	var prev:TweenAction;
 
 
-	public function new(_sequence:TweenSequence) {
+	public function new(_node:TweenNode) {
 
-		sequence = _sequence;
+		node = _node;
 		tweens = [];
 		complete = false;
+
+	}
+
+	public function tween(t:Dynamic):TweenAction {
+
+		return sequence.add(new TweenNode(sequence, t)).create_action();
 
 	}
 
@@ -47,7 +59,7 @@ class TweenAction {
 
 	// public function method(_name:Dynamic, duration:Float, start:Array<Dynamic> = null, end:Array<Dynamic> = null):TweenAction {
 
-	// 	var fn = Reflect.field(sequence.target, _name);
+	// 	var fn = Reflect.field(node.target, _name);
 	// 	if(fn != null) {
 	// 		tweens.push(new FuncTween(this, fn, duration, start, end));
 	// 	} else {
@@ -58,17 +70,9 @@ class TweenAction {
 
 	// }
 
-	public function time_based(_v:Bool = true):TweenAction {
-		
-		sequence.time_based = _v;
-
-		return this;
-
-	}
-
 	public function ease(_ease:EaseFunc):TweenAction {
 		
-		sequence.easing = _ease;
+		node.easing = _ease;
 
 		return this;
 
@@ -76,28 +80,28 @@ class TweenAction {
 
 	public function wait(_duration:Float):TweenAction {
 
-		var a = new TweenAction(sequence);
+		var a = new TweenAction(node);
 		a.tweens.push(new Tween(this, _duration));
 
-		return sequence.add(a).then();
+		return node.add(a).then();
 
 	}
 
 	public function then():TweenAction {
 		
-		return sequence.add(new EmptyAction(sequence));
+		return node.add(new TweenAction(node));
 
 	}
 
 	public function call(_fn:Void->Void):TweenAction {
 		
-		return sequence.add(new CallAction(sequence, _fn));
+		return node.add(new CallAction(node, _fn));
 
 	}
 
 	public function onupdate(_fn:Void->Void):TweenAction {
 
-		sequence._onupdate = _fn;
+		node._onupdate = _fn;
 
 		return this;
 
@@ -105,7 +109,7 @@ class TweenAction {
 
 	public function onrepeat(_fn:Void->Void):TweenAction {
 
-		sequence._onrepeat = _fn;
+		node._onrepeat = _fn;
 
 		return this;
 
@@ -113,7 +117,7 @@ class TweenAction {
 
 	public function oncomplete(_fn:Void->Void):TweenAction {
 
-		sequence._oncomplete = _fn;
+		node._oncomplete = _fn;
 
 		return this;
 
@@ -121,7 +125,7 @@ class TweenAction {
 
 	public function repeat(_times:Int = -1):TweenAction {
 
-		sequence.repeat = _times;
+		node._repeat = _times;
 		
 		return this;
 
@@ -129,7 +133,7 @@ class TweenAction {
 
 	public function reflect():TweenAction {
 
-		sequence.reflect = true;
+		node._reflect = true;
 
 		return this;
 
@@ -147,38 +151,28 @@ class TweenAction {
 
 	}
 
-	function init() {}
-	function onenter() {}
+
+	function onstart(t:Float) {}
+	function onfinish() {}
 	function onreset() {}
-	function onleave() {}
 
-	function _init() {
+	function _start(t:Float) {
 
-		init();
+		onstart(t);
 
-		for (t in tweens) {
-			t._init();
+		if(tweens.length > 0) {
+			for (tw in tweens) {
+				tw._start(t);
+			}
+		} else {
+			node.next_action();
 		}
 
 	}
 
-	function _enter() {
-		
-		onenter();
+	function _finish() {
 
-		for (t in tweens) {
-			t._enter();
-		}
-
-	}
-
-	function _leave() {
-		
-		for (t in tweens) {
-			t.onleave();
-		}
-
-		onleave();
+		onfinish();
 
 	}
 
@@ -190,6 +184,12 @@ class TweenAction {
 			t._reset();
 		}
 		
+	}
+
+	inline function get_sequence():TweenSequence {
+		
+		return node.sequence;
+
 	}
 	
 

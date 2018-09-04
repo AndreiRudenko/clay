@@ -20,7 +20,7 @@ class NumTween extends Tween {
 
 	}
 
-	override function onenter() {
+	override function onstart(t:Float) {
 
 		complete = false;
 
@@ -51,19 +51,19 @@ class NumTween extends Tween {
 		
 	}
 
-	override function onupdateprops() {
+	override function onupdateprops(_time:Float) {
 
 		var t:Float = 0;
 		var n:Float = 0;
 
-		if(!action.sequence.reverse) {
-			t = time * duration_inv;
+		if(!action.node.reverse) {
+			t = (_time - start_time) * duration_inv;
 		} else {
-			t = 1 - time * duration_inv;
+			t = 1 - (_time - start_time) * duration_inv;
 		}
 
 		for (i in 0...names.length) {
-			n = action.sequence.easing(from[i], difference[i], t);
+			n = action.node.easing(from[i], difference[i], t);
 			set_prop(names[i], n);
 		}
 
@@ -71,7 +71,7 @@ class NumTween extends Tween {
 
 	override function onfinish() {
 
-		if(!action.sequence.reverse) {
+		if(!action.node.reverse) {
 			for (i in 0...names.length) {
 				set_prop(names[i], from[i] + difference[i]);
 			}
