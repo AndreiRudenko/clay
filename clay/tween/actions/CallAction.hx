@@ -15,9 +15,11 @@ class CallAction extends TweenAction {
 
 	}
 
-	override function onstart(t:Float) {
+	override function start(t:Float) {
 
 		call_fn();
+		
+		super.start(t);
 
 	}
 

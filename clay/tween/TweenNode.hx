@@ -5,29 +5,26 @@ typedef EaseFunc = Float->Float->Float->Float;
 
 
 @:allow(
-	clay.tween.TweenManager, 
 	clay.tween.TweenAction, 
-	clay.tween.TweenNode, 
-	clay.tween.TweenSequence, 
-	clay.tween.Tween
+	clay.tween.TweenSequence
 )
 class TweenNode {
 
 
-	public var paused     	(default, null):Bool;
-
-	public var sequence	  	(default, null):TweenSequence;
 	public var target 	  	(default, null):Dynamic;
 
+	public var sequence	  	(default, null):TweenSequence;
 	public var current 	  	(default, null):TweenAction;
+
 	public var easing     	(default, null):EaseFunc;
-	public var added      	(default, null):Bool;
+
+	public var active   	(default, null):Bool;
 	public var complete   	(default, null):Bool;
 
-
-	var _repeat:Int;
-	var _reflect:Bool;
-	var reverse:Bool;
+	public var paused     	(default, null):Bool;
+	public var reflect   	(default, null):Bool;
+	public var reverse   	(default, null):Bool;
+	public var repeat   	(default, null):Int;
 
 	var _onupdate:Void->Void;
 	var _onrepeat:Void->Void;
@@ -43,19 +40,19 @@ class TweenNode {
 
 		sequence = _sequence;
 		target = _target;
-		_reflect = false;
-		added = false;
+		active = false;
 		complete = false;
 		paused = false;
+		reflect = false;
 		reverse = false;
-		_repeat = 0;
+		repeat = 0;
 		easing = clay.tween.easing.Linear.none;
 
 	}
 
 	@:noCompletion public function step(t:Float) {
 
-		if(complete || paused) {
+		if(!active || paused) {
 			return;
 		}
 
@@ -73,20 +70,6 @@ class TweenNode {
 
 	}
 
-	@:noCompletion public function set_current(_action:TweenAction) {
-
-		if(current != null) {
-			current._finish();
-		}
-
-		current = _action;
-
-		if(current != null) {
-			current._start(sequence.next_time);
-		}
-		
-	}
-
 	@:noCompletion public function next_action() {
 
 		var n:TweenAction = null;
@@ -97,8 +80,8 @@ class TweenNode {
 		}
 
 		if(n == null) {
-			if(_repeat != 0) {
-				_do_repeat();
+			if(repeat != 0) {
+				_repeat();
 			} else {
 				_finish();
 			}
@@ -108,51 +91,57 @@ class TweenNode {
 
 	}
 
-	inline function _start() {
+	inline function set_current(_action:TweenAction) {
+
+		// if(current != null) {
+		// 	current.finish(); // onleave ?
+		// }
+
+		current = _action;
+
+		if(current != null) {
+			current.start(sequence.next_time);
+		}
 		
+	}
+
+	public function start() {
+
+		if(active) {
+			return;
+		}
+
+		active = true;
+		complete = false;
+
 		set_current(head);
 
 	}
 
-	function _finish() {
+	public function stop(_complete:Bool) {
 
-		complete = true;
-		if(_oncomplete != null) {
-			_oncomplete();
-		}	
+		if(!active) {
+			return;
+		}
+
+		active = false;
+
+		if(_complete) {
+			complete = true;
+			if(current != null) {
+				current.stop(_complete);
+			}
+		}
 		
 	}
 
-	function _do_repeat() {
-
-		if(_onrepeat != null) {
-			_onrepeat();
-		}
-
-		if(_reflect) {
-			reverse = !reverse;
-		}
-
-		if(_repeat > 0) {
-			_repeat--;
-		}
-
-		if(!reverse) {
-			set_current(head);
-		} else {
-			set_current(tail);
-		}
-
-	}
-
-	function create_action():TweenAction {
+	public inline function create_action():TweenAction {
 		
 		return add(new TweenAction(this));
 
 	}
 
-	@:access(clay.tween.TweenManager)
-	inline function add(a:TweenAction):TweenAction {
+	public function add(a:TweenAction):TweenAction {
 
 		if (tail != null) {
 			tail.next = a;
@@ -167,7 +156,7 @@ class TweenNode {
 
 	}
 
-	inline function remove(a:TweenAction) {
+	public function remove(a:TweenAction) {
 
 		if (a == head){
 			head = head.next;
@@ -199,5 +188,37 @@ class TweenNode {
 
 	}
 
+	inline function _finish() {
+
+		complete = true;
+		active = false;
+
+		if(_oncomplete != null) {
+			_oncomplete();
+		}	
+		
+	}
+
+	function _repeat() {
+
+		if(reflect) {
+			reverse = !reverse;
+		}
+
+		if(_onrepeat != null) {
+			_onrepeat();
+		}
+
+		if(repeat > 0) {
+			repeat--;
+		}
+
+		if(!reverse) {
+			set_current(head);
+		} else {
+			set_current(tail);
+		}
+
+	}
 
 }

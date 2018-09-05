@@ -7,24 +7,25 @@ class Tween {
 
 
 	public var action(default, null):TweenAction;
-	public var complete(default, null):Bool;
+
+	public var active(default, null):Bool;
 	public var inited(default, null):Bool;
+	public var complete(default, null):Bool;
 
 	public var start_time(default, null):Float;
 	public var duration(default, null):Float;
 	public var duration_inv(default, null):Float;
 
 	var target:Dynamic;
-	var need_setup:Bool;
 
 
 	public function new(_action:TweenAction, _duration:Float) {
 
 		action = _action;
 		target = _action.node.target;
+		active = false;
 		complete = false;
 		inited = false;
-		need_setup = true;
 
 		if(_duration > 0) {
 			duration = _duration;
@@ -36,27 +37,61 @@ class Tween {
 
 	}
 
-	function onstart(t:Float) {}
-	function onfinish() {}
-
-	function onsetup() {}
-	function onupdateprops(t:Float) {}
-
-	public function reset() {}
-
 	public function step(t:Float) {
 
-		if(complete) {
+		if(!active) {
 			return;
 		}
 
 		if (start_time + duration < t) {
 			action.sequence.next_time = start_time + duration;
             complete = true;
-			onfinish();
+			active = false;
+            _finish();
 		} else {
-			onupdateprops(t);
+			_update_props(t);
 		}
+
+	}
+
+	public function start(t:Float) {
+
+		if(active) {
+			return;
+		}
+
+		active = true;
+		complete = false;
+		start_time = t;
+
+		if(!inited) {
+			init();
+			inited = true;
+		}
+
+	}
+
+	public function stop(_complete:Bool = false) {
+
+		if(!active) {
+			return;
+		}
+
+		active = false;
+		inited = false;
+
+		if(_complete) {
+            complete = true;
+			_finish();
+		}
+		
+	}
+
+	public function reset() {
+
+		active = false;
+		complete = false;
+		inited = false;
 
 	}
 
@@ -72,27 +107,28 @@ class Tween {
 		
 	}
 
-	inline function _start(t:Float) {
+	inline function _update_props(t:Float) {
 
-		start_time = t;
+		if(!action.node.reverse) {
+			apply((t - start_time) * duration_inv);
+		} else {
+			apply(1 - (t - start_time) * duration_inv);
+		}
+		
+	}
 
-		onstart(t);
+	inline function _finish():Void {
 
-		if(need_setup) {
-			onsetup();
-			need_setup = false;
+		if(!action.node.reverse) {
+			apply(1);
+		} else {
+			apply(0);
 		}
 
 	}
 
-	inline function _reset() {
-
-		complete = false;
-		inited = false;
-		need_setup = true;
-		reset();
-
-	}
+	function init() {}
+	function apply(tp:Float) {}
 
 
 }

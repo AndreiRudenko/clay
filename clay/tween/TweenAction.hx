@@ -8,17 +8,14 @@ import clay.tween.actions.CallAction;
 import clay.tween.Tween;
 
 
-@:allow(
-	clay.tween.TweenSequence, 
-	clay.tween.Tween, 
-	clay.tween.TweenNode, 
-	clay.tween.TweenManager
-)
+@:allow(clay.tween.TweenNode)
 class TweenAction {
 
 
 	public var sequence(get, never):TweenSequence;
 	public var node(default, null):TweenNode;
+
+	public var active(default, null):Bool;
 	public var complete(default, null):Bool;
 
 	public var tweens(default, null):Array<Tween>;
@@ -31,6 +28,7 @@ class TweenAction {
 
 		node = _node;
 		tweens = [];
+		active = false;
 		complete = false;
 
 	}
@@ -56,19 +54,6 @@ class TweenAction {
 		return this;
 		
 	}
-
-	// public function method(_name:Dynamic, duration:Float, start:Array<Dynamic> = null, end:Array<Dynamic> = null):TweenAction {
-
-	// 	var fn = Reflect.field(node.target, _name);
-	// 	if(fn != null) {
-	// 		tweens.push(new FuncTween(this, fn, duration, start, end));
-	// 	} else {
-	// 		trace('cant find $_name method, be sure to use @:keep for function');
-	// 	}
-
-	// 	return this;
-
-	// }
 
 	public function ease(_ease:EaseFunc):TweenAction {
 		
@@ -125,7 +110,7 @@ class TweenAction {
 
 	public function repeat(_times:Int = -1):TweenAction {
 
-		node._repeat = _times;
+		node.repeat = _times;
 		
 		return this;
 
@@ -133,13 +118,18 @@ class TweenAction {
 
 	public function reflect():TweenAction {
 
-		node._reflect = true;
+		node.reflect = true;
 
 		return this;
 
 	}
 
+	@:noCompletion
 	public function step(dt:Float) {
+
+		if(!active || complete) {
+			return;
+		}
 
 		complete = true;
 		for (t in tweens) {
@@ -151,18 +141,18 @@ class TweenAction {
 
 	}
 
+	@:noCompletion
+	public function start(t:Float) {
 
-	function onstart(t:Float) {}
-	function onfinish() {}
-	function onreset() {}
+		if(active) {
+			return;
+		}
 
-	function _start(t:Float) {
-
-		onstart(t);
+		active = true;
 
 		if(tweens.length > 0) {
 			for (tw in tweens) {
-				tw._start(t);
+				tw.start(t);
 			}
 		} else {
 			node.next_action();
@@ -170,18 +160,32 @@ class TweenAction {
 
 	}
 
-	function _finish() {
+	@:noCompletion
+	public function stop(_complete:Bool = false) {
+		
+		if(!active) {
+			return;
+		}
 
-		onfinish();
+		active = false;
+
+		if(_complete) {
+			complete = true;
+			for (tw in tweens) {
+				tw.stop(_complete);
+			}
+		}
 
 	}
 
-	function _reset() {
+	@:noCompletion
+	public function reset() {
 
-		onreset();
+		active = false;
+		complete = false;
 
 		for (t in tweens) {
-			t._reset();
+			t.reset();
 		}
 		
 	}

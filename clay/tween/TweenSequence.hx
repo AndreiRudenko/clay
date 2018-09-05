@@ -1,50 +1,57 @@
 package clay.tween;
 
 
-@:allow(
-	clay.tween.TweenManager, 
-	clay.tween.TweenAction, 
-	clay.tween.TweenNode, 
-	clay.tween.TweenSequence, 
-	clay.tween.Tween
-)
-
+@:allow(clay.tween.TweenManager)
 class TweenSequence {
 
 
-	public var manager(default, null):TweenManager;
-	public var added(default, null):Bool;
-	public var complete:Bool;
-	public var time_based:Bool;
-	public var started(default, null):Bool;
+	public var manager   	(default, null):TweenManager;
 
-	var next_time:Float;
+	public var added     	(default, null):Bool;
+	public var started   	(default, null):Bool;
+	public var active  	    (default, null):Bool;
+	public var paused  	    (default, null):Bool;
+	public var complete  	(default, null):Bool;
+	public var time_based	(default, null):Bool;
+
+	@:noCompletion
+	public var next_time:Float;
+	var pause_time:Float;
+
+	var head:TweenNode;
 	var next:TweenNode;
+
 
 	public function new(_manager:TweenManager, _time_based:Bool) {
 
 		manager = _manager;
+		active = false;
+		paused = false;
 		added = false;
 		complete = false;
-		time_based = _time_based;
 		started = false;
+		time_based = _time_based;
 		next_time = 0;
+		pause_time = 0;
 
 	}
 
 	@:noCompletion public function step(t:Float) {
 
-		if(complete) {
+		if(paused || complete) {
 			return;
 		}
 
 		if(!started) {
 			start();
-			started = true;
+		}
+
+		if(!active) {
+			return;
 		}
 
 		if(next == null) {
-			_finish();
+			finish();
 		} else {
 			next.step(t);
 			if(next.complete) {
@@ -54,38 +61,84 @@ class TweenSequence {
 
 	}
 
-	public function add(s:TweenNode):TweenNode {
+	public function add(n:TweenNode):TweenNode {
+
+		var nodes:Array<TweenNode> = manager.targets.get(n.target);
+		if(nodes == null) {
+			nodes = [];
+			manager.targets.set(n.target, nodes);
+		}
+		nodes.push(n);
 
 		if(next == null) {
-			next = s;
+			next = n;
+			head = n;
 		} else {
 			var n = next;
 			while(true) {
 				if(n.next == null) {
-					n.next = s;
+					n.next = n;
 					break;
 				}
 				n = n.next;
 			}
 		}
 
-		return s;
+		return n;
 		
 	}
 
-	public function reset() {
+	public function start() {
+
+		if(active) {
+			return;
+		}
+
+		if(!added) {
+			manager.add_sequence(this);
+		}
+
+		started = true;
+
+		active = true;
+		complete = false;
+
+		next = head;
+		next.start();
 
 	}
 
-	inline function start() {
+	public function stop(_complete:Bool = false) {
 
-		next._start();
+		if(!active) {
+			return;
+		}
+
+		active = false;
+
+		if(next != null) {
+			complete = true;
+			next.stop(_complete);
+		}
 
 	}
 
-	inline function _finish() {
+	public function pause() { // todo
+
+		paused = true;
+
+	}
+
+	public function unpause() { // todo
+
+		paused = false;
+
+	}
+
+	inline function finish() {
 		
 		complete = true;
+		active = false;
 
 	}
 
@@ -93,10 +146,10 @@ class TweenSequence {
 
 		var n = next.next;
 		if(n == null) {
-			_finish();
+			finish();
 		} else {
 			next = n;
-			n._start();
+			n.start();
 		}
 		
 	}
