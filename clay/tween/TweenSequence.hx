@@ -16,6 +16,7 @@ class TweenSequence {
 
 	@:noCompletion
 	public var next_time:Float;
+
 	var pause_time:Float;
 
 	var head:TweenNode;
@@ -98,6 +99,8 @@ class TweenSequence {
 			manager.add_sequence(this);
 		}
 
+		pause_time = 0;
+
 		started = true;
 
 		active = true;
@@ -123,15 +126,22 @@ class TweenSequence {
 
 	}
 
-	public function pause() { // todo
+	public function pause() {
 
 		paused = true;
 
+		pause_time = time_based ? Clay.time : manager.time_fb;
+
 	}
 
-	public function unpause() { // todo
+	public function unpause() {
 
 		paused = false;
+
+		var offset_time:Float = (time_based ? Clay.time : manager.time_fb) - pause_time;
+		if(next != null) {
+			next.offset_start_time(offset_time);
+		}
 
 	}
 

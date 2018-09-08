@@ -12,7 +12,8 @@ class TweenManager {
 	var sequences_tb(default, null):Array<TweenSequence>;
 	var sequences_fb(default, null):Array<TweenSequence>;
 
-	var time_fb:Float;
+	@:noCompletion
+	public var time_fb:Float;
 	var check_time:Int;
 
 
@@ -109,10 +110,6 @@ class TweenManager {
 		}
 
 	}
-
-	// function remove_sequence(_s:TweenSequence) {
-		
-	// }
 
 
 }

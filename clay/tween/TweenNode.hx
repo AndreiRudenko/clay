@@ -188,6 +188,16 @@ class TweenNode {
 
 	}
 
+	@:noCompletion public function offset_start_time(amount:Float) {
+
+		if(current != null) {
+			for (t in current.tweens) {
+				t.start_time += amount;
+			}
+		}
+
+	}
+
 	inline function _finish() {
 
 		complete = true;

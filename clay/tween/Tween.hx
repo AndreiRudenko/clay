@@ -2,7 +2,10 @@ package clay.tween;
 
 
 
-@:allow(clay.tween.TweenAction)
+@:allow(
+	clay.tween.TweenAction, 
+	clay.tween.TweenNode
+)
 class Tween {
 
 
@@ -45,9 +48,9 @@ class Tween {
 
 		if (start_time + duration < t) {
 			action.sequence.next_time = start_time + duration;
-            complete = true;
+			complete = true;
 			active = false;
-            _finish();
+			_finish();
 		} else {
 			_update_props(t);
 		}
@@ -81,7 +84,7 @@ class Tween {
 		inited = false;
 
 		if(_complete) {
-            complete = true;
+			complete = true;
 			_finish();
 		}
 		
