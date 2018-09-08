@@ -3,7 +3,6 @@ package clay.processors;
 
 import clay.components.Transform;
 import clay.components.Parent;
-import clay.ComponentMapper;
 import clay.Processor;
 import clay.Family;
 import clay.Wire;
@@ -16,8 +15,6 @@ class TransformProcessor extends Processor {
 	var tr_family:Family<Transform>;
 	var trp_family:Family<Transform, Parent>;
 
-	var transform_comps:ComponentMapper<Transform>;
-	var parent_comps:ComponentMapper<Parent>;
 
 	override function onadded() {
 
@@ -35,7 +32,7 @@ class TransformProcessor extends Processor {
 
 		var t:Transform = null;
 		for (e in tr_family) {
-			t = transform_comps.get(e);
+			t = tr_family.get_transform(e);
 			t.update();
 		}
 
@@ -43,9 +40,9 @@ class TransformProcessor extends Processor {
 
 	function trp_added(e:Entity) {
 
-		var p = parent_comps.get(e);
-		var t = transform_comps.get(e);
-		var t2 = transform_comps.get(p.entity);
+		var p = trp_family.get_parent(e);
+		var t = trp_family.get_transform(e);
+		var t2 = trp_family.get_transform(p.entity);
 		if(t2 != null) {
 			t.parent = t2;
 		}
@@ -54,7 +51,7 @@ class TransformProcessor extends Processor {
 	
 	function trp_removed(e:Entity) {
 
-		var t = transform_comps.get(e);
+		var t = trp_family.get_transform(e);
 		t.parent = null;
 
 	}

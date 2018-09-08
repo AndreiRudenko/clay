@@ -1,7 +1,6 @@
 package clay.processors;
 
 
-import clay.ComponentMapper;
 import clay.Processor;
 import clay.Family;
 
@@ -23,23 +22,19 @@ class RenderProcessor extends Processor {
 	var renderer:Renderer;
 
 	var geom_family:Family<Geometry>;
-	var quad_family:Family<QuadGeometry>;
-	var quadpack_family:Family<QuadPackGeometry>;
-	var text_family:Family<Text>;
 	var gt_family:Family<Geometry,Transform>;
-	var qt_family:Family<QuadGeometry,Transform>;
-	var qpt_family:Family<QuadPackGeometry,Transform>;
-	var tt_family:Family<Text,Transform>;
 	var gtex_family:Family<Geometry,Texture>;
+
+	var quad_family:Family<QuadGeometry>;
+	var qt_family:Family<QuadGeometry,Transform>;
 	var qtex_family:Family<QuadGeometry,Texture>;
+
+	var quadpack_family:Family<QuadPackGeometry>;
+	var qpt_family:Family<QuadPackGeometry,Transform>;
 	var qptex_family:Family<QuadPackGeometry,Texture>;
 
-	var geom_comps:ComponentMapper<Geometry>;
-	var quad_comps:ComponentMapper<QuadGeometry>;
-	var quadpack_comps:ComponentMapper<QuadPackGeometry>;
-	var transform_comps:ComponentMapper<Transform>;
-	var texture_comps:ComponentMapper<Texture>;
-	var text_comps:ComponentMapper<Text>;
+	var text_family:Family<Text>;
+	var tt_family:Family<Text,Transform>;
 
 
 	public function new() {
@@ -85,145 +80,133 @@ class RenderProcessor extends Processor {
 
 	function geom_added(e:Entity) {
 
-		var geom = geom_comps.get(e);
+		var geom = geom_family.get_geometry(e);
 		add_geom_to_renderer(geom);
 
 	}
 	
 	function geom_removed(e:Entity) {
 
-		// log('geom_removed');
-		var geom = geom_comps.get(e);
+		var geom = geom_family.get_geometry(e);
 		remove_geom_from_renderer(geom);
 
 	}
 
 	function quad_added(e:Entity) {
 
-		var geom = quad_comps.get(e);
+		var geom = quad_family.get_quadGeometry(e);
 		add_geom_to_renderer(geom);
 
 	}
 	
 	function quad_removed(e:Entity) {
 
-		// log('geom_removed');
-		var geom = quad_comps.get(e);
+		var geom = quad_family.get_quadGeometry(e);
 		remove_geom_from_renderer(geom);
 
 	}
 
 	function quadpack_added(e:Entity) {
 
-		// log('quadpack_added');
-		var geom = quadpack_comps.get(e);
+		var geom = quadpack_family.get_quadPackGeometry(e);
 		add_geom_to_renderer(geom);
 
 	}
 	
 	function quadpack_removed(e:Entity) {
 
-		// log('quadpack_removed');
-		var geom = quadpack_comps.get(e);
+		var geom = quadpack_family.get_quadPackGeometry(e);
 		remove_geom_from_renderer(geom);
 
 	}
 
 	function gt_added(e:Entity) {
 
-		var g = geom_comps.get(e);
-		var t = transform_comps.get(e);
+		var g = gt_family.get_geometry(e);
+		var t = gt_family.get_transform(e);
 		g.transform_matrix.copy(t.world);
 
 	}
 	
 	function gt_removed(e:Entity) {
 
-		var g = geom_comps.get(e);
+		var g = gt_family.get_geometry(e);
 		g.transform_matrix.identity();
 
 	}
 
 	function qt_added(e:Entity) {
 
-		var g = quad_comps.get(e);
-		var t = transform_comps.get(e);
+		var g = qt_family.get_quadGeometry(e);
+		var t = qt_family.get_transform(e);
 		g.transform_matrix.copy(t.world);
 
 	}
 	
 	function qt_removed(e:Entity) {
 
-		var g = quad_comps.get(e);
+		var g = qt_family.get_quadGeometry(e);
 		g.transform_matrix.identity();
 
 	}
 
 	function qpt_added(e:Entity) {
 
-		var g = quadpack_comps.get(e);
-		var t = transform_comps.get(e);
+		var g = qpt_family.get_quadPackGeometry(e);
+		var t = qpt_family.get_transform(e);
 		g.transform_matrix.copy(t.world);
 
 	}
 	
 	function qpt_removed(e:Entity) {
 
-		var g = quadpack_comps.get(e);
+		var g = qpt_family.get_quadPackGeometry(e);
 		g.transform_matrix.identity();
 
 	}
 
 	function gtex_added(e:Entity) {
 
-		var g = geom_comps.get(e);
-		var tex = texture_comps.get(e);
+		var g = gtex_family.get_geometry(e);
+		var tex = gtex_family.get_texture(e);
 		g.texture = tex;
-		// g.geometry_type = GeometryType.textured;
 
 	}
 	
 	function gtex_removed(e:Entity) {
 
-		var g = geom_comps.get(e);
+		var g = gtex_family.get_geometry(e);
 		g.texture = null;
-		// g.geometry_type = GeometryType.color;
 
 	}
 
 	function qtex_added(e:Entity) {
 
-		var g = quad_comps.get(e);
-		var tex = texture_comps.get(e);
+		var g = qtex_family.get_quadGeometry(e);
+		var tex = qtex_family.get_texture(e);
 		g.texture = tex;
-		// g.geometry_type = GeometryType.textured;
 
 	}
 	
 	function qtex_removed(e:Entity) {
 
-		var g = quad_comps.get(e);
+		var g = qtex_family.get_quadGeometry(e);
 		g.texture = null;
-		// g.geometry_type = GeometryType.color;
 
 	}
 
 	function qptex_added(e:Entity) {
 
-		// log('qptex_added');
-		var g = quadpack_comps.get(e);
-		var tex = texture_comps.get(e);
+		var g = qptex_family.get_quadPackGeometry(e);
+		var tex = qptex_family.get_texture(e);
 		g.texture = tex;
-		// g.geometry_type = GeometryType.textured;
 
 	}
 	
 	function qptex_removed(e:Entity) {
 
-		// log('qptex_removed');
-		var g = quadpack_comps.get(e);
+		var g = qptex_family.get_quadPackGeometry(e);
 		g.texture = null;
-		// g.geometry_type = GeometryType.color;
 
 	}
 
@@ -232,31 +215,29 @@ class RenderProcessor extends Processor {
 
 	function text_added(e:Entity) {
 
-		var txt = text_comps.get(e);
+		var txt = text_family.get_text(e);
 		add_geom_to_renderer(txt);
-		// txt.geometry_type = GeometryType.text;
 
 	}
 	
 	function text_removed(e:Entity) {
 
-		// log('geom_removed');
-		var txt = text_comps.get(e);
+		var txt = text_family.get_text(e);
 		remove_geom_from_renderer(txt);
 
 	}
 
 	function tt_added(e:Entity) {
 
-		var txt = text_comps.get(e);
-		var t = transform_comps.get(e);
+		var txt = tt_family.get_text(e);
+		var t = tt_family.get_transform(e);
 		txt.transform_matrix.copy(t.world);
 
 	}
 	
 	function tt_removed(e:Entity) {
 
-		var txt = text_comps.get(e);
+		var txt = tt_family.get_text(e);
 		txt.transform_matrix.identity();
 
 	}
@@ -294,14 +275,14 @@ class RenderProcessor extends Processor {
 		var txt:Text = null;
 
 		for (e in gt_family) {	
-			g = geom_comps.get(e);
-			t = transform_comps.get(e);
+			g = gt_family.get_geometry(e);
+			t = gt_family.get_transform(e);
 			g.transform_matrix.copy(t.world);
 		}
 
 		for (e in qt_family) {	
-			q = quad_comps.get(e);
-			t = transform_comps.get(e);
+			q = qt_family.get_quadGeometry(e);
+			t = qt_family.get_transform(e);
 			if(q.dirty) {
 				if(q.centered) {
 					t.origin.set(q.size.x*0.5, q.size.y*0.5);
@@ -311,19 +292,18 @@ class RenderProcessor extends Processor {
 		}
 
 		for (e in qpt_family) {	
-			qp = quadpack_comps.get(e);
-			t = transform_comps.get(e);
+			qp = qpt_family.get_quadPackGeometry(e);
+			t = qpt_family.get_transform(e);
 			qp.transform_matrix.copy(t.world);
 		}
 
 		for (e in tt_family) {	
-			txt = text_comps.get(e);
-			t = transform_comps.get(e);
+			txt = tt_family.get_text(e);
+			t = tt_family.get_transform(e);
 			txt.transform_matrix.copy(t.world);
 		}
 
 	}
-
 
 
 }

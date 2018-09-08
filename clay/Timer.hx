@@ -13,8 +13,8 @@ class Timer {
 	public var loops:Int = 0;
 		/** Pauses or checks the pause state of the timer. */
 	public var active(default, set):Bool = false;
-		/** Frame based timer. */
-	public var frame_based(default, null):Bool = false;
+		/** Time based or frame based timer. */
+	public var time_based(default, null):Bool = true;
 		/** Check to see if the timer is finished. */
 	public var finished:Bool = false;
 		/** time offset, reset on every repeat */
@@ -55,11 +55,11 @@ class Timer {
 
 	}
 
-	public function start(_timelimit:Float = 1, _oncompletefunc:Void->Void = null, _frame_based:Bool = false):Timer {
+	public function start(_timelimit:Float = 1, _oncompletefunc:Void->Void = null, _time_based:Bool = true):Timer {
 
 		stop(false); // here we remove from timers array
 
-		frame_based = _frame_based;
+		time_based = _time_based;
 		TimerSystem.add(this);
 		_inarray = true;
 		
@@ -83,11 +83,11 @@ class Timer {
 
 	}
 
-	public function start_from(_current_time:Float = 0, _timelimit:Float = 1, _oncompletefunc:Void->Void = null, _frame_based:Bool = false):Timer {
+	public function start_from(_current_time:Float = 0, _timelimit:Float = 1, _oncompletefunc:Void->Void = null, _time_based:Bool = true):Timer {
 
 		stop(false);
 		
-		frame_based = _frame_based;
+		time_based = _time_based;
 		TimerSystem.add(this);
 		_inarray = true;
 		
@@ -192,7 +192,7 @@ class Timer {
 		return this;
 
 	}
-
+	var _t:Float = 0;
 	@:allow(clay.core.TimerSystem) 
 	inline function update(time:Float):Void {
 

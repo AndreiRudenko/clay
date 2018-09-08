@@ -68,6 +68,7 @@ class Screen {
 			null,
 			true
 		);
+		
 		mid.set(window.width*0.5, window.height*0.5);
 
 	}

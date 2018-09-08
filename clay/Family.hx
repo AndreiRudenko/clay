@@ -43,13 +43,13 @@ class FamilyData {
 	var exclude_flags:BitFlag;
 	var one_flags:BitFlag;
 
-	var include_flags_count:Int = 0;
-	var exclude_flags_count:Int = 0;
-	var one_flags_count:Int = 0;
+	var include_flags_count:Int;
+	var exclude_flags_count:Int;
+	var one_flags_count:Int;
 
 	var ent_id:IntArray;       // [ comp_idx | ent_id    ]
 	var comp_idx:IntArray;     // [ entity   | comp_idx  ]
-	var count:Int = 0;
+	var count:Int;
 
 
 	public function new() {}
@@ -78,6 +78,11 @@ class FamilyData {
 	function setup(_world:World) {
 		
 		name = Type.getClassName(Type.getClass(this));
+
+		include_flags_count = 0;
+		exclude_flags_count = 0;
+		one_flags_count = 0;
+		count = 0;
 
 		world = _world;
 		cm = world.components;

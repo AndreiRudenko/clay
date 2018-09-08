@@ -180,7 +180,7 @@ class FamilyMacro {
 				})));
 
 				fields.push(MacroUtils.build_function(
-					'$comp_name', 
+					'get_$comp_name', 
 					[APublic, AInline], 
 					[{ name: 'entity', type: macro:clay.Entity }],
 					comp_type,

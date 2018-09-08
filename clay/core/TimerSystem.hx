@@ -16,10 +16,10 @@ class TimerSystem {
 	@:allow(clay.Timer) 
 	static inline function add(_timer:Timer):Timer { // add timer to the end
 
-		if(_timer.frame_based) {
-			timers_fb.push(_timer);
-		} else {
+		if(_timer.time_based) {
 			timers_tb.push(_timer);
+		} else {
+			timers_fb.push(_timer);
 		}
 
 		return _timer;
@@ -29,10 +29,10 @@ class TimerSystem {
 	@:allow(clay.Timer) 
 	static inline function remove(_timer:Timer) {
 		
-		if(_timer.frame_based) {
-			timers_fb.remove(_timer);
-		} else {
+		if(_timer.time_based) {
 			timers_tb.remove(_timer);
+		} else {
+			timers_fb.remove(_timer);
 		}
 
 	}
