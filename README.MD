@@ -9,7 +9,7 @@ Clay is a cross-platform, 2d game engine.
 git clone https://github.com/RudenkoArts/clay2d.git
 ```
 Go to clay2d/tools folder, and run the command `npm install`.  
-In clay2d/backend folder run `git clone --recursive https://github.com/Kode/Kha.git` command.
+In clay2d/backend folder run `git clone --recursive https://github.com/Kode/Kha.git` command.  
 Then you can use `clay2d init` commant to init project in folder.  
 To build project open project folder with `project.yaml` file.  
 Run `clay2d build html5` command for web build.  
