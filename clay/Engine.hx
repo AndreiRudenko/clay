@@ -48,7 +48,7 @@ class Engine {
 	public var motion 	    (default, null):TweenManager;
 
 	public var dt 	        (get, never):Float;
-	public var time 	    (get, never):Float;
+	public var time 	    (default, null):Float;
 	public var timescale 	(default, set):Float = 1;
 
 	public var fixed_timestep:Bool = true;
@@ -166,6 +166,7 @@ class Engine {
 
 		_debug('init');
 
+		time = kha.System.time;
 		frame_start_prev = time;
 
 		connect_events();
@@ -312,7 +313,7 @@ class Engine {
 		_verboser('tick');
 		
 		timer.process(frame_start);
-		motion.tick(frame_delta);
+		motion.tick();
 		
 	}
 
@@ -333,6 +334,8 @@ class Engine {
 		_verboser('internal_tick');
 
 		ontickstart();
+
+		time = kha.System.time;
 
 		frame_start = time;
 		frame_delta = frame_start - frame_start_prev;
