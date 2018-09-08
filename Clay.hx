@@ -36,7 +36,7 @@ class Clay {
 
 	public static var dt	        (get, never):Float;
 	public static var time	        (get, never):Float;
-	public static var timescale	    (get, never):Float;
+	public static var timescale	    (get, set):Float;
 
 	// public static var io       	(default, null):clay.IO;
 
@@ -77,6 +77,7 @@ class Clay {
 	static inline function get_dt() return engine.dt;
 	static inline function get_time() return engine.time;
 	static inline function get_timescale() return engine.timescale;
+	static inline function set_timescale(v) return engine.timescale = v;
 	
 
 }
