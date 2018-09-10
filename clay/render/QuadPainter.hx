@@ -86,8 +86,8 @@ class QuadPainter extends Painter {
     	max_vertices = buffer_size * 4;
 		// colored
 		var structure = new VertexStructure();
-		structure.add("a_position", VertexData.Float2);
-		structure.add("a_colored", VertexData.Float4);
+		structure.add("vertexPosition", VertexData.Float2);
+		structure.add("vertexColor", VertexData.Float4);
 
 		shader_colored = new Shader();
 		shader_colored.inputLayout = [structure];
@@ -99,7 +99,7 @@ class QuadPainter extends Painter {
 		shader_colored.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
 		shader_colored.compile();
 
-		projection_loc_colored = shader_colored.getConstantLocation("u_mvpmatrix");
+		projection_loc_colored = shader_colored.getConstantLocation("mvpMatrix");
 		vertexbuffer_colored = new VertexBuffer(max_vertices, structure, Usage.DynamicUsage);
 		vertices_colored = vertexbuffer_colored.lock();
 
@@ -107,9 +107,9 @@ class QuadPainter extends Painter {
 
 		// textured
 		structure = new VertexStructure();
-		structure.add("a_position", VertexData.Float2);
-		structure.add("a_texpos", VertexData.Float2);
-		structure.add("a_color", VertexData.Float4);
+		structure.add("vertexPosition", VertexData.Float2);
+		structure.add("texPosition", VertexData.Float2);
+		structure.add("vertexColor", VertexData.Float4);
 
 		shader_textured = new Shader();
 		shader_textured.inputLayout = [structure];
@@ -124,7 +124,7 @@ class QuadPainter extends Painter {
 		shader_textured.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
 		shader_textured.compile();
 
-		projection_loc_textured = shader_textured.getConstantLocation("u_mvpmatrix");
+		projection_loc_textured = shader_textured.getConstantLocation("mvpMatrix");
 		texture_loc = shader_textured.getTextureUnit("tex");
 
 		vertexbuffer_textured = new VertexBuffer(max_vertices, structure, Usage.DynamicUsage);
@@ -271,7 +271,7 @@ class QuadPainter extends Painter {
 
 		last_shader = sh;
 		g.setPipeline(sh);
-		projection_loc_colored = sh.getConstantLocation("u_mvpmatrix");
+		projection_loc_colored = sh.getConstantLocation("mvpMatrix");
 
 	}
 
@@ -284,7 +284,7 @@ class QuadPainter extends Painter {
 
 		last_shader = sh;
 		g.setPipeline(sh);
-		projection_loc_textured = sh.getConstantLocation("u_mvpmatrix");
+		projection_loc_textured = sh.getConstantLocation("mvpMatrix");
 		texture_loc = sh.getTextureUnit("tex");
 
 	}

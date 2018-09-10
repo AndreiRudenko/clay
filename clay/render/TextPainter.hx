@@ -64,9 +64,9 @@ class TextPainter extends Painter {
     	super();
 
 		var structure = new VertexStructure();
-		structure.add("a_position", VertexData.Float2);
-		structure.add("a_texpos", VertexData.Float2);
-		structure.add("a_color", VertexData.Float4);
+		structure.add("vertexPosition", VertexData.Float2);
+		structure.add("texPosition", VertexData.Float2);
+		structure.add("vertexColor", VertexData.Float4);
 
 		shader = new Shader();
 		shader.inputLayout = [structure];
@@ -78,7 +78,7 @@ class TextPainter extends Painter {
 		shader.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
 		shader.compile();
 
-		projection_loc = shader.getConstantLocation("u_mvpmatrix");
+		projection_loc = shader.getConstantLocation("mvpMatrix");
 		texture_loc = shader.getTextureUnit("tex");
 
 		vertexbuffer = new VertexBuffer(buffer_size * 4, structure, Usage.DynamicUsage);
@@ -238,7 +238,7 @@ class TextPainter extends Painter {
 
     	last_shader = sh;
 		g.setPipeline(sh);
-		projection_loc = sh.getConstantLocation("u_mvpmatrix");
+		projection_loc = sh.getConstantLocation("mvpMatrix");
 		texture_loc = sh.getTextureUnit("tex");
 
     }

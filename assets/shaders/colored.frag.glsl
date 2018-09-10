@@ -1,8 +1,8 @@
 #version 450
 
-in vec4 v_color;
+in vec4 fragmentColor;
 out vec4 FragColor;
 
 void main() {
-	FragColor = v_color;
+	FragColor = fragmentColor;
 }
