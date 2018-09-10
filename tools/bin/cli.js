@@ -124,7 +124,7 @@ Config.create_khafile = function(config) {
 	while(_g < _g1.length) {
 		var s = _g1[_g];
 		++_g;
-		kfile += "p.addSources(\"../" + s + "\");\n";
+		kfile += "p.addSources(\"" + s + "\");\n";
 	}
 	kfile += "p.addLibrary(\"" + CLI.engine_name + "\");\n";
 	var _g2 = 0;
@@ -139,7 +139,7 @@ Config.create_khafile = function(config) {
 	while(_g3 < _g12.length) {
 		var s2 = _g12[_g3];
 		++_g3;
-		kfile += "p.addShaders(\"../" + s2 + "\");\n";
+		kfile += "p.addShaders(\"" + s2 + "\");\n";
 	}
 	kfile += "p.addShaders(\"" + haxe_io_Path.join([CLI.engine_dir,"assets/shaders"]) + "\");\n";
 	if(config.input != null) {
@@ -185,7 +185,7 @@ Config.create_khafile = function(config) {
 	while(_g6 < _g15.length) {
 		var s5 = _g15[_g6];
 		++_g6;
-		kfile += "p.addAssets(\"../" + s5 + "/**\", {nameBaseDir: \"../" + s5 + "\", destination: \"" + s5 + "/{dir}/{name}\", name: \"{dir}/{name}\"});\n";
+		kfile += "p.addAssets(\"" + s5 + "/**\", {nameBaseDir: \"" + s5 + "\", destination: \"" + s5 + "/{dir}/{name}\", name: \"{dir}/{name}\"});\n";
 	}
 	if(config.html5 != null) {
 		kfile += "p.targetOptions.html5.canvasId = \"" + config.html5.canvas + "\";\n";
@@ -267,10 +267,10 @@ commands_Build.prototype = $extend(Command.prototype,{
 			sys_FileSystem.createDirectory(build_path);
 		}
 		var khafile = Config.create_khafile(config);
-		js_node_Fs.writeFileSync(haxe_io_Path.join([build_path,"khafile.js"]),khafile);
+		js_node_Fs.writeFileSync(haxe_io_Path.join([CLI.user_dir,"khafile.js"]),khafile);
 		if(config.target != "html5" && config.app.icon != null && config.app.icon != "") {
 			var icon_path = haxe_io_Path.join([CLI.user_dir,config.app.icon]);
-			var dest_path = haxe_io_Path.join([build_path,"icon.png"]);
+			var dest_path = haxe_io_Path.join([CLI.user_dir,"icon.png"]);
 			if(sys_FileSystem.exists(icon_path)) {
 				sys_io_File.copy(icon_path,dest_path);
 				CLI.print("Copy icon from: " + icon_path);
@@ -385,8 +385,6 @@ commands_Build.prototype = $extend(Command.prototype,{
 				args.push(compiler.ffmpeg);
 			}
 		}
-		args.push("--from");
-		args.push("build");
 		args.push("--compile");
 		CLI.print("Run build command: " + args.join(" "));
 		var res = args == null ? js_node_ChildProcess.spawnSync("node",{ stdio : "inherit"}).status : js_node_ChildProcess.spawnSync("node",args,{ stdio : "inherit"}).status;

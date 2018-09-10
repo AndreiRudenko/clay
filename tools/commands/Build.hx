@@ -48,12 +48,12 @@ class Build extends Command {
 		}
 		// create kha file
 		var khafile = Config.create_khafile(config);
-        File.saveContent(Path.join([build_path, 'khafile.js']), khafile);
+        File.saveContent(Path.join([CLI.user_dir, 'khafile.js']), khafile);
 
 		// copy icon
 		if(config.target != 'html5' && config.app.icon != null && config.app.icon != '') {
 			var icon_path = Path.join([CLI.user_dir, config.app.icon]);
-			var dest_path = Path.join([build_path, 'icon.png']);
+			var dest_path = Path.join([CLI.user_dir, 'icon.png']);
 			if (FileSystem.exists(icon_path)) {
 				File.copy(icon_path, dest_path);
 				CLI.print('Copy icon from: $icon_path');
@@ -176,8 +176,8 @@ class Build extends Command {
 			}
 		}
 
-		args.push('--from');
-		args.push('build');
+		// args.push('--from');
+		// args.push('build');
 		args.push('--compile');
 
 		CLI.print('Run build command: ${args.join(" ")}');

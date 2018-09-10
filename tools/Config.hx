@@ -17,7 +17,7 @@ class Config {
 		var kfile = 'let p = new Project("${project.title}");\n';
 
 		for (s in project.sources) {
-			kfile += 'p.addSources("../${s}");\n';
+			kfile += 'p.addSources("${s}");\n';
 		}
 
 		kfile += 'p.addLibrary("${CLI.engine_name}");\n';
@@ -27,7 +27,7 @@ class Config {
 		}
 
 		for (s in project.shaders) {
-			kfile += 'p.addShaders("../${s}");\n';
+			kfile += 'p.addShaders("${s}");\n';
 		}
 
 		kfile += 'p.addShaders("${Path.join([CLI.engine_dir, 'assets/shaders'])}");\n';
@@ -69,7 +69,7 @@ class Config {
 		kfile += 'p.addAssets("${fp}", {destination: "assets/{name}"});\n';
 
 		for (s in project.assets) {
-			kfile += 'p.addAssets("../${s}/**", {nameBaseDir: "../${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}"});\n';
+			kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}"});\n';
 		}
 
 		if(config.html5 != null){
