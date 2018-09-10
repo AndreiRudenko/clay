@@ -3,8 +3,8 @@ package clay.core;
 
 import clay.World;
 import clay.utils.Log.*;
+import clay.utils.PowerOfTwo;
 import clay.types.AppEvent;
-
 
 import clay.input.Key;
 import clay.input.Keyboard;
@@ -55,7 +55,7 @@ class Worlds {
 			}
 		}
 		
-		var _world = new World(_name, upper_power_of_two(_capacity), _comptypes);
+		var _world = new World(_name, PowerOfTwo.next(_capacity), _comptypes);
 		_world.priority = _priority;
 
 		handle_duplicate_warning(_name);
