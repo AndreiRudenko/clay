@@ -114,7 +114,6 @@ class Geometry {
 
 	}
 
-
 	function set_layer(v:Int):Int {
 
 		if(added) {

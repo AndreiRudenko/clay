@@ -26,6 +26,7 @@ import clay.input.Pen;
 import clay.tween.TweenManager;
 
 
+@:keep
 @:access(Clay)
 @:access(clay.core.Worlds)
 class Engine {

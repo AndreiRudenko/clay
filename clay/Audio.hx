@@ -107,6 +107,7 @@ class Audio {
 }
 
 
+@:keep
 @:allow(clay.Audio)
 @:access(clay.Audio)
 @:access(kha.audio2.AudioChannel)
@@ -148,6 +149,7 @@ class Sound {
 }
 
 
+@:keep
 @:allow(clay.Audio)
 @:access(clay.Audio)
 class SoundGroup {
