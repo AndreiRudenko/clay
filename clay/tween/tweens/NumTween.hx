@@ -29,18 +29,19 @@ class NumTween extends Tween {
 		difference = [];
 
 		for (p in Reflect.fields(props)) {
-			if(!Reflect.hasField(target, p)) {
+			var _prop:Null<Float> = Reflect.getProperty(target, p);
+			if(_prop != null) {
+				var _from:Float = _prop;
+				var _to:Float = Reflect.getProperty(props, p);
+
+				names.push(p);
+				from.push(_from);
+				// to.push(_to);
+				difference.push(_to - _from);
+			} else {
 				trace('cant find field: $p');
-				continue;
 			}
 
-			var _from:Float = get_prop(p);
-			var _to:Float = Reflect.getProperty(props, p);
-
-			names.push(p);
-			from.push(_from);
-			// to.push(_to);
-			difference.push(_to - _from);
 		}
 		
 	}
