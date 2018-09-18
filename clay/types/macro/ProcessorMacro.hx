@@ -292,17 +292,17 @@ class ProcessorMacro {
 						for(i in 0...inject_fields.length) {
 							var f = inject_fields[i];
 							var expr = macro $i{f.name} = null;
-							exprs.insert(i,expr);
+							exprs.push(expr);
 						}
 						for(i in 0...inject_ftypes.length) {
 							var f = inject_ffields[i];
 							var expr = macro $i{f.name} = null;
-							exprs.insert(0, expr);
+							exprs.push(expr);
 						}
 						for(i in 0...inject_ctypes.length) {
 							var f = inject_cfields[i];
 							var expr = macro $i{f.name} = null;
-							exprs.insert(0, expr);
+							exprs.push(expr);
 						}
 					}
 					default:
