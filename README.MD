@@ -1,17 +1,28 @@
 # Clay  
-  
 In development.  
-Clay is a cross-platform, 2d game engine.  
+Clay is a cross-platform, 2d game framework.  
 
 ## Installation
-
 ```bash
-git clone https://github.com/RudenkoArts/clay2d.git
+git clone --recursive https://github.com/RudenkoArts/clay2d.git
+cd clay2d/tools
+npm install
 ```
-Go to clay2d/tools folder, and run the command `npm install`.  
-In clay2d/backend folder run `git clone --recursive https://github.com/Kode/Kha.git` command.  
-Then you can use `clay2d init` commant to init project in folder.  
-To build project open project folder with `project.yaml` file.  
-Run `clay2d build html5` command for web build.  
-`clay2d server` run server for html5 build  
-`clay2d launch html5` for run html5 build in browser, or open `http://localhost:8080` page.  
+
+## Features
+* Input: Mouse, Keyboard, Touch, Gamepad, Pen
+* Audio
+* Entity Component System
+* [Particles](https://github.com/RudenkoArts/sparkler)
+* Tweening 
+* Timer
+* Events/Signals
+
+### Command Line Interface
+- clay2d init [ -t template ]: *initialize a new project*.
+- clay2d build < target > [ -debug ]:  *build the current project*.
+- clay2d run < target > [ -debug ]:  *build and run the current project*.
+- clay2d server : *launch server for html5 build*.
+- clay2d launch: *launch build*.
+- clay2d clear < target >:  *remove project build files*.
+  
