@@ -1,0 +1,3 @@
+[submodule "backend/Kha"]
+	path = backend/Kha
+	url = https://github.com/Kode/Kha
