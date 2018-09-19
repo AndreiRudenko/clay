@@ -192,7 +192,7 @@ class Timer {
 		return this;
 
 	}
-	var _t:Float = 0;
+	
 	@:allow(clay.core.TimerSystem) 
 	inline function update(time:Float):Void {
 

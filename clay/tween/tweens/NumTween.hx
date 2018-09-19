@@ -1,6 +1,9 @@
 package clay.tween.tweens;
 
 
+import clay.utils.Log.*;
+
+
 class NumTween extends Tween {
 
 
@@ -39,7 +42,7 @@ class NumTween extends Tween {
 				// to.push(_to);
 				difference.push(_to - _from);
 			} else {
-				trace('cant find field: $p');
+				log('cant find field: $p');
 			}
 
 		}

@@ -6,6 +6,7 @@ import clay.particles.core.ParticleData;
 import clay.particles.core.Components;
 import clay.math.Vector;
 import clay.data.Color;
+import clay.math.Mathf;
 
 
 
@@ -96,10 +97,10 @@ class ColorLifeModule extends ParticleModule {
 		for (p in particles) {
 			cd = color_delta[p.id];
 			pcolor = particles_data[p.id].color;
-			pcolor.r += cd.r * dt;
-			pcolor.g += cd.g * dt;
-			pcolor.b += cd.b * dt;
-			pcolor.a += cd.a * dt;
+			pcolor.r = Mathf.clamp(pcolor.r + cd.r * dt, 0, 1);
+			pcolor.g = Mathf.clamp(pcolor.g + cd.g * dt, 0, 1);
+			pcolor.b = Mathf.clamp(pcolor.b + cd.b * dt, 0, 1);
+			pcolor.a = Mathf.clamp(pcolor.a + cd.a * dt, 0, 1);
 		}
 
 	}

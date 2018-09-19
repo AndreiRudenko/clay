@@ -18,7 +18,6 @@ class VelocityUpdateModule extends ParticleModule {
 
 	public function new() {
 
-		trace('new VelocityUpdateModule');
 		super({});
 
 		_priority = 999;
@@ -27,12 +26,9 @@ class VelocityUpdateModule extends ParticleModule {
 
 	override function init() {
 		
-		trace('VelocityUpdateModule init');
-
 		vel_comps = emitter.components.get(Velocity);
 
 		if(vel_comps == null) {
-			trace('add vel_comps');
 			vel_comps = emitter.components.set(
 				particles, 
 				Velocity, 

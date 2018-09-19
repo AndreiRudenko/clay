@@ -525,7 +525,6 @@ class ParticleEmitter {
 
 	@:allow(clay.particles.ParticleSystem)
 	function init(_ps:ParticleSystem) {
-		trace('Emitter init');
 
 		system = _ps;
 

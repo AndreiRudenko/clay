@@ -32,8 +32,6 @@ class VelocityModule extends ParticleModule {
 
 	override function init() {
 
-		trace('VelocityModule init');
-
 		if(emitter.get_module(VelocityUpdateModule) == null) {
 			emitter.add_module(new VelocityUpdateModule());
 		}
