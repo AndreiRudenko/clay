@@ -22,7 +22,7 @@ class Geometry {
 
 	public var vertices	(default, set):Array<Vertex>;
 	public var shader   (default, set):Shader;
-	public var texture  (default, set):Texture;
+	public var texture  (get, set):Texture;
 	public var color   	(default, set):Color;
 
 	public var geometry_type(default, set):GeometryType;
@@ -38,6 +38,7 @@ class Geometry {
 	public var dirty:Bool = false;
 
 	var _layer:Int = 0;
+	var _texture:Texture;
 	
 	var next:Geometry;
 	var prev:Geometry;
@@ -148,6 +149,12 @@ class Geometry {
 
 	}
 
+	inline function get_texture():Texture {
+
+		return _texture;
+
+	}
+	
 	function set_texture(v:Texture):Texture {
 
 		var tid:Int = Clay.renderer.texture_max; // for colored sorting
@@ -162,7 +169,7 @@ class Geometry {
 		set_sort_key(tid, bits, offset);
 		update_order();
 
-		return texture = v;
+		return _texture = v;
 
 	}
 

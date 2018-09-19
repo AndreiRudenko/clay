@@ -6,6 +6,7 @@ import kha.Kravur.AlignedQuad;
 import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.math.Matrix;
+import clay.math.Rectangle;
 import clay.data.Color;
 import clay.render.Vertex;
 import clay.resources.FontResource;
@@ -61,6 +62,15 @@ class QuadGeometry extends Geometry {
 
 	}
 
+	public function set_tcoord(_r:Rectangle) {
+
+		vertices[0].tcoord.set(_r.x, _r.y);
+		vertices[1].tcoord.set(_r.x+_r.w, _r.y);
+		vertices[2].tcoord.set(_r.x+_r.w, _r.y+_r.h);
+		vertices[3].tcoord.set(_r.x, _r.y+_r.h);
+
+	}
+	
 	function set_flipx(v:Bool):Bool {
 
 		flipx = v;

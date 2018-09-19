@@ -282,7 +282,7 @@ class QuadPackGeometry extends Geometry {
     public function quad_uv( _quad_id:Int, _uv : Rectangle ) {
 
         if( texture == null ) {
-            trace("Warning : calling UV on a PackedQuad Geometry with null texture.");
+            log("Warning : calling UV on a PackedQuad Geometry with null texture.");
             return;
         }
 
