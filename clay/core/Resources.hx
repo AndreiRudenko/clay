@@ -21,15 +21,19 @@ class Resources {
 
 	public var cache(default, null):Map<String, Resource>;
 
-	// todo: get resource formats from kha
-    var texture_ext = ['hdr', 'jpg', 'png'];
-    var audio_ext = ['wav', 'ogg', 'mp3'];
-    var font_ext = ['ttf'];
-    var video_ext = ['mp4'];
+    var texture_ext:Array<String>;
+    var audio_ext:Array<String>;
+    var font_ext:Array<String>;
+    var video_ext:Array<String>;
     
 
 	function new() {
 		
+		texture_ext = kha.Assets.imageFormats;
+		audio_ext = kha.Assets.soundFormats;
+		font_ext = kha.Assets.fontFormats;
+		video_ext = kha.Assets.videoFormats;
+
 		cache = new Map();
 
 	}
