@@ -21,7 +21,6 @@ class QuadGeometry extends Geometry {
 	public var size(default, null):VectorCallback;
 	public var flipx(default, set):Bool = false;
 	public var flipy(default, set):Bool = false;
-	public var centered(default, set):Bool = false;
 
 	var _setup:Bool = true;
 
@@ -52,7 +51,6 @@ class QuadGeometry extends Geometry {
 
 		flipx = def(_options.flipx, false);
 		flipy = def(_options.flipy, false);
-		centered = def(_options.centered, false);
 
 		_setup = false;
 
@@ -78,14 +76,6 @@ class QuadGeometry extends Geometry {
 		update_tcoord();
 
 		return flipx;
-
-	}
-
-	function set_centered(v:Bool):Bool {
-
-		dirty = true;
-
-		return centered = v;
 
 	}
 
@@ -160,6 +150,5 @@ typedef QuadGeometryOptions = {
 	@:optional var size:Vector;
 	@:optional var flipx:Bool;
 	@:optional var flipy:Bool;
-	@:optional var centered:Bool;
 
 }

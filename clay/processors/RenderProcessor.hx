@@ -283,11 +283,6 @@ class RenderProcessor extends Processor {
 		for (e in qt_family) {	
 			q = qt_family.get_quadGeometry(e);
 			t = qt_family.get_transform(e);
-			if(q.dirty) {
-				if(q.centered) {
-					t.origin.set(q.size.x*0.5, q.size.y*0.5);
-				}
-			}
 			q.transform_matrix.copy(t.world);
 		}
 
