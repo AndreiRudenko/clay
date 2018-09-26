@@ -147,19 +147,10 @@ class Engine {
 		Clay.input = input;
 		Clay.resources = resources;
 
-		Clay.resources.load_all(
-			[
-			'assets/Montserrat-Regular.ttf',
-			'assets/Montserrat-Bold.ttf',
-			], 
-			function() {
-
-				init();
-				_debug('onready');
-				_onready();
-
-			}
-		);
+		init();
+		
+		_debug('onready');
+		_onready();
 
 	}
 

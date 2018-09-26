@@ -43,7 +43,7 @@ class Text extends Geometry {
 
 		geometry_type = GeometryType.text;
 
-		font = def(_options.font, Clay.renderer.default_font);
+		font = _options.font;
 		size = def(_options.size, 12);
 		text = def(_options.text, '');
 		align = def(_options.align, TextAlign.left);
@@ -353,7 +353,7 @@ typedef TextOptions = {
 
 	>GeometryOptions,
 
-	@:optional var font:FontResource;
+	var font:FontResource;
 	@:optional var text:String;
 	@:optional var size:Int;
 	@:optional var align:TextAlign;

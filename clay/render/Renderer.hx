@@ -24,8 +24,7 @@ class Renderer {
 
 	public var layers:LayerManager;
 	public var clear_color:Color;
-
-	public var default_font:FontResource;
+	
 	public var target(default, set):Texture;
 	public var rendering(default, null):Bool = false;
 
@@ -92,8 +91,6 @@ class Renderer {
 		painters[GeometryType.simple] = new SimplePainter();
 		painters[GeometryType.text] = new TextPainter();
 		painters[GeometryType.quad] = new QuadPainter();
-
-		default_font = Clay.resources.font('assets/Montserrat-Regular.ttf');
 
 	}
 

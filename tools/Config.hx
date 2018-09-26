@@ -65,9 +65,6 @@ class Config {
 			kfile += 'p.addParameter("${s}");\n';
 		}
 
-		var fp = Path.join([CLI.engine_dir, 'assets/fonts']);
-		kfile += 'p.addAssets("${fp}", {destination: "assets/{name}"});\n';
-
 		for (s in project.assets) {
 			kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}"});\n';
 		}

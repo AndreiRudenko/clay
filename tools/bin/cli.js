@@ -178,8 +178,6 @@ Config.create_khafile = function(config) {
 		++_g5;
 		kfile += "p.addParameter(\"" + s4 + "\");\n";
 	}
-	var fp = haxe_io_Path.join([CLI.engine_dir,"assets/fonts"]);
-	kfile += "p.addAssets(\"" + fp + "\", {destination: \"assets/{name}\"});\n";
 	var _g6 = 0;
 	var _g15 = project.assets;
 	while(_g6 < _g15.length) {
