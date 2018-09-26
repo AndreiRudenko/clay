@@ -160,7 +160,7 @@ class Gamepad {
 	public var id(default, null):String;
 	public var gamepad(default, null):Int;
 	// public var connected(default, null):Bool;
-	// public var deadzone:Float = 0.15;
+	public var deadzone:Float = 0.15;
 
 	var buttons_pressed:UInt = 0;
 	var buttons_released:UInt = 0;
@@ -233,6 +233,10 @@ class Gamepad {
 	}
 
 	function onaxis(_a:Int, _v:Float) {
+
+		if(Math.abs(_v) < deadzone) {
+			return;
+		}
 		
 		_debug('onaxis gamepad:$gamepad, axis:$_a, value:$value');
 
@@ -323,7 +327,7 @@ class GamepadEvent {
     var none                = 0;
     var button_down         = 1;
     var button_up           = 2;
-    var axis                = 2;
+    var axis                = 3;
     var device_added    	= 4;
     var device_removed  	= 5;
 
