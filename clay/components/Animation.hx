@@ -2,6 +2,7 @@ package clay.components;
 
 
 import clay.math.Rectangle;
+import clay.math.Mathf;
 import clay.utils.Log.*;
 
 
@@ -17,15 +18,15 @@ class Animation {
 
 	public var anim_data	(default, null):Map<String, AnimationData>;
 	public var current  	(default, null):AnimationData;
-	// public var reverse:Bool;
 	public var frame  	    (get, set):Int;
 	public var speedscale  	(default, set):Float;
-
-	var inited:Bool;
+	public var reverse:Bool;
 
 	@:noCompletion public var time:Float;
 	@:noCompletion public var geometry:QuadGeometry;
-    @:noCompletion public var next_frame_time : Float = 0;
+	@:noCompletion public var next_frame_time:Float = 0;
+
+	var inited:Bool;
 
 
 	public function new() {
@@ -35,7 +36,7 @@ class Animation {
 		speedscale = 1;
 		paused = false;
 		active = false;
-		// reverse = false;
+		reverse = false;
 		inited = false;
 
 	}
@@ -60,13 +61,6 @@ class Animation {
 
 	}
 
-	public inline function restart() {
-
-		stop();
-		play();
-
-	}
-
 	public function pause() {
 
 		paused = true;
@@ -88,7 +82,6 @@ class Animation {
 			if(inited) {
 				current.init();
 			}
-			// reverse = current._reverse;
 		}
 
 	}
@@ -117,7 +110,7 @@ class Animation {
 		anim_data.set(_name, a);
 
 		return a;
-		
+
 	}
 
 	public function from_textures(_name:String, _tpaths:Array<String>, ?_frames:Array<Int>):AnimationDataTextures {
@@ -126,7 +119,7 @@ class Animation {
 		anim_data.set(_name, a);
 
 		return a;
-		
+
 	}
 	
 	@:noCompletion public function init() {
@@ -170,28 +163,27 @@ class Animation {
 
 }
 
+
 class AnimationDataGrid extends AnimationData {
 
 
 	var texture:Texture;
 	var rect:Rectangle;
 
-	var row:Int;
-	var col:Int;
+	var row:Int; // w
+	var col:Int; // h
 
 
 	public function new(_anim:Animation, _name:String, _tpath:String, _row:Int, _col:Int, ?_frames:Array<Int>) {
 
-		super(_anim, _name, _frames);
+		set_texture(_tpath);
 
-		type = AnimationType.grid;
+		super(_anim, _name, _frames);
 
 		row = _row;
 		col = _col;
 
 		rect = new Rectangle();
-
-		set_texture(_tpath);
 
 	}
 
@@ -205,6 +197,16 @@ class AnimationDataGrid extends AnimationData {
 
 		return this;
 		
+	}
+
+	override function init() {
+
+		if(anim.geometry != null) {
+			anim.geometry.texture = texture;
+		}
+
+		super.init();
+
 	}
 
 	override function set_all():AnimationData {
@@ -226,17 +228,20 @@ class AnimationDataGrid extends AnimationData {
 			return;
 		}
 
-		var szx = row / texture.width_actual;
-		var szy = col / texture.width_actual;
-		var tlx = frame * szx;
-		var tly = frame * szy;
+		if(anim.geometry != null) {
+			var szx = 1 / row;
+			var szy = 1 / col;
+			var tlx = (frame % row) * szx;
+			var tly = Math.floor(frame / col) * szy;
 
-		rect.set(tlx, tly, szx, szy);
-		anim.geometry.set_tcoord(rect);
+			rect.set(tlx, tly, szx, szy);
+			anim.geometry.set_tcoord(rect);
+		}
 
 	}
 
 }
+
 
 class AnimationDataTextures extends AnimationData {
 
@@ -247,8 +252,6 @@ class AnimationDataTextures extends AnimationData {
 	public function new(_anim:Animation, _name:String, _tpath:Array<String>, ?_frames:Array<Int>) {
 
 		super(_anim, _name, _frames);
-
-		type = AnimationType.texture;
 
 		set_textures(_tpath);
 		
@@ -288,21 +291,25 @@ class AnimationDataTextures extends AnimationData {
 	override function update_geometry() {
 		
 		var geom = anim.geometry;
-		var t = textures[frame];
 
-		if(t == null) {
-			log('failed to update geometry, no texture from frame ${frame}');
-			return;
-		}
+		if(geom != null) {
+			var t = textures[frame];
 
-		if(geom._texture != t) { 
-			geom._texture = t; // this will not sort geometry in layer 
+			if(t == null) {
+				log('failed to update geometry, no texture from frame ${frame}');
+				return;
+			}
+
+			if(geom._texture != t) { 
+				geom._texture = t; // this will not sort geometry in layer 
+			}
 		}
 
 	}
 
 
 }
+
 
 @:allow(clay.components.Animation)
 class AnimationData {
@@ -312,17 +319,16 @@ class AnimationData {
 	public var anim      	(default, null):Animation;
 
 	public var frames 	 	(default, null):Array<Int>;
-	public var frame	 	(default, set):Int = 0;
-	public var type      	(default, null):AnimationType;
-	public var speed        (default, null):Float = 1;
-	public var frame_time	(default, null):Float = 1;
+	public var frames_count (get, never):Int;
+	public var frame	 	(default, set):Int;
+	public var speed        (default, null):Float;
+	public var frame_time	(default, null):Float;
 
-	@:noCompletion public var _loop:Int = 0;
-	@:noCompletion public var _reverse:Bool = false;
+	@:noCompletion public var _loop:Int;
 	@:noCompletion public var _oncomplete:Void->Void;
 
 	var events:Map<Int, String>;
-	var last_frame:Int = -1;
+	var last_frame:Int;
 
 
 	public function new(_anim:Animation, _name:String, ?_frames:Array<Int>) {
@@ -331,7 +337,11 @@ class AnimationData {
 		name = _name;
 		frames = _frames != null ? _frames : [];
 		events = new Map();
-		type = AnimationType.grid;
+		last_frame = 0;
+		_loop = 0;
+		speed = 1;
+		frame = 0;
+		frame_time = 1;
 
 	}
 
@@ -376,10 +386,8 @@ class AnimationData {
 
 	public function hold(_f:Int):AnimationData {
 
-		if(last_frame >= 0) {
-			for (i in 0..._f) {
-				frames.push(last_frame);
-			}
+		for (i in 0..._f) {
+			frames.push(last_frame);
 		}
 
 		return this;
@@ -405,14 +413,6 @@ class AnimationData {
 		
 	}
 
-	public function reverse(_v:Bool = true):AnimationData {
-
-		_reverse = _v;
-
-		return this;
-		
-	}
-
 	public function event(_frame:Int, _name:String):AnimationData {
 
 		events.set(_frame, _name);
@@ -429,28 +429,19 @@ class AnimationData {
 		
 	}
 
-	public function from_json(_opt:Dynamic) {
-
-	}
-
-	public function to_json():Dynamic {
-
-		return null;
-
-	}
-
 	function start() {
+
+		frame = 0;
 
 	}
 
 	function stop(_complete:Bool) {
 
 		if(_complete) {
+			frame = frames_count-1;
 			if(_oncomplete != null) {
 				_oncomplete();
 			}
-		} else {
-
 		}
 
 	}
@@ -462,7 +453,7 @@ class AnimationData {
 	}
 
 	function update_geometry() {
-		
+
 	}
 
 	function check_event(f:Int) {
@@ -477,23 +468,20 @@ class AnimationData {
 
 	function set_frame(v:Int):Int {
 
-		if(v < 0) {
-			v = 0;
-		}
+		frame = Mathf.clamp_bottomi(v, 0);
 
-		frame = v;
+		check_event(frame);
 		update_geometry();
 
 		return frame;
 
 	}
 
+	inline function get_frames_count():Int {
+		
+		return frames.length;
 
-}
+	}
 
-@:enum abstract AnimationType(Int) from Int to Int {
-
-	var grid          = 0;
-	var texture       = 1;
 
 }

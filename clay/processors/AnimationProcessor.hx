@@ -56,13 +56,14 @@ class AnimationProcessor extends Processor {
 		var a:Animation = null;
 		var q:QuadGeometry = null;
 		for (e in aq_family) {	
+			
 			a = aq_family.get_animation(e);
 			q = aq_family.get_quadGeometry(e);
 
 			if(!a.active || a.paused || a.current == null) {
 				continue;
 			}
-			// trace('update');
+
 			var end = false;
 			var _frame = a.frame;
 
@@ -72,7 +73,7 @@ class AnimationProcessor extends Processor {
 			if(a.time >= a.next_frame_time) {
 				a.next_frame_time = a.time + a.current.frame_time;
 
-				if(!a.current._reverse) {
+				if(!a.reverse) {
 					_frame += 1;
 					if(_frame >= a.current.frames.length) {
 						end = true;
