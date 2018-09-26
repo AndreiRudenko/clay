@@ -266,14 +266,14 @@ class Worlds {
 	inline function gamepadadd(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.gamepadconnect, e);
+			w.emitter.emit(AppEvent.gamepadadd, e);
 		}
 	}
 
 	inline function gamepadremove(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.gamepaddisconnect, e);
+			w.emitter.emit(AppEvent.gamepadremove, e);
 		}
 	}
 

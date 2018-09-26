@@ -40,8 +40,8 @@ package clay.types;
     var gamepadaxis                 = 25;
     var gamepaddown                 = 26;
     var gamepadup                   = 27;
-    var gamepadconnect              = 28;
-    var gamepaddisconnect           = 29;
+    var gamepadadd                  = 28;
+    var gamepadremove               = 29;
 
     var window                      = 30;
     var windowmoved                 = 31;

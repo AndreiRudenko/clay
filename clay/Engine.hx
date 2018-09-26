@@ -148,7 +148,7 @@ class Engine {
 		Clay.resources = resources;
 
 		init();
-		
+
 		_debug('onready');
 		_onready();
 
@@ -418,14 +418,14 @@ class Engine {
 	// gamepad
 	function ongamepadadd(e:GamepadEvent) {
 
-		emitter.emit(AppEvent.gamepadconnect, e);
+		emitter.emit(AppEvent.gamepadadd, e);
 		worlds.gamepadadd(e);
 
 	}
 
 	function ongamepadremove(e:GamepadEvent) {
 
-		emitter.emit(AppEvent.gamepaddisconnect, e);
+		emitter.emit(AppEvent.gamepadremove, e);
 		worlds.gamepadremove(e);
 
 	}
