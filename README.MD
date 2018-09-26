@@ -15,8 +15,8 @@ npm install
 * Entity Component System
 * [Particles](https://github.com/RudenkoArts/sparkler)
 * Tweening 
+* Animation
 * Timer
-* Events/Signals
 
 ### Command Line Interface
 - clay2d init [ -t template ]: *initialize a new project*.
