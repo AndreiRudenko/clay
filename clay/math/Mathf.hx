@@ -38,6 +38,12 @@ class Mathf {
 
 	}
 
+	public static inline function clamp_bottomi(value:Int, a:Int):Int {
+
+		return value < a ? a : value;
+
+	}
+
 	public static inline function within_range(value:Float, start_range:Float, end_range:Float):Bool {
 
 		return value >= start_range && value <= end_range;
