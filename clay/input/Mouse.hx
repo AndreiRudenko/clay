@@ -19,6 +19,18 @@ class Mouse extends Input {
 	var buttons_down:UInt = 0;
 	var mouse_event:MouseEvent;
 
+	var mouse_bindings:Map<String, UInt>;
+	var binding:Bindings;
+
+
+	function new(_engine:Engine) {
+		
+		super(_engine);
+
+		mouse_bindings = new Map();
+		binding = Clay.input.binding;
+
+	}
 
 	override function enable() {
 
@@ -80,6 +92,46 @@ class Mouse extends Input {
 
     }
 
+    public function bind(_name:String, _key:UInt) {
+
+    	var n:Int = 0;
+    	
+    	if(mouse_bindings.exists(_name)) {
+    		n = mouse_bindings.get(_name);
+    	}
+
+    	mouse_bindings.set(_name, Bits.set(n, _key));
+
+    }
+
+    public function unbind(_name:String) {
+    	
+    	if(mouse_bindings.exists(_name)) {
+    		mouse_bindings.remove(_name);
+    		binding.remove_all(_name);
+    	}
+
+    }
+
+    function check_binding(_key:Int, _pressed:Bool) {
+
+    	for (k in mouse_bindings.keys()) {
+    		if(mouse_bindings.exists(k)) {
+    			var n = mouse_bindings.get(k);
+	    		if(Bits.check(n, _key)) {
+		    		binding.input_event.set_mouse(k, mouse_event);
+			    	if(_pressed) {
+			    		binding.inputpressed();
+			    	} else {
+						binding.inputreleased();
+			    	}
+			    	return;
+	    		}
+    		}
+    	}
+
+    }
+
 	function reset() {
 
 		buttons_pressed = 0;
@@ -99,6 +151,8 @@ class Mouse extends Input {
 
 		mouse_event.set(x, y, 0, 0, 0, MouseEventState.down, _button);
 
+		check_binding(_button, true);
+
 		engine.onmousedown(mouse_event);
 
 	}
@@ -116,6 +170,8 @@ class Mouse extends Input {
 
 		mouse_event.set(x, y, 0, 0, 0, MouseEventState.up, _button);
 
+		check_binding(_button, false);
+
 		engine.onmouseup(mouse_event);
 
 	}
@@ -125,6 +181,8 @@ class Mouse extends Input {
 		_debug('onwheel delta:$d');
 
 		mouse_event.set(x, y, 0, 0, d, MouseEventState.wheel, MouseButton.none);
+
+		check_binding(MouseButton.none, false); // todo: check this
 
 		engine.onmousewheel(mouse_event);
 

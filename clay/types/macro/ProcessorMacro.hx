@@ -164,6 +164,8 @@ class ProcessorMacro {
 					'update',
 					'onkeydown',
 					'onkeyup',
+					'oninputdown',
+					'oninputup',
 					'onmousedown',
 					'onmouseup',
 					'onmousemove',

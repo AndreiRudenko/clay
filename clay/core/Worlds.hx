@@ -12,6 +12,7 @@ import clay.input.Mouse;
 import clay.input.Gamepad;
 import clay.input.Touch;
 import clay.input.Pen;
+import clay.input.Bindings;
 
 
 @:access(clay.World)
@@ -341,6 +342,22 @@ class Worlds {
 			w.emitter.emit(AppEvent.penmove, e);
 		}
 	}
+
+	// bindings
+	inline function inputdown(e:InputEvent) {
+
+		for (w in active_worlds) {
+			w.emitter.emit(AppEvent.inputdown, e);
+		}
+	}
+
+	inline function inputup(e:InputEvent) {
+
+		for (w in active_worlds) {
+			w.emitter.emit(AppEvent.inputup, e);
+		}
+	}
+
 
 	inline function timescale(t:Float) {
 

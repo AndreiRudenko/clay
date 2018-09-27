@@ -11,6 +11,7 @@ import clay.input.Mouse;
 import clay.input.Gamepad;
 import clay.input.Touch;
 import clay.input.Pen;
+import clay.input.Bindings;
 
 
 #if !macro
@@ -78,6 +79,9 @@ class Processor {
 	@:noCompletion function onpenup(e:PenEvent) {}
 	@:noCompletion function onpenmove(e:PenEvent) {}
 
+	@:noCompletion function oninputdown(e:InputEvent) {}
+	@:noCompletion function oninputup(e:InputEvent) {}
+	
 	@:noCompletion function ontimescale(t:Float) {}
 
 	@:noCompletion function __listen_emitter() {}

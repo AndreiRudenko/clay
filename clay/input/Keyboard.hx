@@ -18,6 +18,18 @@ class Keyboard extends Input {
 	var key_event:KeyEvent;
 	var dirty:Bool = false;
 
+	var key_bindings:Map<String, Map<Int, Bool>>;
+	var binding:Bindings;
+
+
+	function new(_engine:Engine) {
+		
+		super(_engine);
+
+		key_bindings = new Map();
+		binding = Clay.input.binding;
+
+	}
 
 	override function enable() {
 
@@ -87,6 +99,42 @@ class Keyboard extends Input {
 
 	}
 
+    public function bind(_name:String, _key:Key) {
+
+    	var b = key_bindings.get(_name);
+    	if(b == null) {
+    		b = new Map<Int, Bool>();
+    		key_bindings.set(_name, b);
+    	}
+    	b.set(_key, true);
+
+    }
+
+    public function unbind(_name:String) {
+    	
+    	if(key_bindings.exists(_name)) {
+    		key_bindings.remove(_name);
+    		binding.remove_all(_name);
+    	}
+
+    }
+
+    function check_binding(_key:Int, _pressed:Bool) {
+
+    	for (k in key_bindings.keys()) {
+    		if(key_bindings.get(k).exists(_key)) {
+		    	binding.input_event.set_key(k, key_event);
+			    if(_pressed) {
+			    	binding.inputpressed();
+			    } else {
+					binding.inputreleased();
+			    }
+			    return;
+    		}
+    	}
+
+    }
+
 	function reset() {
 
 		_verboser("reset");
@@ -110,6 +158,8 @@ class Keyboard extends Input {
 
 		key_event.set(_key, KeyEventState.down);
 
+		check_binding(_key, true);
+
 		engine.onkeydown(key_event);
 
 	}
@@ -125,6 +175,8 @@ class Keyboard extends Input {
 		key_code_down.disable(_key);
 
 		key_event.set(_key, KeyEventState.up);
+
+		check_binding(_key, false);
 
 		engine.onkeyup(key_event);
 

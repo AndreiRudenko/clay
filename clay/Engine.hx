@@ -22,6 +22,7 @@ import clay.input.Mouse;
 import clay.input.Gamepad;
 import clay.input.Touch;
 import clay.input.Pen;
+import clay.input.Bindings;
 
 import clay.tween.TweenManager;
 
@@ -161,6 +162,8 @@ class Engine {
 		time = kha.System.time;
 		frame_start_prev = time;
 
+		input.init();
+		
 		connect_events();
 		screen.init();
 		renderer.init();
@@ -492,6 +495,21 @@ class Engine {
 
 		emitter.emit(AppEvent.penmove, e);
 		worlds.penmove(e);
+
+	}
+
+	// bindings
+	function oninputdown(e:InputEvent) {
+
+		emitter.emit(AppEvent.inputdown, e);
+		worlds.inputdown(e);
+
+	}
+
+	function oninputup(e:InputEvent) {
+
+		emitter.emit(AppEvent.inputup, e);
+		worlds.inputup(e);
 
 	}
 
