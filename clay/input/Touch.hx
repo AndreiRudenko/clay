@@ -12,6 +12,8 @@ import clay.utils.Bits;
 class Touch extends Input {
 
 
+	public var count(default, null):Int = 0;
+
 	var touches:Array<TouchEvent>;
 
 
@@ -70,12 +72,15 @@ class Touch extends Input {
 		for (t in touches) {
 			t.reset();
 		}
+		count = 0;
 
 	}
 
 	function onpressed(_id:Int, _x:Int, _y:Int) {
 
 		_debug('onpressed id:$_id, x:$_x, y$_y');
+
+		count++;
 
 		var t = touches[_id];
 
@@ -91,6 +96,8 @@ class Touch extends Input {
 	function onreleased(_id:Int, _x:Int, _y:Int) {
 
 		_debug('onpressed id:$_id, x:$_x, y$_y');
+
+		count--;
 
 		var t = touches[_id];
 		t.pressed = false;
