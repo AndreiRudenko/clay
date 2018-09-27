@@ -34,19 +34,13 @@ class OrderedEmitter<ET:Int> {
 
 	@:noCompletion public var bindings:IntMap<OrderedHandler>;
 
-		//store connections loosely, to find connected locations
-	var connected:List<EmitNode<ET>>;
-		//store the items to remove
 	var _to_remove:List<EmitNode<ET>>;
-
 	var _checking:Bool = false;
 
 		/** create a new emitter instance, for binding functions easily to named events. similar to `Events` */
 	public function new() {
 
 		_to_remove = new List();
-		connected = new List();
-
 		bindings = new IntMap<OrderedHandler>();
 
 	}
@@ -60,15 +54,7 @@ class OrderedEmitter<ET:Int> {
 			_node = null;
 		}
 
-		while(!connected.isEmpty()) {
-			var _node = connected.pop();
-			_node.event = null;
-			_node.handler = null;
-			_node = null;
-		}
-
 		_to_remove = null;
-		connected = null;
 		bindings = null;
 		
 	}
@@ -76,10 +62,6 @@ class OrderedEmitter<ET:Int> {
 		/** Emit a named event */
 	// @:generic
 	public function emit<T>( event:ET, ?data:T #if clay_emitter_pos, ?pos:haxe.PosInfos #end ) {
-
-		if(bindings == null) {
-			return;
-		}
 
 		_check();
 
@@ -105,27 +87,18 @@ class OrderedEmitter<ET:Int> {
 	// @:generic
 	public function on<T>(event:ET, handler: T->Void, order:Int #if clay_emitter_pos, ?pos:haxe.PosInfos #end ) {
 
-		if(bindings == null) {
-			return;
-		}
-
 		_check();
 
 		#if clay_emitter_pos _verbose('on / $event / ${pos.fileName}:${pos.lineNumber}@${pos.className}.${pos.methodName}'); #end
 		
 		if(!bindings.exists(event)) {
-			
 			var oh:OrderedHandler = new OrderedHandler();
 			oh.handlers.push(handler);
 			oh.order.push(order);
-
 			bindings.set(event, oh);
-			connected.push({ handler:handler, event:event #if clay_emitter_pos, pos:pos #end });
-
 		} else {
 			var oh = bindings.get(event);
 			if(oh.handlers.indexOf(handler) == -1) {
-
 				var added:Bool = false;
 				var o:Int = 0;
 				for (i in 0...oh.order.length) {
@@ -137,13 +110,10 @@ class OrderedEmitter<ET:Int> {
 						break;
 					}
 				}
-
 				if(!added) {
 					oh.handlers.push(handler);
 					oh.order.push(order);
 				}
-				
-				connected.push({ handler:handler, event:event #if clay_emitter_pos, pos:pos #end });
 			}
 		}
 
@@ -153,71 +123,31 @@ class OrderedEmitter<ET:Int> {
 	// @:generic
 	public function off<T>(event:ET, handler: T->Void #if clay_emitter_pos, ?pos:haxe.PosInfos #end ):Bool {
 
-		if(bindings == null) {
-			return false;
-		}
-
 		_check();
 
 		var _success = false;
 
 		if(bindings.exists(event)) {
-
 			#if clay_emitter_pos _verbose('off / $event / ${pos.fileName}:${pos.lineNumber}@${pos.className}.${pos.methodName}'); #end
-
 			_to_remove.push({ event:event, handler:handler });
-
-			for(_info in connected) {
-				if(_info.event == event && _info.handler == handler) {
-					connected.remove(_info);
-				}
-			}
-
-				//debateable :p
 			_success = true;
-
 		}
 
 		return _success;
 
 	}
 
-	public function connections( handler:EmitHandler ) {
-
-		if(connected == null) {
-			return null;
-		}
-
-		var _list:Array<EmitNode<ET>> = [];
-
-		for(_info in connected) {
-			if(_info.handler == handler) {
-				_list.push(_info);
-			}
-		}
-
-		return _list;
-
-	}
-
-
 	function _check() {
 
-		if(_checking || _to_remove == null) {
+		if(_checking) {
 			return;
 		}
 
 		_checking = true;
 
 		if(!_to_remove.isEmpty()) {
-
 			for(_node in _to_remove) {
-		
-
 				var oh:OrderedHandler = bindings.get(_node.event);
-					//since bindings.remove removes all the events of this type,
-					//it means subsequent similar types are still in the list and
-					//would attempt to touch the null result, so we don't allow it
 				if(oh != null) {
 					for (i in 0...oh.handlers.length) {
 						if(oh.handlers[i] == _node.handler) {
@@ -226,18 +156,12 @@ class OrderedEmitter<ET:Int> {
 							break;
 						}
 					}
-
-						//clear the event list if there are no bindings
 					if(oh.handlers.length == 0) {
 						bindings.remove(_node.event);
 					}
-
 				}
-
 			}
-
 			_to_remove.clear();
-
 		}
 
 		_checking = false;
