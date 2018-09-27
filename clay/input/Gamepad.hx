@@ -15,6 +15,18 @@ class Gamepads extends Input {
 	var gamepads:Map<Int, Gamepad>;
 	var gamepad_event:GamepadEvent;
 
+	var gamepad_bindings:Map<String, Map<Int, Int>>;
+	var binding:Bindings;
+
+
+	function new(_engine:Engine) {
+		
+		super(_engine);
+
+		gamepad_bindings = new Map();
+		binding = Clay.input.binding;
+
+	}
 
 	public function get(_gamepad:Int):Gamepad {
 
@@ -112,6 +124,50 @@ class Gamepads extends Input {
 
 	}
 
+    public function bind(_name:String, _gamepad:Int, _button:Int) {
+
+    	var b = gamepad_bindings.get(_name);
+
+    	if(b == null) {
+    		b = new Map();
+    		gamepad_bindings.set(_name, b);
+    	}
+
+    	b.set(_gamepad, _button);
+
+    }
+
+    public function unbind(_name:String) {
+
+    	if(gamepad_bindings.exists(_name)) {
+    		gamepad_bindings.remove(_name);
+    		binding.remove_all(_name);
+    	}
+
+    }
+
+    function check_binding(_gamepad:Int, _button:Int, _pressed:Bool) {
+
+    	for (k in gamepad_bindings.keys()) {
+    		var g = gamepad_bindings.get(k);
+    		if(g != null) {
+    			if(g.exists(_gamepad)) {
+    				var n = g.get(_gamepad);
+		    		if(Bits.check(n, _button)) {
+			    		binding.input_event.set_gamepad(k, gamepad_event);
+				    	if(_pressed) {
+				    		binding.inputpressed();
+				    	} else {
+							binding.inputreleased();
+				    	}
+				    	return;
+		    		}
+    			}
+    		}
+    	}
+
+    }
+
 	function reset() {
 
 		for (g in gamepads) {
@@ -125,7 +181,7 @@ class Gamepads extends Input {
 		_debug('onconnect gamepad:$_gamepad');
 		assert(!gamepads.exists(_gamepad), 'trying to add gamepad that already exists');
 
-		var g = new Gamepad(_gamepad, engine);
+		var g = new Gamepad(_gamepad, this);
 		g.listen_events();
 		gamepads.set(_gamepad, g);
 
@@ -145,7 +201,7 @@ class Gamepads extends Input {
 		gamepads.remove(_gamepad);
 
 		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEventState.device_removed);
-
+		
 		engine.ongamepadremove(gamepad_event);
 
 	}
@@ -153,13 +209,12 @@ class Gamepads extends Input {
 }
 
 @:allow(clay.input.Gamepads)
-@:access(clay.Engine)
+@:access(clay.Engine, clay.input.Gamepads)
 class Gamepad {
 
 
 	public var id(default, null):String;
 	public var gamepad(default, null):Int;
-	// public var connected(default, null):Bool;
 	public var deadzone:Float = 0.15;
 
 	var buttons_pressed:UInt = 0;
@@ -170,14 +225,13 @@ class Gamepad {
 	var axis_value:Float = 0;
 
 	var gamepad_event:GamepadEvent;
-	var engine:Engine;
+	var gamepads:Gamepads;
 
 
-	function new(_g:Int, _engine:Engine) {
+	function new(_g:Int, _gamepads:Gamepads) {
 
 		gamepad = _g;
-		engine = _engine;
-		// connected = true;
+		gamepads = _gamepads;
 		id = kha.input.Gamepad.get(gamepad).id;
 		gamepad_event = new GamepadEvent();
 
@@ -245,7 +299,7 @@ class Gamepad {
 
 		gamepad_event.set(gamepad, id, -1, axis_id, axis_value, GamepadEventState.axis);
 
-		engine.ongamepadaxis(gamepad_event);
+		gamepads.engine.ongamepadaxis(gamepad_event);
 
 	}
 
@@ -270,7 +324,9 @@ class Gamepad {
 
 		gamepad_event.set(gamepad, id, _b, -1, 0, GamepadEventState.button_down);
 
-		engine.ongamepaddown(gamepad_event);
+		gamepads.check_binding(gamepad, _b, true);
+
+		gamepads.engine.ongamepaddown(gamepad_event);
 
 	}
 
@@ -284,7 +340,9 @@ class Gamepad {
 
 		gamepad_event.set(gamepad, id, _b, -1, 0, GamepadEventState.button_up);
 
-		engine.ongamepadup(gamepad_event);
+		gamepads.check_binding(gamepad, _b, false);
+
+		gamepads.engine.ongamepadup(gamepad_event);
 
 	}
 

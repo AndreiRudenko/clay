@@ -68,7 +68,6 @@ class AnimationProcessor extends Processor {
 			var _frame = a.frame;
 
 			a.time += dt * a.speedscale;
-			// trace('time: ${a.time}, next_frame_time: ${a.next_frame_time}');
 
 			if(a.time >= a.next_frame_time) {
 				a.next_frame_time = a.time + a.current.frame_time;
