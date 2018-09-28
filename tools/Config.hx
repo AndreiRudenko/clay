@@ -66,7 +66,7 @@ class Config {
 		}
 
 		for (s in project.assets) {
-			kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}"});\n';
+			kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
 		}
 
 		if(config.html5 != null){

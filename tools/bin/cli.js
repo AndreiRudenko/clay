@@ -183,7 +183,7 @@ Config.create_khafile = function(config) {
 	while(_g6 < _g15.length) {
 		var s5 = _g15[_g6];
 		++_g6;
-		kfile += "p.addAssets(\"" + s5 + "/**\", {nameBaseDir: \"" + s5 + "\", destination: \"" + s5 + "/{dir}/{name}\", name: \"{dir}/{name}\"});\n";
+		kfile += "p.addAssets(\"" + s5 + "/**\", {nameBaseDir: \"" + s5 + "\", destination: \"" + s5 + "/{dir}/{name}\", name: \"{dir}/{name}\", noprocessing: true, notinlist: true});\n";
 	}
 	if(config.html5 != null) {
 		kfile += "p.targetOptions.html5.canvasId = \"" + config.html5.canvas + "\";\n";
