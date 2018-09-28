@@ -3,6 +3,7 @@ package clay.components;
 
 import clay.render.Vertex;
 import clay.render.Shader;
+import clay.render.GeometrySortKey;
 import clay.math.Vector;
 import clay.math.Matrix;
 import clay.data.Color;
@@ -16,7 +17,7 @@ import clay.utils.Bits;
 class Geometry {
 
 
-	public var sort_key(default, null):UInt;
+	public var sort_key(default, null):GeometrySortKey;
 
 	public var visible:Bool;
 
@@ -137,12 +138,8 @@ class Geometry {
 
 	function set_shader(v:Shader):Shader {
 
-		var p_id:Int = v.id;
+		sort_key.shader = v.id;
 
-		var bits:Int = Clay.renderer.shader_bits;
-		var offset:Int = Clay.renderer.shader_offset;
-
-		set_sort_key(p_id, bits, offset);
 		update_order();
 
 		return shader = v;
@@ -163,10 +160,8 @@ class Geometry {
 			tid = v.tid;
 		}
 
-		var bits:Int = Clay.renderer.texture_bits;
-		var offset:Int = Clay.renderer.texture_offset;
+		sort_key.texture = tid;
 
-		set_sort_key(tid, bits, offset);
 		update_order();
 
 		return _texture = v;
@@ -175,10 +170,8 @@ class Geometry {
 
 	function set_geometry_type(v:GeometryType):GeometryType {
 
-		var bits:Int = Clay.renderer.geomtype_bits;
-		var offset:Int = Clay.renderer.geomtype_offset;
+		sort_key.geometry_type = v;
 
-		set_sort_key(v, bits, offset);
 		update_order();
 
 		return geometry_type = v;
@@ -187,15 +180,8 @@ class Geometry {
 
 	function set_order(v:UInt):UInt {
 
-		var max:Int = Clay.renderer.depth_max;
-		var bits:Int = Clay.renderer.depth_bits;
-		var offset:Int = Clay.renderer.depth_offset;
+		sort_key.order = v;
 
-		if(v > max) {
-			v = max;
-		}
-
-		set_sort_key(v, bits, offset);
 		update_order();
 
 		return order = v;
