@@ -39,7 +39,18 @@ class Build extends Command {
 			CLI.error('Unknown target, use: [all,${CLI.targets.join(",")}]');
 		}
 
-		config.debug = args[1] == '--debug' ? true : false;
+		config.debug = false;
+		config.onlydata = false;
+		for (a in args) {
+			switch (a) {
+				case '--debug' : {
+					config.debug = true;
+				}
+				case '--onlydata' : {
+					config.onlydata = true;
+				}
+			}
+		}
 
 		// create build folder
 		var build_path = Path.join([CLI.user_dir, 'build']);
@@ -63,38 +74,15 @@ class Build extends Command {
 		}
 
         if(config.target == 'all') {
-        	if(config.html5 != null) {
-        		config.target = 'html5';
-				build_project(config);
+        	for (t in CLI.targets) {
+	        	if(Reflect.hasField(config, t)) {
+	        		config.target = t;
+					build_project(config);
+	        	}
         	}
-        	if(config.windows != null) {
-        		config.target = 'windows';
-				build_project(config);
-        	}
-        	if(config.osx != null) {
-        		config.target = 'osx';
-				build_project(config);
-        	}
-        	if(config.linux != null) {
-        		config.target = 'linux';
-				build_project(config);
-        	}
-        	if(config.android != null) {
-        		config.target = 'android';
-				build_project(config);
-        	}
-        	if(config.ios != null) {
-        		config.target = 'ios';
-				build_project(config);
-        	}
-        	if(config.uwp != null) {
-        		config.target = 'uwp';
-				build_project(config);
-        	}
-        	return;
+        } else {
+			build_project(config);
         }
-
-		build_project(config);
 
 	}
 
@@ -178,7 +166,11 @@ class Build extends Command {
 
 		// args.push('--from');
 		// args.push('build');
-		args.push('--compile');
+		if(config.onlydata) {
+			args.push('--onlydata');
+		} else {
+			args.push('--compile');
+		}
 
 		CLI.print('Run build command: ${args.join(" ")}');
 		var res = Sys.command('node', args);

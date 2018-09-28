@@ -259,7 +259,21 @@ commands_Build.prototype = $extend(Command.prototype,{
 		if(config.target != "all" && CLI.targets.indexOf(config.target) == -1) {
 			CLI.error("Unknown target, use: [all," + CLI.targets.join(",") + "]");
 		}
-		config.debug = args[1] == "--debug";
+		config.debug = false;
+		config.onlydata = false;
+		var _g = 0;
+		while(_g < args.length) {
+			var a = args[_g];
+			++_g;
+			switch(a) {
+			case "--debug":
+				config.debug = true;
+				break;
+			case "--onlydata":
+				config.onlydata = true;
+				break;
+			}
+		}
 		var build_path = haxe_io_Path.join([CLI.user_dir,"build"]);
 		if(!sys_FileSystem.exists(build_path)) {
 			sys_FileSystem.createDirectory(build_path);
@@ -277,37 +291,19 @@ commands_Build.prototype = $extend(Command.prototype,{
 			}
 		}
 		if(config.target == "all") {
-			if(config.html5 != null) {
-				config.target = "html5";
-				this.build_project(config);
+			var _g1 = 0;
+			var _g11 = CLI.targets;
+			while(_g1 < _g11.length) {
+				var t = _g11[_g1];
+				++_g1;
+				if(Object.prototype.hasOwnProperty.call(config,t)) {
+					config.target = t;
+					this.build_project(config);
+				}
 			}
-			if(config.windows != null) {
-				config.target = "windows";
-				this.build_project(config);
-			}
-			if(config.osx != null) {
-				config.target = "osx";
-				this.build_project(config);
-			}
-			if(config.linux != null) {
-				config.target = "linux";
-				this.build_project(config);
-			}
-			if(config.android != null) {
-				config.target = "android";
-				this.build_project(config);
-			}
-			if(config.ios != null) {
-				config.target = "ios";
-				this.build_project(config);
-			}
-			if(config.uwp != null) {
-				config.target = "uwp";
-				this.build_project(config);
-			}
-			return;
+		} else {
+			this.build_project(config);
 		}
-		this.build_project(config);
 	}
 	,build_project: function(config) {
 		var khamake_path = haxe_io_Path.join([CLI.engine_dir,CLI.backend_path,CLI.kha_path,"Tools/khamake/khamake.js"]);
@@ -383,7 +379,11 @@ commands_Build.prototype = $extend(Command.prototype,{
 				args.push(compiler.ffmpeg);
 			}
 		}
-		args.push("--compile");
+		if(config.onlydata) {
+			args.push("--onlydata");
+		} else {
+			args.push("--compile");
+		}
 		CLI.print("Run build command: " + args.join(" "));
 		var res = args == null ? js_node_ChildProcess.spawnSync("node",{ stdio : "inherit"}).status : js_node_ChildProcess.spawnSync("node",args,{ stdio : "inherit"}).status;
 		if(res != 0) {

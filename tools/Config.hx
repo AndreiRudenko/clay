@@ -114,6 +114,7 @@ typedef ConfigData = {
 	// internal
 	var target:String;
 	var debug:Bool;
+	var onlydata:Bool;
 }
 
 typedef InputConfig = {
