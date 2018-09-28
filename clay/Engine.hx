@@ -9,6 +9,7 @@ import kha.WindowOptions;
 import clay.math.Random;
 import clay.types.AppEvent;
 import clay.emitters.Emitter;
+import clay.emitters.Events;
 import clay.utils.Log.*;
 
 import clay.components.Camera;
@@ -45,6 +46,7 @@ class Engine {
 	public var input	    (default, null):Inputs;
 	public var resources	(default, null):Resources;
 	public var emitter	    (default, null):Emitter<AppEvent>;
+	public var events	    (default, null):Events;
 	public var timer 	    (default, null):TimerSystem;
 	public var random 	    (default, null):Random;
 	public var motion 	    (default, null):TweenManager;
@@ -132,11 +134,13 @@ class Engine {
 		audio = new clay.Audio();
 		
 		emitter = new Emitter<AppEvent>();
+		events = new Events();
 		input = new Inputs(this);
 		resources = new Resources();
 
 		worlds = new clay.core.Worlds();
 
+		Clay.events = events;
 		Clay.motion = motion;
 		Clay.random = random;
 		Clay.timer = timer;
@@ -184,6 +188,7 @@ class Engine {
 		disconnect_events();
 		worlds.destroy_manager();
 		emitter.destroy();
+		events.destroy();
 		input.destroy();
 		renderer.destroy();
 		// audio.destroy();
@@ -316,6 +321,7 @@ class Engine {
 
 		_verboser('update dt:${dt}');
 
+		events.process();
 		timer.update(dt);
 		motion.step(dt);
 		emitter.emit(AppEvent.update, dt);

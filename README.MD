@@ -17,6 +17,7 @@ npm install
 * Tweening 
 * Animation
 * Timer
+* Events
 
 ### Command Line Interface
 - clay2d init [ -t template ]: *initialize a new project*.

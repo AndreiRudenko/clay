@@ -22,6 +22,7 @@ class Clay {
 
 	public static var audio 	    (default, null):clay.Audio;
 	public static var timer    	    (default, null):clay.core.TimerSystem;
+	public static var events    	(default, null):clay.emitters.Events;
 	public static var motion    	(default, null):clay.tween.TweenManager;
 	
 	public static var random    	(default, null):clay.math.Random;
