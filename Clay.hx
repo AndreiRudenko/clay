@@ -3,29 +3,31 @@ package ;
 
 import clay.utils.Log.*;
 
-
 class Clay {
 
 
+	@:allow(clay.Engine)
 	public static var engine      	(default, null):clay.Engine;
 
-	public static var world       	(default, null):clay.World;
-	public static var worlds      	(default, null):clay.core.Worlds;
+	public static var world       	(get, set):clay.World;
+	public static var worlds      	(get, never):clay.core.Worlds;
 
-	public static var screen      	(default, null):clay.Screen;
-	public static var renderer 	    (default, null):clay.render.Renderer;
-	public static var camera 	    (default, null):clay.components.Camera;
-	public static var draw     	    (default, null):clay.render.Draw;
+	public static var screen      	(get, never):clay.Screen;
+	public static var renderer 	    (get, never):clay.render.Renderer;
+	public static var camera 	    (get, never):clay.components.Camera;
+	public static var draw     	    (get, never):clay.render.Draw;
 
-	public static var input    	    (default, null):clay.core.Inputs;
-	public static var resources	    (default, null):clay.core.Resources;
+	public static var input    	    (get, never):clay.core.Inputs;
+	public static var resources	    (get, never):clay.core.Resources;
 
-	public static var audio 	    (default, null):clay.Audio;
-	public static var timer    	    (default, null):clay.core.TimerSystem;
-	public static var events    	(default, null):clay.emitters.Events;
-	public static var motion    	(default, null):clay.tween.TweenManager;
+	public static var audio 	    (get, never):clay.Audio;
+	public static var timer    	    (get, never):clay.core.TimerSystem;
+	public static var events    	(get, never):clay.emitters.Events;
+	public static var motion    	(get, never):clay.tween.TweenManager;
 	
-	public static var random    	(default, null):clay.math.Random;
+	public static var random    	(get, never):clay.math.Random;
+
+	public static var signals      	(get, never):clay.core.EngineSignals;
 
 	public static var tags   	    (get, never):clay.core.TagSystem;
 	public static var groups   	    (get, never):clay.core.GroupSystem;
@@ -54,19 +56,30 @@ class Clay {
 		new clay.Engine(_options, _onready);
 
 	}
-		/** listen for core events */
-	public static function on<T>(event:clay.types.AppEvent, handler:T->Void ):Void {
 
-		engine.emitter.on(event, handler);
+	public static inline function next(func:Void->Void) engine.next(func);
+	public static inline function defer(func:Void->Void) engine.defer(func);
 
-	}
+	static inline function get_world() return engine.world;
+	static inline function set_world(w) return engine.world = w;
 
-		/** stop listening for core events */
-	public static function off<T>(event:clay.types.AppEvent, handler:T->Void ):Bool {
+	static inline function get_worlds() return engine.worlds;
 
-		return engine.emitter.off(event, handler);
+	static inline function get_screen() return engine.screen;
+	static inline function get_renderer() return engine.renderer;
+	static inline function get_camera() return engine.camera;
+	static inline function get_draw() return engine.draw;
 
-	}
+	static inline function get_input() return engine.input;
+	static inline function get_resources() return engine.resources;
+
+	static inline function get_audio() return engine.audio;
+	static inline function get_timer() return engine.timer;
+	static inline function get_events() return engine.events;
+	static inline function get_motion() return engine.motion;
+
+	static inline function get_random() return engine.random;
+	static inline function get_signals() return engine.signals;
 
 	static inline function get_tags() return world.tags;
 	static inline function get_groups() return world.groups;

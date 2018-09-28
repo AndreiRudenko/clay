@@ -7,6 +7,7 @@ import clay.types.ScreenRotation;
 import clay.components.Texture;
 import clay.math.Vector;
 
+@:access(clay.Engine)
 class Screen {
 
 
@@ -21,13 +22,16 @@ class Screen {
 	public var cursor(default, null):Cursor;
 	public var buffer(default, null):Texture;
 
-	public var antialiasing(default, set):Int = 1; // todo
+	public var antialiasing(get, set):Int;
 
+	var _antialiasing:Int = 1;
 	var window:kha.Window; // todo, multiple windows ?
 
 
-    @:allow(clay.Engine)
-	function new() {
+	@:allow(clay.Engine)
+	function new(_antial:Int) {
+
+		_antialiasing = _antial;
 
 		cursor = new Cursor();
 		window = kha.Window.get(0);
@@ -35,7 +39,7 @@ class Screen {
 
 	}
 
-    @:allow(clay.Engine)
+	@:allow(clay.Engine)
 	function init() {
 
 		update_buffer();
@@ -64,7 +68,7 @@ class Screen {
 			height, 
 			TextureFormat.RGBA32, 
 			DepthStencilFormat.NoDepthAndStencil,
-			antialiasing,
+			_antialiasing,
 			null,
 			true
 		);
@@ -117,15 +121,23 @@ class Screen {
 		
 	}
 
+	inline function get_antialiasing():Int {
+
+		return _antialiasing;
+		
+	}
+
 	function set_antialiasing(v:Int):Int {
 
 		if(Clay.renderer.rendering) {
 			throw('you cant change antialiasing while rendering');
 		}
 
+		_antialiasing = v;
+
 		update_buffer();
 
-		return antialiasing = v;
+		return v;
 		
 	}
 
@@ -138,7 +150,7 @@ class Cursor {
 	public var visible(get, set):Bool;
 	var _visible:Bool = true;
 
-    @:allow(clay.Screen)
+	@:allow(clay.Screen)
 	function new() {
 
 		pos = new Vector();

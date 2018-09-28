@@ -72,6 +72,9 @@ class Engine {
 	var inited:Bool = false;
 	var tick_task_id:Int;
 
+	var next_queue:Array<Void->Void> = [];
+	var defer_queue:Array<Void->Void> = [];
+
 
 	public function new(_options:ClayOptions, _onready:Void->Void) {
 
@@ -95,6 +98,21 @@ class Engine {
 
 	}
 
+		/** Call a function at the start of the next frame,
+		useful for async calls in a sync context, allowing the sync function to return safely before the onload is fired. */
+	public inline function next(func:Void->Void) {
+
+		if(func != null) next_queue.push(func);
+
+	}
+
+		/** Call a function at the end of the current frame */
+	public inline function defer(func:Void->Void) {
+
+		if(func != null) defer_queue.push(func);
+
+	}
+
 	function ready(_onready:Void->Void) {
 		
 		_debug('ready');
@@ -108,8 +126,7 @@ class Engine {
 
 		renderer = new clay.render.Renderer(options.renderer);
 		draw = new clay.render.Draw();
-		screen = new Screen();
-		// screen.antialiasing = options.antialiasing;
+		screen = new Screen(options.antialiasing);
 		audio = new clay.Audio();
 		
 		events = new Events();
@@ -168,15 +185,9 @@ class Engine {
 		renderer = null;
 		motion = null;
 		signals = null;
+		next_queue = null;
+		defer_queue = null;
 
-	}
-
-	@:allow(clay.core.Worlds)
-	function setup_world(w:World) {
-
-		w.processors.add(new clay.processors.TransformProcessor(), 998);
-		w.processors.add(new clay.processors.RenderProcessor(), 999);
-		
 	}
 
 	function parse_options(_options:ClayOptions):SystemOptions {
@@ -224,6 +235,8 @@ class Engine {
 	function connect_events() {
 
 		System.notifyOnFrames(render);
+		System.notifyOnApplicationState(foreground, resume, pause, background, null);
+
 		tick_task_id = Scheduler.addFrameTask(internal_tick, 0);
 
 		input.enable();
@@ -262,6 +275,8 @@ class Engine {
 	inline function tickstart() {
 
 		_verboser('ontickstart');
+		
+		cycle_next_queue();
 
 		signals.tickstart.emit();
 		worlds.tickstart();
@@ -275,6 +290,8 @@ class Engine {
 		signals.tickend.emit();
 		worlds.tickend();
 		input.reset();
+
+		cycle_defer_queue();
 
 	}
 
@@ -486,6 +503,57 @@ class Engine {
 
 		signals.inputup.emit(e);
 		worlds.inputup(e);
+
+	}
+
+	function foreground() {
+
+		signals.foreground.emit();
+		worlds.foreground();
+
+	}
+
+	function background() {
+
+		signals.background.emit();
+		worlds.background();
+
+	}
+
+	function pause() {
+
+		signals.pause.emit();
+		worlds.pause();
+
+	}
+
+	function resume() {
+
+		signals.resume.emit();
+		worlds.resume();
+
+	}
+
+
+	inline function cycle_next_queue() {
+
+		var count = next_queue.length;
+		var i = 0;
+		while(i < count) {
+			(next_queue.shift())();
+			++i;
+		}
+
+	}
+
+	inline function cycle_defer_queue() {
+
+		var count = defer_queue.length;
+		var i = 0;
+		while(i < count) {
+			(defer_queue.shift())();
+			++i;
+		}
 
 	}
 

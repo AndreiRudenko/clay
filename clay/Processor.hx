@@ -53,6 +53,11 @@ class Processor {
 	@:noCompletion function onprerender() {}
 	@:noCompletion function onrender() {}
 	@:noCompletion function onpostrender() {}
+	
+	@:noCompletion function onforeground() {}
+	@:noCompletion function onbackground() {}
+	@:noCompletion function onpause() {}
+	@:noCompletion function onresume() {}
 
 	@:noCompletion function update(dt:Float) {}
 

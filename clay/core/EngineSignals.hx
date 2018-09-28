@@ -50,7 +50,11 @@ class EngineSignals {
 
 	public var timescale         	(default, null):Signal<Float->Void>;
 
-	// public var window         	(default, null):Signal<Void->Void>;
+	public var foreground  			(default, null):Signal<Void->Void>;
+	public var background  			(default, null):Signal<Void->Void>;
+	public var pause  	    		(default, null):Signal<Void->Void>;
+	public var resume  	    		(default, null):Signal<Void->Void>;
+
 	// public var windowmoved    	(default, null):Signal<Void->Void>;
 	// public var windowresized  	(default, null):Signal<Void->Void>;
 	// public var windowsized    	(default, null):Signal<Void->Void>;
@@ -87,7 +91,10 @@ class EngineSignals {
 		inputdown = new Signal();
 		inputup = new Signal();
 		timescale = new Signal();
-		// window = new Signal();
+		foreground = new Signal();
+		background = new Signal();
+		pause = new Signal();
+		resume = new Signal();
 		// windowmoved = new Signal();
 		// windowresized = new Signal();
 		// windowsized = new Signal();
@@ -124,7 +131,10 @@ class EngineSignals {
 		inputdown.destroy();
 		inputup.destroy();
 		timescale.destroy();
-		// window.destroy();
+		foreground.destroy();
+		background.destroy();
+		pause.destroy();
+		resume.destroy();
 		// windowmoved.destroy();
 		// windowresized.destroy();
 		// windowsized.destroy();

@@ -70,7 +70,8 @@ class Worlds {
 		}
 
 		if(_add_default_processors) {
-			Clay.engine.setup_world(_world);
+			_world.processors.add(new clay.processors.TransformProcessor(), 998);
+			_world.processors.add(new clay.processors.RenderProcessor(), 999);
 		}
 
 		return _world;
@@ -363,6 +364,34 @@ class Worlds {
 
 		for (w in active_worlds) {
 			w.signals.timescale.emit(t);
+		}
+	}
+
+	inline function foreground() {
+
+		for (w in active_worlds) {
+			w.signals.foreground.emit();
+		}
+	}
+
+	inline function background() {
+
+		for (w in active_worlds) {
+			w.signals.background.emit();
+		}
+	}
+
+	inline function pause() {
+
+		for (w in active_worlds) {
+			w.signals.pause.emit();
+		}
+	}
+
+	inline function resume() {
+
+		for (w in active_worlds) {
+			w.signals.resume.emit();
 		}
 	}
 
