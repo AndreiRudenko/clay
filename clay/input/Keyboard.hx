@@ -160,7 +160,7 @@ class Keyboard extends Input {
 
 		check_binding(_key, true);
 
-		engine.onkeydown(key_event);
+		engine.keydown(key_event);
 
 	}
 
@@ -178,7 +178,7 @@ class Keyboard extends Input {
 
 		check_binding(_key, false);
 
-		engine.onkeyup(key_event);
+		engine.keyup(key_event);
 
 	}
 

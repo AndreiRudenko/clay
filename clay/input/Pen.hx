@@ -90,7 +90,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, 0, 0, PenEventState.down, pressure);
 
-		engine.onpendown(pen_event);
+		engine.pendown(pen_event);
 
 	}
 
@@ -108,7 +108,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, 0, 0, PenEventState.up, pressure);
 
-		engine.onpenup(pen_event);
+		engine.penup(pen_event);
 
 	}
 
@@ -124,7 +124,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, dx, dy, PenEventState.move, pressure);
 
-		engine.onpenmove(pen_event);
+		engine.penmove(pen_event);
 
 	}
 

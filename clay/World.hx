@@ -8,8 +8,7 @@ import clay.core.Families;
 import clay.core.Worlds;
 import clay.core.TagSystem;
 import clay.core.GroupSystem;
-import clay.types.AppEvent;
-import clay.emitters.OrderedEmitter;
+import clay.core.EngineSignals;
 
 @:allow(clay.core.Worlds)
 class World {
@@ -26,10 +25,11 @@ class World {
 	public var components 	(default, null):Components;
 	public var processors 	(default, null):Processors;
 	public var families     (default, null):Families;
+	
+	public var signals      (default, null):EngineSignals;
 
-	var worlds:Worlds;
-	var emitter:OrderedEmitter<AppEvent>;
 	var _active:Bool = false;
+	var worlds:Worlds;
 	var priority:Int = 0;
 
 
@@ -37,7 +37,7 @@ class World {
 
 		name = _name;
 
-		emitter = new OrderedEmitter<AppEvent>();
+		signals = new EngineSignals();
 
 		tags = new TagSystem(_capacity);
 		groups = new GroupSystem();
@@ -59,24 +59,6 @@ class World {
 
 	}
 
-    public inline function on<T>(event:AppEvent, handler:T->Void, order:Int = 0) {
-
-        emitter.on(event, handler, order);
-
-    }
-
-    public inline function off<T>(event:AppEvent, handler:T->Void) {
-
-        return emitter.off(event, handler);
-
-    }
-
-    inline function emit<T>(event:AppEvent, ?data:T) {
-
-        return emitter.emit(event, data);
-
-    }
-
 	@:noCompletion public function init() {
 
 		if(inited) {
@@ -93,7 +75,7 @@ class World {
 		
 		empty();
 
-		emitter.destroy();
+		signals.destroy();
 
 		tags = null;
 		groups = null;
@@ -101,14 +83,14 @@ class World {
 		components = null;
 		families = null;
 		processors = null;
-		emitter = null;
+		signals = null;
 
 	}
 
 	inline function update(dt:Float) {
 		
 		families.update();
-		emitter.emit(AppEvent.update, dt);
+		signals.update.emit(dt);
 		entities.delayed_destroy();
 
 	}

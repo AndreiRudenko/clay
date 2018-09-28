@@ -329,16 +329,12 @@ class ProcessorMacro {
 				_event_name = _event_name.substr(2).toLowerCase();
 			}
 
-			if(_event_name == 'render' || _event_name == 'prerender' || _event_name == 'postrender' || _event_name == 'tickstart' || _event_name == 'tickend') {
-				_event_field_name = '__${_event_field_name.substr(2)}';
-			}
-
 			switch(listen_field.kind) {
 				default:
 				case FFun(f):{
 					switch(f.expr.expr) {
 						case EBlock(exprs):{
-							exprs.push( Context.parse('world.on( clay.types.AppEvent.${_event_name}, ${_event_field_name}, this.priority )', field.pos) );
+							exprs.push( Context.parse('world.signals.${_event_name}.add(${_event_field_name}, this.priority)', field.pos) );
 						}
 						default:
 					}
@@ -350,7 +346,7 @@ class ProcessorMacro {
 				case FFun(f):{
 					switch(f.expr.expr) {
 						case EBlock(exprs):{
-							exprs.push( Context.parse('world.off( clay.types.AppEvent.${_event_name}, ${_event_field_name} )', field.pos) );
+							exprs.push( Context.parse('world.signals.${_event_name}.remove(${_event_field_name})', field.pos) );
 						}
 						default:
 					}

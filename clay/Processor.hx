@@ -3,7 +3,6 @@ package clay;
 
 import clay.World;
 import clay.core.Processors;
-import clay.types.AppEvent;
 
 import clay.input.Key;
 import clay.input.Keyboard;
@@ -86,13 +85,6 @@ class Processor {
 
 	@:noCompletion function __listen_emitter() {}
 	@:noCompletion function __unlisten_emitter() {}
-
-	// todo: make another emitter ?
-	@:noCompletion function __tickstart(_)  { ontickstart();  }
-	@:noCompletion function __tickend(_)    { ontickend();    }
-	@:noCompletion function __prerender(_)  { onprerender();  }
-	@:noCompletion function __render(_)     { onrender();     }
-	@:noCompletion function __postrender(_) { onpostrender(); }
 
 	@:access(clay.core.Processors)
 	@:noCompletion inline function set_priority(value:Int) : Int {

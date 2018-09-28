@@ -153,7 +153,7 @@ class Mouse extends Input {
 
 		check_binding(_button, true);
 
-		engine.onmousedown(mouse_event);
+		engine.mousedown(mouse_event);
 
 	}
 
@@ -172,7 +172,7 @@ class Mouse extends Input {
 
 		check_binding(_button, false);
 
-		engine.onmouseup(mouse_event);
+		engine.mouseup(mouse_event);
 
 	}
 
@@ -184,7 +184,7 @@ class Mouse extends Input {
 
 		check_binding(MouseButton.none, false); // todo: check this
 
-		engine.onmousewheel(mouse_event);
+		engine.mousewheel(mouse_event);
 
 	}
 
@@ -197,7 +197,7 @@ class Mouse extends Input {
 
 		mouse_event.set(x, y, _x_rel, _y_rel, 0, MouseEventState.up, MouseButton.none);
 
-		engine.onmousemove(mouse_event);
+		engine.mousemove(mouse_event);
 
 	}
 

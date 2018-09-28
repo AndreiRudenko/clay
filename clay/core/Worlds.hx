@@ -4,7 +4,6 @@ package clay.core;
 import clay.World;
 import clay.utils.Log.*;
 import clay.utils.PowerOfTwo;
-import clay.types.AppEvent;
 
 import clay.input.Key;
 import clay.input.Keyboard;
@@ -15,7 +14,7 @@ import clay.input.Pen;
 import clay.input.Bindings;
 
 
-@:access(clay.World)
+@:allow(clay.Engine)
 class Worlds {
 
 
@@ -168,7 +167,7 @@ class Worlds {
 		_verboser('prerender');
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.prerender);
+			w.signals.prerender.emit();
 		}
 	}
 
@@ -177,7 +176,7 @@ class Worlds {
 		_verboser('postrender');
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.postrender);
+			w.signals.postrender.emit();
 		}
 	}
 
@@ -186,7 +185,7 @@ class Worlds {
 		_verboser('tickstart');
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.tickstart);
+			w.signals.tickstart.emit();
 		}
 	}
 
@@ -195,7 +194,7 @@ class Worlds {
 		_verboser('tickend');
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.tickend);
+			w.signals.tickend.emit();
 		}
 	}
 
@@ -214,8 +213,9 @@ class Worlds {
 		_verboser('render');
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.render);
+			w.signals.render.emit();
 		}
+
 	}
 
 
@@ -223,14 +223,14 @@ class Worlds {
 	inline function keydown(e:KeyEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.keydown, e);
+			w.signals.keydown.emit(e);
 		}
 	}
 
 	inline function keyup(e:KeyEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.keyup, e);
+			w.signals.keyup.emit(e);
 		}
 	}
 
@@ -238,28 +238,28 @@ class Worlds {
 	inline function mousedown(e:MouseEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.mousedown, e);
+			w.signals.mousedown.emit(e);
 		}
 	}
 
 	inline function mouseup(e:MouseEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.mouseup, e);
+			w.signals.mouseup.emit(e);
 		}
 	}
 
 	inline function mousemove(e:MouseEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.mousemove, e);
+			w.signals.mousemove.emit(e);
 		}
 	}
 
 	inline function mousewheel(e:MouseEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.mousewheel, e);
+			w.signals.mousewheel.emit(e);
 		}
 	}
 
@@ -267,35 +267,35 @@ class Worlds {
 	inline function gamepadadd(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.gamepadadd, e);
+			w.signals.gamepadadd.emit(e);
 		}
 	}
 
 	inline function gamepadremove(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.gamepadremove, e);
+			w.signals.gamepadremove.emit(e);
 		}
 	}
 
 	inline function gamepaddown(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.gamepaddown, e);
+			w.signals.gamepaddown.emit(e);
 		}
 	}
 
 	inline function gamepadup(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.gamepadup, e);
+			w.signals.gamepadup.emit(e);
 		}
 	}
 
 	inline function gamepadaxis(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.gamepadaxis, e);
+			w.signals.gamepadaxis.emit(e);
 		}
 	}
 
@@ -303,21 +303,21 @@ class Worlds {
 	inline function touchdown(e:TouchEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.touchdown, e);
+			w.signals.touchdown.emit(e);
 		}
 	}
 
 	inline function touchup(e:TouchEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.touchup, e);
+			w.signals.touchup.emit(e);
 		}
 	}
 
 	inline function touchmove(e:TouchEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.touchmove, e);
+			w.signals.touchmove.emit(e);
 		}
 	}
 
@@ -325,21 +325,21 @@ class Worlds {
 	inline function pendown(e:PenEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.pendown, e);
+			w.signals.pendown.emit(e);
 		}
 	}
 
 	inline function penup(e:PenEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.penup, e);
+			w.signals.penup.emit(e);
 		}
 	}
 
 	inline function penmove(e:PenEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.penmove, e);
+			w.signals.penmove.emit(e);
 		}
 	}
 
@@ -347,14 +347,14 @@ class Worlds {
 	inline function inputdown(e:InputEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.inputdown, e);
+			w.signals.inputdown.emit(e);
 		}
 	}
 
 	inline function inputup(e:InputEvent) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.inputup, e);
+			w.signals.inputup.emit(e);
 		}
 	}
 
@@ -362,7 +362,7 @@ class Worlds {
 	inline function timescale(t:Float) {
 
 		for (w in active_worlds) {
-			w.emitter.emit(AppEvent.timescale, t);
+			w.signals.timescale.emit(t);
 		}
 	}
 
@@ -375,20 +375,6 @@ class Worlds {
 			worlds.remove(_name);
 			disable(w);
 		}
-
-	}
-
-	function upper_power_of_two(v:Int):Int {
-
-		v--;
-	    v |= v >> 1;
-	    v |= v >> 2;
-	    v |= v >> 4;
-	    v |= v >> 8;
-	    v |= v >> 16;
-	    v++;
-
-	    return v;
 
 	}
 

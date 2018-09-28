@@ -89,7 +89,7 @@ class Touch extends Input {
 		t.down = true;
 		t.set(_x, _y, 0, 0, TouchEventState.down);
 
-		engine.ontouchdown(t);
+		engine.touchdown(t);
 
 	}
 
@@ -105,7 +105,7 @@ class Touch extends Input {
 		t.down = false;
 		t.set(_x, _y, 0, 0, TouchEventState.up);
 
-		engine.ontouchup(t);
+		engine.touchup(t);
 
 	}
 
@@ -116,7 +116,7 @@ class Touch extends Input {
 		var t = touches[_id];
 		t.set(_x, _y, _x-t.x, _y-t.y, TouchEventState.move);
 
-		engine.ontouchmove(t);
+		engine.touchmove(t);
 
 	}
 

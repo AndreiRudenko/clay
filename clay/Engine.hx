@@ -7,14 +7,13 @@ import kha.Framebuffer;
 import kha.WindowOptions;
 
 import clay.math.Random;
-import clay.types.AppEvent;
-import clay.emitters.Emitter;
 import clay.emitters.Events;
 import clay.utils.Log.*;
 
 import clay.components.Camera;
 import clay.core.Inputs;
 import clay.core.Resources;
+import clay.core.EngineSignals;
 
 import clay.core.TimerSystem;
 import clay.input.Key;
@@ -29,8 +28,6 @@ import clay.tween.TweenManager;
 
 
 @:keep
-@:access(Clay)
-@:access(clay.core.Worlds)
 class Engine {
 
 
@@ -39,13 +36,14 @@ class Engine {
 	public var draw         (default, null):clay.render.Draw;
 	public var audio        (default, null):clay.Audio;
 
-	public var world 	    (default, set):World;
+	@:allow(Clay)
+	public var world 	    (default, null):World;
 	public var worlds	    (default, null):clay.core.Worlds;
 
 	public var screen	    (default, null):Screen;
 	public var input	    (default, null):Inputs;
 	public var resources	(default, null):Resources;
-	public var emitter	    (default, null):Emitter<AppEvent>;
+	public var signals	    (default, null):EngineSignals;
 	public var events	    (default, null):Events;
 	public var timer 	    (default, null):TimerSystem;
 	public var random 	    (default, null):Random;
@@ -90,26 +88,6 @@ class Engine {
 		
 	}
 
-    public inline function on<T>(event:AppEvent, handler:T->Void) {
-
-        emitter.on(event, handler);
-
-    }
-
-    // @:generic
-    public inline function off<T>(event:AppEvent, handler:T->Void) {
-
-        return emitter.off(event, handler);
-
-    }
-
-    // @:generic
-    public inline function emit<T>(event:AppEvent, ?data:T) {
-
-        return emitter.emit(event, data);
-
-    }
-
 	public function shutdown() {
 
 		destroy();
@@ -123,34 +101,22 @@ class Engine {
 
 		Clay.engine = this;
 
+		signals = new EngineSignals();
 		motion = new TweenManager();
 		random = new Random(options.random_seed);
 		timer = new TimerSystem();
 
-		renderer = new clay.render.Renderer(options.renderer_options);
+		renderer = new clay.render.Renderer(options.renderer);
 		draw = new clay.render.Draw();
 		screen = new Screen();
 		// screen.antialiasing = options.antialiasing;
 		audio = new clay.Audio();
 		
-		emitter = new Emitter<AppEvent>();
 		events = new Events();
 		input = new Inputs(this);
 		resources = new Resources();
 
 		worlds = new clay.core.Worlds();
-
-		Clay.events = events;
-		Clay.motion = motion;
-		Clay.random = random;
-		Clay.timer = timer;
-		Clay.renderer = renderer;
-		Clay.draw = draw;
-		Clay.audio = audio;
-		Clay.worlds = worlds;
-		Clay.screen = screen;
-		Clay.input = input;
-		Clay.resources = resources;
 
 		init();
 
@@ -187,28 +153,28 @@ class Engine {
 
 		disconnect_events();
 		worlds.destroy_manager();
-		emitter.destroy();
 		events.destroy();
 		input.destroy();
 		renderer.destroy();
 		// audio.destroy();
 		timer.destroy();
+		signals.destroy();
 
 		screen = null;
 		world = null;
 		worlds = null;
-		emitter = null;
 		input = null;
 		audio = null;
 		renderer = null;
 		motion = null;
+		signals = null;
 
 	}
 
 	@:allow(clay.core.Worlds)
 	function setup_world(w:World) {
 
-		w.processors.add(new clay.processors.TransformProcessor(), -999);
+		w.processors.add(new clay.processors.TransformProcessor(), 998);
 		w.processors.add(new clay.processors.RenderProcessor(), 999);
 		
 	}
@@ -221,24 +187,28 @@ class Engine {
 		options.title = def(_options.title, 'clay game');
 		options.width = def(_options.width, 800);
 		options.height = def(_options.height, 600);
-		options.window_mode = def(_options.window_mode, clay.types.WindowMode.Window);
 		options.vsync = def(_options.vsync, true);
 		options.antialiasing = def(_options.antialiasing, 1);
-		options.resizable = def(_options.resizable, false);
-		options.renderer_options = def(_options.renderer_options, {});
-
-		var _kha_opt:SystemOptions = {};
+		options.window = def(_options.window, {});
+		options.window.name = def(_options.window.name, options.title);
+		options.renderer = def(_options.renderer, {});
 
 		var features: Int = 0;
-		if (options.resizable) features |= WindowOptions.FeatureResizable;
-		// if (options.maximizable) features |= WindowOptions.FeatureMaximizable;
-		// if (options.minimizable) features |= WindowOptions.FeatureMinimizable;
+		if (options.window.resizable) features |= WindowOptions.FeatureResizable;
+		if (options.window.maximizable) features |= WindowOptions.FeatureMaximizable;
+		if (options.window.minimizable) features |= WindowOptions.FeatureMinimizable;
+		if (options.window.borderless) features |= WindowOptions.FeatureBorderless;
+		if (options.window.ontop) features |= WindowOptions.FeatureOnTop;
+
 		var _kha_opt: SystemOptions = {
 			title: options.title,
 			width: options.width,
 			height: options.height,
 			window: {
-				mode: options.window_mode,
+				// name: options.window.name, // todo: ?
+				x: options.window.x,
+				y: options.window.y,
+				mode: options.window.mode,
 				windowFeatures: features
 			},
 			framebuffer: {
@@ -269,40 +239,40 @@ class Engine {
 		
 	}
 
-	inline function onprerender() {
+	inline function prerender() {
 
 		_verboser('onprerender');
 
-		emitter.emit(AppEvent.prerender);
+		signals.prerender.emit();
 		worlds.prerender();
 		draw.prerender();
 
 	}
 
-	inline function onpostrender() {
+	inline function postrender() {
 
 		_verboser('onpostrender');
 
-		emitter.emit(AppEvent.postrender);
+		signals.postrender.emit();
 		worlds.postrender();
 		draw.postrender();
 
 	}
 
-	inline function ontickstart() {
+	inline function tickstart() {
 
 		_verboser('ontickstart');
 
-		emitter.emit(AppEvent.tickstart);
+		signals.tickstart.emit();
 		worlds.tickstart();
 		
 	}
 
-	inline function ontickend() {
+	inline function tickend() {
 
 		_verboser('ontickend');
 
-		emitter.emit(AppEvent.tickend);
+		signals.tickend.emit();
 		worlds.tickend();
 		input.reset();
 
@@ -324,7 +294,7 @@ class Engine {
 		events.process();
 		timer.update(dt);
 		motion.step(dt);
-		emitter.emit(AppEvent.update, dt);
+		signals.update.emit(dt);
 		worlds.update(dt);
 		renderer.update(dt);
 
@@ -334,7 +304,7 @@ class Engine {
 
 		_verboser('internal_tick');
 
-		ontickstart();
+		tickstart();
 
 		time = kha.System.time;
 
@@ -362,7 +332,7 @@ class Engine {
 			sim_time += sim_delta;
 		}
 
-		ontickend();
+		tickend();
 
 	}
 
@@ -370,151 +340,151 @@ class Engine {
 
 		_verboser('render');
 
-		onprerender();
+		prerender();
 
-		emitter.emit(AppEvent.render);
+		signals.render.emit();
 		worlds.render();
 		renderer.process(f[0]);
 		
-		onpostrender();
+		postrender();
 
 	}
 
 	// key
-	function onkeydown(e:KeyEvent) {
+	function keydown(e:KeyEvent) {
 
-		emitter.emit(AppEvent.keydown, e);
+		signals.keydown.emit(e);
 		worlds.keydown(e);
 		
 	}
 
-	function onkeyup(e:KeyEvent) {
+	function keyup(e:KeyEvent) {
 
-		emitter.emit(AppEvent.keyup, e);
+		signals.keyup.emit(e);
 		worlds.keyup(e);
 
 	}
 
 	// mouse
-	function onmousedown(e:MouseEvent) {
+	function mousedown(e:MouseEvent) {
 
-		emitter.emit(AppEvent.mousedown, e);
+		signals.mousedown.emit(e);
 		worlds.mousedown(e);
 
 	}
 
-	function onmouseup(e:MouseEvent) {
+	function mouseup(e:MouseEvent) {
 
-		emitter.emit(AppEvent.mouseup, e);
+		signals.mouseup.emit(e);
 		worlds.mouseup(e);
 
 	}
 
-	function onmousemove(e:MouseEvent) {
+	function mousemove(e:MouseEvent) {
 
-		emitter.emit(AppEvent.mousemove, e);
+		signals.mousemove.emit(e);
 		worlds.mousemove(e);
 
 	}
 
-	function onmousewheel(e:MouseEvent) {
+	function mousewheel(e:MouseEvent) {
 
-		emitter.emit(AppEvent.mousewheel, e);
+		signals.mousewheel.emit(e);
 		worlds.mousewheel(e);
 
 	}
 
 	// gamepad
-	function ongamepadadd(e:GamepadEvent) {
+	function gamepadadd(e:GamepadEvent) {
 
-		emitter.emit(AppEvent.gamepadadd, e);
+		signals.gamepadadd.emit(e);
 		worlds.gamepadadd(e);
 
 	}
 
-	function ongamepadremove(e:GamepadEvent) {
+	function gamepadremove(e:GamepadEvent) {
 
-		emitter.emit(AppEvent.gamepadremove, e);
+		signals.gamepadremove.emit(e);
 		worlds.gamepadremove(e);
 
 	}
 
-	function ongamepaddown(e:GamepadEvent) {
+	function gamepaddown(e:GamepadEvent) {
 
-		emitter.emit(AppEvent.gamepaddown, e);
+		signals.gamepaddown.emit(e);
 		worlds.gamepaddown(e);
 
 	}
 
-	function ongamepadup(e:GamepadEvent) {
+	function gamepadup(e:GamepadEvent) {
 
-		emitter.emit(AppEvent.gamepadup, e);
+		signals.gamepadup.emit(e);
 		worlds.gamepadup(e);
 
 	}
 
-	function ongamepadaxis(e:GamepadEvent) {
+	function gamepadaxis(e:GamepadEvent) {
 
-		emitter.emit(AppEvent.gamepadaxis, e);
+		signals.gamepadaxis.emit(e);
 		worlds.gamepadaxis(e);
 
 	}
 
 	// touch
-	function ontouchdown(e:TouchEvent) {
+	function touchdown(e:TouchEvent) {
 
-		emitter.emit(AppEvent.touchdown, e);
+		signals.touchdown.emit(e);
 		worlds.touchdown(e);
 
 	}
 
-	function ontouchup(e:TouchEvent) {
+	function touchup(e:TouchEvent) {
 
-		emitter.emit(AppEvent.touchup, e);
+		signals.touchup.emit(e);
 		worlds.touchup(e);
 
 	}
 
-	function ontouchmove(e:TouchEvent) {
+	function touchmove(e:TouchEvent) {
 
-		emitter.emit(AppEvent.touchmove, e);
+		signals.touchmove.emit(e);
 		worlds.touchmove(e);
 
 	}
 
 	// pen
-	function onpendown(e:PenEvent) {
+	function pendown(e:PenEvent) {
 
-		emitter.emit(AppEvent.pendown, e);
+		signals.pendown.emit(e);
 		worlds.pendown(e);
 
 	}
 
-	function onpenup(e:PenEvent) {
+	function penup(e:PenEvent) {
 
-		emitter.emit(AppEvent.penup, e);
+		signals.penup.emit(e);
 		worlds.penup(e);
 
 	}
 
-	function onpenmove(e:PenEvent) {
+	function penmove(e:PenEvent) {
 
-		emitter.emit(AppEvent.penmove, e);
+		signals.penmove.emit(e);
 		worlds.penmove(e);
 
 	}
 
 	// bindings
-	function oninputdown(e:InputEvent) {
+	function inputdown(e:InputEvent) {
 
-		emitter.emit(AppEvent.inputdown, e);
+		signals.inputdown.emit(e);
 		worlds.inputdown(e);
 
 	}
 
-	function oninputup(e:InputEvent) {
+	function inputup(e:InputEvent) {
 
-		emitter.emit(AppEvent.inputup, e);
+		signals.inputup.emit(e);
 		worlds.inputup(e);
 
 	}
@@ -526,7 +496,7 @@ class Engine {
 		}
 		timescale = v;
 
-		emitter.emit(AppEvent.timescale, v);
+		signals.timescale.emit(v);
 		worlds.timescale(v);
 
 		return v;
@@ -565,19 +535,9 @@ class Engine {
 		
 	}
 
-	function set_world(v:World):World {
-
-		world = v;
-		Clay.world = world;
-
-		return world;
-		
-	}
-
 	function set_camera(v:Camera):Camera {
 
 		camera = v;
-		Clay.camera = camera;
 
 		return camera;
 		

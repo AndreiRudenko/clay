@@ -9,9 +9,21 @@ typedef ClayOptions = {
     ?width:Int,
     ?height:Int,
     ?antialiasing:Int,
-    ?window_mode:clay.types.WindowMode,
     ?vsync:Bool,
-    ?resizable:Bool,
     ?random_seed:Int,
-    ?renderer_options:RendererOptions,
+    ?renderer:RendererOptions,
+    ?window:WindowOptions,
+
+};
+
+typedef WindowOptions = {
+    ?name:String,
+    ?x:Int,
+    ?y:Int,
+    ?resizable:Bool,
+    ?minimizable:Bool,
+    ?maximizable:Bool,
+    ?borderless:Bool,
+    ?ontop:Bool,
+    ?mode:clay.types.WindowMode,
 };

@@ -170,7 +170,7 @@ class Bindings extends Input {
 		add_pressed(input_event.name);
 		add_down(input_event.name);
 
-		engine.oninputdown(input_event);
+		engine.inputdown(input_event);
 
 	}
 
@@ -184,7 +184,7 @@ class Bindings extends Input {
 		remove_pressed(input_event.name);
 		remove_down(input_event.name);
 
-		engine.oninputup(input_event);
+		engine.inputup(input_event);
 
 	}
 
