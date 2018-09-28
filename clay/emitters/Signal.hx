@@ -1,82 +1,350 @@
 package clay.emitters;
 
-// from Mint by Sven Bergström https://github.com/snowkit/mint
-// Contibuted by Michael Bickel http://github.com/dazKind
-
+#if macro
 import haxe.macro.Expr;
+#else
+
+@:multiType
+abstract Signal<T>(SignalBase<T>){
 
 
-class Signal<T> {
+	public var emit(get, never):T;
 
 
-	public var listeners:Array<T>;
+	public function new();
+
+	public inline function add(listener:T, order:Int = 0) {
+
+		this.add(listener, order);
+
+	}
+
+	public inline function add_once(listener:T, order:Int = 0) {
+
+		this.add_once(listener, order);
+
+	}
+
+	public inline function remove(listener:T) {
+
+		this.remove(listener);
+
+	}
+
+	public inline function has(listener:T):Bool {
+
+		return this.has(listener);
+
+	}
+
+	public inline function destroy() {
+
+		this.destroy();
+
+	}
+
+	public inline function clear() {
+
+		this.clear();
+
+	}
+
+	inline function get_emit():T {
+
+		return this.emit;
+
+	}
+
+	@:to 
+	static inline function toSignal0(signal:SignalBase<Void->Void>):Signal0 {
+
+		return new Signal0();
+
+	}
+	
+	@:to 
+	static inline function toSignal1<T1>(signal:SignalBase<T1->Void>):Signal1<T1> {
+
+		return new Signal1();
+
+	}
+	
+	@:to 
+	static inline function toSignal2<T1, T2>(signal:SignalBase<T1->T2->Void>):Signal2<T1, T2> {
+
+		return new Signal2();
+
+	}
+	
+	@:to 
+	static inline function toSignal3<T1, T2, T3>(signal:SignalBase<T1->T2->T3->Void>):Signal3<T1, T2, T3> {
+
+		return new Signal3();
+
+	}
+	
+	@:to 
+	static inline function toSignal4<T1, T2, T3, T4>(signal:SignalBase<T1->T2->T3->T4->Void>):Signal4<T1, T2, T3, T4> {
+
+		return new Signal4();
+
+	}
+
+}
+
+
+class Signal0 extends SignalBase<Void->Void> {
+	
+
+	public function new(){
+
+		super();
+		this.emit = emit0;
+
+	}
+
+	public function emit0() {
+
+		Macro.buildemit();
+
+	}
+
+
+}
+
+
+class Signal1<T1> extends SignalBase<T1->Void> {
+	
+
+	public function new(){
+
+		super();
+		this.emit = emit1;
+
+	}
+
+	public function emit1(v1:T1) {
+
+		Macro.buildemit(v1);
+
+	}
+
+
+}
+
+class Signal2<T1, T2> extends SignalBase<T1->T2->Void> {
+	
+
+	public function new(){
+
+		super();
+		this.emit = emit2;
+
+	}
+
+	public function emit2(v1:T1, v2:T2) {
+
+		Macro.buildemit(v1, v2);
+
+	}
+
+
+}
+
+class Signal3<T1, T2, T3> extends SignalBase<T1->T2->T3->Void> {
+	
+
+	public function new(){
+
+		super();
+		this.emit = emit3;
+
+	}
+
+	public function emit3(v1:T1, v2:T2, v3:T3) {
+
+		Macro.buildemit(v1, v2, v3);
+
+	}
+
+
+}
+
+class Signal4<T1, T2, T3, T4> extends SignalBase<T1->T2->T3->T4->Void> {
+	
+
+	public function new(){
+
+		super();
+		this.emit = emit4;
+
+	}
+
+	public function emit4(v1:T1, v2:T2, v3:T3, v4:T4) {
+
+		Macro.buildemit(v1, v2, v3, v4);
+
+	}
+
+
+}
+
+class SignalBase<T> {
+
+
+	public var emit:T;
+	public var handlers:Array<SignalHandler<T>>;
+	var to_remove:Array<SignalHandler<T>>;
+	var processing:Bool;
 
 
 	public function new() {
-
-		listeners = [];
+		
+		handlers = [];
+		to_remove = [];
+		processing= false;
 
 	}
 
-	public function add( _handler:T ):Void {
+	public function add_once(listener:T, ?order:Null<Int>) {
 
-		if( listeners.indexOf(_handler) != -1 ) {
-			throw("clay / signal / add / attempted to add the same listener twice");
-			return;
+		_add(listener, true, order);
+
+	}
+
+	public function add(listener:T, ?order:Null<Int>) {
+
+		_add(listener, false, order);
+		
+	}
+
+	public function remove(listener:T) {
+
+		for (i in 0...handlers.length) {
+			if(handlers[i].listener == listener) {
+				if(processing) {
+					to_remove.push(handlers[i]);
+				} else {
+					handlers.splice(i, 1);
+				}
+				break;
+			}
 		}
 
-		listeners.push(_handler);
-
 	}
 
-	public function remove( _handler:T ):Void {
+	public inline function has(listener:T):Bool {
 
-		var _index = listeners.indexOf(_handler);
-		if(_index != -1) {
-			listeners[_index] = null;
+		return get_handler(listener) != null;
+		
+	}
+
+	public function get_handler(listener:T):SignalHandler<T> {
+		
+		for (h in handlers) {
+			if(h.listener == listener) {
+				return h;
+			}
 		}
 
-	}
-
-	public inline function has( _handler:T ):Bool {
-
-		return listeners.indexOf(_handler) != -1;
+		return null;
 
 	}
 
 	public inline function clear() {
 		
-		listeners = null;
-		listeners = [];
+		handlers = null;
+		to_remove = null;
+		handlers = [];
+		to_remove = [];
 
 	}
 
-	macro public function emit( ethis : Expr, args:Array<Expr> ) {
-		return macro {
-			var _idx = 0;
-			var _count = $ethis.listeners.length;
-			var fn = null;
-			while(_idx < _count) {
-				if($ethis != null) {
-					fn = $ethis.listeners[_idx];
-					if(fn != null) {
-						fn($a{args});
-					}
-				}
-				_idx++;
-			}
+	public inline function destroy() {
+		
+		emit = null;
+		handlers = null;
+		to_remove = null;
 
-			if($ethis != null) {
-				while(_count > 0) {
-					fn = $ethis.listeners[_count-1];
-					if(fn == null) {
-						$ethis.listeners.splice(_count-1, 1);
-					}
-					_count--;
+	}
+
+	inline function _add(listener:T, once:Bool, order:Null<Int>) {
+
+		if(has(listener)) {
+			throw("clay / signal / add / attempted to add the same listener twice");
+		}
+
+		var handler = new SignalHandler<T>(listener, once, order);
+
+		if(order != null) {
+			var added:Bool = false;
+			for (i in 0...handlers.length) {
+				if (order <= handlers[i].order) {
+					handlers.insert(i, handler);
+					added = true;
+					break;
 				}
+			}
+			if(!added) {
+				handlers.push(handler);
+			}
+		} else {
+			handlers.push(handler);
+		}
+		
+	}
+
+
+}
+
+
+class SignalHandler<T> {
+
+
+	public var listener:T;
+	public var once:Bool;
+	public var order:Int;
+
+
+	public function new(_listener:T, _once:Bool, _order:Int = 0) {
+
+		listener = _listener;
+		once = _once;
+		order = _order;
+
+	}
+
+
+}
+
+
+#end
+
+
+private class Macro {
+
+	public static macro function buildemit(exprs:Array<Expr>):Expr {
+
+		return macro { 
+			processing = true;
+
+			for (h in handlers){
+				h.listener($a{exprs});
+				if(h.once) {
+					to_remove.push(h);
+				}
+			}
+			
+			processing = false;
+			
+			if (to_remove.length > 0){
+				for (h in to_remove){
+					remove(h.listener);
+				}
+				to_remove.splice(0, to_remove.length);
 			}
 		}
-	}
 
+	}
 
 }
