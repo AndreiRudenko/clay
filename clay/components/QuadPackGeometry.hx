@@ -76,10 +76,10 @@ class QuadPackGeometry extends Geometry {
 		_quad.verts.push( vert2 );
 		_quad.verts.push( vert3 );
 
-		quads.set( _id, _quad );
+		quads.set(_id, _quad);
 
 		if(_options.uv != null) {
-			quad_uv( _id, _options.uv );
+			quad_uv(_id, _options.uv);
 		}
 
 		return _id;
@@ -121,8 +121,6 @@ class QuadPackGeometry extends Geometry {
 				add( _quad.verts[1] );
 				add( _quad.verts[2] );
 				add( _quad.verts[3] );
-				add( _quad.verts[4] );
-				add( _quad.verts[5] );
 
 			} else if(!visible && _quad.visible) {
 
@@ -132,8 +130,6 @@ class QuadPackGeometry extends Geometry {
 				remove( _quad.verts[1] );
 				remove( _quad.verts[2] );
 				remove( _quad.verts[3] );
-				remove( _quad.verts[4] );
-				remove( _quad.verts[5] );
 
 			}
 
