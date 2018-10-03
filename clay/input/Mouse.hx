@@ -246,13 +246,13 @@ class MouseEvent {
 
 @:enum abstract MouseButton(Int) from Int to Int {
 
-    var none   	= 0;
-    var left   	= 1;
-    var right  	= 2;
-    var middle 	= 3;
-    var extra1 	= 4;
-    var extra2 	= 5;
-    var extra3 	= 6;
-    var extra4 	= 7;
+    var none   	= -1;
+    var left   	= 0;
+    var right  	= 1;
+    var middle 	= 2;
+    var extra1 	= 3;
+    var extra2 	= 4;
+    var extra3 	= 5;
+    var extra4 	= 6;
 
 }
