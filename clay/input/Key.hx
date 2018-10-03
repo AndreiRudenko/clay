@@ -23,7 +23,7 @@ import kha.input.KeyCode;
 	var hangul = KeyCode.Hangul;
 	var eisu = KeyCode.Eisu;
 	var junja = KeyCode.Junja;
-	var final = KeyCode.Final;
+	var finalk = KeyCode.Final;
 	var hanja = KeyCode.Hanja;
 	var kanji = KeyCode.Kanji;
 	var escape = KeyCode.Escape;

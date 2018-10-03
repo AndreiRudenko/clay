@@ -170,6 +170,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.prerender.emit();
 		}
+		
 	}
 
 	inline function postrender() {
@@ -179,6 +180,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.postrender.emit();
 		}
+
 	}
 
 	inline function tickstart() {
@@ -188,6 +190,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.tickstart.emit();
 		}
+
 	}
 
 	inline function tickend() {
@@ -197,6 +200,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.tickend.emit();
 		}
+
 	}
 
 	inline function update(dt:Float) {
@@ -226,6 +230,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.keydown.emit(e);
 		}
+
 	}
 
 	inline function keyup(e:KeyEvent) {
@@ -233,6 +238,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.keyup.emit(e);
 		}
+
 	}
 
 	// mouse
@@ -241,6 +247,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.mousedown.emit(e);
 		}
+
 	}
 
 	inline function mouseup(e:MouseEvent) {
@@ -248,6 +255,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.mouseup.emit(e);
 		}
+
 	}
 
 	inline function mousemove(e:MouseEvent) {
@@ -255,6 +263,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.mousemove.emit(e);
 		}
+
 	}
 
 	inline function mousewheel(e:MouseEvent) {
@@ -262,6 +271,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.mousewheel.emit(e);
 		}
+
 	}
 
 	// gamepad
@@ -270,6 +280,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.gamepadadd.emit(e);
 		}
+
 	}
 
 	inline function gamepadremove(e:GamepadEvent) {
@@ -277,6 +288,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.gamepadremove.emit(e);
 		}
+
 	}
 
 	inline function gamepaddown(e:GamepadEvent) {
@@ -284,6 +296,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.gamepaddown.emit(e);
 		}
+
 	}
 
 	inline function gamepadup(e:GamepadEvent) {
@@ -291,6 +304,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.gamepadup.emit(e);
 		}
+
 	}
 
 	inline function gamepadaxis(e:GamepadEvent) {
@@ -298,6 +312,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.gamepadaxis.emit(e);
 		}
+
 	}
 
 	// touch
@@ -306,6 +321,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.touchdown.emit(e);
 		}
+
 	}
 
 	inline function touchup(e:TouchEvent) {
@@ -313,6 +329,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.touchup.emit(e);
 		}
+
 	}
 
 	inline function touchmove(e:TouchEvent) {
@@ -320,6 +337,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.touchmove.emit(e);
 		}
+
 	}
 
 	// pen
@@ -328,6 +346,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.pendown.emit(e);
 		}
+
 	}
 
 	inline function penup(e:PenEvent) {
@@ -335,6 +354,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.penup.emit(e);
 		}
+
 	}
 
 	inline function penmove(e:PenEvent) {
@@ -342,6 +362,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.penmove.emit(e);
 		}
+
 	}
 
 	// bindings
@@ -350,6 +371,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.inputdown.emit(e);
 		}
+
 	}
 
 	inline function inputup(e:InputEvent) {
@@ -357,6 +379,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.inputup.emit(e);
 		}
+
 	}
 
 
@@ -365,6 +388,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.timescale.emit(t);
 		}
+
 	}
 
 	inline function foreground() {
@@ -372,6 +396,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.foreground.emit();
 		}
+
 	}
 
 	inline function background() {
@@ -379,6 +404,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.background.emit();
 		}
+
 	}
 
 	inline function pause() {
@@ -386,6 +412,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.pause.emit();
 		}
+
 	}
 
 	inline function resume() {
@@ -393,6 +420,7 @@ class Worlds {
 		for (w in active_worlds) {
 			w.signals.resume.emit();
 		}
+
 	}
 
 	inline function handle_duplicate_warning(_name:String) {

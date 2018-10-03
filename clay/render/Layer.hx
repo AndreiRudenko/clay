@@ -3,7 +3,8 @@ package clay.render;
 
 import kha.graphics4.Graphics;
 
-import clay.render.Painter;
+import clay.render.types.BlendMode;
+import clay.render.types.BlendEquation;
 import clay.render.GeometryList;
 import clay.components.Geometry;
 import clay.components.Camera;
@@ -97,30 +98,15 @@ class Layer {
 
 		_verboser('layer $id render');
 
-		var ptrs = Clay.renderer.painters;
+		var rp = renderer.renderpath;
+		rp.onenter(this, g, cam);
 
-		var p:Painter = null;
-		var lst_p:Painter = null;
 		for (geom in geometry_list) {
-			p = ptrs[geom.geometry_type];
-			if(lst_p != p) {
-				if(lst_p != null) {
-					lst_p.draw(g);
-					lst_p.onleave(this, g);
-				}
-				lst_p = p;
-				p.onenter(this, g, cam);
-			}
-			p.batch(g, geom);
+			rp.batch(g, geom);
 		}
 
-		for (o in ptrs) {
-			o.draw(g);
-		}
-
-		if(lst_p != null) {
-			lst_p.onleave(this, g);
-		}
+		rp.draw(g);
+		rp.onleave(this, g);
 
 	}
 

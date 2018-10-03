@@ -3,9 +3,9 @@ package clay.components;
 
 import haxe.io.Bytes;
 import clay.utils.Log.def;
-import clay.render.TextureFilter;
-import clay.render.MipMapFilter;
-import clay.render.TextureAddressing;
+import clay.render.types.TextureFilter;
+import clay.render.types.MipMapFilter;
+import clay.render.types.TextureAddressing;
 
 
 @:access(clay.render.Renderer)

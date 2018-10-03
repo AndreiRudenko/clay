@@ -3,8 +3,12 @@ package clay.render;
 
 import kha.Framebuffer;
 import kha.Scaler;
+import kha.Shaders;
 // import kha.ScreenRotation;
+import kha.graphics4.VertexStructure;
+import kha.graphics4.VertexData;
 import kha.graphics4.Graphics;
+import kha.graphics4.BlendingFactor;
 
 import clay.components.Camera;
 import clay.components.Geometry;
@@ -29,7 +33,12 @@ class Renderer {
 	public var rendering(default, null):Bool = false;
 
 	public var cameras:CameraManager;
-	var painters:Array<Painter>;
+
+	public var shader_colored:Shader;
+	public var shader_textured:Shader;
+	public var shader_text:Shader;
+
+	var renderpath:RenderPath;
 
 	// geometry sorting
 	var geomtype_bits:Int;
@@ -55,10 +64,11 @@ class Renderer {
 
 	public function new(_options:RendererOptions) {
 
-		geomtype_bits = def(_options.geomtype_bits, 7);
-		texture_bits = def(_options.texture_bits, 9);
-		shader_bits = def(_options.shader_bits, 12);
-		depth_bits = def(_options.depth_bits, 3);
+		depth_bits = def(_options.depth_bits, 8);
+		shader_bits = def(_options.shader_bits, 9);
+		texture_bits = def(_options.texture_bits, 12);
+		geomtype_bits = def(_options.geomtype_bits, 2);
+
 		layers_max = def(_options.layers_max, 64);
 
 		geomtype_offset = 0;
@@ -72,7 +82,6 @@ class Renderer {
 		depth_max = Bits.count_singed(depth_bits);
 
 		cameras = new CameraManager();
-		painters = [];
 
 		layers = new LayerManager();
 		clear_color = new Color(0.1,0.1,0.1,1);
@@ -85,12 +94,52 @@ class Renderer {
 	function init() {
 
 		target = Clay.screen.buffer;
-
+		create_default_shaders();
 		layers.create();
+		renderpath = new RenderPath(this);
 
-		painters[GeometryType.simple] = new SimplePainter();
-		painters[GeometryType.text] = new TextPainter();
-		painters[GeometryType.quad] = new QuadPainter();
+	}
+
+	function create_default_shaders() {
+
+		var structure = new VertexStructure();
+		structure.add("vertexPosition", VertexData.Float2);
+		structure.add("vertexColor", VertexData.Float4);
+
+		shader_colored = new Shader();
+		shader_colored.inputLayout = [structure];
+		shader_colored.vertexShader = Shaders.colored_vert;
+		shader_colored.fragmentShader = Shaders.colored_frag;
+		shader_colored.blendSource = BlendingFactor.SourceAlpha;
+		shader_colored.blendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_colored.alphaBlendSource = BlendingFactor.SourceAlpha;
+		shader_colored.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_colored.compile();
+
+		structure = new VertexStructure();
+		structure.add("vertexPosition", VertexData.Float2);
+		structure.add("texPosition", VertexData.Float2);
+		structure.add("vertexColor", VertexData.Float4);
+
+		shader_textured = new Shader();
+		shader_textured.inputLayout = [structure];
+		shader_textured.vertexShader = Shaders.textured_vert;
+		shader_textured.fragmentShader = Shaders.textured_frag;
+		shader_textured.blendSource = BlendingFactor.SourceAlpha;
+		shader_textured.blendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_textured.alphaBlendSource = BlendingFactor.SourceAlpha;
+		shader_textured.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_textured.compile();
+
+		shader_text = new Shader();
+		shader_text.inputLayout = [structure];
+		shader_text.vertexShader = Shaders.text_vert;
+		shader_text.fragmentShader = Shaders.text_frag;
+		shader_text.blendSource = BlendingFactor.SourceAlpha;
+		shader_text.blendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_text.alphaBlendSource = BlendingFactor.SourceAlpha;
+		shader_text.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_text.compile();
 
 	}
 

@@ -11,7 +11,6 @@ import clay.render.Vertex;
 import clay.resources.FontResource;
 import clay.components.Texture;
 import clay.components.Geometry;
-import clay.render.TextureFilter;
 import clay.utils.Log.*;
 
 

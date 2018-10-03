@@ -6,7 +6,7 @@ import clay.Entity;
 import clay.components.QuadGeometry;
 import clay.components.Texture;
 import clay.render.Layer;
-import clay.render.BlendMode;
+import clay.render.types.BlendMode;
 import clay.particles.ParticleEmitter;
 import clay.particles.core.ParticleData;
 import clay.particles.core.Particle;

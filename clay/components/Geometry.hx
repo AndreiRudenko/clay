@@ -49,7 +49,7 @@ class Geometry {
 
 		sort_key = 0;
 
-		geometry_type = GeometryType.simple;
+		geometry_type = GeometryType.polygon;
 
 		transform_matrix = new Matrix();
 
@@ -213,14 +213,12 @@ class Geometry {
 
 @:enum abstract GeometryType(UInt) from UInt to UInt {
 	// todo
-	var simple          = 0;
-	var text            = 1;
-	var quad            = 2;
+	var polygon         = 0;
+	var quad            = 1;
+	var text            = 2;
 	var instanced       = 3;
-	var nineslice       = 4;
-	var quadpack        = 5;
-	var none            = 6;
-	var none2           = 7;
+	
+	var none            = 4;
 
 }
 
