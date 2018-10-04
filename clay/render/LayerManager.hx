@@ -50,9 +50,7 @@ class LayerManager {
 
 		for (l in layers) {
 			if(cam.visible_layers_mask[l.id]) {
-				l.onprerender.emit();
 				l.render(Clay.renderer.target.image.g4, cam);
-				l.onpostrender.emit();
 			}
 		}
 		

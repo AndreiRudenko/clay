@@ -94,21 +94,23 @@ class Layer {
 
 	public function render(g:Graphics, cam:Camera) {
 
-		if(geometry_list.length == 0) {
-			return;
+		onprerender.emit();
+
+		if(geometry_list.length > 0) {
+			_verboser('layer $id render');
+
+			var rp = renderer.renderpath;
+			rp.onenter(this, g, cam);
+
+			for (geom in geometry_list) {
+				rp.batch(g, geom);
+			}
+
+			rp.draw(g);
+			rp.onleave(this, g);
 		}
 
-		_verboser('layer $id render');
-
-		var rp = renderer.renderpath;
-		rp.onenter(this, g, cam);
-
-		for (geom in geometry_list) {
-			rp.batch(g, geom);
-		}
-
-		rp.draw(g);
-		rp.onleave(this, g);
+		onpostrender.emit();
 
 	}
 
