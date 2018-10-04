@@ -66,6 +66,10 @@ class Geometry {
 	public function init() {}
 	public function destroy() {}
 
+	function onadded() {}
+	function onremoved() {}
+
+
 	public function add(v:Vertex):Geometry {
 
 		vertices.push(v);
@@ -212,7 +216,7 @@ class Geometry {
 
 
 @:enum abstract GeometryType(UInt) from UInt to UInt {
-	// todo
+	
 	var polygon         = 0;
 	var quad            = 1;
 	var text            = 2;

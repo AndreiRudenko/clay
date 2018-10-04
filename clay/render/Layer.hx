@@ -69,7 +69,7 @@ class Layer {
 
 	public inline function add(geom:Geometry) {
 
-		_debug('add geom: ${geom.id}');
+		_debug('add geom: ${geom.sort_key}');
 
 		if(ordered) {
 			geometry_list.add(geom);
@@ -78,15 +78,17 @@ class Layer {
 		}
 
 		geom.added = true;
+		geom.onadded();
 
 	}
 
 	public inline function remove(geom:Geometry) {
 		
-		_debug('remove geom: ${geom.id}');
+		_debug('remove geom: ${geom.sort_key}');
 
 		geometry_list.remove(geom);
 		geom.added = false;
+		geom.onremoved();
 
 	}
 
