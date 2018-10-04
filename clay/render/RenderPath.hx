@@ -14,6 +14,7 @@ import kha.Image;
 import clay.components.Camera;
 import clay.components.Texture;
 import clay.components.Geometry;
+import clay.components.InstancedGeometry;
 import clay.render.Shader;
 import clay.math.Matrix;
 import clay.utils.Log.*;
@@ -23,10 +24,11 @@ import clay.utils.Log.*;
 class RenderPath {
 
 
-	var buffer_size:Int = 1024;
+	var buffer_size:Int = 2048;
 	var max_indices:Int = 0;
 	var max_vertices:Int = 0;
 	var draw_calls:Int = 0;
+	var draw_geoms:Int = 0;
 
 	var geom_count:Int = 0;
 	var vert_count:Int = 0;
@@ -39,21 +41,23 @@ class RenderPath {
 	var geometry:Geometry;
 
 	var last_shader:Shader;
-	var last_texture:Image;
+	var last_texture:Texture;
 
 	var vertexbuffer:VertexBuffer;
 	var vertexbuffer_colored:VertexBuffer;
 	var vertexbuffer_textured:VertexBuffer;
 	var vertices:Float32Array;
+
 	var indexbuffer:IndexBuffer;
+	var indexbuffer_poly:IndexBuffer;
 	var indexbuffer_quad:IndexBuffer;
 	var indices:Uint32Array;
 
 	var texture_loc:TextureUnit;
 	var projection_loc:ConstantLocation;
 
-	var geom_type:GeometryType = GeometryType.none;
-	var draw_state:DrawState = DrawState.none;
+	var draw_type:GeometryType = GeometryType.none;
+	var draw_textured:Bool = false;
 
 
 	public function new(_renderer:Renderer) {
@@ -66,10 +70,10 @@ class RenderPath {
 
 		vertexbuffer_colored = new VertexBuffer(max_indices, renderer.shader_colored.inputLayout[0], Usage.DynamicUsage);
 		vertexbuffer_textured = new VertexBuffer(max_indices, renderer.shader_textured.inputLayout[0], Usage.DynamicUsage);
-		indexbuffer = new IndexBuffer(max_vertices, Usage.DynamicUsage);
+		indexbuffer_poly = new IndexBuffer(max_vertices, Usage.DynamicUsage);
 
 		texture_loc = renderer.shader_textured.getTextureUnit("tex");
-		indices = indexbuffer.lock();
+		indices = indexbuffer_poly.lock();
 
 		indexbuffer_quad = new IndexBuffer(buffer_size * 6, Usage.StaticUsage);
 		var indquad = indexbuffer_quad.lock();
@@ -87,13 +91,13 @@ class RenderPath {
 
 	public function onenter(l:Layer, g:Graphics, cam:Camera) {
 		
-		draw_state = DrawState.none;
         camera = cam;
         layer = l;
 
 		last_shader = null;
     	last_texture = null;
 		draw_calls = 0;
+		draw_geoms = 0;
 
 	}
 
@@ -103,17 +107,136 @@ class RenderPath {
 			g.setTexture(texture_loc, null);
 			last_texture = null;
 		}
-		_verboser('draw calls: $draw_calls');
 
 	}
 
-	inline function update_blendmode(sh:Shader) {
+	public function batch(g:Graphics, geom:Geometry) {
 
-		sh.blendSource = layer.blend_src;
-		sh.alphaBlendSource = layer.blend_src;
-		sh.blendDestination = layer.blend_dst;
-		sh.alphaBlendDestination = layer.blend_dst;
-		sh.blendOperation = layer.blend_eq;
+		_verboser('batch order: ${geom.order}, sort_key ${geom.sort_key}');
+
+		var was_draw = false;
+
+		if(vert_count + geom.vertices.length >= max_vertices 
+			|| indices_count + geom.indices.length >= max_indices
+			|| draw_type != geom.geometry_type
+		) {
+			draw(g);
+			was_draw = true;
+		}
+
+		var shader = geom.shader;
+
+		if(shader == null) {
+			if(geom.texture == null) {
+				if(geom.geometry_type == GeometryType.instanced) {
+					shader = renderer.shader_instanced;
+				} else {
+					shader = renderer.shader_colored;
+				}
+			} else {
+				if(geom.geometry_type == GeometryType.instanced) {
+					shader = renderer.shader_instanced_textured;
+				} else if(geom.geometry_type == GeometryType.text) {
+					shader = renderer.shader_text;
+				} else {
+					shader = renderer.shader_textured;
+				}
+			}
+		}
+
+		if(shader != last_shader) {
+			if(!was_draw) {
+				draw(g);
+				was_draw = true;
+			}
+			if(geom.texture != null) {
+				texture_loc = shader.getTextureUnit("tex");
+			} else {
+				g.setTexture(texture_loc, null);
+				last_texture = null;
+			}
+
+			if(geom.geometry_type != GeometryType.instanced) {
+				projection_loc = shader.getConstantLocation("mvpMatrix");
+			}
+
+			g.setPipeline(shader);
+
+			update_blendmode(shader);
+
+			last_shader = shader;
+		}
+
+		if(geom.texture != null) {
+			if(last_texture != geom.texture) {
+				if(!was_draw) {
+					draw(g);
+					was_draw = true;
+				}
+				last_texture = geom.texture;
+			}
+			draw_textured = true;
+		} else {
+			draw_textured = false;
+		}
+
+		if(geometry == null) {
+			geometry = geom;
+		}
+
+		draw_type = geom.geometry_type;
+
+		draw_geoms++;
+		geom_count++;
+
+		vert_count += geom.vertices.length;
+		if(draw_type == GeometryType.quad || draw_type == GeometryType.text) {
+			indices_count += Std.int(geom.vertices.length * 1.5);
+		} else {
+			indices_count += geom.indices.length;
+		}
+
+	}
+
+	public function draw(g:Graphics) {
+
+		if(vert_count == 0) {
+			return;
+		}
+
+		_verboser('draw, vertices: $vert_count, indices: $indices_count');
+
+		if(draw_type == GeometryType.instanced) {
+			if (g.instancedRenderingAvailable()) {
+				var inst_geom:InstancedGeometry = cast geometry;
+				inst_geom.update_instances(camera.projection_matrix);
+
+				update_texture(g);
+
+				g.setVertexBuffers(inst_geom.vertexbuffers);
+				g.setIndexBuffer(inst_geom.indexbuffer);
+
+				g.drawIndexedVerticesInstanced(inst_geom.instances_count);
+			}
+		} else {
+			update_vbo();
+			update_indices();
+			update_texture(g);
+
+			g.setMatrix3(projection_loc, camera.projection_matrix);
+
+			g.setVertexBuffer(vertexbuffer);
+			g.setIndexBuffer(indexbuffer);
+
+			g.drawIndexedVertices(0, indices_count);
+		}
+
+		geom_count = 0;
+		vert_count = 0;
+		indices_count = 0;
+
+		geometry = null;
+		draw_calls++;
 
 	}
 	
@@ -125,8 +248,32 @@ class RenderPath {
 		var v:Vertex = null;
 		var g:Geometry = geometry;
 
-		if(draw_state == DrawState.colored) {
+		if(draw_textured) {
+			vertexbuffer = vertexbuffer_textured;
+			vertices = vertexbuffer.lock();
+			
+			for (_ in 0...geom_count) {
+				m = g.transform_matrix;
 
+				for (i in 0...g.vertices.length) {
+					n = i * 8 + offset;
+					v = g.vertices[i];
+					vertices.set(n, m.a * v.pos.x + m.c * v.pos.y + m.tx);
+					vertices.set(n + 1, m.b * v.pos.x + m.d * v.pos.y + m.ty);
+					vertices.set(n + 2, v.tcoord.x);
+					vertices.set(n + 3, v.tcoord.y);
+					vertices.set(n + 4, v.color.r);
+					vertices.set(n + 5, v.color.g);
+					vertices.set(n + 6, v.color.b);
+					vertices.set(n + 7, v.color.a);
+				}
+				offset += g.vertices.length * 8;
+
+				g = g.next;
+			}
+
+			vertexbuffer.unlock();
+		} else {
 			vertexbuffer = vertexbuffer_colored;
 			vertices = vertexbuffer.lock();
 
@@ -147,193 +294,63 @@ class RenderPath {
 
 				g = g.next;
 			}
-		} else if(draw_state == DrawState.textured) {
 
-			vertexbuffer = vertexbuffer_textured;
-			vertices = vertexbuffer.lock();
-
-			for (_ in 0...geom_count) {
-				m = g.transform_matrix;
-
-				for (i in 0...g.vertices.length) {
-					n = i * 8 + offset;
-					v = g.vertices[i];
-					vertices.set(n, m.a * v.pos.x + m.c * v.pos.y + m.tx);
-					vertices.set(n + 1, m.b * v.pos.x + m.d * v.pos.y + m.ty);
-					vertices.set(n + 2, v.tcoord.x);
-					vertices.set(n + 3, v.tcoord.y);
-					vertices.set(n + 4, v.color.r);
-					vertices.set(n + 5, v.color.g);
-					vertices.set(n + 6, v.color.b);
-					vertices.set(n + 7, v.color.a);
-				}
-				offset += g.vertices.length * 8;
-
-				g = g.next;
-			}
+			vertexbuffer.unlock();
 		}
 
 	}
 
 	inline function update_indices() {
 
-		if(indices.length == 0) {
-			return;
-		}
-
-		var _offset:Int = 0;
-		var j:Int = 0;
-
-		var g:Geometry = geometry;
-		for (_ in 0...geom_count) {
-			for (ind in g.indices) {
-				indices[j] = ind+_offset;
-				j++;
-			}
-			_offset += g.vertices.length;
-			g = g.next;
-		}
-
-	}
-
-	public function batch(g:Graphics, geom:Geometry) {
-
-		_verboser('batch order: ${geom.order}, sort_key ${geom.sort_key}');
-
-		var was_draw = false;
-
-		if(vert_count + geom.vertices.length >= max_vertices 
-			|| indices_count + geom.indices.length >= max_indices
-			|| geom_type != geom.geometry_type
-			) {
-			draw(g);
-			was_draw = true;
-		}
-
-		var shader = geom.shader;
-
-		if(shader == null) {
-			if(geom.texture == null) {
-				shader = renderer.shader_colored;
-			} else {
-				if(geom.geometry_type == GeometryType.text) {
-					shader = renderer.shader_text;
-				} else {
-					shader = renderer.shader_textured;
-				}
-			}
-		}
-
-		if(shader != last_shader) {
-			if(!was_draw) {
-				draw(g);
-				was_draw = true;
-			}
-			if(geom.texture != null) {
-				texture_loc = shader.getTextureUnit("tex");
-			} else {
-				g.setTexture(texture_loc, null);
-				last_texture = null;
-			}
-			projection_loc = shader.getConstantLocation("mvpMatrix");
-			g.setPipeline(shader);
-
-			update_blendmode(shader);
-
-			last_shader = shader;
-		}
-
-		if(geom.texture != null) {
-			if(last_texture != geom.texture.image) {
-				if(!was_draw) {
-					draw(g);
-					was_draw = true;
-				}
-				var t = geom.texture;
-				last_texture = t.image;
-				g.setTexture(texture_loc, last_texture);
-				g.setTextureParameters(
-					texture_loc, 
-					t.u_addressing, 
-					t.v_addressing, 
-					t.filter_min, 
-					t.filter_mag, 
-					t.mipmap_filter
-				);
-			}
-			draw_state = DrawState.textured;
+		if(draw_type == GeometryType.quad || draw_type == GeometryType.text) {
+			indexbuffer = indexbuffer_quad;
 		} else {
-			draw_state = DrawState.colored;
-		}
-
-		if(geometry == null) {
-			geometry = geom;
-		}
-
-		geom_type = geom.geometry_type;
-
-		geom_count++;
-		vert_count += geom.vertices.length;
-		indices_count += geom.indices.length;
-
-	}
-
-	public function draw(g:Graphics) {
-
-		if(vert_count == 0) {
-			return;
-		}
-
-		_verboser('draw, vertices: $vert_count, indices: $indices_count');
-
-		if(geom_type == GeometryType.polygon) {
-			update_vbo();
-			update_indices();
-
-			vertexbuffer.unlock();
-			indexbuffer.unlock();
-
-			g.setMatrix3(projection_loc, camera.projection_matrix);
-
-			g.setVertexBuffer(vertexbuffer);
-			g.setIndexBuffer(indexbuffer);
-
-			g.drawIndexedVertices(0, indices_count);
-
-			vertices = vertexbuffer.lock();
+			indexbuffer = indexbuffer_poly;
 			indices = indexbuffer.lock();
-		} else if(geom_type == GeometryType.quad || geom_type == GeometryType.text) {
-			update_vbo();
 
-			vertexbuffer.unlock();
+			var _offset:Int = 0;
+			var j:Int = 0;
 
-			g.setMatrix3(projection_loc, camera.projection_matrix);
+			var g:Geometry = geometry;
+			for (_ in 0...geom_count) {
+				for (ind in g.indices) {
+					indices[j] = ind+_offset;
+					j++;
+				}
+				_offset += g.vertices.length;
+				g = g.next;
+			}
 
-			g.setVertexBuffer(vertexbuffer);
-			g.setIndexBuffer(indexbuffer_quad);
-
-			g.drawIndexedVertices(0, Std.int(vert_count * 1.5));
-
-			vertices = vertexbuffer.lock();
+			indexbuffer.unlock();
 		}
-
-		geom_count = 0;
-		vert_count = 0;
-		indices_count = 0;
-
-		last_shader = null;
-		geometry = null;
-		draw_calls++;
 
 	}
 
+	inline function update_texture(g:Graphics) {
+		
+		if(last_texture != null) {
+			g.setTexture(texture_loc, last_texture.image);
+			g.setTextureParameters(
+				texture_loc, 
+				last_texture.u_addressing, 
+				last_texture.v_addressing, 
+				last_texture.filter_min, 
+				last_texture.filter_mag, 
+				last_texture.mipmap_filter
+			);
+		}
 
-}
+	}
 
-@:enum abstract DrawState(UInt) from UInt to UInt {
+	inline function update_blendmode(sh:Shader) {
 
-    var none              = 0;
-    var colored           = 1;
-    var textured          = 2;
+		sh.blendSource = layer.blend_src;
+		sh.alphaBlendSource = layer.blend_src;
+		sh.blendDestination = layer.blend_dst;
+		sh.alphaBlendDestination = layer.blend_dst;
+		sh.blendOperation = layer.blend_eq;
+
+	}
+
 
 }

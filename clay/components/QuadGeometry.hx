@@ -41,11 +41,8 @@ class QuadGeometry extends Geometry {
 		verts.push(new Vertex(new Vector(_w, 0), null, new Vector(1,0)));
 		verts.push(new Vertex(new Vector(_w, _h), null, new Vector(1,1)));
 		verts.push(new Vertex( new Vector(0, _h), null, new Vector(0,1)));
-		
-		indices = [0,1,2,2,3,0];
 
 		_options.vertices = verts;
-		_options.indices = indices;
 
 		super(_options);
 

@@ -37,6 +37,8 @@ class Renderer {
 	public var shader_colored:Shader;
 	public var shader_textured:Shader;
 	public var shader_text:Shader;
+	public var shader_instanced:Shader;
+	public var shader_instanced_textured:Shader;
 
 	var renderpath:RenderPath;
 
@@ -140,6 +142,44 @@ class Renderer {
 		shader_text.alphaBlendSource = BlendingFactor.SourceAlpha;
 		shader_text.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
 		shader_text.compile();
+
+		var structures = new Array<VertexStructure>();
+		structures[0] = new VertexStructure();
+		structures[0].add("vertexPosition", VertexData.Float2);
+		structures[1] = new VertexStructure();
+		structures[1].add("m", VertexData.Float4x4);
+		structures[1].add("vertexColor", VertexData.Float4);
+		structures[1].instanced = true;
+
+		shader_instanced = new Shader();
+		shader_instanced.inputLayout = structures;
+		shader_instanced.vertexShader = Shaders.coloredinst_vert;
+		shader_instanced.fragmentShader = Shaders.colored_frag;
+		shader_instanced.blendSource = BlendingFactor.SourceAlpha;
+		shader_instanced.blendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_instanced.alphaBlendSource = BlendingFactor.SourceAlpha;
+		shader_instanced.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_instanced.compile();
+
+		structures = new Array<VertexStructure>();
+		structures[0] = new VertexStructure();
+		structures[0].add("vertexPosition", VertexData.Float2);
+		structures[0].add("texPosition", VertexData.Float2);
+		structures[1] = new VertexStructure();
+		structures[1].add("m", VertexData.Float4x4);
+		structures[1].add("vertexColor", VertexData.Float4);
+		structures[1].add("texOffset", VertexData.Float2);
+		structures[1].instanced = true;
+
+		shader_instanced_textured = new Shader();
+		shader_instanced_textured.inputLayout = structures;
+		shader_instanced_textured.vertexShader = Shaders.texturedinst_vert;
+		shader_instanced_textured.fragmentShader = Shaders.textured_frag;
+		shader_instanced_textured.blendSource = BlendingFactor.SourceAlpha;
+		shader_instanced_textured.blendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_instanced_textured.alphaBlendSource = BlendingFactor.SourceAlpha;
+		shader_instanced_textured.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
+		shader_instanced_textured.compile();
 
 	}
 
