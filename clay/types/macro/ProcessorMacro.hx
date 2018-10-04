@@ -278,12 +278,12 @@ class ProcessorMacro {
 						for(i in 0...inject_ftypes.length) {
 							var f = inject_ffields[i];
 							var expr = Context.parse('${f.name} = world.families.get(clay.${inject_ftypes[i]})', onadded_field.pos);
-							exprs.insert(0, expr);
+							exprs.insert(i, expr);
 						}
 						for(i in 0...inject_ctypes.length) {
 							var f = inject_cfields[i];
 							var expr = Context.parse('${f.name} = world.components.get_mapper(${inject_ctypes[i]})', onadded_field.pos);
-							exprs.insert(0, expr);
+							exprs.insert(i, expr);
 						}
 					}
 					default:
