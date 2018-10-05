@@ -127,9 +127,9 @@ class Renderer {
 		shader_textured.inputLayout = [structure];
 		shader_textured.vertexShader = Shaders.textured_vert;
 		shader_textured.fragmentShader = Shaders.textured_frag;
-		shader_textured.blendSource = BlendingFactor.SourceAlpha;
+		shader_textured.blendSource = BlendingFactor.BlendOne;
 		shader_textured.blendDestination = BlendingFactor.InverseSourceAlpha;
-		shader_textured.alphaBlendSource = BlendingFactor.SourceAlpha;
+		shader_textured.alphaBlendSource = BlendingFactor.BlendOne;
 		shader_textured.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
 		shader_textured.compile();
 
@@ -175,9 +175,9 @@ class Renderer {
 		shader_instanced_textured.inputLayout = structures;
 		shader_instanced_textured.vertexShader = Shaders.texturedinst_vert;
 		shader_instanced_textured.fragmentShader = Shaders.textured_frag;
-		shader_instanced_textured.blendSource = BlendingFactor.SourceAlpha;
+		shader_instanced_textured.blendSource = BlendingFactor.BlendOne;
 		shader_instanced_textured.blendDestination = BlendingFactor.InverseSourceAlpha;
-		shader_instanced_textured.alphaBlendSource = BlendingFactor.SourceAlpha;
+		shader_instanced_textured.alphaBlendSource = BlendingFactor.BlendOne;
 		shader_instanced_textured.alphaBlendDestination = BlendingFactor.InverseSourceAlpha;
 		shader_instanced_textured.compile();
 

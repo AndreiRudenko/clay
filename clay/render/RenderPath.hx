@@ -16,6 +16,8 @@ import clay.components.graphics.Texture;
 import clay.components.graphics.Geometry;
 import clay.components.graphics.InstancedGeometry;
 import clay.render.Shader;
+import clay.render.types.BlendMode;
+import clay.render.types.BlendEquation;
 import clay.math.Matrix;
 import clay.utils.Log.*;
 
@@ -124,19 +126,27 @@ class RenderPath {
 			was_draw = true;
 		}
 
+		inline function _try_draw() {
+			if(!was_draw) {
+				draw(g);
+				was_draw = true;
+			}
+		}
+
 		var shader = geom.shader;
+		var gtype = geom.geometry_type;
 
 		if(shader == null) {
 			if(geom.texture == null) {
-				if(geom.geometry_type == GeometryType.instanced) {
+				if(gtype == GeometryType.instanced) {
 					shader = renderer.shader_instanced;
 				} else {
 					shader = renderer.shader_colored;
 				}
 			} else {
-				if(geom.geometry_type == GeometryType.instanced) {
+				if(gtype == GeometryType.instanced) {
 					shader = renderer.shader_instanced_textured;
-				} else if(geom.geometry_type == GeometryType.text) {
+				} else if(gtype == GeometryType.text) {
 					shader = renderer.shader_text;
 				} else {
 					shader = renderer.shader_textured;
@@ -144,11 +154,10 @@ class RenderPath {
 			}
 		}
 
+		var shader_changed = false;
+
 		if(shader != last_shader) {
-			if(!was_draw) {
-				draw(g);
-				was_draw = true;
-			}
+			_try_draw();
 			if(geom.texture != null) {
 				texture_loc = shader.getTextureUnit("tex");
 			} else {
@@ -156,23 +165,18 @@ class RenderPath {
 				last_texture = null;
 			}
 
-			if(geom.geometry_type != GeometryType.instanced) {
+			if(gtype != GeometryType.instanced) {
 				projection_loc = shader.getConstantLocation("mvpMatrix");
 			}
 
 			g.setPipeline(shader);
-
-			update_blendmode(shader);
 
 			last_shader = shader;
 		}
 
 		if(geom.texture != null) {
 			if(last_texture != geom.texture) {
-				if(!was_draw) {
-					draw(g);
-					was_draw = true;
-				}
+				_try_draw();
 				last_texture = geom.texture;
 			}
 			draw_textured = true;
@@ -180,11 +184,15 @@ class RenderPath {
 			draw_textured = false;
 		}
 
+		if(shader_changed) {
+			update_blendmode(shader, geom);
+		}
+
 		if(geometry == null) {
 			geometry = geom;
 		}
 
-		draw_type = geom.geometry_type;
+		draw_type = gtype;
 
 		draw_geoms++;
 		geom_count++;
@@ -342,13 +350,26 @@ class RenderPath {
 
 	}
 
-	inline function update_blendmode(sh:Shader) {
+	inline function update_blendmode(sh:Shader, geom:Geometry) {
 
-		sh.blendSource = layer.blend_src;
-		sh.alphaBlendSource = layer.blend_src;
-		sh.blendDestination = layer.blend_dst;
-		sh.alphaBlendDestination = layer.blend_dst;
-		sh.blendOperation = layer.blend_eq;
+		if(layer.blend_src != BlendMode.Undefined && layer.blend_dst != BlendMode.Undefined) {
+			sh.blendSource = layer.blend_src;
+			sh.alphaBlendDestination = layer.blend_dst;
+			sh.alphaBlendSource = layer.blend_src;
+			sh.blendDestination = layer.blend_dst;
+			sh.blendOperation = layer.blend_eq;
+		} else { // set default blend modes
+			if(geom.texture != null && geom.geometry_type != GeometryType.text) {
+				sh.blendSource = BlendMode.BlendOne;
+				sh.alphaBlendSource = BlendMode.BlendOne;
+			} else {
+				sh.blendSource = BlendMode.SourceAlpha;
+				sh.alphaBlendSource = BlendMode.SourceAlpha;
+			}
+			sh.alphaBlendDestination = BlendMode.InverseSourceAlpha;
+			sh.blendDestination = BlendMode.InverseSourceAlpha;
+			sh.blendOperation = BlendEquation.Add;
+		}
 
 	}
 

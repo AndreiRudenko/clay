@@ -49,8 +49,8 @@ class Layer {
 		onprerender = new Signal();
 		onpostrender = new Signal();
 
-		blend_src = BlendMode.SourceAlpha;
-		blend_dst = BlendMode.InverseSourceAlpha;
+		blend_src = BlendMode.Undefined;
+		blend_dst = BlendMode.Undefined;
 		blend_eq = BlendEquation.Add;
 		
 	}
