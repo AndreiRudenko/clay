@@ -10,32 +10,32 @@ class Clay {
 	public static var engine      	(default, null):clay.Engine;
 
 	public static var world       	(get, set):clay.World;
-	public static var worlds      	(get, never):clay.core.Worlds;
+	public static var worlds      	(get, never):clay.core.ecs.Worlds;
 
-	public static var screen      	(get, never):clay.Screen;
+	public static var screen      	(get, never):clay.core.Screen;
 	public static var renderer 	    (get, never):clay.render.Renderer;
-	public static var camera 	    (get, never):clay.components.Camera;
+	public static var camera 	    (get, never):clay.components.misc.Camera;
 	public static var draw     	    (get, never):clay.render.Draw;
 
 	public static var input    	    (get, never):clay.core.Inputs;
 	public static var resources	    (get, never):clay.core.Resources;
 
-	public static var audio 	    (get, never):clay.Audio;
+	public static var audio 	    (get, never):clay.core.Audio;
 	public static var timer    	    (get, never):clay.core.TimerSystem;
-	public static var events    	(get, never):clay.emitters.Events;
+	public static var events    	(get, never):clay.components.event.Events;
 	public static var motion    	(get, never):clay.tween.TweenManager;
 	
 	public static var random    	(get, never):clay.math.Random;
 
 	public static var signals      	(get, never):clay.core.EngineSignals;
 
-	public static var tags   	    (get, never):clay.core.TagSystem;
-	public static var groups   	    (get, never):clay.core.GroupSystem;
+	public static var tags   	    (get, never):clay.core.ecs.TagSystem;
+	public static var groups   	    (get, never):clay.core.ecs.GroupSystem;
 	
-	public static var entities   	(get, never):clay.core.Entities;
-	public static var components 	(get, never):clay.core.Components;
-	public static var processors 	(get, never):clay.core.Processors;
-	public static var families      (get, never):clay.core.Families;
+	public static var entities   	(get, never):clay.core.ecs.Entities;
+	public static var components 	(get, never):clay.core.ecs.Components;
+	public static var processors 	(get, never):clay.core.ecs.Processors;
+	public static var families      (get, never):clay.core.ecs.Families;
 
 	public static var dt	        (get, never):Float;
 	public static var time	        (get, never):Float;

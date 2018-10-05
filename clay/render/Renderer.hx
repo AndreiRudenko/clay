@@ -10,9 +10,9 @@ import kha.graphics4.VertexData;
 import kha.graphics4.Graphics;
 import kha.graphics4.BlendingFactor;
 
-import clay.components.Camera;
-import clay.components.Geometry;
-import clay.components.Texture;
+import clay.components.misc.Camera;
+import clay.components.graphics.Geometry;
+import clay.components.graphics.Texture;
 import clay.resources.FontResource;
 import clay.data.Color;
 import clay.utils.Bits;

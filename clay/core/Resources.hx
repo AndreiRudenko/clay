@@ -7,7 +7,7 @@ import clay.resources.BytesResource;
 import clay.resources.FontResource;
 import clay.resources.JsonResource;
 // import clay.resources.ShaderResource;
-import clay.components.Texture;
+import clay.components.graphics.Texture;
 import clay.resources.VideoResource;
 import clay.resources.TextResource;
 import clay.utils.Log.*;

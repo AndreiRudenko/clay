@@ -3,8 +3,8 @@ package clay.particles.render.clay;
 
 // import luxe.Sprite;
 import clay.Entity;
-import clay.components.QuadGeometry;
-import clay.components.Texture;
+import clay.components.graphics.QuadGeometry;
+import clay.components.graphics.Texture;
 import clay.render.Layer;
 import clay.render.types.BlendMode;
 import clay.particles.ParticleEmitter;

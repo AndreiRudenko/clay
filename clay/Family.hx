@@ -3,11 +3,11 @@ package clay;
 
 import clay.Entity;
 import clay.World;
-import clay.core.Components;
-import clay.core.Families;
-import clay.core.EntityVector;
+import clay.core.ecs.Components;
+import clay.core.ecs.Families;
+import clay.core.ecs.EntityVector;
 import clay.types.ComponentType;
-import clay.emitters.Signal;
+import clay.core.Signal;
 import clay.ds.BitFlag;
 
 
@@ -23,7 +23,7 @@ private typedef IntArray = haxe.ds.Vector<Int>;
 class Family<Rest> {}
 
 
-@:access(clay.core.Families, clay.core.Components)
+@:access(clay.core.ecs.Families, clay.core.ecs.Components)
 class FamilyData {
 	
 
@@ -191,7 +191,7 @@ class FamilyData {
 
 	}
 
-	@:access(clay.core.Components)
+	@:access(clay.core.ecs.Components)
 	function _match_entity(e:Entity):Bool {
 
 		var entity_flags = cm.flags[e.id];

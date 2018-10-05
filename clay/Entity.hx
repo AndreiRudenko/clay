@@ -11,7 +11,7 @@ abstract Entity(Int) {
 	public var id(get, never):Int;
 
 
-	@:allow(clay.core.Entities)
+	@:allow(clay.core.ecs.Entities)
 	inline function new(id:Int):Void {
 
 		this = id;

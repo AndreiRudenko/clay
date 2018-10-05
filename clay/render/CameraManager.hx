@@ -4,10 +4,10 @@ package clay.render;
 import kha.graphics4.Graphics;
 
 import clay.Entity;
-import clay.components.Camera;
+import clay.components.misc.Camera;
 import clay.utils.Log.*;
 
-@:access(clay.components.Camera)
+@:access(clay.components.misc.Camera)
 class CameraManager {
 
 

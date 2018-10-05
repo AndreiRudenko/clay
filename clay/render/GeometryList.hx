@@ -1,10 +1,10 @@
 package clay.render;
 
 
-import clay.components.Geometry;
+import clay.components.graphics.Geometry;
 
 
-@:access(clay.components.Geometry)
+@:access(clay.components.graphics.Geometry)
 class GeometryList {
 
 
@@ -162,7 +162,7 @@ class GeometryList {
 }
 
 @:final @:unreflective @:dce
-@:access(clay.components.Geometry)
+@:access(clay.components.graphics.Geometry)
 private class GeometryListIterator {
 
 

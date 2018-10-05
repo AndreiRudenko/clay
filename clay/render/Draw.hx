@@ -2,7 +2,7 @@ package clay.render;
 
 
 // import kha.graphics4.Graphics;
-import clay.components.Geometry;
+import clay.components.graphics.Geometry;
 import clay.render.Layer;
 import clay.math.Vector;
 import clay.data.Color;

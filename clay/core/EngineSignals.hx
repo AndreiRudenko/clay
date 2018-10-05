@@ -1,7 +1,7 @@
 package clay.core;
 
 
-import clay.emitters.Signal;
+import clay.core.Signal;
 
 import clay.input.Keyboard;
 import clay.input.Mouse;

@@ -6,10 +6,10 @@ import kha.graphics4.Graphics;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
 import clay.render.GeometryList;
-import clay.components.Geometry;
-import clay.components.Camera;
-import clay.components.Texture;
-import clay.emitters.Signal;
+import clay.components.graphics.Geometry;
+import clay.components.misc.Camera;
+import clay.components.graphics.Texture;
+import clay.core.Signal;
 // import ds.DynamicPool;
 
 import clay.utils.Log.*;
@@ -17,7 +17,7 @@ import clay.utils.Log.*;
 
 @:access(clay.render.Renderer)
 @:access(clay.render.LayerManager)
-@:access(clay.components.Geometry)
+@:access(clay.components.graphics.Geometry)
 class Layer {
 
 

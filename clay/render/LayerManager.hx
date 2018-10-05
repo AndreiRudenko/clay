@@ -4,9 +4,9 @@ package clay.render;
 import kha.graphics4.Graphics;
 
 import clay.render.Layer;
-import clay.components.Camera;
+import clay.components.misc.Camera;
 
-@:access(clay.components.Camera)
+@:access(clay.components.misc.Camera)
 class LayerManager {
 
 

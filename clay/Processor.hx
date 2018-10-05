@@ -2,7 +2,7 @@ package clay;
 
 
 import clay.World;
-import clay.core.Processors;
+import clay.core.ecs.Processors;
 
 import clay.input.Key;
 import clay.input.Keyboard;
@@ -17,7 +17,7 @@ import clay.input.Bindings;
 @:autoBuild(clay.types.macro.ProcessorMacro.build())
 #end
 
-@:allow(clay.core.Processors)
+@:allow(clay.core.ecs.Processors)
 class Processor {
 
 
@@ -91,7 +91,7 @@ class Processor {
 	@:noCompletion function __listen_emitter() {}
 	@:noCompletion function __unlisten_emitter() {}
 
-	@:access(clay.core.Processors)
+	@:access(clay.core.ecs.Processors)
 	@:noCompletion inline function set_priority(value:Int) : Int {
 
 		priority = value;

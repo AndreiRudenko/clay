@@ -2,12 +2,12 @@ package clay;
 
 
 import clay.Entity;
-import clay.core.Components;
+import clay.core.ecs.Components;
 import clay.types.ComponentType;
 import haxe.ds.Vector;
 
 
-@:access(clay.core.Components)
+@:access(clay.core.ecs.Components)
 class ComponentMapper<T> {
 
 

@@ -3,7 +3,7 @@ package clay.render;
 
 import kha.graphics4.Graphics;
 import kha.math.FastMatrix3;
-import clay.components.Geometry;
+import clay.components.graphics.Geometry;
 
 
 @:access(clay.render.Renderer)

@@ -1,16 +1,16 @@
 package clay;
 
 
-import clay.core.Entities;
-import clay.core.Components;
-import clay.core.Processors;
-import clay.core.Families;
-import clay.core.Worlds;
-import clay.core.TagSystem;
-import clay.core.GroupSystem;
+import clay.core.ecs.Entities;
+import clay.core.ecs.Components;
+import clay.core.ecs.Processors;
+import clay.core.ecs.Families;
+import clay.core.ecs.Worlds;
+import clay.core.ecs.TagSystem;
+import clay.core.ecs.GroupSystem;
 import clay.core.EngineSignals;
 
-@:allow(clay.core.Worlds)
+@:allow(clay.core.ecs.Worlds)
 class World {
 
 

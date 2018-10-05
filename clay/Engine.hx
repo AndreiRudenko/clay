@@ -7,15 +7,18 @@ import kha.Framebuffer;
 import kha.WindowOptions;
 
 import clay.math.Random;
-import clay.emitters.Events;
-import clay.utils.Log.*;
 
-import clay.components.Camera;
+import clay.components.event.Events;
+import clay.components.misc.Camera;
+
 import clay.core.Inputs;
 import clay.core.Resources;
 import clay.core.EngineSignals;
-
+import clay.core.Audio;
+import clay.core.Screen;
 import clay.core.TimerSystem;
+import clay.core.ecs.Worlds;
+
 import clay.input.Key;
 import clay.input.Keyboard;
 import clay.input.Mouse;
@@ -24,21 +27,26 @@ import clay.input.Touch;
 import clay.input.Pen;
 import clay.input.Bindings;
 
+import clay.render.Renderer;
+import clay.render.Draw;
+
 import clay.tween.TweenManager;
+
+import clay.utils.Log.*;
 
 
 @:keep
 class Engine {
 
 
-	public var renderer     (default, null):clay.render.Renderer;
+	public var renderer     (default, null):Renderer;
 	public var camera 	    (default, set):Camera;
-	public var draw         (default, null):clay.render.Draw;
-	public var audio        (default, null):clay.Audio;
+	public var draw         (default, null):Draw;
+	public var audio        (default, null):Audio;
 
 	@:allow(Clay)
 	public var world 	    (default, null):World;
-	public var worlds	    (default, null):clay.core.Worlds;
+	public var worlds	    (default, null):Worlds;
 
 	public var screen	    (default, null):Screen;
 	public var input	    (default, null):Inputs;
@@ -124,16 +132,16 @@ class Engine {
 		random = new Random(options.random_seed);
 		timer = new TimerSystem();
 
-		renderer = new clay.render.Renderer(options.renderer);
-		draw = new clay.render.Draw();
+		renderer = new Renderer(options.renderer);
+		draw = new Draw();
 		screen = new Screen(options.antialiasing);
-		audio = new clay.Audio();
+		audio = new Audio();
 		
 		events = new Events();
 		input = new Inputs(this);
 		resources = new Resources();
 
-		worlds = new clay.core.Worlds();
+		worlds = new Worlds();
 
 		init();
 

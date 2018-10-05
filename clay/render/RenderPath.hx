@@ -11,16 +11,16 @@ import kha.arrays.Float32Array;
 import kha.arrays.Uint32Array;
 import kha.Image;
 
-import clay.components.Camera;
-import clay.components.Texture;
-import clay.components.Geometry;
-import clay.components.InstancedGeometry;
+import clay.components.misc.Camera;
+import clay.components.graphics.Texture;
+import clay.components.graphics.Geometry;
+import clay.components.graphics.InstancedGeometry;
 import clay.render.Shader;
 import clay.math.Matrix;
 import clay.utils.Log.*;
 
 
-@:access(clay.components.Geometry)
+@:access(clay.components.graphics.Geometry)
 class RenderPath {
 
 

@@ -2,7 +2,7 @@ package clay.particles.core;
 
 
 import clay.data.Color;
-import clay.components.QuadGeometry;
+import clay.components.graphics.QuadGeometry;
 
 
 class ParticleData {
