@@ -58,7 +58,7 @@ class ParticleEmitter {
 		/** emitter duration max*/
 	public var duration_max	(default, set):Float;
 		/** emitter cache size */
-	public var cache_size   (default, set):Int;
+	public var cache_size   (default, null):Int;
 		/** emitter cache wrap */
 	public var cache_wrap:Bool;
 
@@ -141,18 +141,6 @@ class ParticleEmitter {
 		if(options.modules != null) {
 			for (m in options.modules) {
 				add_module(m);
-			}
-		}
-
-		// create modules from data
-		if(options.modules_data != null) {
-			var _classname:String;
-			for (md in options.modules_data) {
-				_classname = md.name;
-				var m = ModulesFactory.create(_classname, md);
-				if(m != null) {
-					add_module(m.from_json(md));
-				}
 			}
 		}
 
@@ -331,9 +319,7 @@ class ParticleEmitter {
 			}
 
 			// update particle changes to sprite 
-			for (p in particles) {
-				render.onspriteupdate(particles_data[p.id]);
-			}
+			render.onupdate(dt);
 
 		}
 		
@@ -642,8 +628,8 @@ class ParticleEmitter {
 	function set_depth(value:Float):Float {
 
 		if(depth != value) {
-			for (pd in particles_data) {
-				render.onspritedepth(pd,value);
+			if(render != null) {
+				render.ondepth(value);
 			}
 		}
 
@@ -675,62 +661,28 @@ class ParticleEmitter {
 
 		image_path = value;
 
-		if(inited) {
-			for (pd in particles_data) {
-				render.onspritetexture(pd,image_path);
-			}
+		if(render != null) {
+			render.ontexture(image_path);
 		}
 
 		return image_path;
 
 	}
-
-	function set_cache_size(value:Int):Int {
-		
-		if(cache_size != value) {
-			cache_size = value;
-			if(Lambda.count(modules) > 0) {
-
-				_need_reset = false;
-				for (m in modules) {
-					m._onremoved();
-				}
-				_need_reset = true;
-
-				for (pd in particles_data) {
-					render.onspritedestroy(pd);
-				}
-				particles_data.splice(0, particles_data.length);
-
-				particles = new ParticleVector(cache_size);
-				components = new ComponentManager(cache_size);
-
-				for (m in modules) {
-					m._onadded(this);
-				}
-
-				init(system);
-
-			} else {
-				particles = new ParticleVector(cache_size);
-				components = new ComponentManager(cache_size);
-			}
-		}
-
-		return cache_size;
-
-	}
 	
 	function set_blend_src(val:BlendMode)  {
 
-		render.onblendsrc(val);
+		if(render != null) {
+			render.onblendsrc(val);
+		}
 		return blend_src = val;
 
 	}
 
 	function set_blend_dest(val:BlendMode) {
 
-		render.onblenddest(val);
+		if(render != null) {
+			render.onblenddest(val);
+		}
 		return blend_dest = val;
 
 	}

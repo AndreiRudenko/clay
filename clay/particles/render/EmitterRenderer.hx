@@ -27,8 +27,10 @@ class EmitterRenderer {
 	public function onspriteshow(pd:ParticleData) {}
 	public function onspritehide(pd:ParticleData) {}
 	public function onspriteupdate(pd:ParticleData) {}
-	public function onspritedepth(pd:ParticleData, depth:Float) {}
-	public function onspritetexture(pd:ParticleData, path:String) {}
+
+	public function ondepth(v:Float) {}
+	public function ontexture(path:String) {}
+	public function onupdate(dt:Float) {}
 
 	public function onblendsrc(v:BlendMode) {}
 	public function onblenddest(v:BlendMode) {}

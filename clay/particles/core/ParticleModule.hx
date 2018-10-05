@@ -27,18 +27,20 @@ class ParticleModule {
 	@:noCompletion public var next : ParticleModule;
 
 
-	public function new(_options:ParticleModuleOptions) {
+	public function new(?_options:ParticleModuleOptions) {
 
 		name = Type.getClassName(Type.getClass(this));
+
+		if(_options != null) {
+			if(_options.enabled != null) {
+				enabled = _options.enabled;
+			}
+
+			if(_options.priority != null) {
+				priority = _options.priority;
+			}
+		}
 		
-		if(_options.enabled != null) {
-			enabled = _options.enabled;
-		}
-
-		if(_options.priority != null) {
-			priority = _options.priority;
-		}
-
 	}
 
        /** called when the emitter initiated */

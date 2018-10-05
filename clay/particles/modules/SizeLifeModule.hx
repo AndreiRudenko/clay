@@ -5,6 +5,7 @@ import clay.particles.core.ParticleModule;
 import clay.particles.core.ParticleData;
 import clay.particles.core.Components;
 import clay.math.Vector;
+import clay.math.Mathf;
 
 using clay.particles.utils.VectorExtender;
 
@@ -83,8 +84,8 @@ class SizeLifeModule extends ParticleModule {
 		for (p in particles) {
 			szd = size_delta[p.id];
 			pd = particles_data[p.id];
-			pd.w += szd.x * dt;
-			pd.h += szd.y * dt;
+			pd.w = Mathf.clamp_bottom(pd.w + szd.x * dt, 0);
+			pd.h = Mathf.clamp_bottom(pd.h + szd.y * dt, 0);
 		}
 
 	}

@@ -1,22 +1,22 @@
 package clay.particles.render.clay;
 
 
-// import luxe.Sprite;
 import clay.Entity;
-import clay.components.graphics.QuadGeometry;
+import clay.components.graphics.InstancedGeometry;
 import clay.components.graphics.Texture;
+import clay.render.Vertex;
 import clay.render.Layer;
-import clay.render.types.BlendMode;
 import clay.particles.ParticleEmitter;
 import clay.particles.core.ParticleData;
 import clay.particles.core.Particle;
 import clay.data.Color;
+import clay.math.Vector;
 
 
 class ClayEmitter extends EmitterRenderer {
 
 
-	var texture:Texture;
+	var geom:InstancedGeometry;
 	var layer:Layer;
 
 
@@ -24,165 +24,102 @@ class ClayEmitter extends EmitterRenderer {
 
 		super(_emitter);
 
-		layer = Clay.renderer.layers.get(emitter.layer);
-
 	}
 
 	override function init() {
 
-		texture = Clay.resources.texture(emitter.image_path);
+		layer = Clay.renderer.layers.get(emitter.layer);
+
+		var verts:Array<Vertex> = [];
+
+		verts.push(new Vertex(new Vector(0, 0), null, new Vector(0,0)));
+		verts.push(new Vertex(new Vector(1, 0), null, new Vector(1,0)));
+		verts.push(new Vertex(new Vector(1, 1), null, new Vector(1,1)));
+		verts.push(new Vertex( new Vector(0, 1), null, new Vector(0,1)));
+
+		geom = new InstancedGeometry({
+			instances: emitter.cache_size,
+			vertices: verts,
+			indices: [0,1,2,2,3,0]
+		});
+
+		geom.texture = Clay.resources.texture(emitter.image_path);
+
+		layer.add(geom);
+
+		geom.instances_count = 0;
 
 	}
 
 	override function destroy() {
 
-		texture = null;
+		layer.remove(geom);
+
+		geom = null;
 		layer = null;
 
 	}
-	
+
 	override function onspritecreate(p:Particle):ParticleData {
 
-		var q = new QuadGeometry({texture: texture, layer: emitter.layer, order: Std.int(emitter.depth)});
-		q.color = new Color();
-
-		return new ParticleData(q);
-
-	}
-
-	override function onspritedestroy(pd:ParticleData) {
-
-		var geom:QuadGeometry = pd.sprite;
-		layer.remove(geom);
-		geom.destroy();
+		return new ParticleData();
 
 	}
 
 	override function onspriteshow(pd:ParticleData) {
 
-		var geom:QuadGeometry = pd.sprite;
-
-		if(geom != null && !geom.added) {
-			layer.add(geom);
-		}
+		geom.instances_count++;
 
 	}
 
 	override function onspritehide(pd:ParticleData) {
 
-		var geom:QuadGeometry = pd.sprite;
+		geom.instances_count--;
 
-		if(geom != null && geom.added) {
-			layer.remove(geom);
+	}
+
+	override function onupdate(dt:Float) {
+
+		var i:Int = 0;
+		var pd:ParticleData;
+		var inst:InstanceData;
+		for (p in emitter.particles) {
+			pd = emitter.particles_data[p.id];
+			inst = geom.instances[i];
+			inst.pos.set(pd.x, pd.y);
+			inst.scale.set(pd.s, pd.s);
+			inst.size.set(pd.w, pd.h);
+			inst.rotation = pd.r;
+
+			if(pd.centered) {
+				inst.origin.set(pd.w*0.5, pd.h*0.5);
+			} else {
+				inst.origin.set(pd.ox, pd.oy);
+			}
+
+			inst.color.copy_from(pd.color);
+
+			i++;
 		}
 
 	}
 
-	override function onspriteupdate(pd:ParticleData) {
+	override function ontexture(path:String) {
 
-		var geom:QuadGeometry = pd.sprite;
-		var color:Color = pd.color;
-
-		geom.transform_matrix.identity()
-		.translate(pd.x, pd.y)
-		.rotate(pd.r) // todo: check radians ?
-		.scale(pd.s, pd.s);
-
-		if(pd.centered) {
-			geom.transform_matrix.apply(-pd.w*0.5, -pd.h*0.5);
-		} else {
-			geom.transform_matrix.apply(-pd.ox, -pd.oy);
-		}
-		
-		if(pd.w != geom.size.x || pd.h != geom.size.y) {
-			geom.size.set(pd.w, pd.h);
-		}
-
-		geom.color.copy_from(pd.color);
+		geom.texture = Clay.resources.texture(emitter.image_path);
 
 	}
 
-	override function onspritedepth(pd:ParticleData, depth:Float) {
+	override function ondepth(depth:Float) {
 
-		var geom:QuadGeometry = pd.sprite;
 		geom.order = Std.int(depth);
-
-	}
-
-	override function onspritetexture(pd:ParticleData, path:String) {
-
-		var geom:QuadGeometry = pd.sprite;
-		var tex = Clay.resources.texture(path);
-		geom.texture = tex;
-
-	}
-
-	override function onblendsrc(v:clay.particles.data.BlendMode) {
-
-		// var sprite:Sprite;
-		// for (pd in emitter.particles_data) {
-		// 	sprite = pd.sprite;
-		// 	sprite.blend_src = blend_convert(v);
-		// }
-
-	}
-
-	override function onblenddest(v:clay.particles.data.BlendMode) {
-
-		// var sprite:Sprite;
-		// for (pd in emitter.particles_data) {
-		// 	sprite = pd.sprite;
-		// 	sprite.blend_dest = blend_convert(v);
-		// }
 
 	}
 
 	override function onlayerchanged(v:Int) {
 
-		for (pd in emitter.particles_data) {
-			pd.sprite.layer = v;
-		}
+		geom.layer = v;
 
-	}
-
-	function blend_convert(v:clay.particles.data.BlendMode):BlendMode {
-
-		switch (v) {
-			case clay.particles.data.BlendMode.zero :{
-				return BlendMode.BlendZero;
-			}
-			case clay.particles.data.BlendMode.one :{
-				return BlendMode.BlendOne;
-			}
-			case clay.particles.data.BlendMode.src_color :{
-				return BlendMode.SourceColor;
-			}
-			case clay.particles.data.BlendMode.one_minus_src_color :{
-				return BlendMode.InverseSourceColor;
-			}
-			case clay.particles.data.BlendMode.src_alpha :{
-				return BlendMode.SourceAlpha;
-			}
-			case clay.particles.data.BlendMode.one_minus_src_alpha :{
-				return BlendMode.InverseSourceAlpha;
-			}
-			case clay.particles.data.BlendMode.dst_alpha :{
-				return BlendMode.DestinationAlpha;
-			}
-			case clay.particles.data.BlendMode.one_minus_dst_alpha :{
-				return BlendMode.InverseDestinationAlpha;
-			}
-			case clay.particles.data.BlendMode.dst_color :{
-				return BlendMode.DestinationColor;
-			}
-			case clay.particles.data.BlendMode.one_minus_dst_color :{
-				return BlendMode.InverseDestinationColor;
-			}
-			case clay.particles.data.BlendMode.src_alpha_saturate :{
-				return BlendMode.BlendZero; // not implemented
-			}
-		}
-		
 	}
 
 }

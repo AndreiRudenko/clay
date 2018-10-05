@@ -4,6 +4,7 @@ import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
 import clay.particles.core.ParticleData;
 import clay.particles.core.Components;
+import clay.math.Mathf;
 
 
 class ScaleLifeModule extends ParticleModule {
@@ -73,9 +74,11 @@ class ScaleLifeModule extends ParticleModule {
 
 	override function update(dt:Float) {
 
+		var pd:ParticleData;
 		for (p in particles) {
 			if(scale_delta[p.id] != 0) {
-				particles_data[p.id].s += scale_delta[p.id] * dt;
+				pd = particles_data[p.id];
+				pd.s = Mathf.clamp_bottom(pd.s + scale_delta[p.id] * dt, 0);
 			}
 		}
 

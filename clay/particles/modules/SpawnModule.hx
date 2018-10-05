@@ -8,7 +8,7 @@ import clay.particles.core.ParticleModule;
 class SpawnModule extends ParticleModule {
 
 
-	public function new(_options:ParticleModuleOptions) {
+	public function new(?_options:ParticleModuleOptions) {
 
 		super(_options);
 

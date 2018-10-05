@@ -2,7 +2,6 @@ package clay.particles.core;
 
 
 import clay.data.Color;
-import clay.components.graphics.QuadGeometry;
 
 
 class ParticleData {
@@ -25,13 +24,11 @@ class ParticleData {
 	public var centered:Bool = true;
 	
 	public var color:Color;
-	public var sprite(default,null):QuadGeometry;
 
 
-	public function new(_sprite:QuadGeometry) {
+	public function new() {
 		
 		color = new Color();
-		sprite = _sprite;
 
 	}
 
