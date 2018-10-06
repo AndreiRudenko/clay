@@ -4,7 +4,7 @@ package clay.processors.graphics;
 import clay.Processor;
 import clay.Family;
 
-// import clay.components.graphics.Texture;
+import clay.components.event.Events;
 import clay.components.graphics.Geometry;
 import clay.components.graphics.QuadGeometry;
 import clay.components.graphics.Animation;
@@ -12,22 +12,24 @@ import clay.components.graphics.Animation;
 import clay.utils.Log.*;
 
 
-
 class AnimationProcessor extends Processor {
 
 
 	var aq_family:Family<Animation, QuadGeometry>;
+	var ae_family:Family<Animation, Events>;
 
 
 	override function onadded() {
 
 		aq_family.listen(a_added, a_removed);
+		ae_family.listen(ae_added, ae_removed);
 
 	}
 
 	override function onremoved() {
 		
 		aq_family.unlisten(a_added, a_removed);
+		ae_family.unlisten(ae_added, ae_removed);
 
 	}
 
@@ -48,6 +50,25 @@ class AnimationProcessor extends Processor {
 		var a = aq_family.get_animation(e);
 		a.stop();
 		a.geometry = null;
+
+	}
+
+	function ae_added(e:Entity) {
+
+		_debug('ae_added');
+
+		var a = ae_family.get_animation(e);
+		var ev = ae_family.get_events(e);
+		a.events = ev;
+
+	}
+	
+	function ae_removed(e:Entity) {
+
+		_debug('ae_removed');
+
+		var a = ae_family.get_animation(e);
+		a.events = null;
 
 	}
 
@@ -74,7 +95,7 @@ class AnimationProcessor extends Processor {
 
 				if(!a.reverse) {
 					_frame += 1;
-					if(_frame >= a.current.frames.length) {
+					if(_frame >= a.current.frames_count) {
 						end = true;
 					}
 				} else {
@@ -90,13 +111,16 @@ class AnimationProcessor extends Processor {
 							a.current._loop--;
 						}
 						_frame = 0;
-						// a.emit_anim_event('loop');
+						if(a.events != null) {
+							a.current.emit_event('loop');
+						}
 					} else {
 						a.stop();
-						// a.emit_anim_event('end');
+						if(a.events != null) {
+							a.current.emit_event('end');
+						}
 						_frame = a.frame;
 					}
-
 				}
 				a.frame = _frame;
 
