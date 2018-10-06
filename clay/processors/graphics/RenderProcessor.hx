@@ -12,6 +12,7 @@ import clay.components.graphics.QuadPackGeometry;
 import clay.components.graphics.InstancedGeometry;
 import clay.components.graphics.Text;
 
+import clay.math.Matrix;
 import clay.render.Renderer;
 import clay.utils.Log.*;
 
@@ -116,14 +117,14 @@ class RenderProcessor extends Processor {
 
 		var g = gt_family.get_geometry(e);
 		var t = gt_family.get_transform(e);
-		g.transform_matrix.copy(t.world);
+		add_transform_to_geom(t, g);
 
 	}
 	
 	function gt_removed(e:Entity) {
 
 		var g = gt_family.get_geometry(e);
-		g.transform_matrix.identity();
+		remove_transform_from_geom(g);
 
 	}
 
@@ -164,14 +165,14 @@ class RenderProcessor extends Processor {
 
 		var g = qt_family.get_quadGeometry(e);
 		var t = qt_family.get_transform(e);
-		g.transform_matrix.copy(t.world);
+		add_transform_to_geom(t, g);
 
 	}
 	
 	function qt_removed(e:Entity) {
 
 		var g = qt_family.get_quadGeometry(e);
-		g.transform_matrix.identity();
+		remove_transform_from_geom(g);
 
 	}
 
@@ -211,14 +212,14 @@ class RenderProcessor extends Processor {
 
 		var g = qpt_family.get_quadPackGeometry(e);
 		var t = qpt_family.get_transform(e);
-		g.transform_matrix.copy(t.world);
+		add_transform_to_geom(t, g);
 
 	}
 	
 	function qpt_removed(e:Entity) {
 
 		var g = qpt_family.get_quadPackGeometry(e);
-		g.transform_matrix.identity();
+		remove_transform_from_geom(g);
 
 	}
 
@@ -256,16 +257,16 @@ class RenderProcessor extends Processor {
 
 	function tt_added(e:Entity) {
 
-		var txt = tt_family.get_text(e);
+		var g = tt_family.get_text(e);
 		var t = tt_family.get_transform(e);
-		txt.transform_matrix.copy(t.world);
+		add_transform_to_geom(t, g);
 
 	}
 	
 	function tt_removed(e:Entity) {
 
-		var txt = tt_family.get_text(e);
-		txt.transform_matrix.identity();
+		var g = tt_family.get_text(e);
+		remove_transform_from_geom(g);
 
 	}
 
@@ -287,32 +288,31 @@ class RenderProcessor extends Processor {
 
 	function it_added(e:Entity) {
 
-		var ig = it_family.get_instancedGeometry(e);
+		var g = it_family.get_instancedGeometry(e);
 		var t = it_family.get_transform(e);
-		ig.transform_matrix.copy(t.world);
+		add_transform_to_geom(t, g);
 
 	}
 	
 	function it_removed(e:Entity) {
 
-		var ig = it_family.get_instancedGeometry(e);
-		ig.transform_matrix.identity();
+		var g = it_family.get_instancedGeometry(e);
+		remove_transform_from_geom(g);
 
 	}
 
 	function itex_added(e:Entity) {
 
-		var ig = itex_family.get_instancedGeometry(e);
+		var g = itex_family.get_instancedGeometry(e);
 		var tex = itex_family.get_texture(e);
-		ig.texture = tex;
+		g.texture = tex;
 
 	}
 	
 	function itex_removed(e:Entity) {
 
-		var ig = itex_family.get_instancedGeometry(e);
-		ig.texture = null;
-
+		var g = itex_family.get_instancedGeometry(e);
+		g.texture = null;
 	}
 
 	inline function add_geom_to_renderer(g:Geometry) {
@@ -339,44 +339,17 @@ class RenderProcessor extends Processor {
 
 	}
 
-	override function update(dt:Float) {
+	@:access(clay.components.graphics.Geometry)
+	inline function add_transform_to_geom(t:Transform, g:Geometry) {
 
-		var g:Geometry = null;
-		var q:QuadGeometry = null;
-		var qp:QuadPackGeometry = null;
-		var t:Transform = null;
-		var txt:Text = null;
-		var ig:InstancedGeometry = null;
+		g.transform_matrix = t.world;
 
-		for (e in gt_family) {	
-			g = gt_family.get_geometry(e);
-			t = gt_family.get_transform(e);
-			g.transform_matrix.copy(t.world);
-		}
+	}
 
-		for (e in qt_family) {	
-			q = qt_family.get_quadGeometry(e);
-			t = qt_family.get_transform(e);
-			q.transform_matrix.copy(t.world);
-		}
+	@:access(clay.components.graphics.Geometry)
+	inline function remove_transform_from_geom(g:Geometry) {
 
-		for (e in qpt_family) {	
-			qp = qpt_family.get_quadPackGeometry(e);
-			t = qpt_family.get_transform(e);
-			qp.transform_matrix.copy(t.world);
-		}
-
-		for (e in tt_family) {	
-			txt = tt_family.get_text(e);
-			t = tt_family.get_transform(e);
-			txt.transform_matrix.copy(t.world);
-		}
-
-		for (e in it_family) {	
-			ig = it_family.get_instancedGeometry(e);
-			t = it_family.get_transform(e);
-			ig.transform_matrix.copy(t.world);
-		}
+		g.transform_matrix = new Matrix();
 
 	}
 
