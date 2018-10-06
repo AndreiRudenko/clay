@@ -170,7 +170,7 @@ class FamilyMacro {
 				// var ctn = info.pack.concat([info.name]).join(".");
 				ctypes.push(ctn);
 
-				var ctype = TPath({pack: ['clay', 'types'], name: 'ComponentType'});
+				var ctype = TPath({pack: ['clay', 'core', 'ecs'], name: 'ComponentType'});
 
 				fields.push(MacroUtils.build_var(comp_type_id, [], ctype));
 

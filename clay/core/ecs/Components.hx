@@ -5,7 +5,7 @@ import haxe.ds.Vector;
 import clay.Entity;
 import clay.World;
 import clay.core.ecs.Entities;
-import clay.types.ComponentType;
+import clay.core.ecs.ComponentType;
 import clay.ds.BitFlag;
 import clay.ds.BitVector;
 import clay.ComponentMapper;

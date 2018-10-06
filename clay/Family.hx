@@ -6,7 +6,7 @@ import clay.World;
 import clay.core.ecs.Components;
 import clay.core.ecs.Families;
 import clay.core.ecs.EntityVector;
-import clay.types.ComponentType;
+import clay.core.ecs.ComponentType;
 import clay.core.Signal;
 import clay.ds.BitFlag;
 

@@ -1,4 +1,4 @@
-package clay.types;
+package clay.core.ecs;
 
 
 abstract ComponentType(Int) {

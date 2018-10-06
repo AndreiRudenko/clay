@@ -3,7 +3,7 @@ package clay;
 
 import clay.Entity;
 import clay.core.ecs.Components;
-import clay.types.ComponentType;
+import clay.core.ecs.ComponentType;
 import haxe.ds.Vector;
 
 
