@@ -5,7 +5,7 @@ import clay.particles.core.ComponentManager;
 import clay.particles.core.Particle;
 import clay.particles.core.ParticleData;
 import clay.particles.core.ParticleModule;
-import clay.particles.containers.ParticleVector;
+import clay.particles.core.ParticleVector;
 import clay.particles.ParticleSystem;
 import clay.math.Vector;
 import clay.particles.data.BlendMode;
@@ -24,7 +24,7 @@ class ParticleEmitter {
 		/** emitter name */
 	public var name:String;
 		/** offset from system position */
-	public var position     (default, null):Vector;
+	public var pos     (default, null):Vector;
 
 		/** emitter particles */
 	public var particles 	(default, null):ParticleVector;
@@ -98,7 +98,7 @@ class ParticleEmitter {
 
 		name = options.name != null ? options.name : 'emitter.${Math.random()}';
 
-		position = new Vector();
+		pos = new Vector();
 		modules = new Map();
 		active_modules = [];
 
@@ -141,6 +141,18 @@ class ParticleEmitter {
 		if(options.modules != null) {
 			for (m in options.modules) {
 				add_module(m);
+			}
+		}
+		
+		// create modules from data
+		if(options.modules_data != null) {
+			var _classname:String;
+			for (md in options.modules_data) {
+				_classname = md.name;
+				var m = ModulesFactory.create(_classname, md);
+				if(m != null) {
+					add_module(m.from_json(md));
+				}
 			}
 		}
 

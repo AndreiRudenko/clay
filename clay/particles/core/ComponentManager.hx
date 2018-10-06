@@ -4,7 +4,7 @@ package clay.particles.core;
 import clay.particles.core.Particle;
 import clay.particles.core.Components;
 import clay.particles.ParticleEmitter;
-import clay.particles.containers.ParticleVector;
+import clay.particles.core.ParticleVector;
 
 
 class ComponentManager {

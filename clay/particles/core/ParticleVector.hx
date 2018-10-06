@@ -1,4 +1,4 @@
-package clay.particles.containers;
+package clay.particles.core;
 
 
 import clay.particles.core.Particle;

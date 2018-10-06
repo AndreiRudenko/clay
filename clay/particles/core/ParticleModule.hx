@@ -2,7 +2,7 @@ package clay.particles.core;
 
 
 import clay.particles.core.Particle;
-import clay.particles.containers.ParticleVector;
+import clay.particles.core.ParticleVector;
 import clay.particles.ParticleEmitter;
 
 @:access(clay.particles.ParticleEmitter)

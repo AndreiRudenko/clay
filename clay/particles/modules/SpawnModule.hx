@@ -20,8 +20,8 @@ class SpawnModule extends ParticleModule {
 
 		var pd:ParticleData = emitter.show_particle(p);
 
-		pd.x = emitter.system.position.x + emitter.position.x;
-		pd.y = emitter.system.position.y + emitter.position.y;
+		pd.x = emitter.system.pos.x + emitter.pos.x;
+		pd.y = emitter.system.pos.y + emitter.pos.y;
 
 	}
 

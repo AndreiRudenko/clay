@@ -31,8 +31,8 @@ class RadialSpawnModule  extends ParticleModule {
 
 		random_point_in_unit_circle();
 
-		pd.x = emitter.system.position.x + emitter.position.x + rnd_point.x * radius;
-		pd.y = emitter.system.position.y + emitter.position.y + rnd_point.y * radius;
+		pd.x = emitter.system.pos.x + emitter.pos.x + rnd_point.x * radius;
+		pd.y = emitter.system.pos.y + emitter.pos.y + rnd_point.y * radius;
 
 	}
 

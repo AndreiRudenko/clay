@@ -24,7 +24,7 @@ class ParticleSystem {
 		/** whether or not this system is paused */
 	public var paused  (default, null):Bool = false;
 		/** the system position */
-	public var position(default, null):Vector;
+	public var pos(default, null):Vector;
 		/** the system emitters */
 	public var emitters(default, null):Array<ParticleEmitter>;
 	
@@ -36,7 +36,7 @@ class ParticleSystem {
 
 	public function new(?_emitters:Array<ParticleEmitter>) {
 
-		position = new Vector();
+		pos = new Vector();
 
 		emitters = [];
 
@@ -137,7 +137,7 @@ class ParticleSystem {
 
 		empty();
 
-		position = null;
+		pos = null;
 		emitters = null;
 
 	}

@@ -10,7 +10,6 @@ import clay.particles.ParticleSystem;
 import clay.utils.Log.*;
 
 
-
 class ParticlesProcessor extends Processor {
 
 
@@ -29,27 +28,13 @@ class ParticlesProcessor extends Processor {
 
 	override function onadded() {
 
-		ps_family.listen(ps_added, ps_removed);
 		pst_family.listen(pst_added, pst_removed);
 
 	}
 
 	override function onremoved() {
 		
-		ps_family.unlisten(ps_added, ps_removed);
 		pst_family.unlisten(pst_added, pst_removed);
-
-	}
-
-	function ps_added(e:Entity) {
-
-		_debug('ps_added');
-
-	}
-	
-	function ps_removed(e:Entity) {
-
-		_debug('ps_removed');
 
 	}
 
@@ -59,8 +44,7 @@ class ParticlesProcessor extends Processor {
 
 		var ps = pst_family.get_particleSystem(e);
 		var t = pst_family.get_transform(e);
-		ps.position.copy_from(t.pos);
-		t.manual_update = true;
+		ps.pos.copy_from(t.pos);
 
 	}
 	
@@ -68,10 +52,7 @@ class ParticlesProcessor extends Processor {
 
 		_debug('pst_removed $e');
 
-		var t = pst_family.get_transform(e);
-		t.manual_update = false;
 	}
-
 
 	override function update(dt:Float) {
 
@@ -81,7 +62,7 @@ class ParticlesProcessor extends Processor {
 			ps = pst_family.get_particleSystem(e);
 			t = pst_family.get_transform(e);
 			t.pos.set(Clay.input.mouse.x, Clay.input.mouse.y);
-			ps.position.copy_from(t.pos);
+			ps.pos.copy_from(t.pos);
 		}
 		
 		for (e in ps_family) {	

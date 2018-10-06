@@ -29,8 +29,8 @@ class AreaSpawnModule extends ParticleModule {
 
 		var pd:ParticleData = emitter.show_particle(p);
 
-		pd.x = emitter.system.position.x + emitter.position.x + (size.x * 0.5 * emitter.random_1_to_1());
-		pd.y = emitter.system.position.y + emitter.position.y + (size.y * 0.5 * emitter.random_1_to_1());
+		pd.x = emitter.system.pos.x + emitter.pos.x + (size.x * 0.5 * emitter.random_1_to_1());
+		pd.y = emitter.system.pos.y + emitter.pos.y + (size.y * 0.5 * emitter.random_1_to_1());
 
 	}
 
