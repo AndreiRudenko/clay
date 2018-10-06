@@ -6,7 +6,6 @@ import clay.math.Vector;
 import clay.math.Matrix;
 import clay.math.Rectangle;
 import clay.data.Color;
-import clay.ds.Int32RingBuffer;
 import clay.render.Vertex;
 import clay.resources.FontResource;
 import clay.components.graphics.Texture;
@@ -20,18 +19,12 @@ class QuadPackGeometry extends Geometry {
 
 	public var quads(default, null):Map<Int, PackedQuad>;
 
-	var _quad_ids:Int32RingBuffer;
-	var _quads_used:Int;
-	var _quads_max:Int;
+	var _quad_id:Int = 0;
 
 
 	public function new(_options:QuadPackGeometryOptions) {
 
 		super(_options);
-
-		_quads_max = _options.quads_max != null ? PowerOfTwo.next(_options.quads_max) : 4096;
-		_quads_used = 0;
-		_quad_ids = new Int32RingBuffer(_quads_max);
 
 		quads = new Map();
 
@@ -45,12 +38,7 @@ class QuadPackGeometry extends Geometry {
 		def(_options.flipx, false);
 		def(_options.flipy, false);
 
-		if(_quads_used >= _quads_max) {
-			throw('Out of quads, max allowed ${_quads_max}');
-		}
-
-		++_quads_used;
-		var _id = _quad_ids.pop();
+		var _id = _quad_id++;
 
 		var vert0 = new Vertex( new Vector( _options.x, _options.y ), _options.color);
 		var vert1 = new Vertex( new Vector( _options.x+_options.w, _options.y ), _options.color);
@@ -98,9 +86,6 @@ class QuadPackGeometry extends Geometry {
 			remove( _quad.verts[3] );
 
 			quads.remove( _quad_id );
-
-			--_quads_used;
-			_quad_ids.push(_quad_id);
 
 		}
 
@@ -348,7 +333,5 @@ typedef PackedQuadOptions = {
 typedef QuadPackGeometryOptions = {
 
 	>GeometryOptions,
-
-	@:optional var quads_max:Int;
 
 }
