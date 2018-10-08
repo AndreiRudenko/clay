@@ -35,8 +35,6 @@ class AnimationProcessor extends Processor {
 
 	function a_added(e:Entity) {
 
-		_debug('a_added');
-
 		var a = aq_family.get_animation(e);
 		a.geometry = aq_family.get_quadGeometry(e);
 		a.init();
@@ -44,8 +42,6 @@ class AnimationProcessor extends Processor {
 	}
 	
 	function a_removed(e:Entity) {
-
-		_debug('a_removed');
 
 		var a = aq_family.get_animation(e);
 		a.stop();
@@ -55,8 +51,6 @@ class AnimationProcessor extends Processor {
 
 	function ae_added(e:Entity) {
 
-		_debug('ae_added');
-
 		var a = ae_family.get_animation(e);
 		var ev = ae_family.get_events(e);
 		a.events = ev;
@@ -64,8 +58,6 @@ class AnimationProcessor extends Processor {
 	}
 	
 	function ae_removed(e:Entity) {
-
-		_debug('ae_removed');
 
 		var a = ae_family.get_animation(e);
 		a.events = null;

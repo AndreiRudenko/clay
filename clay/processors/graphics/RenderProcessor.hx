@@ -8,7 +8,8 @@ import clay.components.graphics.Texture;
 import clay.components.common.Transform;
 import clay.components.graphics.Geometry;
 import clay.components.graphics.QuadGeometry;
-import clay.components.graphics.QuadPackGeometry;
+import clay.components.graphics.QuadPack;
+import clay.components.graphics.NineSlice;
 import clay.components.graphics.InstancedGeometry;
 import clay.components.graphics.Text;
 
@@ -31,12 +32,16 @@ class RenderProcessor extends Processor {
 	var qt_family:Family<QuadGeometry,Transform>;
 	var qtex_family:Family<QuadGeometry,Texture>;
 
-	var quadpack_family:Family<QuadPackGeometry>;
-	var qpt_family:Family<QuadPackGeometry,Transform>;
-	var qptex_family:Family<QuadPackGeometry,Texture>;
+	var quadpack_family:Family<QuadPack>;
+	var qpt_family:Family<QuadPack,Transform>;
+	var qptex_family:Family<QuadPack,Texture>;
 
 	var text_family:Family<Text>;
 	var tt_family:Family<Text,Transform>;
+
+	var ns_family:Family<NineSlice>;
+	var nst_family:Family<NineSlice,Transform>;
+	var nstex_family:Family<NineSlice,Texture>;
 
 	var i_family:Family<InstancedGeometry>;
 	var it_family:Family<InstancedGeometry,Transform>;
@@ -68,6 +73,10 @@ class RenderProcessor extends Processor {
 		text_family.listen(text_added, text_removed);
 		tt_family.listen(tt_added, tt_removed);
 
+		ns_family.listen(ns_added, ns_removed);
+		nst_family.listen(nst_added, nst_removed);
+		nstex_family.listen(nstex_added, nstex_removed);
+
 		i_family.listen(i_added, i_removed);
 		it_family.listen(it_added, it_removed);
 		itex_family.listen(itex_added, itex_removed);
@@ -90,6 +99,10 @@ class RenderProcessor extends Processor {
 
 		text_family.unlisten(text_added, text_removed);
 		tt_family.unlisten(tt_added, tt_removed);
+
+		ns_family.unlisten(ns_added, ns_removed);
+		nst_family.unlisten(nst_added, nst_removed);
+		nstex_family.unlisten(nstex_added, nstex_removed);
 
 		i_family.unlisten(i_added, i_removed);
 		it_family.unlisten(it_added, it_removed);
@@ -196,21 +209,21 @@ class RenderProcessor extends Processor {
 
 	function quadpack_added(e:Entity) {
 
-		var geom = quadpack_family.get_quadPackGeometry(e);
+		var geom = quadpack_family.get_quadPack(e);
 		add_geom_to_renderer(geom);
 
 	}
 	
 	function quadpack_removed(e:Entity) {
 
-		var geom = quadpack_family.get_quadPackGeometry(e);
+		var geom = quadpack_family.get_quadPack(e);
 		remove_geom_from_renderer(geom);
 
 	}
 
 	function qpt_added(e:Entity) {
 
-		var g = qpt_family.get_quadPackGeometry(e);
+		var g = qpt_family.get_quadPack(e);
 		var t = qpt_family.get_transform(e);
 		add_transform_to_geom(t, g);
 
@@ -218,14 +231,14 @@ class RenderProcessor extends Processor {
 	
 	function qpt_removed(e:Entity) {
 
-		var g = qpt_family.get_quadPackGeometry(e);
+		var g = qpt_family.get_quadPack(e);
 		remove_transform_from_geom(g);
 
 	}
 
 	function qptex_added(e:Entity) {
 
-		var g = qptex_family.get_quadPackGeometry(e);
+		var g = qptex_family.get_quadPack(e);
 		var tex = qptex_family.get_texture(e);
 		g.texture = tex;
 
@@ -233,7 +246,53 @@ class RenderProcessor extends Processor {
 	
 	function qptex_removed(e:Entity) {
 
-		var g = qptex_family.get_quadPackGeometry(e);
+		var g = qptex_family.get_quadPack(e);
+		g.texture = null;
+
+	}
+
+	// nineslice
+
+	function ns_added(e:Entity) {
+
+		var g = ns_family.get_nineSlice(e);
+		add_geom_to_renderer(g);
+
+	}
+	
+	function ns_removed(e:Entity) {
+
+		var g = ns_family.get_nineSlice(e);
+		remove_geom_from_renderer(g);
+
+	}
+
+	function nst_added(e:Entity) {
+
+		var g = nst_family.get_nineSlice(e);
+		var t = nst_family.get_transform(e);
+		add_transform_to_geom(t, g);
+
+	}
+	
+	function nst_removed(e:Entity) {
+
+		var g = nst_family.get_nineSlice(e);
+		remove_transform_from_geom(g);
+
+	}
+
+	function nstex_added(e:Entity) {
+
+		var g = nstex_family.get_nineSlice(e);
+		var tex = nstex_family.get_texture(e);
+		g.texture = tex;
+
+	}
+	
+	function nstex_removed(e:Entity) {
+
+		var g = nstex_family.get_nineSlice(e);
 		g.texture = null;
 
 	}

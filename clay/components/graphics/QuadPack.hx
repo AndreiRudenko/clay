@@ -14,7 +14,7 @@ import clay.utils.Log.*;
 import clay.utils.PowerOfTwo;
 
 @:keep
-class QuadPackGeometry extends Geometry {
+class QuadPack extends Geometry {
 
 
 	public var quads(default, null):Map<Int, PackedQuad>;
@@ -22,7 +22,7 @@ class QuadPackGeometry extends Geometry {
 	var _quad_id:Int = 0;
 
 
-	public function new(_options:QuadPackGeometryOptions) {
+	public function new(_options:QuadPackOptions) {
 
 		super(_options);
 
@@ -41,9 +41,9 @@ class QuadPackGeometry extends Geometry {
 		var _id = _quad_id++;
 
 		var vert0 = new Vertex( new Vector( _options.x, _options.y ), _options.color);
-		var vert1 = new Vertex( new Vector( _options.x+_options.w, _options.y ), _options.color);
-		var vert2 = new Vertex( new Vector( _options.x+_options.w, _options.y+_options.h ), _options.color);
-		var vert3 = new Vertex( new Vector( _options.x, _options.y+_options.h ), _options.color);
+		var vert1 = new Vertex( new Vector( _options.x + _options.w, _options.y ), _options.color);
+		var vert2 = new Vertex( new Vector( _options.x + _options.w, _options.y + _options.h ), _options.color);
+		var vert3 = new Vertex( new Vector( _options.x, _options.y + _options.h ), _options.color);
 
 		add( vert0 );
 		add( vert1 );
@@ -262,7 +262,7 @@ class QuadPackGeometry extends Geometry {
 
     public function quad_uv( _quad_id:Int, _uv : Rectangle ) {
 
-        if( texture == null ) {
+        if(texture == null) {
             log("Warning : calling UV on a PackedQuad Geometry with null texture.");
             return;
         }
@@ -330,7 +330,7 @@ typedef PackedQuadOptions = {
 	?visible : Bool
 }
 
-typedef QuadPackGeometryOptions = {
+typedef QuadPackOptions = {
 
 	>GeometryOptions,
 
