@@ -43,20 +43,22 @@ class Renderer {
 	var renderpath:RenderPath;
 
 	// geometry sorting
+	var clip_bits:Int;
 	var geomtype_bits:Int;
 	var texture_bits:Int;
 	var shader_bits:Int;
-	var depth_bits:Int;
+	var order_bits:Int;
 
+	var clip_offset:Int;
 	var geomtype_offset:Int;
 	var texture_offset:Int;
 	var shader_offset:Int;
-	var depth_offset:Int;
+	var order_offset:Int;
 
 	var geomtype_max:Int;
 	var texture_max:Int;
 	var shader_max:Int;
-	var depth_max:Int;
+	var order_max:Int;
 
 	var layers_max:Int;
 
@@ -66,22 +68,24 @@ class Renderer {
 
 	public function new(_options:RendererOptions) {
 
-		depth_bits = def(_options.depth_bits, 8);
-		shader_bits = def(_options.shader_bits, 9);
+		order_bits = def(_options.order_bits, 8);
+		shader_bits = def(_options.shader_bits, 8);
 		texture_bits = def(_options.texture_bits, 12);
 		geomtype_bits = def(_options.geomtype_bits, 2);
+		clip_bits = 1;
 
 		layers_max = def(_options.layers_max, 64);
 
-		geomtype_offset = 0;
-		texture_offset = geomtype_bits;
-		shader_offset = geomtype_bits + texture_bits;
-		depth_offset = geomtype_bits + texture_bits + shader_bits;
+		clip_offset = 0;
+		geomtype_offset = clip_bits;
+		texture_offset = clip_bits + geomtype_bits;
+		shader_offset = clip_bits + geomtype_bits + texture_bits;
+		order_offset = clip_bits + geomtype_bits + texture_bits + shader_bits;
 
 		geomtype_max = Bits.count_singed(geomtype_bits);
 		texture_max = Bits.count_singed(texture_bits);
 		shader_max = Bits.count_singed(shader_bits);
-		depth_max = Bits.count_singed(depth_bits);
+		order_max = Bits.count_singed(order_bits);
 
 		cameras = new CameraManager();
 
@@ -268,7 +272,7 @@ class Renderer {
 
 typedef RendererOptions = {
 
-	@:optional var depth_bits:Int;
+	@:optional var order_bits:Int;
 	@:optional var shader_bits:Int;
 	@:optional var texture_bits:Int;
 	@:optional var geomtype_bits:Int;

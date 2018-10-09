@@ -18,6 +18,7 @@ abstract GeometrySortKey(UInt) from UInt to UInt {
 	public var texture(get, set):UInt;
 	public var shader(get, set):UInt;
 	public var geometry_type(get, set):UInt;
+	public var clip(get, set):Bool;
 
 
 	public inline function new(_v:UInt) {
@@ -73,16 +74,30 @@ abstract GeometrySortKey(UInt) from UInt to UInt {
 
 	inline function get_order():UInt {
 
-		return get_sort_key(Clay.renderer.depth_bits, Clay.renderer.depth_offset);
+		return get_sort_key(Clay.renderer.order_bits, Clay.renderer.order_offset);
 
 	}
 
 	inline function set_order(id:UInt):UInt {
 
-		id = Mathf.clampi(id, 0, Clay.renderer.depth_max);
-		set_sort_key(id, Clay.renderer.depth_bits, Clay.renderer.depth_offset);
+		id = Mathf.clampi(id, 0, Clay.renderer.order_max);
+		set_sort_key(id, Clay.renderer.order_bits, Clay.renderer.order_offset);
 
 		return id;
+
+	}
+
+	inline function get_clip():Bool {
+
+		return get_sort_key(Clay.renderer.clip_bits, Clay.renderer.clip_offset) == 1;
+
+	}
+
+	inline function set_clip(v:Bool):Bool {
+
+		set_sort_key(v ? 1 : 0, Clay.renderer.clip_bits, Clay.renderer.clip_offset);
+
+		return v;
 
 	}
 

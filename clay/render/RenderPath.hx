@@ -19,6 +19,7 @@ import clay.render.Shader;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
 import clay.math.Matrix;
+import clay.math.Rectangle;
 import clay.utils.Log.*;
 
 
@@ -44,6 +45,7 @@ class RenderPath {
 
 	var last_shader:Shader;
 	var last_texture:Texture;
+	var last_clip_rect:Rectangle;
 
 	var vertexbuffer:VertexBuffer;
 	var vertexbuffer_colored:VertexBuffer;
@@ -98,6 +100,8 @@ class RenderPath {
 
 		last_shader = null;
     	last_texture = null;
+    	last_clip_rect = null;
+
 		draw_calls = 0;
 		draw_geoms = 0;
 
@@ -120,7 +124,8 @@ class RenderPath {
 
 		if(vert_count + geom.vertices.length >= max_vertices 
 			|| indices_count + geom.indices.length >= max_indices
-			|| draw_type != geom.geometry_type
+			|| draw_type != geom.geometry_type 
+			|| last_clip_rect != geom.clip_rect
 		) {
 			draw(g);
 			was_draw = true;
@@ -188,6 +193,14 @@ class RenderPath {
 			update_blendmode(shader, geom);
 		}
 
+		if(geom.clip_rect != null) {
+			if(last_clip_rect != geom.clip_rect) {
+				g.scissor(Std.int(geom.clip_rect.x), Std.int(geom.clip_rect.y), Std.int(geom.clip_rect.w), Std.int(geom.clip_rect.h));
+			}
+		}
+
+		last_clip_rect = geom.clip_rect;
+
 		if(geometry == null) {
 			geometry = geom;
 		}
@@ -237,6 +250,11 @@ class RenderPath {
 			g.setIndexBuffer(indexbuffer);
 
 			g.drawIndexedVertices(0, indices_count);
+		}
+
+		if(last_clip_rect != null) {
+			g.scissor(Std.int(camera.viewport.x), Std.int(camera.viewport.y), Std.int(camera.viewport.w), Std.int(camera.viewport.h));
+			last_clip_rect = null;
 		}
 
 		geom_count = 0;

@@ -6,9 +6,9 @@ import clay.render.Shader;
 import clay.render.GeometrySortKey;
 import clay.math.Vector;
 import clay.math.Matrix;
+import clay.math.Rectangle;
 import clay.data.Color;
 
-// import clay.components.common.Transform;
 import clay.utils.Log.*;
 import clay.utils.Bits;
 
@@ -36,6 +36,8 @@ class Geometry {
 
 	public var added(default, null):Bool = false;
 	
+	public var clip_rect(default, set):Rectangle;
+
 	public var dirty:Bool = false;
 
 	var _layer:Int = 0;
@@ -204,10 +206,13 @@ class Geometry {
 
 	}
 
-	inline function set_sort_key(val:UInt, bnum:Int, offset:Int) {
+	inline function set_clip_rect(v:Rectangle):Rectangle {
+
+		sort_key.clip = v != null;
 		
-		sort_key = Bits.clear_range(sort_key, offset+1, offset+bnum);
-		sort_key = Bits.set_to_pos(sort_key, val, offset);
+		update_order();
+
+		return clip_rect = v;
 
 	}
 
