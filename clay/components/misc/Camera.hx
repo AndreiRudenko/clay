@@ -168,19 +168,14 @@ class Camera {
 
 		onprerender.emit();
 
-		var _x:Int = Std.int(viewport.x);
-		var _y:Int = Std.int(viewport.y);
-		var _w:Int = Std.int(viewport.w);
-		var _h:Int = Std.int(viewport.h);
-		
-		g.viewport(_x, _y, _w, _h);
-		g.scissor(_x, _y, _w, _h);
+		g.viewport(Std.int(viewport.x), Std.int(viewport.y), Std.int(viewport.w), Std.int(viewport.h));
 
 	}
 
 	function postrender(g:Graphics) {
 
 		g.disableScissor();
+		
 		onpostrender.emit();
 		
 	}

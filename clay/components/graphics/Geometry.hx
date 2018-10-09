@@ -209,7 +209,7 @@ class Geometry {
 	inline function set_clip_rect(v:Rectangle):Rectangle {
 
 		sort_key.clip = v != null;
-		
+
 		update_order();
 
 		return clip_rect = v;

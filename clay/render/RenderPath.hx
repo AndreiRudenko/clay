@@ -193,12 +193,6 @@ class RenderPath {
 			update_blendmode(shader, geom);
 		}
 
-		if(geom.clip_rect != null) {
-			if(last_clip_rect != geom.clip_rect) {
-				g.scissor(Std.int(geom.clip_rect.x), Std.int(geom.clip_rect.y), Std.int(geom.clip_rect.w), Std.int(geom.clip_rect.h));
-			}
-		}
-
 		last_clip_rect = geom.clip_rect;
 
 		if(geometry == null) {
@@ -227,6 +221,13 @@ class RenderPath {
 
 		_verboser('draw, vertices: $vert_count, indices: $indices_count');
 
+		if(last_clip_rect != null) {
+			g.scissor(Std.int(last_clip_rect.x), Std.int(last_clip_rect.y), Std.int(last_clip_rect.w), Std.int(last_clip_rect.h));
+			last_clip_rect = null;
+		} else {
+			g.scissor(Std.int(camera.viewport.x), Std.int(camera.viewport.y), Std.int(camera.viewport.w), Std.int(camera.viewport.h));
+		}
+
 		if(draw_type == GeometryType.instanced) {
 			if (g.instancedRenderingAvailable()) {
 				var inst_geom:InstancedGeometry = cast geometry;
@@ -250,11 +251,6 @@ class RenderPath {
 			g.setIndexBuffer(indexbuffer);
 
 			g.drawIndexedVertices(0, indices_count);
-		}
-
-		if(last_clip_rect != null) {
-			g.scissor(Std.int(camera.viewport.x), Std.int(camera.viewport.y), Std.int(camera.viewport.w), Std.int(camera.viewport.h));
-			last_clip_rect = null;
 		}
 
 		geom_count = 0;
