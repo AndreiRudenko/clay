@@ -119,6 +119,10 @@ class RenderPath {
 
 		_verboser('batch order: ${geom.order}, sort_key ${geom.sort_key}');
 
+		if(!geom.visible) {
+			return;
+		}
+
 		var was_draw = false;
 
 		if(vert_count + geom.vertices.length >= max_vertices 

@@ -40,12 +40,12 @@ class Geometry {
 	public var layer            (get, set):Int;
 	public var order            (default, set):UInt;
 
-	public var transform_matrix(default, null):Matrix;
-	public var clip_rect(default, set):Rectangle;
+	public var transform_matrix (default, null):Matrix;
+	public var clip_rect        (default, set):Rectangle;
 
 	// instanced
-	public var instances(default, null):Array<InstancedGeometry>;
-	public var instances_count(get, set):Int;
+	public var instances        (default, null):Array<InstancedGeometry>;
+	public var instances_count  (get, set):Int;
 
 	@:noCompletion public var vertexbuffers:Array<VertexBuffer>;
 	@:noCompletion public var indexbuffer:IndexBuffer;
