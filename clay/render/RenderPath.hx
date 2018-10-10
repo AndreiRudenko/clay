@@ -14,7 +14,6 @@ import kha.Image;
 import clay.components.misc.Camera;
 import clay.components.graphics.Texture;
 import clay.components.graphics.Geometry;
-import clay.components.graphics.InstancedGeometry;
 import clay.render.Shader;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
@@ -230,15 +229,14 @@ class RenderPath {
 
 		if(draw_type == GeometryType.instanced) {
 			if (g.instancedRenderingAvailable()) {
-				var inst_geom:InstancedGeometry = cast geometry;
-				inst_geom.update_instances(camera.projection_matrix);
+				geometry.update_instance_buffer(camera.projection_matrix);
 
 				update_texture(g);
 
-				g.setVertexBuffers(inst_geom.vertexbuffers);
-				g.setIndexBuffer(inst_geom.indexbuffer);
+				g.setVertexBuffers(geometry.vertexbuffers);
+				g.setIndexBuffer(geometry.indexbuffer);
 
-				g.drawIndexedVerticesInstanced(inst_geom.instances_count);
+				g.drawIndexedVerticesInstanced(geometry.instances_count);
 			}
 		} else {
 			update_vbo();

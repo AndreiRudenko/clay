@@ -28,7 +28,7 @@ class QuadPack extends Geometry {
 
 		quads = new Map();
 
-		geometry_type = GeometryType.quad;
+		set_geometry_type(GeometryType.quad);
 
 	}
 	

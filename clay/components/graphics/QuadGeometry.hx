@@ -34,6 +34,7 @@ class QuadGeometry extends Geometry {
 		size.listen(size_changed);
 
 		var verts:Array<Vertex> = [];
+		var inds:Array<Int> = [0,1,2,0,2,3];
 		var _w:Float = size.x;
 		var _h:Float = size.y;
 
@@ -43,6 +44,7 @@ class QuadGeometry extends Geometry {
 		verts.push(new Vertex( new Vector(0, _h), null, new Vector(0,1)));
 
 		_options.vertices = verts;
+		_options.indices = inds;
 
 		super(_options);
 
@@ -51,7 +53,7 @@ class QuadGeometry extends Geometry {
 
 		_setup = false;
 
-		geometry_type = GeometryType.quad;
+		set_geometry_type(GeometryType.quad);
 
 		update_tcoord();
 

@@ -10,7 +10,6 @@ import clay.components.graphics.Geometry;
 import clay.components.graphics.QuadGeometry;
 import clay.components.graphics.QuadPack;
 import clay.components.graphics.NineSlice;
-import clay.components.graphics.InstancedGeometry;
 import clay.components.graphics.Text;
 
 import clay.math.Matrix;
@@ -43,10 +42,6 @@ class RenderProcessor extends Processor {
 	var nst_family:Family<NineSlice,Transform>;
 	var nstex_family:Family<NineSlice,Texture>;
 
-	var i_family:Family<InstancedGeometry>;
-	var it_family:Family<InstancedGeometry,Transform>;
-	var itex_family:Family<InstancedGeometry,Texture>;
-
 
 	public function new() {
 
@@ -77,10 +72,6 @@ class RenderProcessor extends Processor {
 		nst_family.listen(nst_added, nst_removed);
 		nstex_family.listen(nstex_added, nstex_removed);
 
-		i_family.listen(i_added, i_removed);
-		it_family.listen(it_added, it_removed);
-		itex_family.listen(itex_added, itex_removed);
-
 	}
 
 	override function onremoved() {
@@ -103,10 +94,6 @@ class RenderProcessor extends Processor {
 		ns_family.unlisten(ns_added, ns_removed);
 		nst_family.unlisten(nst_added, nst_removed);
 		nstex_family.unlisten(nstex_added, nstex_removed);
-
-		i_family.unlisten(i_added, i_removed);
-		it_family.unlisten(it_added, it_removed);
-		itex_family.unlisten(itex_added, itex_removed);
 
 	}
 
@@ -297,7 +284,6 @@ class RenderProcessor extends Processor {
 
 	}
 
-
 	// text
 
 	function text_added(e:Entity) {
@@ -327,51 +313,6 @@ class RenderProcessor extends Processor {
 		var g = tt_family.get_text(e);
 		remove_transform_from_geom(g);
 
-	}
-
-	// instanced
-
-	function i_added(e:Entity) {
-
-		var ig = i_family.get_instancedGeometry(e);
-		add_geom_to_renderer(ig);
-
-	}
-	
-	function i_removed(e:Entity) {
-
-		var ig = i_family.get_instancedGeometry(e);
-		remove_geom_from_renderer(ig);
-
-	}
-
-	function it_added(e:Entity) {
-
-		var g = it_family.get_instancedGeometry(e);
-		var t = it_family.get_transform(e);
-		add_transform_to_geom(t, g);
-
-	}
-	
-	function it_removed(e:Entity) {
-
-		var g = it_family.get_instancedGeometry(e);
-		remove_transform_from_geom(g);
-
-	}
-
-	function itex_added(e:Entity) {
-
-		var g = itex_family.get_instancedGeometry(e);
-		var tex = itex_family.get_texture(e);
-		g.texture = tex;
-
-	}
-	
-	function itex_removed(e:Entity) {
-
-		var g = itex_family.get_instancedGeometry(e);
-		g.texture = null;
 	}
 
 	inline function add_geom_to_renderer(g:Geometry) {

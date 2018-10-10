@@ -54,7 +54,7 @@ class NineSlice extends Geometry {
 			add(new Vertex(new Vector(), color));
 		}
 
-		geometry_type = GeometryType.polygon;
+		set_geometry_type(GeometryType.polygon);
 
 	}
 

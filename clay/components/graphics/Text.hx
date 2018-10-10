@@ -40,8 +40,6 @@ class Text extends Geometry {
 
 		super(_options);
 
-		geometry_type = GeometryType.text;
-
 		font = _options.font;
 		size = def(_options.size, 12);
 		text = def(_options.text, '');
@@ -53,12 +51,45 @@ class Text extends Geometry {
 		letter_spacing = def(_options.letter_spacing, 0);
 		tab_width = def(_options.tab_width, 4);
 
+		set_geometry_type(GeometryType.text);
+
 		_setup = false;
 		update_text();
 
 	}
 
-	override function destroy() {}
+	override function setup_instanced(_instances:Int):Geometry {
+
+		setup_text_indices();
+
+		return super.setup_instanced(_instances);
+
+	}
+
+	override function update_instanced():Geometry {
+
+		setup_text_indices();
+
+		return super.update_instanced();
+
+	}
+	
+	function setup_text_indices() {
+
+		if(_geometry_type == GeometryType.instanced) {
+			indices = [];
+			var quads_count = Std.int(vertices.length / 4);
+			for (i in 0...quads_count) {
+				indices[i * 3 * 2 + 0] = i * 4 + 0;
+				indices[i * 3 * 2 + 1] = i * 4 + 1;
+				indices[i * 3 * 2 + 2] = i * 4 + 2;
+				indices[i * 3 * 2 + 3] = i * 4 + 0;
+				indices[i * 3 * 2 + 4] = i * 4 + 2;
+				indices[i * 3 * 2 + 5] = i * 4 + 3;
+			}
+		}
+
+	}
 
 	function set_text(v:String):String {
 

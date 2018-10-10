@@ -2,7 +2,8 @@ package clay.particles.render.clay;
 
 
 import clay.Entity;
-import clay.components.graphics.InstancedGeometry;
+import clay.components.graphics.Geometry;
+import clay.components.graphics.QuadGeometry;
 import clay.components.graphics.Texture;
 import clay.render.Vertex;
 import clay.render.Layer;
@@ -16,7 +17,7 @@ import clay.math.Vector;
 class ClayEmitter extends EmitterRenderer {
 
 
-	var geom:InstancedGeometry;
+	var geom:QuadGeometry;
 	var layer:Layer;
 
 
@@ -30,20 +31,12 @@ class ClayEmitter extends EmitterRenderer {
 
 		layer = Clay.renderer.layers.get(emitter.layer);
 
-		var verts:Array<Vertex> = [];
-
-		verts.push(new Vertex(new Vector(0, 0), null, new Vector(0,0)));
-		verts.push(new Vertex(new Vector(1, 0), null, new Vector(1,0)));
-		verts.push(new Vertex(new Vector(1, 1), null, new Vector(1,1)));
-		verts.push(new Vertex( new Vector(0, 1), null, new Vector(0,1)));
-
-		geom = new InstancedGeometry({
-			instances: emitter.cache_size,
-			vertices: verts,
-			indices: [0,1,2,2,3,0]
+		geom = new QuadGeometry({
+			size : new Vector(1, 1)
 		});
 
 		geom.texture = Clay.resources.texture(emitter.image_path);
+		geom.setup_instanced(emitter.cache_size);
 
 		layer.add(geom);
 
@@ -82,7 +75,7 @@ class ClayEmitter extends EmitterRenderer {
 
 		var i:Int = 0;
 		var pd:ParticleData;
-		var inst:InstanceData;
+		var inst:InstancedGeometry;
 		for (p in emitter.particles) {
 			pd = emitter.particles_data[p.id];
 			inst = geom.instances[i];
