@@ -14,7 +14,7 @@ import clay.components.graphics.Texture;
 import clay.components.graphics.Geometry;
 import clay.utils.Log.*;
 
-
+@:keep
 class QuadGeometry extends Geometry {
 
 

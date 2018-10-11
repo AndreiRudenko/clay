@@ -1,6 +1,7 @@
 package clay.components.graphics;
 
 
+import kha.Kravur;
 import kha.Kravur.AlignedQuad;
 import kha.Kravur.KravurImage;
 
@@ -136,12 +137,20 @@ class Text extends Geometry {
 		
 	}
 
-	//todo: Make this fast
-	function find_index(charcode: Int, font_glyphs: Array<Int>):Int {
+	function find_index(charCode: Int):Int {
 
-		for (i in 0...font_glyphs.length) {
-			if (font_glyphs[i] == charcode) return i;
+		var glyphs = kha.graphics2.Graphics.fontGlyphs;
+		var blocks = KravurImage.charBlocks;
+		var offset = 0;
+		for (i in 0...Std.int(blocks.length / 2)) {
+			var start = blocks[i * 2];
+			var end = blocks[i * 2 + 1];
+			if (charCode >= start && charCode <= end) {
+				return offset + charCode - start;
+			}
+			offset += end - start + 1;
 		}
+
 		return 0;
 
 	}
@@ -224,7 +233,7 @@ class Text extends Geometry {
 		var t = Clay.resources.texture(tex_name);
 		var font_glyphs = kha.graphics2.Graphics.fontGlyphs;
 
-		var _font = font.font._get(size, font_glyphs); // note: this is expensive if creating new font or font size
+		var _font = font.font._get(size); // note: this is expensive if creating new font or font size
 		if(t == null) {
 			var img = _font.getTexture();
 			t = new Texture(img, true);
@@ -279,7 +288,7 @@ class Text extends Geometry {
 			var lw:Float = 0;
 
 			for (i in 0...l.length) {
-				var q:AlignedQuad = _font.getBakedQuad(quad_cache, find_index(l.charCodeAt(i), font_glyphs), xpos, 0);
+				var q:AlignedQuad = _font.getBakedQuad(quad_cache, find_index(l.charCodeAt(i)), xpos, 0);
 				if (q != null) {
 
 					lw = q.xadvance + letter_spacing;
