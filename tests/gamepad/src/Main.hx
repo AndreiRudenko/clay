@@ -7,13 +7,13 @@ class Main {
 
 		Clay.init(
 			{
-				title: 'empty',
+				title: 'clay_gamepad',
 				width: 800,
 				height: 600,
-				antialiasing: 0,
-				vsync: false,
-				window_mode: clay.types.WindowMode.Window,
-				resizable: false
+				window: {
+					mode: clay.types.WindowMode.Windowed,
+					resizable: false
+				}
 			}, 
 			onready
 		);
