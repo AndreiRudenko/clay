@@ -8,6 +8,7 @@ import clay.components.graphics.QuadGeometry;
 import clay.components.graphics.Text;
 import clay.resources.FontResource;
 import clay.render.Layer;
+import clay.render.Vertex;
 import clay.math.Vector;
 import clay.math.Matrix;
 import clay.math.Mathf;
@@ -34,13 +35,51 @@ class Draw {
 		var p1 = options.p1;
 		var color0 = def(options.color0, new Color());
 		var color1 = def(options.color1, new Color());
+		var strength = def(options.strength, 1);
+		var immediate = def(options.immediate, true);
+		var layer = def(options.layer, 0);
 		
+		var vec:Vector;
+		if (p0.y == p1.y) {
+			vec = new Vector(0, -1);
+		} else {
+			vec = new Vector(1, -(p1.x - p0.x) / (p1.y - p0.y));
+		}
+		vec.length = strength;
+
+		var _p0 = p0.clone().add_xy(0.5 * vec.x, 0.5 * vec.y);
+		var _p1 = p1.clone().add_xy(0.5 * vec.x, 0.5 * vec.y);
+		var _p2 = _p0.clone().subtract(vec);
+		var _p3 = _p1.clone().subtract(vec);
+
+		var indices = [0,1,2,0,3,2];
+
+		var geom = new Geometry({
+			indices: indices,
+			layer: layer
+		});
+
+		geom.add(new Vertex(_p0, color0));
+		geom.add(new Vertex(_p1, color1));
+		geom.add(new Vertex(_p3, color1));
+		geom.add(new Vertex(_p2, color0));
+
+		add_to_layer(geom, layer, options.order);
+
+		if(immediate) {
+			geometry.push(geom);
+		}
+
+		return geom;
+
 	}
 
 	public function rectangle(options:DrawRectangleOptions) {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
+		var ox = def(options.ox, 0);
+		var oy = def(options.oy, 0);
 		var w = def(options.w, 32);
 		var h = def(options.h, 32);
 		var angle = def(options.angle, 0);
@@ -54,8 +93,8 @@ class Draw {
 			layer: layer
 		});
 
-		update_matrix(rect.transform_matrix, x, y, 0, 0, angle);
-		add_to_layer(rect, Clay.renderer.layers.get(layer), options.order);
+		update_matrix(rect.transform_matrix, x, y, ox, oy, angle);
+		add_to_layer(rect, layer, options.order);
 
 		if(immediate) {
 			geometry.push(rect);
@@ -67,21 +106,125 @@ class Draw {
 
 	public function circle(options:DrawCircleOptions) {
 		
-		var x = def(options.x, 0);
-		var y = def(options.y, 0);
+		var cx = def(options.x, 0);
+		var cy = def(options.y, 0);
+		var ox = def(options.ox, 0);
+		var oy = def(options.oy, 0);
 		var r = def(options.r, 64);
+		var segments = def(options.segments, Math.floor(10 * Math.sqrt(r)));
 		var color = def(options.color, new Color());
+		var layer = def(options.layer, 0);
+		var immediate = def(options.immediate, true);
+
+		var indices = [];
+		var vertices = [];
+
+		var theta = 2 * Math.PI / segments;
+		var c = Math.cos(theta);
+		var s = Math.sin(theta);
+
+		var x = r;
+		var y = 0.0;
+
+		for (i in 0...segments) {
+			var px = x;
+			var py = y;
+
+			var t = x;
+			x = c * x - s * y;
+			y = c * y + s * t;
+
+			indices[i * 3 + 0] = i * 3 + 0;
+			indices[i * 3 + 1] = i * 3 + 1;
+			indices[i * 3 + 2] = i * 3 + 2;
+
+			vertices.push(new Vertex(new Vector(px, py)));
+			vertices.push(new Vertex(new Vector(x, y)));
+			vertices.push(new Vertex(new Vector()));
+		}
+
+		var geom = new Geometry({
+			vertices: vertices,
+			indices: indices,
+			layer: layer,
+			color: color
+		});
+
+		update_matrix(geom.transform_matrix, cx, cy, ox, oy, 0);
+		add_to_layer(geom, layer, options.order);
+
+		if(immediate) {
+			geometry.push(geom);
+		}
+
+		return geom;
 
 	}
 
-	public function polygon(options:DrawPolyOptions) {
+	public function polygon(options:DrawPolyOptions):Geometry {
 
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
+		var ox = def(options.ox, 0);
+		var oy = def(options.oy, 0);
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
+		var layer = def(options.layer, 0);
+		var immediate = def(options.immediate, true);
 
-		var points = options.points;
+		var iterator = options.vertices.iterator();
+
+		if (!iterator.hasNext()) {
+			return null;
+		}
+
+		var v0 = iterator.next();
+
+		if (!iterator.hasNext()) {
+			return null;
+		}
+
+		var v1 = iterator.next();
+
+		var indices = options.indices;
+		var vertices = [];
+
+		var i = 0;
+		while (iterator.hasNext()) {
+			var v2 = iterator.next();
+
+			vertices.push(new Vertex(v0.clone()));
+			vertices.push(new Vertex(v1.clone()));
+			vertices.push(new Vertex(v2.clone()));
+
+			v1 = v2;
+			i++;
+		}
+
+		if(indices == null) {
+			indices = [];
+			for (i in 0...options.vertices.length) {
+				indices[i * 3 + 0] = i * 3 + 0;
+				indices[i * 3 + 1] = i * 3 + 1;
+				indices[i * 3 + 2] = i * 3 + 2;
+			}
+		}
+
+		var geom = new Geometry({
+			vertices: vertices,
+			indices: indices,
+			layer: layer,
+			color: color
+		});
+
+		update_matrix(geom.transform_matrix, x, y, ox, oy, angle);
+		add_to_layer(geom, layer, options.order);
+
+		if(immediate) {
+			geometry.push(geom);
+		}
+
+		return geom;
 
 	}
 
@@ -89,6 +232,8 @@ class Draw {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
+		var ox = def(options.ox, 0);
+		var oy = def(options.oy, 0);
 		var w = def(options.w, 32);
 		var h = def(options.h, 32);
 		var angle = def(options.angle, 0);
@@ -105,8 +250,8 @@ class Draw {
 			texture: texture
 		});
 
-		update_matrix(rect.transform_matrix, x, y, 0, 0, angle);
-		add_to_layer(rect, Clay.renderer.layers.get(layer), options.order);
+		update_matrix(rect.transform_matrix, x, y, ox, oy, angle);
+		add_to_layer(rect, layer, options.order);
 
 		if(immediate) {
 			geometry.push(rect);
@@ -120,6 +265,8 @@ class Draw {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
+		var ox = def(options.ox, 0);
+		var oy = def(options.oy, 0);
 		var size = def(options.size, 16);
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
@@ -139,8 +286,8 @@ class Draw {
 			align_vertical: options.align_vertical
 		});
 
-		update_matrix(text.transform_matrix, x, y, 0, 0, angle);
-		add_to_layer(text, Clay.renderer.layers.get(layer), options.order);
+		update_matrix(text.transform_matrix, x, y, ox, oy, angle);
+		add_to_layer(text, layer, options.order);
 
 		if(immediate) {
 			geometry.push(text);
@@ -166,7 +313,9 @@ class Draw {
 		
 	}
 	
-	inline function add_to_layer(geom:Geometry, layer:Layer, ?order:Null<Int>) {
+	inline function add_to_layer(geom:Geometry, lid:Int, ?order:Null<Int>) {
+
+		var layer = Clay.renderer.layers.get(lid);
 
 		if(layer != null) {
 			if(order != null) {
@@ -176,14 +325,14 @@ class Draw {
 				layer.geometry_list.add_first(geom);
 			}
 		} else {
-			log('cant add geometry to layer');
+			log('cant draw geometry in $lid layer');
 		}
 
 	}
 
 	inline function update_matrix(matrix:Matrix, x:Float, y:Float, ox:Float, oy:Float, angle:Float) {
 		
-		matrix.identity().translate(x, y).rotate(Mathf.radians(angle)).apply(-ox, -oy);
+		matrix.identity().translate(x, y).rotate(Mathf.radians(-angle)).apply(-ox, -oy);
 
 	}
 
@@ -209,7 +358,7 @@ typedef DrawLineOptions = {
 	@:optional var color0:Color;
 	@:optional var color1:Color;
 
-	@:optional var thickness:Float;
+	@:optional var strength:Float;
 
 }
 
@@ -220,7 +369,12 @@ typedef DrawCircleOptions = {
 	@:optional var x:Float;
 	@:optional var y:Float;
 
+	@:optional var ox:Float;
+	@:optional var oy:Float;
+
 	@:optional var r:Float;
+
+	@:optional var segments:Int;
 
 	@:optional var color:Color;
 
@@ -232,6 +386,9 @@ typedef DrawRectangleOptions = {
 
 	@:optional var x:Float;
 	@:optional var y:Float;
+
+	@:optional var ox:Float;
+	@:optional var oy:Float;
 
 	@:optional var w:Float;
 	@:optional var h:Float;
@@ -256,10 +413,14 @@ typedef DrawPolyOptions = {
 
 	> DrawGeometryOptions,
 
-	var points:Array<Vector>;
+	var vertices:Array<Vector>;
+	@:optional var indices:Array<Int>;
 
 	@:optional var x:Float;
 	@:optional var y:Float;
+
+	@:optional var ox:Float;
+	@:optional var oy:Float;
 
 	@:optional var angle:Float;
 
@@ -278,6 +439,9 @@ typedef DrawTextOptions = {
 
 	@:optional var x:Float;
 	@:optional var y:Float;
+
+	@:optional var ox:Float;
+	@:optional var oy:Float;
 
 	@:optional var angle:Float;
 
