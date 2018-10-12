@@ -269,10 +269,6 @@ class Resources {
 
 	}
 
-	// public function load_shader(id:String, ?oncomplete:ShaderResource->Void) {
-
-	// }
-
 	public function load_video(id:String, ?oncomplete:VideoResource->Void) {
 
 		var res:VideoResource = video(id);
@@ -352,7 +348,6 @@ class Resources {
 	public inline function json     (id:String):JsonResource           return fetch(id);
 	public inline function texture    (id:String):Texture        return fetch(id);
 	public inline function font     (id:String):FontResource           return fetch(id);
-	// public inline function shader   (id:String):ShaderResource         return fetch(id);
 	public inline function video    (id:String):VideoResource         return fetch(id);
 	public inline function audio    (id:String):AudioResource          return fetch(id);
 

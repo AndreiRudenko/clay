@@ -87,7 +87,6 @@ class Geometry {
 	function onadded() {}
 	function onremoved() {}
 
-
 	public function add(v:Vertex):Geometry {
 
 		vertices.push(v);
@@ -148,6 +147,7 @@ class Geometry {
 		var data = vertexbuffers[1].lock();
 		var n:Int = 0;
 		for (i in 0..._instances_count) {
+			
 			inst = instances[i];
 			update_instance_matrix(inst);
 

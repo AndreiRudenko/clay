@@ -162,7 +162,6 @@ class Engine {
 		connect_events();
 		screen.init();
 		renderer.init();
-		draw.init();
 		worlds.init();
 		inited = true;
 
@@ -209,7 +208,6 @@ class Engine {
 		options.vsync = def(_options.vsync, true);
 		options.antialiasing = def(_options.antialiasing, 1);
 		options.window = def(_options.window, {});
-		options.window.name = def(_options.window.name, options.title);
 		options.renderer = def(_options.renderer, {});
 
 		var features: Int = 0;
@@ -224,7 +222,6 @@ class Engine {
 			width: options.width,
 			height: options.height,
 			window: {
-				// name: options.window.name, // todo: ?
 				x: options.window.x,
 				y: options.window.y,
 				mode: options.window.mode,
@@ -260,71 +257,7 @@ class Engine {
 		
 	}
 
-	inline function prerender() {
-
-		_verboser('onprerender');
-
-		signals.prerender.emit();
-		worlds.prerender();
-		draw.prerender();
-
-	}
-
-	inline function postrender() {
-
-		_verboser('onpostrender');
-
-		signals.postrender.emit();
-		worlds.postrender();
-		draw.postrender();
-
-	}
-
-	inline function tickstart() {
-
-		_verboser('ontickstart');
-		
-		cycle_next_queue();
-
-		signals.tickstart.emit();
-		worlds.tickstart();
-		
-	}
-
-	inline function tickend() {
-
-		_verboser('ontickend');
-
-		signals.tickend.emit();
-		worlds.tickend();
-		input.reset();
-
-		cycle_defer_queue();
-
-	}
-
-	inline function tick() {
-
-		_verboser('tick');
-		
-		timer.process(frame_start);
-		motion.tick();
-		
-	}
-
-	function update(dt:Float) {
-
-		_verboser('update dt:${dt}');
-
-		events.process();
-		timer.update(dt);
-		motion.step(dt);
-		signals.update.emit(dt);
-		worlds.update(dt);
-		renderer.update(dt);
-
-	}
-
+	// tick
 	function internal_tick() {
 
 		_verboser('internal_tick');
@@ -361,6 +294,53 @@ class Engine {
 
 	}
 
+	function update(dt:Float) {
+
+		_verboser('update dt:${dt}');
+
+		events.process();
+		timer.update(dt);
+		motion.step(dt);
+		draw.update();
+		signals.update.emit(dt);
+		worlds.update(dt);
+		renderer.update(dt);
+
+	}
+
+	inline function tickstart() {
+
+		_verboser('ontickstart');
+		
+		cycle_next_queue();
+
+		signals.tickstart.emit();
+		worlds.tickstart();
+		
+	}
+
+	inline function tick() {
+
+		_verboser('tick');
+		
+		timer.process(frame_start);
+		motion.tick();
+		
+	}
+
+	inline function tickend() {
+
+		_verboser('ontickend');
+
+		signals.tickend.emit();
+		worlds.tickend();
+		input.reset();
+
+		cycle_defer_queue();
+
+	}
+
+	// render
 	function render(f:Array<Framebuffer>) {
 
 		_verboser('render');
@@ -374,6 +354,56 @@ class Engine {
 		postrender();
 
 	}
+
+	inline function prerender() {
+
+		_verboser('onprerender');
+
+		signals.prerender.emit();
+		worlds.prerender();
+
+	}
+
+	inline function postrender() {
+
+		_verboser('onpostrender');
+
+		signals.postrender.emit();
+		worlds.postrender();
+
+	}
+
+	// screen
+	function foreground() {
+
+		signals.foreground.emit();
+		worlds.foreground();
+
+	}
+
+	function background() {
+
+		signals.background.emit();
+		worlds.background();
+
+	}
+
+	// engine
+	function pause() {
+
+		signals.pause.emit();
+		worlds.pause();
+
+	}
+
+	function resume() {
+
+		signals.resume.emit();
+		worlds.resume();
+
+	}
+
+	// inputs
 
 	// key
 	function keydown(e:KeyEvent) {
@@ -513,35 +543,6 @@ class Engine {
 		worlds.inputup(e);
 
 	}
-
-	function foreground() {
-
-		signals.foreground.emit();
-		worlds.foreground();
-
-	}
-
-	function background() {
-
-		signals.background.emit();
-		worlds.background();
-
-	}
-
-	function pause() {
-
-		signals.pause.emit();
-		worlds.pause();
-
-	}
-
-	function resume() {
-
-		signals.resume.emit();
-		worlds.resume();
-
-	}
-
 
 	inline function cycle_next_queue() {
 

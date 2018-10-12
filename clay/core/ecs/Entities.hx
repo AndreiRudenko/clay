@@ -137,6 +137,17 @@ class Entities {
 
 	}
 
+	@:noCompletion public function delayed_destroy() {
+
+		if(_destroyed_entities.length > 0) {
+			for (e in _destroyed_entities) {
+				_destroy(e);
+			}
+			_destroyed_entities.splice(0, _destroyed_entities.length);
+		}
+		
+	}
+
 	function _destroy(e:Entity) {
 		
 		_entities.remove_unsafe(e);
@@ -149,17 +160,6 @@ class Entities {
 			ondestroy(e);
 		}
 
-	}
-
-	@:noCompletion public function delayed_destroy() {
-
-		if(_destroyed_entities.length > 0) {
-			for (e in _destroyed_entities) {
-				_destroy(e);
-			}
-			_destroyed_entities.splice(0, _destroyed_entities.length);
-		}
-		
 	}
 
 	function get_available():Int {

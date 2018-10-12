@@ -31,8 +31,9 @@ class Layer {
 	public var blend_dst:BlendMode;
 	public var blend_eq:BlendEquation;
 
+	@:noCompletion public var geometry_list:GeometryList;
+	
 	var renderer:Renderer;
-	var geometry_list:GeometryList;
 	var manager:LayerManager;
 
 	var inited:Bool = false;

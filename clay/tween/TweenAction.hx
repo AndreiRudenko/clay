@@ -52,11 +52,11 @@ class TweenAction {
 		tweens.push(new FuncTween(this, _fn, _duration, _start, _end));
 
 		return this;
-		
+
 	}
 
 	public function ease(_ease:EaseFunc):TweenAction {
-		
+
 		node.easing = _ease;
 
 		return this;
@@ -73,13 +73,13 @@ class TweenAction {
 	}
 
 	public function then():TweenAction {
-		
+
 		return node.add(new TweenAction(node));
 
 	}
 
 	public function call(_fn:Void->Void):TweenAction {
-		
+
 		return node.add(new CallAction(node, _fn));
 
 	}

@@ -17,7 +17,6 @@ typedef ClayOptions = {
 };
 
 typedef WindowOptions = {
-    ?name:String,
     ?x:Int,
     ?y:Int,
     ?resizable:Bool,
