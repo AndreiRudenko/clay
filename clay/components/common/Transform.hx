@@ -46,7 +46,7 @@ class Transform {
 		
 		local.identity()
 		.translate(pos.x, pos.y)
-		.rotate(Mathf.radians(rotation))
+		.rotate(Mathf.radians(-rotation))
 		.scale(scale.x, scale.y)
 		.apply(-origin.x, -origin.y);
 
