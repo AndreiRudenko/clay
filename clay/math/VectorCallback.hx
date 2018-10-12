@@ -7,6 +7,8 @@ class VectorCallback {
     public var x(get, set):Float;
     public var y(get, set):Float;
 
+    public var length(get, set):Float;
+
     public var ignore_listeners:Bool = false;
     @:isVar public var listen_x(default,default):Float -> Void;
     @:isVar public var listen_y(default,default):Float -> Void;
@@ -64,7 +66,7 @@ class VectorCallback {
 
     public inline function normalize() {
 
-        return divide_scalar(length());
+        return divide_scalar(length);
         
     }
 
@@ -86,19 +88,6 @@ class VectorCallback {
 
         return this;
         
-    }
-
-    public inline function set_length(v:Float) {
-
-        normalize().multiply_scalar(v);
-        return v;
-
-    }
-
-    public inline function length() {
-
-        return Math.sqrt(_x * _x + _y * _y);
-
     }
 
     public inline function lengthsq() {
@@ -283,6 +272,19 @@ class VectorCallback {
         }
 
         return _y;
+
+    }
+
+    inline function get_length() {
+
+        return Math.sqrt(x * x + y * y);
+
+    }
+
+    inline function set_length(_v:Float) {
+
+        normalize().multiply_scalar(_v);
+        return _v;
 
     }
 

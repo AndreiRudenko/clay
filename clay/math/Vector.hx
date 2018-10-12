@@ -7,6 +7,8 @@ class Vector {
     public var x:Float;
     public var y:Float;
 
+    public var length(get, set):Float;
+
 
     public function new(_x:Float = 0, _y:Float = 0) {
 
@@ -41,7 +43,7 @@ class Vector {
 
     public inline function normalize() {
 
-        return divide_scalar(length());
+        return divide_scalar(length);
         
     }
 
@@ -57,19 +59,6 @@ class Vector {
 
         return this;
         
-    }
-
-    public inline function set_length(_v:Float) {
-
-        normalize().multiply_scalar(_v);
-        return _v;
-
-    }
-
-    public inline function length() {
-
-        return Math.sqrt(x * x + y * y);
-
     }
 
     public inline function lengthsq() {
@@ -180,6 +169,19 @@ class Vector {
 
         return this;
         
+    }
+
+    inline function get_length() {
+
+        return Math.sqrt(x * x + y * y);
+
+    }
+
+    inline function set_length(_v:Float) {
+
+        normalize().multiply_scalar(_v);
+        return _v;
+
     }
 
 
