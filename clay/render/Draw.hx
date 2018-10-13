@@ -5,6 +5,7 @@ package clay.render;
 import clay.components.graphics.Texture;
 import clay.components.graphics.Geometry;
 import clay.components.graphics.QuadGeometry;
+import clay.components.graphics.LineGeometry;
 import clay.components.graphics.Text;
 import clay.resources.FontResource;
 import clay.render.Layer;
@@ -29,40 +30,19 @@ class Draw {
 		
 	}
 
-	public function line(options:DrawLineOptions) {
+	public function line(options:DrawLineOptions):LineGeometry {
 
-		var p0 = options.p0;
-		var p1 = options.p1;
-		var color0 = def(options.color0, new Color());
-		var color1 = def(options.color1, new Color());
-		var strength = def(options.strength, 1);
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, 0);
 		
-		var vec:Vector;
-		if (p0.y == p1.y) {
-			vec = new Vector(0, -1);
-		} else {
-			vec = new Vector(1, -(p1.x - p0.x) / (p1.y - p0.y));
-		}
-		vec.length = strength;
-
-		var _p0 = p0.clone().add_xy(0.5 * vec.x, 0.5 * vec.y);
-		var _p1 = p1.clone().add_xy(0.5 * vec.x, 0.5 * vec.y);
-		var _p2 = _p0.clone().subtract(vec);
-		var _p3 = _p1.clone().subtract(vec);
-
-		var indices = [0,1,2,0,3,2];
-
-		var geom = new Geometry({
-			indices: indices,
+		var geom = new LineGeometry({
+			p0: options.p0,
+			p1: options.p1,
+			color0: options.color0,
+			color1: options.color1,
+			strength: options.strength,
 			layer: layer
 		});
-
-		geom.add(new Vertex(_p0, color0));
-		geom.add(new Vertex(_p1, color1));
-		geom.add(new Vertex(_p3, color1));
-		geom.add(new Vertex(_p2, color0));
 
 		add_to_layer(geom, layer, options.order);
 
@@ -74,7 +54,7 @@ class Draw {
 
 	}
 
-	public function rectangle(options:DrawRectangleOptions) {
+	public function rectangle(options:DrawRectangleOptions):QuadGeometry {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);

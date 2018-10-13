@@ -11,6 +11,7 @@ import clay.components.graphics.QuadGeometry;
 import clay.components.graphics.QuadPack;
 import clay.components.graphics.NineSlice;
 import clay.components.graphics.Text;
+import clay.components.graphics.LineGeometry;
 
 import clay.math.Matrix;
 import clay.render.Renderer;
@@ -42,6 +43,8 @@ class RenderProcessor extends Processor {
 	var nst_family:Family<NineSlice,Transform>;
 	var nstex_family:Family<NineSlice,Texture>;
 
+	var lg_family:Family<LineGeometry>;
+
 
 	public function new() {
 
@@ -72,6 +75,8 @@ class RenderProcessor extends Processor {
 		nst_family.listen(nst_added, nst_removed);
 		nstex_family.listen(nstex_added, nstex_removed);
 
+		lg_family.listen(lg_added, lg_removed);
+
 	}
 
 	override function onremoved() {
@@ -94,6 +99,8 @@ class RenderProcessor extends Processor {
 		ns_family.unlisten(ns_added, ns_removed);
 		nst_family.unlisten(nst_added, nst_removed);
 		nstex_family.unlisten(nstex_added, nstex_removed);
+
+		lg_family.listen(lg_added, lg_removed);
 
 	}
 
@@ -312,6 +319,23 @@ class RenderProcessor extends Processor {
 
 		var g = tt_family.get_text(e);
 		remove_transform_from_geom(g);
+
+	}
+
+
+	// line
+	
+	function lg_added(e:Entity) {
+
+		var g = lg_family.get_lineGeometry(e);
+		add_geom_to_renderer(g);
+
+	}
+	
+	function lg_removed(e:Entity) {
+
+		var g = lg_family.get_lineGeometry(e);
+		remove_geom_from_renderer(g);
 
 	}
 
