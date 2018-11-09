@@ -4,8 +4,8 @@ package clay.math;
 class Vector {
 
 
-    public var x:Float;
-    public var y:Float;
+    public var x(default, set):Float;
+    public var y(default, set):Float;
 
     public var length(get, set):Float;
 
@@ -181,6 +181,18 @@ class Vector {
 
         normalize().multiply_scalar(_v);
         return _v;
+
+    }
+
+    function set_x(_v:Float) {
+
+        return x = _v;
+
+    }
+
+    function set_y(_v:Float) {
+
+        return y = _v;
 
     }
 

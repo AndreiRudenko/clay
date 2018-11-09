@@ -7,7 +7,7 @@ import clay.resources.BytesResource;
 import clay.resources.FontResource;
 import clay.resources.JsonResource;
 // import clay.resources.ShaderResource;
-import clay.components.graphics.Texture;
+import clay.resources.Texture;
 import clay.resources.VideoResource;
 import clay.resources.TextResource;
 import clay.utils.Log.*;
@@ -45,6 +45,14 @@ class Resources {
 	}
 
 	public function load_all(arr:Array<String>, oncomplete:Void->Void, ?onprogress:Float->Void) {
+
+		if(arr.length == 0) {
+			if(onprogress != null) {
+				onprogress(1);
+			}
+			oncomplete();
+			return;
+		}
 
 		var progress:Float = 0;
 		var count:Int = arr.length;

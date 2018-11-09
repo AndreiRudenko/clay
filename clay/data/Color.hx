@@ -19,6 +19,17 @@ class Color {
 
 	}
 
+	public function set(_r:Float, _g:Float, _b:Float, _a:Float):Color {
+		
+		r = _r;
+		g = _g;
+		b = _b;
+		a = _a;
+
+		return this;
+
+	}
+
 	public function copy_from(other:Color):Color {
 
 		r = other.r;
@@ -30,7 +41,7 @@ class Color {
 		
 	}
 
-	public function from_int(_i:Int) {
+	public function from_int(_i:Int):Color {
 
 		var _r = _i >> 16;
 		var _g = _i >> 8 & 0xFF;
@@ -40,6 +51,14 @@ class Color {
 		r = _r / 255;
 		g = _g / 255;
 		b = _b / 255;
+
+		return this;
+		
+	}
+
+	public function clone():Color {
+
+		return new Color(r, g, b, a);
 		
 	}
 
@@ -61,12 +80,14 @@ class Color {
 		
 	}
 
-	public inline function from_json(d:Dynamic) {
+	public inline function from_json(d:Dynamic):Color {
 
 		r = d.r;
 		g = d.g;
 		b = d.b;
 		a = d.a;
+
+		return this;
 	    
 	}
 

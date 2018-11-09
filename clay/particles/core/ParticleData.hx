@@ -1,8 +1,6 @@
 package clay.particles.core;
 
-
 import clay.data.Color;
-
 
 class ParticleData {
 

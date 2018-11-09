@@ -1,4 +1,4 @@
-package clay.components.graphics;
+package clay.resources;
 
 
 import haxe.io.Bytes;

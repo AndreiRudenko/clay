@@ -4,36 +4,66 @@ package clay.render;
 import kha.graphics4.Graphics;
 
 import clay.Entity;
+import clay.math.Rectangle;
 import clay.components.misc.Camera;
+import clay.core.Signal;
 import clay.utils.Log.*;
 
 @:access(clay.components.misc.Camera)
 class CameraManager {
 
 
+	public var oncameracreate    (default, null):Signal<Camera->Void>;
+	public var oncameradestroy	(default, null):Signal<Camera->Void>;
+
+	public var length(default, null):Int;
+
+	var active_cameras:Array<Camera>;
 	var cameras:Map<String, Camera>;
 
 
 	public function new() {
 		
+		active_cameras = [];
 		cameras = new Map();
+		length = 0;
+
+		oncameracreate = new Signal();
+		oncameradestroy = new Signal();
 
 	}
 
-	public function create(name:String, x:Int = 0, y:Int = 0, ?w:Int, ?h:Int):Camera {
+	public function create(_name:String, ?_viewport:Rectangle, _priority:Int = 0, _enabled:Bool = true):Camera {
 
-		var c = new Camera(name, x, y, w, h);
-		add(c);
+		var _camera = new Camera(this, _name, _viewport, _priority);
 
-		return c;
+		handle_duplicate_warning(_name);
+		cameras.set(_name, _camera);
+		length++;
+
+		if(_enabled) {
+			enable(_camera);
+		}
+
+		oncameracreate.emit(_camera);
+
+		return _camera;
 
 	}
 
-	public function add(c:Camera) {
+	public function destroy(_camera:Camera) {
+		
+		if(cameras.exists(_camera.name)) {
+			cameras.remove(_camera.name);
+			length--;
+			disable(_camera);
+		} else {
+			log('can`t remove camera: "${_camera.name}" , already removed?');
+		}
 
-		handle_duplicate_warning(c.name);
-		cameras.set(c.name, c);
-		c.added = true;
+		oncameradestroy.emit(_camera);
+
+		_camera.destroy();
 
 	}
 
@@ -43,24 +73,48 @@ class CameraManager {
 
 	}
 
-	public function remove(name:String):Bool {
+	public function enable(_camera:Camera) {
 
-		var c = cameras.get(name);
-		if(c != null) {
-			c.added = false;
-			return true;
+		if(_camera._active) {
+			return;
 		}
-		return false;
-	    
+		
+		var added:Bool = false;
+		var c:Camera = null;
+		for (i in 0...active_cameras.length) {
+			c = active_cameras[i];
+			if (_camera.priority < c.priority) {
+				active_cameras.insert(i, _camera);
+				added = true;
+				break;
+			}
+		}
 
+		_camera._active = true;
+
+		if(!added) {
+			active_cameras.push(_camera);
+		}
+
+	}
+
+	public function disable(_camera:Camera) {
+
+		if(!_camera._active) {
+			return;
+		}
+
+		active_cameras.remove(_camera);
+		_camera._active = false;
+		
 	}
 
 	public function clear() {
 
 		for (c in cameras) {
-			c.added = false;
+			destroy(c);
 		}
-		cameras = new Map();
+		length = 0;
 		
 	}
 
@@ -71,13 +125,14 @@ class CameraManager {
 			log('adding a second camera named: "${name}"!
 				This will replace the existing one, possibly leaving the previous one in limbo.');
 			cameras.remove(name);
+			disable(c);
 		}
 
 	}
 
 	@:noCompletion public inline function iterator():Iterator<Camera> {
 
-		return cameras.iterator();
+		return active_cameras.iterator();
 
 	}
 

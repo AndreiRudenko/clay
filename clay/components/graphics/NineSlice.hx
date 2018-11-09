@@ -8,7 +8,7 @@ import clay.data.Color;
 import clay.ds.Int32RingBuffer;
 import clay.render.Vertex;
 import clay.resources.FontResource;
-import clay.components.graphics.Texture;
+import clay.resources.Texture;
 import clay.components.graphics.Geometry;
 import clay.utils.Log.*;
 import clay.utils.PowerOfTwo;
@@ -25,10 +25,11 @@ class NineSlice extends Geometry {
 	var right:Float;
 	var bottom:Float;
 
+	var _setup:Bool = true;
+
 
 	public function new(_options:NineSliceOptions) {
 
-		super(_options);
 
 		top = def(_options.top, 32);
 		left = def(_options.left, 32);
@@ -38,7 +39,7 @@ class NineSlice extends Geometry {
 		width = def(_options.width, 128);
 		height = def(_options.height, 128);
 
-		indices = [
+		_options.indices = [
 			0,  1,  5,  5,  4,  0,  // 0
 			1,  2,  6,  6,  5,  1,  // 1
 			2,  3,  7,  7,  6,  2,  // 2
@@ -50,11 +51,20 @@ class NineSlice extends Geometry {
 			10, 11, 15, 15, 14, 10, // 8
 		];
 
+		_options.vertices = [];
+
 		for (i in 0...16) {
-			add(new Vertex(new Vector(), color));
+			_options.vertices.push(new Vertex(new Vector(), color));
 		}
 
+		super(_options);
+
 		set_geometry_type(GeometryType.polygon);
+
+		_setup = false;
+
+		update_width();
+		update_height();
 
 	}
 
@@ -73,7 +83,7 @@ class NineSlice extends Geometry {
 
 	function update_width() {
 
-		if(texture == null) {
+		if(_setup || texture == null) {
 			return;
 		}
 		
@@ -93,7 +103,7 @@ class NineSlice extends Geometry {
 
 	function update_height() {
 		
-		if(texture == null) {
+		if(_setup || texture == null) {
 			return;
 		}
 
@@ -113,9 +123,10 @@ class NineSlice extends Geometry {
 
 	function set_width(v:Float):Float {
 		
-		width = v;
-
-		update_width();
+		if(width != v) {
+			width = v;
+			update_width();
+		}
 
 		return width;
 
@@ -123,9 +134,10 @@ class NineSlice extends Geometry {
 
 	function set_height(v:Float):Float {
 		
-		height = v;
-
-		update_height();
+		if(height != v) {
+			height = v;
+			update_height();
+		}
 
 		return height;
 

@@ -4,7 +4,7 @@ import kha.System;
 import kha.WindowMode;
 import kha.graphics4.DepthStencilFormat;
 import clay.types.ScreenRotation;
-import clay.components.graphics.Texture;
+import clay.resources.Texture;
 import clay.math.Vector;
 
 @:access(clay.Engine)

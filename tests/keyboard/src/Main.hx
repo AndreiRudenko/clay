@@ -7,7 +7,7 @@ class Main {
 
 		Clay.init(
 			{
-				title: 'clay_keyboard',
+				title: 'keyboard',
 				width: 800,
 				height: 600,
 				window: {

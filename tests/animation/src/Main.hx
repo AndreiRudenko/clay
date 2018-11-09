@@ -7,7 +7,7 @@ class Main {
 
 		Clay.init(
 			{
-				title: 'clay_animation',
+				title: 'animation',
 				width: 800,
 				height: 600,
 				window: {

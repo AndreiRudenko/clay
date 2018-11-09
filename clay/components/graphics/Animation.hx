@@ -1,7 +1,6 @@
 package clay.components.graphics;
 
 
-import clay.math.Rectangle;
 import clay.math.Mathf;
 import clay.components.event.Events;
 import clay.utils.Log.*;
@@ -192,7 +191,6 @@ class AnimationDataGrid extends AnimationData {
 
 
 	var texture:Texture;
-	var rect:Rectangle;
 
 	var row:Int; // w
 	var col:Int; // h
@@ -206,8 +204,6 @@ class AnimationDataGrid extends AnimationData {
 
 		row = _row;
 		col = _col;
-
-		rect = new Rectangle();
 
 	}
 
@@ -258,8 +254,7 @@ class AnimationDataGrid extends AnimationData {
 			var tlx = (frame % row) * szx;
 			var tly = Math.floor(frame / col) * szy;
 
-			rect.set(tlx, tly, szx, szy);
-			anim.geometry.set_tcoord(rect);
+			anim.geometry.set_uv(tlx, tly, szx, szy);
 		}
 
 	}

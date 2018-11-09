@@ -2,7 +2,7 @@ package clay.render;
 
 
 // import kha.graphics4.Graphics;
-import clay.components.graphics.Texture;
+import clay.resources.Texture;
 import clay.components.graphics.Geometry;
 import clay.components.graphics.QuadGeometry;
 import clay.components.graphics.LineGeometry;
@@ -15,6 +15,7 @@ import clay.math.Matrix;
 import clay.math.Mathf;
 import clay.data.Color;
 import clay.utils.Log.*;
+import clay.types.TextAlign;
 
 
 class Draw {
@@ -33,7 +34,8 @@ class Draw {
 	public function line(options:DrawLineOptions):LineGeometry {
 
 		var immediate = def(options.immediate, true);
-		var layer = def(options.layer, 0);
+		var layer = def(options.layer, null);
+		var no_add = def(options.no_add, false);
 		
 		var geom = new LineGeometry({
 			p0: options.p0,
@@ -41,13 +43,16 @@ class Draw {
 			color0: options.color0,
 			color1: options.color1,
 			strength: options.strength,
+			depth: options.depth,
 			layer: layer
 		});
 
-		add_to_layer(geom, layer, options.order);
+		if(!no_add) {
+			add_to_layer(geom, options.depth);
 
-		if(immediate) {
-			geometry.push(geom);
+			if(immediate) {
+				geometry.push(geom);
+			}
 		}
 
 		return geom;
@@ -65,26 +70,31 @@ class Draw {
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
 		var immediate = def(options.immediate, true);
-		var layer = def(options.layer, 0);
+		var layer = def(options.layer, null);
+		var no_add = def(options.no_add, false);
 
 		var rect = new QuadGeometry({
 			size: new Vector(w, h),
 			color: color,
+			depth: options.depth,
 			layer: layer
 		});
 
 		update_matrix(rect.transform_matrix, x, y, ox, oy, angle);
-		add_to_layer(rect, layer, options.order);
 
-		if(immediate) {
-			geometry.push(rect);
+		if(!no_add) {
+			add_to_layer(rect, options.depth);
+
+			if(immediate) {
+				geometry.push(rect);
+			}
 		}
 
 		return rect;
 
 	}
 
-	public function circle(options:DrawCircleOptions) {
+	public function circle(options:DrawCircleOptions):Geometry {
 		
 		var cx = def(options.x, 0);
 		var cy = def(options.y, 0);
@@ -93,8 +103,9 @@ class Draw {
 		var r = def(options.r, 64);
 		var segments = def(options.segments, Math.floor(10 * Math.sqrt(r)));
 		var color = def(options.color, new Color());
-		var layer = def(options.layer, 0);
+		var layer = def(options.layer, null);
 		var immediate = def(options.immediate, true);
+		var no_add = def(options.no_add, false);
 
 		var indices = [];
 		var vertices = [];
@@ -127,14 +138,17 @@ class Draw {
 			vertices: vertices,
 			indices: indices,
 			layer: layer,
+			depth: options.depth,
 			color: color
 		});
 
 		update_matrix(geom.transform_matrix, cx, cy, ox, oy, 0);
-		add_to_layer(geom, layer, options.order);
 
-		if(immediate) {
-			geometry.push(geom);
+		if(!no_add) {
+			add_to_layer(geom, options.depth);
+			if(immediate) {
+				geometry.push(geom);
+			}
 		}
 
 		return geom;
@@ -149,8 +163,9 @@ class Draw {
 		var oy = def(options.oy, 0);
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
-		var layer = def(options.layer, 0);
+		var layer = def(options.layer, null);
 		var immediate = def(options.immediate, true);
+		var no_add = def(options.no_add, false);
 
 		var iterator = options.vertices.iterator();
 
@@ -194,21 +209,25 @@ class Draw {
 			vertices: vertices,
 			indices: indices,
 			layer: layer,
+			depth: options.depth,
 			color: color
 		});
 
 		update_matrix(geom.transform_matrix, x, y, ox, oy, angle);
-		add_to_layer(geom, layer, options.order);
 
-		if(immediate) {
-			geometry.push(geom);
+		if(!no_add) {
+			add_to_layer(geom, options.depth);
+
+			if(immediate) {
+				geometry.push(geom);
+			}
 		}
 
 		return geom;
 
 	}
 
-	public function image(options:DrawImageOptions) {
+	public function image(options:DrawImageOptions):QuadGeometry {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
@@ -219,7 +238,8 @@ class Draw {
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
 		var immediate = def(options.immediate, true);
-		var layer = def(options.layer, 0);
+		var layer = def(options.layer, null);
+		var no_add = def(options.no_add, false);
 
 		var texture = options.texture;
 
@@ -227,21 +247,25 @@ class Draw {
 			size: new Vector(w, h),
 			color: color,
 			layer: layer,
+			depth: options.depth,
 			texture: texture
 		});
 
 		update_matrix(rect.transform_matrix, x, y, ox, oy, angle);
-		add_to_layer(rect, layer, options.order);
 
-		if(immediate) {
-			geometry.push(rect);
+		if(!no_add) {
+			add_to_layer(rect, options.depth);
+
+			if(immediate) {
+				geometry.push(rect);
+			}
 		}
 
 		return rect;
 
 	}
 
-	public function text(options:DrawTextOptions) {
+	public function text(options:DrawTextOptions):Text {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
@@ -251,7 +275,8 @@ class Draw {
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
 		var immediate = def(options.immediate, true);
-		var layer = def(options.layer, 0);
+		var layer = def(options.layer, null);
+		var no_add = def(options.no_add, false);
 		
 		var text = options.text;
 		var font = options.font;
@@ -262,15 +287,19 @@ class Draw {
 			layer: layer,
 			font: font,
 			text: text,
+			depth: options.depth,
 			align: options.align,
 			align_vertical: options.align_vertical
 		});
 
 		update_matrix(text.transform_matrix, x, y, ox, oy, angle);
-		add_to_layer(text, layer, options.order);
 
-		if(immediate) {
-			geometry.push(text);
+		if(!no_add) {
+			add_to_layer(text, options.depth);
+
+			if(immediate) {
+				geometry.push(text);
+			}
 		}
 
 		return text;
@@ -281,31 +310,24 @@ class Draw {
 	function update() {
 
 		if(geometry.length > 0) {
-			var lr:Layer = null;
-
 			for (g in geometry) {
-				lr = Clay.renderer.layers.get(g.layer);
-				lr.remove(g);
+				g.drop();
 			}
-
 			geometry.splice(0, geometry.length);
 		}
 		
 	}
 	
-	inline function add_to_layer(geom:Geometry, lid:Int, ?order:Null<Int>) {
+	inline function add_to_layer(geom:Geometry, ?depth:Null<Float>) {
 
-		var layer = Clay.renderer.layers.get(lid);
-
-		if(layer != null) {
-			if(order != null) {
-				geom.order = order;
-				layer.geometry_list.add(geom);
+		if(geom.layer == null) {
+			if(Clay.renderer.layer != null) {
+				Clay.renderer.layer._add_unsafe(geom, depth != null);
 			} else {
-				layer.geometry_list.add_first(geom);
+				log('Error adding geometry `${geom.name}` to Clay.renderer.layer');
 			}
 		} else {
-			log('cant draw geometry in $lid layer');
+			geom.layer._add_unsafe(geom, depth != null);
 		}
 
 	}
@@ -322,9 +344,10 @@ class Draw {
 
 typedef DrawGeometryOptions = {
 
-	@:optional var layer:Int;
+	@:optional var layer:Layer;
 	@:optional var immediate:Bool;
-	@:optional var order:Int;
+	@:optional var depth:Float;
+	@:optional var no_add:Bool;
 
 }
 

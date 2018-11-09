@@ -8,40 +8,56 @@ import kha.Kravur.KravurImage;
 import clay.math.Vector;
 import clay.math.Matrix;
 import clay.data.Color;
+import clay.render.Shader;
 import clay.render.Vertex;
 import clay.resources.FontResource;
-import clay.components.graphics.Texture;
+import clay.resources.Texture;
 import clay.components.graphics.Geometry;
 import clay.utils.Log.*;
+import clay.types.TextAlign;
 
 
 class Text extends Geometry {
 
 
-	public var text(default, set):String;
-	public var font(default, set):FontResource;
-	public var size(default, set):Int; // expensive
-	public var align(default, set):TextAlign;
-	public var align_vertical(default, set):TextAlign;
+	public var text          	(default, set):String;
+	public var font          	(default, set):FontResource;
+	public var size          	(default, set):Int; // expensive
+	public var align         	(default, set):TextAlign;
+	public var align_vertical	(default, set):TextAlign;
 
-	public var width(default, set):Float;
-	public var height(default, set):Float;
-	public var line_spacing(default, set):Float;
-	public var letter_spacing(default, set):Float;
-	public var tab_width(default, set):Int;
+	public var width         	(default, set):Float;
+	public var height        	(default, set):Float;
+	public var line_spacing  	(default, set):Float;
+	public var letter_spacing	(default, set):Float;
+	public var tab_width     	(default, set):Int;
+	public var wrap          	(default, set):Bool;
+
+    public var text_width 		(default, null):Float = 0;
+    public var text_height		(default, null):Float = 0;
+
+	public var text_colors:Array<Color>;
 
 	var split_regex:EReg = ~/(?:\r\n|\r|\n)/g;
 	var tab_regex:EReg = ~/\t/gim;
 	var tab_string:String = '';
+
+	var size_dirty:Bool = true;
+	var font_dirty:Bool = true;
+
+
+	var _kravur:KravurImage;
 
 	var _setup:Bool = true;
 
 
 	public function new(_options:TextOptions) {
 
+		text_colors = [];
+
 		super(_options);
 
-		font = _options.font;
+		font = def(_options.font, Clay.renderer.font);
 		size = def(_options.size, 12);
 		text = def(_options.text, '');
 		align = def(_options.align, TextAlign.left);
@@ -51,10 +67,16 @@ class Text extends Geometry {
 		line_spacing = def(_options.line_spacing, 0);
 		letter_spacing = def(_options.letter_spacing, 0);
 		tab_width = def(_options.tab_width, 4);
+		wrap = def(_options.wrap, false);
+
+		if(_options.text_colors != null) {
+			text_colors = _options.text_colors;
+		}
 
 		set_geometry_type(GeometryType.text);
 
 		_setup = false;
+
 		update_text();
 
 	}
@@ -74,10 +96,27 @@ class Text extends Geometry {
 		return super.update_instanced();
 
 	}
-	
+
+	override function get_default_shader(_instanced:Bool):Shader {
+
+		return _instanced ? Clay.renderer.shader_instanced_text : Clay.renderer.shader_text;
+
+	}
+
+	public function add_text(_text:String, ?_color:Color) {
+
+		var start = text.length;
+
+		for (i in 0..._text.length) {
+			text_colors[start + i] = _color;
+		}
+		text += _text;
+		
+	}
+
 	function setup_text_indices() {
 
-		if(_geometry_type == GeometryType.instanced) {
+		if(instanced) {
 			indices = [];
 			var quads_count = Std.int(vertices.length / 4);
 			for (i in 0...quads_count) {
@@ -90,51 +129,6 @@ class Text extends Geometry {
 			}
 		}
 
-	}
-
-	function set_text(v:String):String {
-
-		text = v;
-		update_text();
-
-		return text;
-		
-	}
-
-	function set_font(v:FontResource):FontResource {
-
-		font = v;
-		update_text();
-
-		return font;
-		
-	}
-
-	function set_size(v:Int):Int {
-
-		size = v;
-		update_text();
-
-		return size;
-		
-	}
-
-	function set_align(v:TextAlign):TextAlign {
-
-		align = v;
-		update_text();
-
-		return align;
-		
-	}
-
-	function set_align_vertical(v:TextAlign):TextAlign {
-
-		align_vertical = v;
-		update_text();
-
-		return align_vertical;
-		
 	}
 
 	function find_index(charCode: Int):Int {
@@ -161,13 +155,13 @@ class Text extends Geometry {
 		var txt = tab_regex.replace(_text, tab_string);
 		var lines = split_regex.split(txt);
 
-		if(width == 0 && height == 0) {
+		if(!wrap || (width == 0 && height == 0)) {
 			return lines;
 		}
 
         var parsed_lines:Array<String> = [];
 
-		var text_heght:Float = _font.getHeight() + line_spacing;
+		var _text_height:Float = _font.getHeight() + line_spacing;
 		var space_width:Float = _font.stringWidth(' ') + letter_spacing;
 		var _stop:Bool = false;
 		var th:Float = 0;
@@ -176,7 +170,7 @@ class Text extends Geometry {
 			var lw:Float = 0;
 			var result:String = '';
 			var words = line.split(" ");
-			th += text_heght;
+			th += _text_height;
 
 			for (word in words) {
 
@@ -199,7 +193,7 @@ class Text extends Geometry {
 						result += " " + word;
 					}
 				} else {
-					th += text_heght;
+					th += _text_height;
 					if(height > 0 && height <= th-line_spacing) { // todo: i know...
 						_stop = true;
 						break;
@@ -228,106 +222,172 @@ class Text extends Geometry {
 			return;
 		}
 
-		var tex_name:String = '${font.id}_$size';
-
-		var t = Clay.resources.texture(tex_name);
-		var font_glyphs = kha.graphics2.Graphics.fontGlyphs;
-
-		var _font = font.font._get(size); // note: this is expensive if creating new font or font size
-		if(t == null) {
-			var img = _font.getTexture();
-			t = new Texture(img, true);
-			t.id = tex_name;
+		if(font_dirty || size_dirty) {
+			var tex_name:String = '${font.id}_$size';
+			var t = Clay.resources.texture(tex_name);
+			_kravur = font.font._get(size); // note: this is expensive if creating new font or font size
+			if(t == null) {
+				texture = new Texture(_kravur.getTexture());
+				texture.id = tex_name;
+				Clay.resources.cache.set(tex_name, texture);
+			} else if (t != texture) {
+				texture = t;
+			}
+			font_dirty = false;
+			size_dirty = false;
 		}
-
-		if(t != texture) {
-			texture = t;
-		}
-
-		var lines = split_in_lines(text, _font);
-
-		var quad_cache = new AlignedQuad();
 
 		vertices = [];
 
-		var text_heght:Float = _font.getHeight();
-		var text_width:Float = 0;
-		var text_heigth_sum:Float = 0;
+		var _text = text;
+		if(text.length == 0) {
+			_text = ' ';
+		}
+
+		var lines = split_in_lines(_text, _kravur);
+
+		var quad_cache = new AlignedQuad();
+
+		var _text_width:Float = 0;
+		var font_heght:Float = _kravur.getHeight();
+		text_width = 0;
+		text_height = (font_heght + line_spacing) * lines.length;
 
 		var xoffset:Float = 0;
 		var yoffset:Float = 0;
 
 		var img = texture.image;
+		var custom_colors = text_colors.length != 0;
+		var _color = color;
 
 		var w_ratio:Float = img.width / img.realWidth;
 		var h_ratio:Float = img.height / img.realHeight;
 
-		for (l in lines) {
-			
-			if(l == null || l.length == 0) {
-				yoffset += text_heght + line_spacing;
-				continue;
-			}
-
-			text_width = _font.stringWidth(l) + (l.length*letter_spacing);
-
-			var xpos:Float = 0;
-
-			switch (align) {
-				case TextAlign.right:{
-					xoffset = -text_width;
-				}
-				case TextAlign.center:{
-					xoffset = -text_width/2;
-				}
-				default:{
-					xoffset = 0;
-				}
-			}
-
-			var lw:Float = 0;
-
-			for (i in 0...l.length) {
-				var q:AlignedQuad = _font.getBakedQuad(quad_cache, find_index(l.charCodeAt(i)), xpos, 0);
-				if (q != null) {
-
-					lw = q.xadvance + letter_spacing;
-
-					var t0x = q.s0 * w_ratio;
-					var t0y = q.t0 * h_ratio;
-					var t1x = q.s1 * w_ratio;
-					var t1y = q.t1 * h_ratio;
-
-					add(new Vertex(new Vector(q.x0+xoffset, q.y1+yoffset), new Color(), new Vector(t0x, t1y)));
-					add(new Vertex(new Vector(q.x0+xoffset, q.y0+yoffset), new Color(), new Vector(t0x, t0y)));
-					add(new Vertex(new Vector(q.x1+xoffset, q.y0+yoffset), new Color(), new Vector(t1x, t0y)));
-					add(new Vertex(new Vector(q.x1+xoffset, q.y1+yoffset), new Color(), new Vector(t1x, t1y)));
-
-					xpos += lw;
-				}
-			}
-
-			yoffset += text_heght + line_spacing;
-
-		}
-
-		var th = yoffset - line_spacing;
-
 		switch (align_vertical) {
 			case TextAlign.bottom:{
-				for (v in vertices) {
-					v.pos.y -= th;
-				}
+				yoffset = height - text_height;
 			}
 			case TextAlign.center:{
-				for (v in vertices) {
-					v.pos.y -= th*0.5;
-				}
+				yoffset = height*0.5 - text_height/2;
 			}
-			default:
+			default:{
+				yoffset = 0;
+			}
 		}
 
+		var n:Int = 0;
+		for (l in lines) {
+			
+			if(l != null && l.length > 0) {
 
+				_text_width = _kravur.stringWidth(l) + (l.length * letter_spacing);
+
+				if(_text_width > text_width) {
+					text_width = _text_width;
+				}
+
+				var xpos:Float = 0;
+
+				switch (align) {
+					case TextAlign.right:{
+						xoffset = width-_text_width;
+					}
+					case TextAlign.center:{
+						xoffset = width*0.5-_text_width/2;
+					}
+					default:{
+						xoffset = 0;
+					}
+				}
+
+				var lw:Float = 0;
+
+				for (i in 0...l.length) {
+					if(custom_colors) {
+						_color = text_colors[n];
+						if(_color == null) {
+							_color = color;
+						}
+					}
+					var q:AlignedQuad = _kravur.getBakedQuad(quad_cache, find_index(l.charCodeAt(i)), xpos, 0);
+					if (q != null) {
+						lw = q.xadvance + letter_spacing;
+
+						var t0x = q.s0 * w_ratio;
+						var t0y = q.t0 * h_ratio;
+						var t1x = q.s1 * w_ratio;
+						var t1y = q.t1 * h_ratio;
+
+						add(new Vertex(new Vector(q.x0+xoffset, q.y1+yoffset), _color, new Vector(t0x, t1y)));
+						add(new Vertex(new Vector(q.x0+xoffset, q.y0+yoffset), _color, new Vector(t0x, t0y)));
+						add(new Vertex(new Vector(q.x1+xoffset, q.y0+yoffset), _color, new Vector(t1x, t0y)));
+						add(new Vertex(new Vector(q.x1+xoffset, q.y1+yoffset), _color, new Vector(t1x, t1y)));
+
+						xpos += lw;
+					}
+					n++;
+				}
+				n++;
+			}
+
+			yoffset += font_heght + line_spacing;
+
+		}
+		// todo: instances
+	}
+
+	function set_text(v:String):String {
+
+		text = v;
+
+		if(text_colors.length > text.length) {
+			text_colors.splice(text.length, text_colors.length - text.length);
+		}
+
+		update_text();
+
+		return text;
+		
+	}
+
+	function set_font(v:FontResource):FontResource {
+
+		font = v;
+		font_dirty = true;
+
+		update_text();
+
+		return font;
+		
+	}
+
+	function set_size(v:Int):Int {
+
+		size = v;
+		size_dirty = true;
+
+		update_text();
+
+		return size;
+		
+	}
+
+	function set_align(v:TextAlign):TextAlign {
+
+		align = v;
+		update_text();
+
+		return align;
+		
+	}
+
+	function set_align_vertical(v:TextAlign):TextAlign {
+
+		align_vertical = v;
+		update_text();
+
+		return align_vertical;
+		
 	}
 
 	function set_line_spacing(v:Float):Float {
@@ -342,9 +402,11 @@ class Text extends Geometry {
 
 	function set_width(v:Float):Float {
 
-		width = v;
 
-		update_text();
+		if(width != v) {
+			width = v;
+			update_text();
+		}
 
 		return width;
 		
@@ -352,9 +414,10 @@ class Text extends Geometry {
 
 	function set_height(v:Float):Float {
 
-		height = v;
-
-		update_text();
+		if(height != v) {
+			height = v;
+			update_text();
+		}
 
 		return height;
 		
@@ -386,14 +449,35 @@ class Text extends Geometry {
 		
 	}
 
+	override function set_color(v:Color):Color {
+
+		text_colors.splice(0, text_colors.length);
+
+		super.set_color(v);
+
+		return v;
+
+	}
+
+	function set_wrap(v:Bool):Bool {
+
+		wrap = v;
+
+		update_text();
+
+		return wrap;
+		
+	}
+
 }
 
 typedef TextOptions = {
 
 	>GeometryOptions,
 
-	var font:FontResource;
+	@:optional var font:FontResource;
 	@:optional var text:String;
+	@:optional var text_colors:Array<Color>;
 	@:optional var size:Int;
 	@:optional var align:TextAlign;
 	@:optional var align_vertical:TextAlign;
@@ -402,15 +486,6 @@ typedef TextOptions = {
 	@:optional var line_spacing:Float;
 	@:optional var letter_spacing:Float;
 	@:optional var tab_width:Int;
-
-}
-
-@:enum abstract TextAlign(Int) from Int to Int {
-
-	var left = 0;
-	var right = 1;
-	var center = 2;
-	var top = 3;
-	var bottom = 4;
+	@:optional var wrap:Bool;
 
 }

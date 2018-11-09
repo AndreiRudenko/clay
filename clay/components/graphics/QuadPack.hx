@@ -8,7 +8,7 @@ import clay.math.Rectangle;
 import clay.data.Color;
 import clay.render.Vertex;
 import clay.resources.FontResource;
-import clay.components.graphics.Texture;
+import clay.resources.Texture;
 import clay.components.graphics.Geometry;
 import clay.utils.Log.*;
 import clay.utils.PowerOfTwo;

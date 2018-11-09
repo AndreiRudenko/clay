@@ -5,6 +5,7 @@ import kha.System;
 import kha.Scheduler;
 import kha.Framebuffer;
 import kha.WindowOptions;
+import kha.WindowOptions.WindowFeatures;
 
 import clay.math.Random;
 
@@ -15,6 +16,7 @@ import clay.core.Inputs;
 import clay.core.Resources;
 import clay.core.EngineSignals;
 import clay.core.Audio;
+import clay.core.Debug;
 import clay.core.Screen;
 import clay.core.TimerSystem;
 import clay.core.ecs.Worlds;
@@ -40,9 +42,9 @@ class Engine {
 
 
 	public var renderer     (default, null):Renderer;
-	public var camera 	    (default, set):Camera;
 	public var draw         (default, null):Draw;
 	public var audio        (default, null):Audio;
+	public var debug        (default, null):Debug;
 
 	@:allow(Clay)
 	public var world 	    (default, null):World;
@@ -142,11 +144,21 @@ class Engine {
 		resources = new Resources();
 
 		worlds = new Worlds();
+		debug = new Debug(this);
 
-		init();
+		Clay.resources.load_all(
+			[
+			'assets/Montserrat-Regular.ttf',
+			'assets/Montserrat-Bold.ttf',
+			], 
+			function() {
 
-		_debug('onready');
-		_onready();
+				init();
+				_debug('onready');
+				_onready();
+
+			}
+		);
 
 	}
 
@@ -160,6 +172,7 @@ class Engine {
 		input.init();
 		
 		connect_events();
+
 		screen.init();
 		renderer.init();
 		worlds.init();
@@ -168,14 +181,16 @@ class Engine {
 		#if !no_default_world
 			world = worlds.create('default_world', { capacity: 32768, component_types: 64 }, true);
 		#end
-
-		camera = renderer.cameras.create('default_camera');
+		
+		debug.init();
 
 	}
 
 	function destroy() {
 
 		disconnect_events();
+		
+		debug.destroy();
 		worlds.destroy_manager();
 		events.destroy();
 		input.destroy();
@@ -210,12 +225,12 @@ class Engine {
 		options.window = def(_options.window, {});
 		options.renderer = def(_options.renderer, {});
 
-		var features: Int = 0;
-		if (options.window.resizable) features |= WindowOptions.FeatureResizable;
-		if (options.window.maximizable) features |= WindowOptions.FeatureMaximizable;
-		if (options.window.minimizable) features |= WindowOptions.FeatureMinimizable;
-		if (options.window.borderless) features |= WindowOptions.FeatureBorderless;
-		if (options.window.ontop) features |= WindowOptions.FeatureOnTop;
+		var features:WindowFeatures = None;
+		if (options.window.resizable) features |= WindowFeatures.FeatureResizable;
+		if (options.window.maximizable) features |= WindowFeatures.FeatureMaximizable;
+		if (options.window.minimizable) features |= WindowFeatures.FeatureMinimizable;
+		if (options.window.borderless) features |= WindowFeatures.FeatureBorderless;
+		if (options.window.ontop) features |= WindowFeatures.FeatureOnTop;
 
 		var _kha_opt: SystemOptions = {
 			title: options.title,
@@ -420,6 +435,13 @@ class Engine {
 
 	}
 
+	function textinput(e:String) {
+
+		signals.textinput.emit(e);
+		worlds.textinput(e);
+
+	}
+
 	// mouse
 	function mousedown(e:MouseEvent) {
 
@@ -603,20 +625,6 @@ class Engine {
 	inline function get_dt():Float {
 
 		return frame_delta;
-		
-	}
-
-	inline function get_time():Float {
-
-		return System.time;
-		
-	}
-
-	function set_camera(v:Camera):Camera {
-
-		camera = v;
-
-		return camera;
 		
 	}
 

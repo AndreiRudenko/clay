@@ -11,6 +11,7 @@ import clay.math.Mathf;
 import clay.ds.BitVector;
 import clay.core.Signal;
 import clay.components.common.Transform;
+import clay.render.CameraManager;
 
 using clay.render.utils.FastMatrix3Extender;
 
@@ -20,11 +21,13 @@ class Camera {
 
 
 	public var name (default, null):String;
-	public var active:Bool = true;
+	public var active     	(get, set):Bool;
 	public var viewport:Rectangle;
 
-	public var onprerender  (default, null):Signal<Void->Void>;
-	public var onpostrender	(default, null):Signal<Void->Void>;
+	public var priority(default, null):Int;
+
+	public var onprerender  (default, null):Signal<Camera->Void>;
+	public var onpostrender	(default, null):Signal<Camera->Void>;
 
 	@:noCompletion public var transform:Transform;
 
@@ -36,25 +39,28 @@ class Camera {
 	public var pos(get, null):Vector;
 	public var rotation(get, set):Float;
 
+	var _active:Bool = false;
 	var visible_layers_mask:BitVector;
-	var added:Bool = false;
+	var manager:CameraManager;
 
 
-	@:access(clay.render.Renderer)
-	public function new(_name:String, _x:Float = 0, _y:Float = 0, ?_w:Float, ?_h:Float) {
+	function new(_manager:CameraManager, _name:String, _viewport:Rectangle, _priority:Int) {
 
 		name = _name;
+		priority = _priority;
+		manager = _manager;
 
-		var w:Float = _w != null ? _w : Clay.screen.width;
-		var h:Float = _h != null ? _h : Clay.screen.height;
+		viewport = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
 
-		viewport = new Rectangle(_x, _y, w, h);
+		if(_viewport != null) {
+			viewport.copy_from(_viewport);
+		}
 
 		view_matrix = new Matrix();
 		view_matrix_inverted = new Matrix();
 		projection_matrix = FastMatrix3.identity();
 
-		visible_layers_mask = new BitVector(Clay.renderer.layers_max);
+		visible_layers_mask = new BitVector(Clay.renderer.layers.capacity);
 		visible_layers_mask.enable_all();
 
 		transform = new CameraTransform(this);
@@ -66,35 +72,42 @@ class Camera {
 
 	}
 
-	public function destroy() {
+	function destroy() {
 
-		if(added) {
-			Clay.renderer.cameras.remove(name);
-		}
-		
+		name = null;
+		viewport = null;
+		onprerender = null;
+		onpostrender = null;
+		transform = null;
+		view_matrix = null;
+		view_matrix_inverted = null;
+		projection_matrix = null;
+		visible_layers_mask = null;
+		manager = null;
+
 	}
 
 	public function hide_layers(?layers:Array<Int>) {
 
-		if(layers != null) {
-			for (i in layers) {
-				visible_layers_mask.disable(i);
-			}
-		} else {
-			visible_layers_mask.disable_all();
-		}
+		// if(layers != null) {
+		// 	for (i in layers) {
+		// 		visible_layers_mask.disable(i);
+		// 	}
+		// } else {
+		// 	visible_layers_mask.disable_all();
+		// }
 		
 	}
 
 	public function show_layers(?layers:Array<Int>) {
 
-		if(layers != null) {
-			for (i in layers) {
-				visible_layers_mask.enable(i);
-			}
-		} else {
-			visible_layers_mask.enable_all();
-		}
+		// if(layers != null) {
+		// 	for (i in layers) {
+		// 		visible_layers_mask.enable(i);
+		// 	}
+		// } else {
+		// 	visible_layers_mask.enable_all();
+		// }
 
 	}
 
@@ -103,6 +116,8 @@ class Camera {
 		if(into == null) {
 			into = new Vector();
 		}
+
+		into.copy_from(v);
 
 		update();
 
@@ -117,6 +132,8 @@ class Camera {
 		if(into == null) {
 			into = new Vector();
 		}
+		
+		into.copy_from(v);
 
 		update();
 
@@ -166,7 +183,7 @@ class Camera {
 
 	function prerender(g:Graphics) {
 
-		onprerender.emit();
+		onprerender.emit(this);
 
 		g.viewport(Std.int(viewport.x), Std.int(viewport.y), Std.int(viewport.w), Std.int(viewport.h));
 
@@ -176,10 +193,31 @@ class Camera {
 
 		g.disableScissor();
 		
-		onpostrender.emit();
+		onpostrender.emit(this);
 		
 	}
 	
+	inline function get_active():Bool {
+
+		return _active;
+
+	}
+	
+	inline function set_active(value:Bool):Bool {
+
+		_active = value;
+
+		if(manager != null) {
+			if(_active){
+				manager.enable(this);
+			} else {
+				manager.disable(this);
+			}
+		}
+		
+		return _active;
+
+	}
 
 }
 

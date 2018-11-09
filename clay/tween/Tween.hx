@@ -94,7 +94,7 @@ class Tween {
 
 		active = false;
 		complete = false;
-		inited = false;
+		// inited = false;
 
 	}
 

@@ -41,7 +41,7 @@ class Keyboard extends Input {
 
 		var k = kha.input.Keyboard.get();
 		if(k != null) {
-			k.notify(onkeypressed, onkeyreleased, null);
+			k.notify(onkeypressed, onkeyreleased, ontextinput);
 		}
 
 		#end
@@ -66,7 +66,7 @@ class Keyboard extends Input {
 
 		var k = kha.input.Keyboard.get();
 		if(k != null) {
-			k.remove(onkeypressed, onkeyreleased, null);
+			k.remove(onkeypressed, onkeyreleased, ontextinput);
 		}
 
 		#end
@@ -179,6 +179,14 @@ class Keyboard extends Input {
 		check_binding(_key, false);
 
 		engine.keyup(key_event);
+
+	}
+	
+	function ontextinput(_char:String) {
+
+		_verboser('ontextinput: $_char');
+
+		engine.textinput(_char);
 
 	}
 

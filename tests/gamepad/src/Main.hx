@@ -7,7 +7,7 @@ class Main {
 
 		Clay.init(
 			{
-				title: 'clay_gamepad',
+				title: 'gamepad',
 				width: 800,
 				height: 600,
 				window: {

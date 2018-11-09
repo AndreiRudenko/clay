@@ -1,14 +1,21 @@
 package clay.particles.render;
 
 
+import clay.particles.ParticleEmitter;
+import clay.particles.ParticleSystem;
+
+
 class Renderer {
+
 
 	public function new() {}
 
-	public function get( emitter:clay.particles.ParticleEmitter ) : EmitterRenderer {
+
+	public function get(em:ParticleEmitter):EmitterRenderer {
 
 		return null;
 
 	}
+
 
 }

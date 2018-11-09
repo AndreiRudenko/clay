@@ -108,7 +108,7 @@ class Worlds {
 		var w:World = null;
 		for (i in 0...active_worlds.length) {
 			w = active_worlds[i];
-			if (_world.priority <= w.priority) {
+			if (_world.priority < w.priority) {
 				active_worlds.insert(i, _world);
 				added = true;
 				break;
@@ -237,6 +237,14 @@ class Worlds {
 
 		for (w in active_worlds) {
 			w.signals.keyup.emit(e);
+		}
+
+	}
+
+	inline function textinput(e:String) {
+
+		for (w in active_worlds) {
+			w.signals.textinput.emit(e);
 		}
 
 	}

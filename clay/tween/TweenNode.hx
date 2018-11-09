@@ -223,11 +223,19 @@ class TweenNode {
 			repeat--;
 		}
 
-		if(!reverse) {
-			set_current(head);
-		} else {
-			set_current(tail);
+		var a = reverse ? tail : head;
+
+		if(a != null) {
+			a.reset();
 		}
+
+		set_current(a);
+
+		// if(!reverse) {
+		// 	set_current(head);
+		// } else {
+		// 	set_current(tail);
+		// }
 
 	}
 

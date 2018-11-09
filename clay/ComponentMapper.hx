@@ -21,6 +21,7 @@ class ComponentMapper<T> {
 		type = _ctype;
 		manager = _manager;
 		components = new Vector(manager.world.entities.capacity);
+		// trace(Type.getClassName(Type.getClass(this)));
 
 	}
 
@@ -40,6 +41,8 @@ class ComponentMapper<T> {
 		components[to.id] = c;
 		manager.flags[to.id].enable(type.id);
 		manager.entity_changed(to);
+
+		manager.world.changed();
 
 	}
 
@@ -63,6 +66,8 @@ class ComponentMapper<T> {
 			manager.flags[e.id].disable(type.id);
 			manager.entity_changed_delayed(e);
 			components[e.id] = null;
+
+			manager.world.changed();
 		}
 
 		return _has;
@@ -80,6 +85,8 @@ class ComponentMapper<T> {
 			}
 		}
 
+		manager.world.changed();
+
 	}
 
 	@:noCompletion public inline function _set(e:Entity, c:T) {
@@ -88,6 +95,8 @@ class ComponentMapper<T> {
 
 		components[e.id] = c;
 		manager.flags[e.id].enable(type.id);
+		
+		manager.world.changed();
 
 	}
 

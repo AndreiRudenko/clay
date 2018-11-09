@@ -4,7 +4,6 @@ package clay.processors.graphics;
 import clay.Processor;
 import clay.Family;
 
-import clay.components.graphics.Texture;
 import clay.components.common.Transform;
 import clay.components.graphics.Geometry;
 import clay.components.graphics.QuadGeometry;
@@ -26,22 +25,18 @@ class RenderProcessor extends Processor {
 
 	var geom_family:Family<Geometry>;
 	var gt_family:Family<Geometry,Transform>;
-	var gtex_family:Family<Geometry,Texture>;
 
 	var quad_family:Family<QuadGeometry>;
 	var qt_family:Family<QuadGeometry,Transform>;
-	var qtex_family:Family<QuadGeometry,Texture>;
 
 	var quadpack_family:Family<QuadPack>;
 	var qpt_family:Family<QuadPack,Transform>;
-	var qptex_family:Family<QuadPack,Texture>;
 
 	var text_family:Family<Text>;
 	var tt_family:Family<Text,Transform>;
 
 	var ns_family:Family<NineSlice>;
 	var nst_family:Family<NineSlice,Transform>;
-	var nstex_family:Family<NineSlice,Texture>;
 
 	var lg_family:Family<LineGeometry>;
 
@@ -58,22 +53,18 @@ class RenderProcessor extends Processor {
 	
 		geom_family.listen(geom_added, geom_removed);
 		gt_family.listen(gt_added, gt_removed);
-		gtex_family.listen(gtex_added, gtex_removed);
 
 		quad_family.listen(quad_added, quad_removed);
 		qt_family.listen(qt_added, qt_removed);
-		qtex_family.listen(qtex_added, qtex_removed);
 
 		quadpack_family.listen(quadpack_added, quadpack_removed);
 		qpt_family.listen(qpt_added, qpt_removed);
-		qptex_family.listen(qptex_added, qptex_removed);
 
 		text_family.listen(text_added, text_removed);
 		tt_family.listen(tt_added, tt_removed);
 
 		ns_family.listen(ns_added, ns_removed);
 		nst_family.listen(nst_added, nst_removed);
-		nstex_family.listen(nstex_added, nstex_removed);
 
 		lg_family.listen(lg_added, lg_removed);
 
@@ -83,22 +74,18 @@ class RenderProcessor extends Processor {
 
 		geom_family.unlisten(geom_added, geom_removed);
 		gt_family.unlisten(gt_added, gt_removed);
-		gtex_family.unlisten(gtex_added, gtex_removed);
 
 		quad_family.unlisten(quad_added, quad_removed);
 		qt_family.unlisten(qt_added, qt_removed);
-		qtex_family.unlisten(qtex_added, qtex_removed);
 
 		quadpack_family.unlisten(quadpack_added, quadpack_removed);
 		qpt_family.unlisten(qpt_added, qpt_removed);
-		qptex_family.unlisten(qptex_added, qptex_removed);
 
 		text_family.unlisten(text_added, text_removed);
 		tt_family.unlisten(tt_added, tt_removed);
 
 		ns_family.unlisten(ns_added, ns_removed);
 		nst_family.unlisten(nst_added, nst_removed);
-		nstex_family.unlisten(nstex_added, nstex_removed);
 
 		lg_family.listen(lg_added, lg_removed);
 
@@ -135,22 +122,6 @@ class RenderProcessor extends Processor {
 
 	}
 
-	function gtex_added(e:Entity) {
-
-		var g = gtex_family.get_geometry(e);
-		var tex = gtex_family.get_texture(e);
-		g.texture = tex;
-
-	}
-	
-	function gtex_removed(e:Entity) {
-
-		var g = gtex_family.get_geometry(e);
-		g.texture = null;
-
-	}
-
-
 
 	// quad
 
@@ -180,21 +151,6 @@ class RenderProcessor extends Processor {
 
 		var g = qt_family.get_quadGeometry(e);
 		remove_transform_from_geom(g);
-
-	}
-
-	function qtex_added(e:Entity) {
-
-		var g = qtex_family.get_quadGeometry(e);
-		var tex = qtex_family.get_texture(e);
-		g.texture = tex;
-
-	}
-	
-	function qtex_removed(e:Entity) {
-
-		var g = qtex_family.get_quadGeometry(e);
-		g.texture = null;
 
 	}
 
@@ -230,20 +186,6 @@ class RenderProcessor extends Processor {
 
 	}
 
-	function qptex_added(e:Entity) {
-
-		var g = qptex_family.get_quadPack(e);
-		var tex = qptex_family.get_texture(e);
-		g.texture = tex;
-
-	}
-	
-	function qptex_removed(e:Entity) {
-
-		var g = qptex_family.get_quadPack(e);
-		g.texture = null;
-
-	}
 
 	// nineslice
 
@@ -273,21 +215,6 @@ class RenderProcessor extends Processor {
 
 		var g = nst_family.get_nineSlice(e);
 		remove_transform_from_geom(g);
-
-	}
-
-	function nstex_added(e:Entity) {
-
-		var g = nstex_family.get_nineSlice(e);
-		var tex = nstex_family.get_texture(e);
-		g.texture = tex;
-
-	}
-	
-	function nstex_removed(e:Entity) {
-
-		var g = nstex_family.get_nineSlice(e);
-		g.texture = null;
 
 	}
 
@@ -341,25 +268,25 @@ class RenderProcessor extends Processor {
 
 	inline function add_geom_to_renderer(g:Geometry) {
 
-		var layer = renderer.layers.get(g.layer);
-		if(layer == null) {
-			log('Error adding geometry to layer ${g.layer}');
-			return;
+		if(g.added) {
+			log('Error geometry `${g.name}` already added');
+		} else {
+			if(g.layer == null) {
+				if(Clay.renderer.layer != null) {
+					Clay.renderer.layer._add_unsafe(g);
+				} else {
+					log('Error adding geometry `${g.name}` to Clay.renderer.layer');
+				}
+			} else {
+				g.layer._add_unsafe(g);
+			}
 		}
-
-		layer.add(g);
 
 	}
 
 	inline function remove_geom_from_renderer(g:Geometry) {
 		
-		var layer = renderer.layers.get(g.layer);
-		if(layer == null) {
-			log('Error removing geometry from layer ${g.layer}');
-			return;
-		}
-
-		layer.remove(g);
+		g.drop();
 
 	}
 

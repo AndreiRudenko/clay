@@ -27,7 +27,9 @@ class RadialSpawnModule  extends ParticleModule {
 
 	override function onspawn(p:Particle) {
 
-		var pd:ParticleData = emitter.show_particle(p);
+		emitter.show_particle(p);
+		
+		var pd:ParticleData = emitter.get_particle_data(p);
 
 		random_point_in_unit_circle();
 

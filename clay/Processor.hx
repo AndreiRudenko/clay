@@ -11,6 +11,7 @@ import clay.input.Gamepad;
 import clay.input.Touch;
 import clay.input.Pen;
 import clay.input.Bindings;
+import clay.utils.Log.*;
 
 
 #if !macro
@@ -21,19 +22,43 @@ import clay.input.Bindings;
 class Processor {
 
 
-	public var name(default, null):String;
-	public var priority (default, set):Int;
-	public var active (get, set):Bool;
-	@:noCompletion var _active:Bool = false;
+	public var name     (default, null):String;
+	public var priority (get, set):Int;
+	public var active   (get, never):Bool;
+	public var world    (get, never):World;
 
-	@:noCompletion var world:World;
+	@:noCompletion var _priority:Int = 0;
+	@:noCompletion var _active:Bool = false;
+	@:noCompletion var _world:World;
 	
 
 	public function new() {
 
-		priority = 0;
+		_priority = 0;
 		_active = false;
 		name = Type.getClassName(Type.getClass(this));
+
+	}
+
+	public function enable() {
+
+		if(world == null) {
+			log('can`t enable processor `$name` without world');
+			return;
+		}
+
+		world.processors._enable(this);
+		
+	}
+
+	public function disable() {
+		
+		if(world == null) {
+			log('can`t disable processor `$name` without world');
+			return;
+		}
+
+		world.processors._disable(this);
 
 	}
 
@@ -63,6 +88,8 @@ class Processor {
 
 	@:noCompletion function onkeydown(e:KeyEvent) {}
 	@:noCompletion function onkeyup(e:KeyEvent) {}
+	
+	@:noCompletion function ontextinput(e:String) {}
 
 	@:noCompletion function onmousedown(e:MouseEvent) {}
 	@:noCompletion function onmouseup(e:MouseEvent) {}
@@ -91,19 +118,25 @@ class Processor {
 	@:noCompletion function __listen_emitter() {}
 	@:noCompletion function __unlisten_emitter() {}
 
+	@:noCompletion inline function get_priority():Int {
+
+		return _priority;
+
+	}
+
 	@:access(clay.core.ecs.Processors)
 	@:noCompletion inline function set_priority(value:Int) : Int {
 
-		priority = value;
+		_priority = value;
 
-		onprioritychanged(priority);
+		onprioritychanged(_priority);
 
-		if(world != null && active) {
+		if(world != null && _active) {
 			__unlisten_emitter();
 			__listen_emitter();
 		}
 
-		return priority;
+		return _priority;
 
 	}
 
@@ -112,20 +145,10 @@ class Processor {
 		return _active;
 
 	}
-	
-	@:noCompletion inline function set_active(value:Bool):Bool {
 
-		_active = value;
+	@:noCompletion inline function get_world():World {
 
-		if(world != null) {
-			if(_active){
-				__listen_emitter();
-			} else {
-				__unlisten_emitter();
-			}
-		}
-		
-		return _active;
+		return _world;
 
 	}
 

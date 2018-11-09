@@ -92,7 +92,7 @@ class Processors {
 	function _add(_processor:Processor, _enabled:Bool) {
 
 		_processors.set(_processor.name, _processor);
-		_processor.world = world;
+		_processor._world = world;
 		_processor.onadded();
 
 		if(inited) {
@@ -103,33 +103,47 @@ class Processors {
 			_enable(_processor);
 		}
 
+		world.changed();
+
 	}
 
 	function _remove(_processor:Processor) {
 
-		if(_processor.active) {
-			_disable(_processor);
-		}
+		_disable(_processor);
 
 		_processor.onremoved();
-		_processor.world = null;
+		_processor._world = null;
 		_processors.remove(_processor.name);
+
+		world.changed();
 
 	}
 
 	function _enable(_processor:Processor) {
 
+		if(_processor.active) {
+			return;
+		}
+
 		_processor.onenabled();
 		_processor._active = true;
 		_processor.__listen_emitter();
+
+		world.changed();
 
 	}
 
 	function _disable(_processor:Processor) {
 
+		if(!_processor.active) {
+			return;
+		}
+
 		_processor.ondisabled();
 		_processor._active = false;
 		_processor.__unlisten_emitter();
+
+		world.changed();
 
 	}
 

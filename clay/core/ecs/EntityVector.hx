@@ -83,6 +83,18 @@ class EntityVector {
 
 	}
 
+	public function toArray():Array<Entity> {
+
+		var ents:Array<Entity> = [];
+
+		for (e in iterator()) {
+			ents.push(e);
+		}
+
+		return ents;
+
+	}
+
 	inline function _add(id:Int) {
 
 		buffer[length] = id;

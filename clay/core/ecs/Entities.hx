@@ -67,6 +67,8 @@ class Entities {
 		if(oncreate != null) {
 			oncreate(e);
 		}
+		
+		world.changed();
 
 		return e;
 
@@ -84,6 +86,8 @@ class Entities {
 		_active_mask.disable(e.id);
 
 		_destroyed_entities.push(e);
+
+		world.changed();
 
 	}
 
@@ -113,6 +117,7 @@ class Entities {
 			if(onactivate != null) {
 				onactivate(e);
 			}
+			world.changed();
 		}
 
 	}
@@ -125,6 +130,7 @@ class Entities {
 			if(ondeactivate != null) {
 				ondeactivate(e);
 			}
+			world.changed();
 		}
 
 	}
@@ -134,6 +140,7 @@ class Entities {
 		for (e in _entities) {
 			destroy(e);
 		}
+		world.changed();
 
 	}
 

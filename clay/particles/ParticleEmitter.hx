@@ -8,12 +8,13 @@ import clay.particles.core.ParticleModule;
 import clay.particles.core.ParticleVector;
 import clay.particles.ParticleSystem;
 import clay.math.Vector;
-import clay.particles.data.BlendMode;
+import clay.render.types.BlendMode;
 import clay.particles.utils.ModulesFactory;
 import clay.particles.render.EmitterRenderer;
 
 
 class ParticleEmitter {
+
 
 
 	public var inited      (default, null):Bool = false;
@@ -24,7 +25,7 @@ class ParticleEmitter {
 		/** emitter name */
 	public var name:String;
 		/** offset from system position */
-	public var pos     (default, null):Vector;
+	public var pos          (default, null):Vector;
 
 		/** emitter particles */
 	public var particles 	(default, null):ParticleVector;
@@ -67,21 +68,19 @@ class ParticleEmitter {
 
 		/** emitter particles image path */
 	public var image_path(default, set):String;
-		/** emitter particles depth */
-	public var depth (default, set):Float;
 
 		/** blending src */
 	public var blend_src  (default, set):BlendMode;
 		/** blending dest */
 	public var blend_dest (default, set):BlendMode;
 
-	public var layer      (get, set):Int;
-
+		/** emitter index in particle system */
+	public var index       (default, null):Int = 0;
 
 	@:noCompletion public var particles_data:Array<ParticleData>;
 	@:noCompletion public var options:ParticleEmitterOptions;
 
-	var render:EmitterRenderer;
+	@:noCompletion public var renderer:EmitterRenderer;
 
 	var time:Float;
 	var frame_time:Float;
@@ -89,7 +88,6 @@ class ParticleEmitter {
 	var inv_rate_max:Float;
 	var _duration:Float;
 	var _need_reset:Bool = true;
-	var _layer:Int = 0;
 
 
 	public function new(_options:ParticleEmitterOptions) {
@@ -132,11 +130,8 @@ class ParticleEmitter {
 		random = options.random != null ? options.random : Math.random;
 
 		image_path = options.image_path;
-		depth = options.depth != null ? options.depth : 100;
 		
 		cache_wrap = options.cache_wrap != null ? options.cache_wrap : false;
-		
-		_layer = options.layer != null ? options.layer : 0;
 
 		if(options.modules != null) {
 			for (m in options.modules) {
@@ -164,12 +159,8 @@ class ParticleEmitter {
 			m.ondestroy();
 		}
 
-		for (pd in particles_data) {
-			render.onspritedestroy(pd);
-		}
-
-		render.destroy();
-		render = null;
+		renderer.destroy();
+		renderer = null;
 
 		components.clear();
 
@@ -331,7 +322,7 @@ class ParticleEmitter {
 			}
 
 			// update particle changes to sprite 
-			render.onupdate(dt);
+			renderer.update(dt);
 
 		}
 		
@@ -392,6 +383,91 @@ class ParticleEmitter {
 		
 	}
 
+	public function unspawn(p:Particle) {
+
+		particles.remove(p);
+		_unspawn_particle(p);
+		
+	}
+
+	@:allow(clay.particles.ParticleSystem)
+	function init(_ps:ParticleSystem) {
+
+		system = _ps;
+
+		if(ParticleSystem.renderer == null) {
+			throw('you need to specify ParticleSystem renderer');
+		}
+
+		renderer = ParticleSystem.renderer.get(this);
+		renderer.init();
+
+		for (i in 0...particles.capacity) {
+			particles_data.push(new ParticleData());
+		}
+
+		inited = true;
+
+		for (m in modules) {
+			m._init();
+		}
+
+		if(options.blend_src != null) {
+			blend_src = options.blend_src;
+		}
+
+		if(options.blend_dest != null) {
+			blend_dest = options.blend_dest;
+		}
+
+	}
+
+	function _emit() {
+
+		var _count:Int;
+
+		if(count_max > 0) {
+			_count = random_int(count, count_max);
+		} else {
+			_count = count;
+		}
+
+		_count = _count > cache_size ? cache_size : _count;
+
+		for (_ in 0..._count) {
+			spawn();
+		}
+
+	}
+
+	function reset_modules() { // todo: remove this?
+
+		_need_reset = false;
+
+		for (m in active_modules) {
+			m.ondisabled();
+		}
+
+		for (m in modules) {
+			m._onremoved();
+		}
+
+		for (m in modules) {
+			m._onadded(this);
+		}
+
+		for (m in active_modules) {
+			m.onenabled();
+		}
+
+		for (m in modules) {
+			m._init();
+		}
+		
+		_need_reset = true;
+
+	}
+
 	inline function _enable_m(m:ParticleModule) {
 		
 		var added:Bool = false;
@@ -448,13 +524,6 @@ class ParticleEmitter {
 
 	}
 
-	public function unspawn(p:Particle) {
-
-		particles.remove(p);
-		_unspawn_particle(p);
-		
-	}
-
 	inline function _spawn_particle(p:Particle) {
 
 		for (m in active_modules) {
@@ -477,21 +546,23 @@ class ParticleEmitter {
 	}
 
 	@:allow(clay.particles.core.ParticleModule)
-	inline function show_particle(p:Particle):ParticleData { 
+	inline function show_particle(p:Particle) { 
 
-		var pd:ParticleData = particles_data[p.id];
-		render.onspriteshow(pd);
-		return pd;
+		renderer.onparticleshow(p);
 
 	}
 
 	@:allow(clay.particles.core.ParticleModule)
-	inline function hide_particle(p:Particle):ParticleData { 
+	inline function hide_particle(p:Particle) { 
 
-		var pd:ParticleData = particles_data[p.id];
-		render.onspritehide(pd);
+		renderer.onparticlehide(p);
 
-		return pd;
+	}
+
+	@:allow(clay.particles.core.ParticleModule)
+	inline function get_particle_data(p:Particle) { 
+
+		return particles_data[p.id];
 
 	}
 
@@ -503,14 +574,14 @@ class ParticleEmitter {
 	}
 
 	@:allow(clay.particles.core.ParticleModule)
-	inline function random_int( min:Float, ?max:Null<Float>=null ) : Int {
+	inline function random_int(min:Float, ?max:Null<Float>=null):Int {
 
-		return Math.floor( random_float(min, max) );
+		return Math.floor(random_float(min, max));
 
 	}
 
 	@:allow(clay.particles.core.ParticleModule)
-	inline function random_float( min:Float, ?max:Null<Float>=null ) : Float {
+	inline function random_float(min:Float, ?max:Null<Float>=null):Float {
 
 		if(max == null) { 
 			max = min; 
@@ -521,58 +592,6 @@ class ParticleEmitter {
 		
 	}
 
-	@:allow(clay.particles.ParticleSystem)
-	function init(_ps:ParticleSystem) {
-
-		system = _ps;
-
-		if(ParticleSystem.renderer == null) {
-			throw('you need to specify ParticleSystem renderer');
-		}
-
-		render = ParticleSystem.renderer.get(this);
-		render.init();
-
-		var pd:ParticleData;
-		for (i in 0...particles.capacity) {
-			pd = render.onspritecreate(new Particle(i));
-			particles_data.push(pd);
-		}
-
-		inited = true;
-
-		for (m in modules) {
-			m._init();
-		}
-
-		if(options.blend_src != null) {
-			blend_src = options.blend_src;
-		}
-
-		if(options.blend_dest != null) {
-			blend_dest = options.blend_dest;
-		}
-
-	}
-
-	function _emit() {
-
-		var _count:Int;
-
-		if(count_max > 0) {
-			_count = random_int(count, count_max);
-		} else {
-			_count = count;
-		}
-
-		_count = _count > cache_size ? cache_size : _count;
-
-		for (_ in 0..._count) {
-			spawn();
-		}
-
-	}
-
 	inline function calc_duration() {
 
 		if(duration >= 0 && duration_max > duration) {
@@ -581,34 +600,6 @@ class ParticleEmitter {
 			_duration = duration;
 		}
 		
-	}
-
-	function reset_modules() {
-
-		_need_reset = false;
-
-		for (m in active_modules) {
-			m.ondisabled();
-		}
-
-		for (m in modules) {
-			m._onremoved();
-		}
-
-		for (m in modules) {
-			m._onadded(this);
-		}
-
-		for (m in active_modules) {
-			m.onenabled();
-		}
-
-		for (m in modules) {
-			m._init();
-		}
-		
-		_need_reset = true;
-
 	}
 
 	function set_rate(value:Float):Float {
@@ -637,18 +628,6 @@ class ParticleEmitter {
 
 	}
 
-	function set_depth(value:Float):Float {
-
-		if(depth != value) {
-			if(render != null) {
-				render.ondepth(value);
-			}
-		}
-
-		return depth = value;
-
-	}
-
 	function set_duration(value:Float):Float {
 
 		duration = value;
@@ -669,12 +648,12 @@ class ParticleEmitter {
 
 	}
 
-	function set_image_path(value:String):String {
+	function set_image_path(t:String):String {
 
-		image_path = value;
+		image_path = t;
 
-		if(render != null) {
-			render.ontexture(image_path);
+		if(renderer != null) {
+			renderer.ontexture(image_path);
 		}
 
 		return image_path;
@@ -683,35 +662,21 @@ class ParticleEmitter {
 	
 	function set_blend_src(val:BlendMode)  {
 
-		if(render != null) {
-			render.onblendsrc(val);
+		if(renderer != null) {
+			renderer.onblendsrc(val);
 		}
+
 		return blend_src = val;
 
 	}
 
 	function set_blend_dest(val:BlendMode) {
 
-		if(render != null) {
-			render.onblenddest(val);
+		if(renderer != null) {
+			renderer.onblenddest(val);
 		}
+
 		return blend_dest = val;
-
-	}
-
-	function get_layer():Int {
-
-		return _layer;
-
-	}
-
-	function set_layer(val:Int) {
-
-		if(render != null) {
-			render.onlayerchanged(val);
-		}
-
-		return _layer = val;
 
 	}
 
@@ -738,7 +703,6 @@ class ParticleEmitter {
 			duration : duration, 
 			duration_max : duration_max, 
 			image_path : image_path, 
-			depth : depth, 
 			blend_src : blend_src, 
 			blend_dest : blend_dest, 
 			modules_data : _modules
@@ -751,8 +715,10 @@ class ParticleEmitter {
 typedef ParticleEmitterOptions = {
 
 	@:optional var name:String;
+
 	@:optional var active:Bool;
 	@:optional var enabled:Bool;
+
 	@:optional var cache_wrap:Bool;
 	@:optional var cache_size:Int;
 	@:optional var count:Int;
@@ -763,12 +729,13 @@ typedef ParticleEmitterOptions = {
 	@:optional var rate_max:Float;
 	@:optional var duration:Float;
 	@:optional var duration_max:Float;
+
 	@:optional var image_path:String;
-	@:optional var layer:Int;
-	@:optional var depth:Float;
+
 	@:optional var blend_src:BlendMode;
 	@:optional var blend_dest:BlendMode;
 	@:optional var modules:Array<ParticleModule>;
+
 	@:optional var modules_data:Array<Dynamic>; // used for json import
 	@:optional var random:Void -> Float;
 	@:optional var options: Dynamic;

@@ -8,6 +8,7 @@ class Clay {
 
 	@:allow(clay.Engine)
 	public static var engine      	(default, null):clay.Engine;
+	public static var debug      	(get, never):clay.core.Debug;
 
 	public static var world       	(get, set):clay.World;
 	public static var worlds      	(get, never):clay.core.ecs.Worlds;
@@ -15,6 +16,8 @@ class Clay {
 	public static var screen      	(get, never):clay.core.Screen;
 	public static var renderer 	    (get, never):clay.render.Renderer;
 	public static var camera 	    (get, never):clay.components.misc.Camera;
+	public static var cameras 	    (get, never):clay.render.CameraManager;
+	public static var layers 	    (get, never):clay.render.LayerManager;
 	public static var draw     	    (get, never):clay.render.Draw;
 
 	public static var input    	    (get, never):clay.core.Inputs;
@@ -62,12 +65,15 @@ class Clay {
 
 	static inline function get_world() return engine.world;
 	static inline function set_world(w) return engine.world = w;
-
 	static inline function get_worlds() return engine.worlds;
+
+	static inline function get_debug() return engine.debug;
 
 	static inline function get_screen() return engine.screen;
 	static inline function get_renderer() return engine.renderer;
-	static inline function get_camera() return engine.camera;
+	static inline function get_camera() return engine.renderer.camera;
+	static inline function get_cameras() return engine.renderer.cameras;
+	static inline function get_layers() return engine.renderer.layers;
 	static inline function get_draw() return engine.draw;
 
 	static inline function get_input() return engine.input;

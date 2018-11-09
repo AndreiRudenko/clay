@@ -35,11 +35,11 @@ class LineGeometry extends Geometry {
 		_tmp = new Vector();
 
 		if(_options.p0 != null) {
-			p0.copy_from_vec(_options.p0);
+			p0.copy_from(_options.p0);
 		}
 
 		if(_options.p1 != null) {
-			p1.copy_from_vec(_options.p1);
+			p1.copy_from(_options.p1);
 		}
 
 		p0.listen(update_line_geom);

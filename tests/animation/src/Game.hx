@@ -3,6 +3,11 @@ package;
 
 import clay.math.Vector;
 
+import clay.components.graphics.Animation;
+import clay.components.graphics.QuadGeometry;
+import clay.components.common.Transform;
+import clay.components.event.Events;
+
 
 class Game {
 
@@ -10,7 +15,7 @@ class Game {
 	public function new() {
 
 		Clay.renderer.layers.create();
-		Clay.processors.add(new clay.processors.AnimationProcessor(), 0);
+		Clay.processors.add(new clay.processors.graphics.AnimationProcessor(), 0);
 
 		Clay.resources.load_all(
 			[
@@ -38,16 +43,16 @@ class Game {
 	}
 
 	function init() {
-
+/*
 		// images animation
 		var e = Clay.entities.create();
-		var g = new clay.components.QuadGeometry({size: new Vector(64,64)});
+		var g = new QuadGeometry({size: new Vector(64,64)});
 
-		var t = new clay.components.Transform();
+		var t = new Transform();
 		t.origin.set(32, 32);
 		t.pos.set(Clay.screen.mid.x-128, Clay.screen.mid.y);
 
-		var a = new clay.components.Animation();
+		var a = new Animation();
 		a.from_textures(
 			'walk', 
 			[			
@@ -77,16 +82,17 @@ class Game {
 		a.play();
 
 		Clay.components.set_many(e, [g,t,a]);
-
+*/
 		// spritesheet animation
 		var e = Clay.entities.create();
-		var g = new clay.components.QuadGeometry({size: new Vector(64, 64)});
+		var g = new QuadGeometry({size: new Vector(64, 64)});
+		var ev = new Events();
 
-		var t = new clay.components.Transform();
+		var t = new Transform();
 		t.origin.set(32, 32);
 		t.pos.set(Clay.screen.mid.x+128, Clay.screen.mid.y);
 
-		var a = new clay.components.Animation();
+		var a = new Animation();
 		a.from_grid(
 			'walk', 
 			'assets/walk_spritesheet.png',
@@ -96,11 +102,14 @@ class Game {
 		.set_speed(24)
 		.set_all()
 		.loop();
+		a.add_event('walk', 6, 'test');
 
 		a.set('walk');
 		a.play();
 
-		Clay.components.set_many(e, [g,t,a]);
+		Clay.components.set_many(e, [g,t,a,ev]);
+
+		ev.listen('test', function(e) {trace(e);});
 		
 	}
 

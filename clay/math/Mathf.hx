@@ -94,6 +94,74 @@ class Mathf {
 
 	}
 
+		/** Returns the next power of two. */
+	public inline static function next_pow2(x:Int):Int {
+
+		x |= x >> 1;
+		x |= x >> 2;
+		x |= x >> 4;
+		x |= x >> 8;
+		x |= x >> 16;
+
+		return x + 1;
+
+	}
+
+		/** Returns the previous power of two. */
+	public inline static function prev_pow2(x:Int):Int {
+
+		x |= x >>> 1;
+		x |= x >>> 2;
+		x |= x >>> 4;
+		x |= x >>> 8;
+		x |= x >>> 16;
+
+		return x - (x>>>1);
+
+	}
+
+	/**
+		Returns the specified value if the value is already a power of two.
+		Returns next power of two else.
+	**/
+	public static function require_pow2(x:Int):Int {
+
+		if(x == 0) {
+			return 1;
+		}
+
+		--x;
+		x |= x >> 1;
+		x |= x >> 2;
+		x |= x >> 4;
+		x |= x >> 8;
+		x |= x >> 16;
+
+		return x + 1;
+
+	}
+
+		/** Computes log base 2 of v */
+	public static inline function log2(v:Int):Int {
+
+		var r; 
+		var shift;
+
+		r =     v > 0xFFFF? 1 << 4 : 0; v >>>= r;
+		shift = v > 0xFF  ? 1 << 3 : 0; v >>>= shift; r |= shift;
+		shift = v > 0xF   ? 1 << 2 : 0; v >>>= shift; r |= shift;
+		shift = v > 0x3   ? 1 << 1 : 0; v >>>= shift; r |= shift;
+
+		return r | (v >> 1);
+
+	}
+
+	/** Checks if value is power of two **/
+	public inline static function check_pow2(x:Int):Bool {
+
+		return x != 0 && (x & (x - 1)) == 0;
+
+	}
 
 		/** Used by `degrees()` and `radians()`, use those to convert, unless needed */
 	public static inline var DEG2RAD:Float = 3.14159265358979 / 180;

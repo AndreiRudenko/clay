@@ -7,11 +7,13 @@ class Main {
 
 		Clay.init(
 			{
-				title: 'clay_mouse',
+				title: 'mouse',
 				width: 800,
 				height: 600,
+				antialiasing: 0,
+				vsync: false,
 				window: {
-					mode: clay.types.WindowMode.Windowed,
+					mode: clay.types.WindowMode.Window,
 					resizable: false
 				}
 			}, 

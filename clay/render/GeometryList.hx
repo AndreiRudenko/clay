@@ -144,7 +144,7 @@ class GeometryList {
 		var node:Geometry = head;
 		while (node != null){
 			cn = Type.getClassName(Type.getClass(node));
-			_list.push('$cn / order: ${node.order}/ sort_key: ${node.sort_key}');
+			_list.push('$cn / depth: ${node.depth}/ sort_key: ${node.sort_key}');
 			node = node.next;
 		}
 

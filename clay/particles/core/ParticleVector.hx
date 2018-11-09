@@ -39,7 +39,7 @@ class ParticleVector {
 
 	}
 
-	public inline function ensure():Particle {
+	public inline function ensure():Particle { // todo: add first into array
 
 		var p:Particle = new Particle(buffer[length]);
 		length++;
@@ -150,7 +150,7 @@ class ParticleVectorIterator {
 
 	}
 
-	@:access(clay.Particle)
+	@:access(clay.particles.core.Particle)
 	public inline function next():Particle {
 
 		return new Particle(data[index++]);

@@ -195,6 +195,7 @@ class SignalBase<T> {
 	public var emit:T;
 	public var handlers:Array<SignalHandler<T>>;
 	var to_remove:Array<SignalHandler<T>>;
+	var to_add:Array<SignalOptions<T>>;
 	var processing:Bool;
 
 
@@ -202,19 +203,20 @@ class SignalBase<T> {
 		
 		handlers = [];
 		to_remove = [];
+		to_add = [];
 		processing= false;
 
 	}
 
 	public function add_once(listener:T, ?order:Null<Int>) {
 
-		_add(listener, true, order);
+		_try_add(listener, true, order);
 
 	}
 
 	public function add(listener:T, ?order:Null<Int>) {
 
-		_add(listener, false, order);
+		_try_add(listener, false, order);
 		
 	}
 
@@ -255,8 +257,10 @@ class SignalBase<T> {
 		
 		handlers = null;
 		to_remove = null;
+		to_add = null;
 		handlers = [];
 		to_remove = [];
+		to_add = [];
 
 	}
 
@@ -265,21 +269,32 @@ class SignalBase<T> {
 		emit = null;
 		handlers = null;
 		to_remove = null;
+		to_add = null;
 
 	}
 
-	inline function _add(listener:T, once:Bool, order:Null<Int>) {
+	inline function _try_add(listener:T, once:Bool, order:Null<Int>) {
 
 		if(has(listener)) {
 			throw("clay / signal / add / attempted to add the same listener twice");
 		}
+
+		if(processing) {
+			to_add.push({listener: listener, once: once, order: order});
+		} else {
+			_add(listener, once, order);
+		}
+
+	}
+
+	function _add(listener:T, once:Bool, order:Null<Int>) {
 
 		var handler = new SignalHandler<T>(listener, once, order);
 
 		if(order != null) {
 			var added:Bool = false;
 			for (i in 0...handlers.length) {
-				if (order <= handlers[i].order) {
+				if (order < handlers[i].order) {
 					handlers.insert(i, handler);
 					added = true;
 					break;
@@ -317,6 +332,13 @@ class SignalHandler<T> {
 
 }
 
+private typedef SignalOptions<T> = {
+
+	var listener:T;
+	var once:Bool;
+	@:optional var order:Int;
+
+}
 
 #end
 
@@ -342,6 +364,13 @@ private class Macro {
 					remove(h.listener);
 				}
 				to_remove.splice(0, to_remove.length);
+			}
+
+			if (to_add.length > 0){
+				for (o in to_add){
+					_add(o.listener, o.once, o.order);
+				}
+				to_add.splice(0, to_add.length);
 			}
 		}
 

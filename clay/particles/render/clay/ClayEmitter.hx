@@ -4,7 +4,7 @@ package clay.particles.render.clay;
 import clay.Entity;
 import clay.components.graphics.Geometry;
 import clay.components.graphics.QuadGeometry;
-import clay.components.graphics.Texture;
+import clay.resources.Texture;
 import clay.render.Vertex;
 import clay.render.Layer;
 import clay.particles.ParticleEmitter;
@@ -29,7 +29,7 @@ class ClayEmitter extends EmitterRenderer {
 
 	override function init() {
 
-		layer = Clay.renderer.layers.get(emitter.layer);
+		layer = emitter.system.layer;
 
 		geom = new QuadGeometry({
 			size : new Vector(1, 1)
@@ -52,26 +52,20 @@ class ClayEmitter extends EmitterRenderer {
 		layer = null;
 
 	}
-
-	override function onspritecreate(p:Particle):ParticleData {
-
-		return new ParticleData();
-
-	}
-
-	override function onspriteshow(pd:ParticleData) {
+	
+	override function onparticleshow(p:Particle) {
 
 		geom.instances_count++;
 
 	}
 
-	override function onspritehide(pd:ParticleData) {
+	override function onparticlehide(p:Particle) {
 
 		geom.instances_count--;
 
 	}
 
-	override function onupdate(dt:Float) {
+	override function update(dt:Float) {
 
 		var i:Int = 0;
 		var pd:ParticleData;
@@ -105,13 +99,13 @@ class ClayEmitter extends EmitterRenderer {
 
 	override function ondepth(depth:Float) {
 
-		geom.order = Std.int(depth);
+		geom.depth = depth;
 
 	}
 
-	override function onlayerchanged(v:Int) {
+	override function onlayer(l:Layer) {
 
-		geom.layer = v;
+		l.add(geom);
 
 	}
 

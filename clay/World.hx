@@ -28,6 +28,12 @@ class World {
 	
 	public var signals      (default, null):EngineSignals;
 
+	#if !no_debug_console
+
+	@:noCompletion public var has_changed:Bool = false;
+
+	#end
+
 	var _active:Bool = false;
 	var worlds:Worlds;
 	var priority:Int = 0;
@@ -57,6 +63,8 @@ class World {
 		families.empty();
 		processors.empty();
 
+		changed();
+
 	}
 
 	@:noCompletion public function init() {
@@ -69,6 +77,16 @@ class World {
 		families.init();
 		processors.init();
 		
+	}
+
+	@:noCompletion public inline function changed() {
+		
+		#if !no_debug_console
+
+		has_changed = true;
+		
+		#end
+
 	}
 
 	function destroy() {

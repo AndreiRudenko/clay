@@ -26,6 +26,8 @@ class EngineSignals {
 	public var keydown         	    (default, null):Signal<KeyEvent->Void>;
 	public var keyup           	    (default, null):Signal<KeyEvent->Void>;
 
+	public var textinput           	(default, null):Signal<String->Void>;
+
 	public var mousedown       	    (default, null):Signal<MouseEvent->Void>;
 	public var mouseup         	    (default, null):Signal<MouseEvent->Void>;
 	public var mousemove       	    (default, null):Signal<MouseEvent->Void>;
@@ -73,6 +75,7 @@ class EngineSignals {
 		update = new Signal();
 		keydown = new Signal();
 		keyup = new Signal();
+		textinput = new Signal();
 		mousedown = new Signal();
 		mouseup = new Signal();
 		mousemove = new Signal();
@@ -113,6 +116,7 @@ class EngineSignals {
 		update.destroy();
 		keydown.destroy();
 		keyup.destroy();
+		textinput.destroy();
 		mousedown.destroy();
 		mouseup.destroy();
 		mousemove.destroy();

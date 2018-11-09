@@ -18,7 +18,9 @@ class SpawnModule extends ParticleModule {
 
 	override function onspawn(p:Particle) {
 
-		var pd:ParticleData = emitter.show_particle(p);
+		emitter.show_particle(p);
+		
+		var pd:ParticleData = emitter.get_particle_data(p);
 
 		pd.x = emitter.system.pos.x + emitter.pos.x;
 		pd.y = emitter.system.pos.y + emitter.pos.y;

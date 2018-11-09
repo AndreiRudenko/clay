@@ -7,9 +7,11 @@ import kha.graphics4.IndexBuffer;
 import kha.graphics4.VertexData;
 import kha.graphics4.VertexStructure;
 
+import clay.render.Layer;
 import clay.render.Vertex;
 import clay.render.Shader;
 import clay.render.GeometrySortKey;
+import clay.resources.Texture;
 import clay.math.Vector;
 import clay.math.Matrix;
 import clay.math.Rectangle;
@@ -24,37 +26,42 @@ using clay.render.utils.FastMatrix3Extender;
 @:access(clay.render.Renderer)
 class Geometry {
 
+	static var ID:Int = 0;
 
-	public var visible:Bool;
+	public var name:String;
+	public var visible          (default, set):Bool = true;
 	public var added        	(default, null):Bool = false;
 	public var sort_key     	(default, null):GeometrySortKey;
 
 	public var vertices	    	(default, set):Array<Vertex>;
 	public var indices          (default, set):Array<UInt>;
-	public var shader       	(default, set):Shader;
+	public var shader       	(get, set):Shader;
 	public var color   	    	(default, set):Color;
 	public var texture      	(get, set):Texture;
 
 	public var geometry_type	(get, never):GeometryType;
 
-	public var layer            (get, set):Int;
-	public var order            (default, set):UInt;
+	public var layer            (get, never):Layer;
+	public var depth            (default, set):Float;
 
-	public var transform_matrix (default, null):Matrix;
+	public var transform_matrix:Matrix;
 	public var clip_rect        (default, set):Rectangle;
 
 	// instanced
+	public var instanced        (default, null):Bool = false;
 	public var instances        (default, null):Array<InstancedGeometry>;
 	public var instances_count  (get, set):Int;
 
 	@:noCompletion public var vertexbuffers:Array<VertexBuffer>;
 	@:noCompletion public var indexbuffer:IndexBuffer;
 
-	// public var dirty:Bool = false;
+	public var inited(default, null):Bool = false;
 
-	var _layer:Int = 0;
+	var _layer:Layer;
+	var _shader:Shader;
 	var _texture:Texture;
 
+	var _custom_shader:Bool = false;
 	var _instances_count:Int = 0;
 	var _instances_cache_size:Int = 0;
 	var _geometry_type:GeometryType;
@@ -65,27 +72,26 @@ class Geometry {
 
 	public function new(_options:GeometryOptions) {
 
-		sort_key = 0;
+		sort_key = new GeometrySortKey(0,0);
 
 		transform_matrix = new Matrix();
 
+		name = def(_options.name, 'geometry.${ID++}');
 		visible = def(_options.visible, true);
 		indices = def(_options.indices, []);
 		vertices = def(_options.vertices, []);
 		color = def(_options.color, new Color());
-		_layer = def(_options.layer, 0);
-		order = def(_options.order, 0);
+		_layer = def(_options.layer, null);
+		depth = def(_options.depth, 0);
 		texture = def(_options.texture, texture);
+		shader = _options.shader;
+		if(_options.clip_rect != null) {
+			clip_rect = _options.clip_rect;
+		}
 
 		set_geometry_type(GeometryType.polygon);
 
 	}
-
-	public function init() {}
-	public function destroy() {}
-
-	function onadded() {}
-	function onremoved() {}
 
 	public function add(v:Vertex):Geometry {
 
@@ -103,23 +109,42 @@ class Geometry {
 
 	}
 
+	public function drop() {
+		
+		if(added && _layer != null) {
+			_layer._remove_unsafe(this);
+		}
+
+	}
+
 	public function set_indices(v:Array<UInt>):Array<UInt> {
 
 		return indices = v;
 
 	}
 
+	public function clone():Geometry {
+
+		return null;
+		
+	}
+
 	public function setup_instanced(_instances:Int):Geometry {
 
-		if(_geometry_type != GeometryType.instanced) {
+		if(!instanced) {
 			_instances_count = _instances;
 			_instances_cache_size = _instances_count;
 
 			vertexbuffers = [];
 			instances = [];
 
+			instanced = true;
+
+			if(!_custom_shader) {
+				_set_shader(get_default_shader(instanced));
+			}
+
 			setup_instanced_buffers(_instances);
-			set_geometry_type(GeometryType.instanced);
 		}
 
 		return this;
@@ -128,7 +153,7 @@ class Geometry {
 
 	public function update_instanced():Geometry {
 		
-		if(_geometry_type == GeometryType.instanced) {
+		if(instanced) {
 			setup_instanced_buffers(_instances_cache_size);
 		}
 
@@ -141,6 +166,8 @@ class Geometry {
 		if(_instances_count == 0) {
 			return;
 		}
+
+		_verboser('update_instance_buffer ${_instances_count}');
 
 		var inst:InstancedGeometry;
 		var mvp = kha.math.FastMatrix3.identity();
@@ -193,24 +220,18 @@ class Geometry {
 
 	inline function setup_instanced_buffers(inst_count:Int) {
 
+		_debug('setup_instanced_buffers $inst_count');
+
 		instances.splice(0, instances.length);
 
 		for (i in 0...inst_count) {
 			instances.push(new InstancedGeometry(this));
 		}
 		
-		var sh:Shader;
-
-		if(_texture != null) {
-			sh = Clay.renderer.shader_instanced_textured;
-		} else {
-			sh = Clay.renderer.shader_instanced;
-		}
-		
 		// vertex pos, tcoord
 		vertexbuffers[0] = new VertexBuffer(
 			vertices.length * 2,
-			sh.inputLayout[0],
+			_shader.inputLayout[0],
 			Usage.StaticUsage
 		);
 
@@ -229,7 +250,7 @@ class Geometry {
 		// color, transform, texture_offset
 		vertexbuffers[1] = new VertexBuffer(
 			inst_count,
-			sh.inputLayout[1],
+			_shader.inputLayout[1],
 			Usage.StaticUsage,
 			1
 		);
@@ -262,14 +283,22 @@ class Geometry {
 
 	}
 
-	inline function update_order() {
+	inline function update_depth() {
 
-		if(added) {
-			var lr = Clay.renderer.layers.get(layer);
-			if(lr != null && lr.ordered) {
-				lr.remove(this);
-				lr.add(this);
-			}
+		if(added && _layer != null && _layer.depth_sort) {
+			var l = _layer;
+			l._remove_unsafe(this);
+			l._add_unsafe(this);
+		}
+
+	}
+
+	@:noCompletion public function get_default_shader(_instanced:Bool):Shader {
+
+		if(_instanced) {
+			return texture != null ? Clay.renderer.shader_instanced_textured : Clay.renderer.shader_instanced;
+		} else {
+			return texture != null ? Clay.renderer.shader_textured : Clay.renderer.shader_colored;
 		}
 
 	}
@@ -284,7 +313,7 @@ class Geometry {
 
 		sort_key.geometry_type = v;
 
-		update_order();
+		update_depth();
 
 		_geometry_type = v;
 
@@ -310,40 +339,37 @@ class Geometry {
 
 	}
 
-	inline function get_layer():Int {
+	inline function get_layer():Layer {
 
 		return _layer;
 
 	}
 
-	function set_layer(v:Int):Int {
+	inline function get_shader():Shader {
 
-		if(added) {
-			var lr = Clay.renderer.layers.get(_layer);
-			if(lr != null) {
-				lr.remove(this);
-			}
-
-			lr = Clay.renderer.layers.get(v);
-			if(lr != null) {
-				lr.add(this);
-			} else {
-				log('Error adding geometry to layer ${v}');
-			}
-		}
-
-		return _layer = v;
+		return _shader;
 
 	}
 
 	function set_shader(v:Shader):Shader {
 
+		_custom_shader = v != null;
+
+		if(!_custom_shader) {
+			v = get_default_shader(instanced);
+		}
+
+		return _set_shader(v);
+
+	}
+
+	inline function _set_shader(v:Shader) {
+
 		sort_key.shader = v.id;
 
-		update_order();
+		update_depth();
 
-		return shader = v;
-
+		return _shader = v;
 	}
 
 	inline function get_texture():Texture {
@@ -362,7 +388,7 @@ class Geometry {
 
 		sort_key.texture = tid;
 
-		update_order();
+		update_depth();
 
 		update_instanced();
 
@@ -370,13 +396,13 @@ class Geometry {
 
 	}
 
-	function set_order(v:UInt):UInt {
+	function set_depth(v:Float):Float {
 
-		sort_key.order = v;
+		sort_key.depth = v;
 
-		update_order();
+		update_depth();
 
-		return order = v;
+		return depth = v;
 
 	}
 
@@ -384,9 +410,19 @@ class Geometry {
 
 		sort_key.clip = v != null;
 
-		update_order();
+		if(clip_rect == null && v != null || clip_rect != null && v == null) {
+			update_depth();
+		}
 
 		return clip_rect = v;
+
+	}
+
+	function set_visible(v:Bool):Bool {
+
+		visible = v;
+
+		return visible;
 
 	}
 
@@ -398,7 +434,7 @@ class Geometry {
 
 	function set_instances_count(v:Int):Int {
 
-		if(_geometry_type != GeometryType.instanced) {
+		if(!instanced) {
 			log('geometry is not instanced');
 			return v;
 		}
@@ -460,22 +496,23 @@ class InstancedGeometry {
 	var polygon         = 0;
 	var quad            = 1;
 	var text            = 2;
-	var instanced       = 3;
 	
-	var none            = 4;
+	var none            = 3;
 
 }
 
 
 typedef GeometryOptions = {
 
+	@:optional var name:String;
 	@:optional var texture:Texture;
 	@:optional var vertices:Array<Vertex>;
 	@:optional var indices:Array<Int>;
 	@:optional var visible:Bool;
-	@:optional var layer:Int;
+	@:optional var layer:Layer;
 	@:optional var shader:Shader;
 	@:optional var color:Color;
-	@:optional var order:UInt;
+	@:optional var depth:Float;
+	@:optional var clip_rect:Rectangle;
 
 }

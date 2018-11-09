@@ -116,6 +116,24 @@ class BitFlag {
 
 	}
 
+	public function for_each(cb:Int->Void) {
+
+		var p:Int = 0;
+		var bitset:Int = 0;
+		for (i in 0...bits.length) {
+			p = i * 32;
+			bitset = bits[i];
+			while (bitset != 0) {
+				if (bitset & 0x1 == 1) {
+					cb(p);
+				}
+				bitset >>= 1;
+				p++;
+			}
+		}
+	    
+	}
+	
 	public function clear() {
 		
 		for (i in 0...bits.length) {

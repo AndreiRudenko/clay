@@ -3,6 +3,7 @@ package clay.components.graphics;
 
 import kha.Kravur.AlignedQuad;
 
+import clay.math.RectangleCallback;
 import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.math.Matrix;
@@ -10,7 +11,7 @@ import clay.math.Rectangle;
 import clay.data.Color;
 import clay.render.Vertex;
 import clay.resources.FontResource;
-import clay.components.graphics.Texture;
+import clay.resources.Texture;
 import clay.components.graphics.Geometry;
 import clay.utils.Log.*;
 
@@ -19,72 +20,90 @@ class QuadGeometry extends Geometry {
 
 
 	public var size(default, null):VectorCallback;
-	public var flipx(default, set):Bool = false;
-	public var flipy(default, set):Bool = false;
+	public var uv(default, null):RectangleCallback;
+	public var flipx(get, set):Bool;
+	public var flipy(get, set):Bool;
 
-	var _setup:Bool = true;
+	var _flipx:Bool = false;
+	var _flipy:Bool = false;
 
 
 	public function new(_options:QuadGeometryOptions) {
 
-		size = new VectorCallback(32,32);
+		size = new VectorCallback(32, 32);
 		if(_options.size != null) {
-			size.copy_from_vec(_options.size);
+			size.copy_from(_options.size);
 		}
 		size.listen(size_changed);
+
+		uv = new RectangleCallback();
+		uv.listen(uv_changed);
 
 		var verts:Array<Vertex> = [];
 		var inds:Array<Int> = [0,1,2,0,2,3];
 		var _w:Float = size.x;
 		var _h:Float = size.y;
 
-		verts.push(new Vertex(new Vector(0, 0), null, new Vector(0,0)));
-		verts.push(new Vertex(new Vector(_w, 0), null, new Vector(1,0)));
-		verts.push(new Vertex(new Vector(_w, _h), null, new Vector(1,1)));
-		verts.push(new Vertex( new Vector(0, _h), null, new Vector(0,1)));
+		verts.push(new Vertex(new Vector( 0,  0)));
+		verts.push(new Vertex(new Vector(_w,  0)));
+		verts.push(new Vertex(new Vector(_w, _h)));
+		verts.push(new Vertex(new Vector( 0, _h)));
 
 		_options.vertices = verts;
 		_options.indices = inds;
 
+		_flipx = def(_options.flipx, false);
+		_flipy = def(_options.flipy, false);
+
 		super(_options);
-
-		flipx = def(_options.flipx, false);
-		flipy = def(_options.flipy, false);
-
-		_setup = false;
 
 		set_geometry_type(GeometryType.quad);
 
 		update_tcoord();
 
-	}
-
-	public function set_tcoord(_r:Rectangle) {
-
-		vertices[0].tcoord.set(_r.x, _r.y);
-		vertices[1].tcoord.set(_r.x+_r.w, _r.y);
-		vertices[2].tcoord.set(_r.x+_r.w, _r.y+_r.h);
-		vertices[3].tcoord.set(_r.x, _r.y+_r.h);
+		if(_options.uv != null) {
+			uv.copy_from(_options.uv);
+		} else {
+			set_uv(0, 0, 1, 1);
+		}
 
 	}
 	
-	function set_flipx(v:Bool):Bool {
+	public function set_uv(_x:Float, _y:Float, _w:Float, _h:Float) {
 
-		flipx = v;
+		var lstate = uv.ignore_listeners;
+		uv.ignore_listeners = true;
+		uv.set(_x, _y, _w, _h);
+		uv.ignore_listeners = lstate;
 
-		update_tcoord();
-
-		return flipx;
+		_set_uv(_x, _y, _w, _h);
 
 	}
 
-	function set_flipy(v:Bool):Bool {
+	inline function _set_uv(_x:Float, _y:Float, _w:Float, _h:Float) {
+		
+		vertices[0].tcoord.set(_x,    _y);
+		vertices[1].tcoord.set(_x+_w, _y);
+		vertices[2].tcoord.set(_x+_w, _y+_h);
+		vertices[3].tcoord.set(_x,    _y+_h);
 
-		flipy = v;
+	}
 
-		update_tcoord();
+	function uv_changed(v:Float) {
 
-		return flipy;
+		// if(texture == null) {
+		// 	log('Calling UV on a geometry with null texture.');
+		// 	return;
+		// }
+
+        // var tlx = uv.x/texture.width_actual;
+        // var tly = uv.y/texture.height_actual;
+        // var szx = uv.w/texture.width_actual;
+        // var szy = uv.h/texture.height_actual;
+
+        // set_uv_space(tlx, tly, szx, szy);
+
+		_set_uv(uv.x, uv.y, uv.w, uv.h);
 
 	}
 
@@ -101,10 +120,6 @@ class QuadGeometry extends Geometry {
 	}
 
 	function update_tcoord() {
-
-		if(_setup) {
-			return;
-		}
 		
 		var tl:Vector = vertices[0].tcoord;
 		var tr:Vector = vertices[1].tcoord;
@@ -136,9 +151,38 @@ class QuadGeometry extends Geometry {
 
 	}
 
-	override function destroy() {
+	inline function get_flipx():Bool {
+
+		return _flipx;
 
 	}
+
+	function set_flipx(v:Bool):Bool {
+
+		_flipx = v;
+
+		update_tcoord();
+
+		return _flipx;
+
+	}
+
+	inline function get_flipy():Bool {
+
+		return _flipy;
+
+	}
+
+	function set_flipy(v:Bool):Bool {
+
+		_flipy = v;
+
+		update_tcoord();
+
+		return _flipy;
+
+	}
+	
 
 }
 
@@ -149,5 +193,6 @@ typedef QuadGeometryOptions = {
 	@:optional var size:Vector;
 	@:optional var flipx:Bool;
 	@:optional var flipy:Bool;
+	@:optional var uv:Rectangle;
 
 }
