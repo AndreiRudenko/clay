@@ -19,12 +19,23 @@ class Color {
 
 	}
 
-	public function set(_r:Float, _g:Float, _b:Float, _a:Float):Color {
-		
-		r = _r;
-		g = _g;
-		b = _b;
-		a = _a;
+	public function set(?_r:Float, ?_g:Float, ?_b:Float, ?_a:Float):Color {
+
+		if(_r != null) {
+			r = _r;
+		}
+
+		if(_g != null) {
+			g = _g;
+		}
+
+		if(_b != null) {
+			b = _b;
+		}
+
+		if(_a != null) {
+			a = _a;
+		}
 
 		return this;
 

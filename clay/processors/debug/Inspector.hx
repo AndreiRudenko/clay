@@ -126,7 +126,7 @@ class Inspector extends Processor {
 
 	override function onkeydown(e:KeyEvent) {
 
-		if(e.key == Key.backquote) {
+		if(e.key == Key.backquote || e.key == Key.f1) {
 			visible = !visible;
 		}
 

@@ -23,10 +23,12 @@ class Processors {
 
 	}
 
-	public function add<T:Processor>(_processor:T, _priority:Int = 0, _enabled:Bool = true):T {
-		
-		_processor.priority = _priority;
+	public function add<T:Processor>(_processor:T, ?_priority:Int, _enabled:Bool = true):T {
 
+		if(_priority != null) {
+			_processor.priority = _priority;
+		}
+		
 		_add(_processor, _enabled);
 
 		return _processor;
