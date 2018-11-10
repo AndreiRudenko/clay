@@ -113,7 +113,10 @@ class Renderer {
 		camera = cameras.create('default_camera');
 
 		renderpath = new RenderPath(this);
+		
+		#if !no_default_font
 		font = Clay.resources.font('assets/Montserrat-Regular.ttf');
+		#end
 
 		#if !no_debug_console
 		stats = new RenderStats();

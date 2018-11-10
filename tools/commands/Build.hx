@@ -41,6 +41,7 @@ class Build extends Command {
 
 		config.debug = false;
 		config.onlydata = false;
+		config.compile = false;
 		for (a in args) {
 			switch (a) {
 				case '--debug' : {
@@ -48,6 +49,9 @@ class Build extends Command {
 				}
 				case '--onlydata' : {
 					config.onlydata = true;
+				}
+				case '--compile' : {
+					config.compile = true;
 				}
 			}
 		}
@@ -168,8 +172,14 @@ class Build extends Command {
 		// args.push('build');
 		if(config.onlydata) {
 			args.push('--onlydata');
-		} else {
+		}
+
+		if(config.compile) {
 			args.push('--compile');
+		}
+
+		if(config.onlydata) {
+			args.push('--onlydata');
 		}
 
 		CLI.print('Run build command: ${args.join(" ")}');
@@ -208,7 +218,6 @@ class Build extends Command {
 			} else {
 				html_path = Path.join([CLI.engine_dir, 'assets/html/index.html']);
 			}
-
 
 			if (FileSystem.exists(html_path)) {
 				var dest_path = Path.join([CLI.user_dir, 'build/html5/index.html']);

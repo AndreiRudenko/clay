@@ -146,6 +146,8 @@ class Engine {
 		worlds = new Worlds();
 		debug = new Debug(this);
 
+		#if !no_default_font
+
 		Clay.resources.load_all(
 			[
 			'assets/Montserrat-Regular.ttf',
@@ -159,6 +161,15 @@ class Engine {
 
 			}
 		);
+
+		#else
+
+		init();
+		_debug('onready');
+		_onready();
+
+		#end
+
 
 	}
 

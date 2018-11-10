@@ -57,16 +57,23 @@ class Config {
 			// kfile += 'p.addDefine("use_pen_input");\n';
 		}
 
+		var no_default_font = false;
+
 		for (s in project.defines) {
 			kfile += 'p.addDefine("${s}");\n';
+			if(s == 'no_default_font') {
+				no_default_font = true;
+			}
 		}
 
 		for (s in compiler.parameters) {
 			kfile += 'p.addParameter("${s}");\n';
 		}
 
-		var fp = Path.join([CLI.engine_dir, 'assets/fonts']);
-		kfile += 'p.addAssets("${fp}", {destination: "assets/{name}", noprocessing: true, notinlist: true});\n';
+		if(!no_default_font) {
+			var fp = Path.join([CLI.engine_dir, 'assets/fonts']);
+			kfile += 'p.addAssets("${fp}", {destination: "assets/{name}", noprocessing: true, notinlist: true});\n';
+		}
 		
 		for (s in project.assets) {
 			kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
@@ -118,6 +125,7 @@ typedef ConfigData = {
 	var target:String;
 	var debug:Bool;
 	var onlydata:Bool;
+	var compile:Bool;
 }
 
 typedef InputConfig = {
