@@ -13,6 +13,7 @@ import clay.render.Vertex;
 import clay.resources.FontResource;
 import clay.resources.Texture;
 import clay.components.graphics.Geometry;
+import clay.utils.EReg;
 import clay.utils.Log.*;
 import clay.types.TextAlign;
 
@@ -38,8 +39,10 @@ class Text extends Geometry {
 
 	public var text_colors:Array<Color>;
 
-	var split_regex:EReg = ~/(?:\r\n|\r|\n)/g;
-	var tab_regex:EReg = ~/\t/gim;
+
+	var split_regex:EReg = new EReg('(?:\r\n|\r|\n)', 'g');
+	var tab_regex:EReg = new EReg('\t', 'gim');
+
 	var tab_string:String = '';
 
 	var size_dirty:Bool = true;

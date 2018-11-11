@@ -251,8 +251,10 @@ class Geometry {
 		vertexbuffers[1] = new VertexBuffer(
 			inst_count,
 			_shader.inputLayout[1],
-			Usage.StaticUsage,
-			1
+			Usage.StaticUsage
+			#if !kha_android
+			, 1
+			#end
 		);
 
 		// indices

@@ -146,7 +146,6 @@ class Camera {
 	public inline function update() {
 
 		transform.update();
-		update_matrices();
 
 	}
 
@@ -155,11 +154,10 @@ class Camera {
 		view_matrix_inverted.copy(view_matrix);
 		view_matrix_inverted.invert();
 		projection_matrix.identity();
-		
+
 		if (Clay.renderer.target.image.g4.renderTargetsInvertedY()) {
 			projection_matrix.orto(0, viewport.w, 0, viewport.h);
-		}
-		else {
+		} else {
 			projection_matrix.orto(0, viewport.w, viewport.h, 0);
 		}
 
@@ -185,6 +183,7 @@ class Camera {
 
 		onprerender.emit(this);
 
+		update_matrices();
 		g.viewport(Std.int(viewport.x), Std.int(viewport.y), Std.int(viewport.w), Std.int(viewport.h));
 
 	}

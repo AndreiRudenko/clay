@@ -17,9 +17,12 @@ input:
   pen: false
 
 app:
-  name: app_name
-  package: com.package.name
+  name: clay_gamepad
   icon: ''
+  
+android:
+  package: com.clayengine.clay_gamepad
+  orientation: 'landscape'
   
 html5:
   webgl: true

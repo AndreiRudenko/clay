@@ -16,9 +16,12 @@ input:
   touch: true
   pen: false
 
+android:
+  package: com.clayengine.clay_animation
+  orientation: 'landscape'
+
 app:
   name: app_name
-  package: com.package.name
   icon: ''
   
 html5:

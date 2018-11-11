@@ -17,10 +17,13 @@ input:
   pen: false
 
 app:
-  name: app_name
-  package: com.package.name
+  name: clay_bunnies
   icon: ''
   
+android:
+  package: com.clayengine.clay_bunnies
+  orientation: 'landscape'
+
 html5:
   webgl: true
   canvas: 'kanvas'

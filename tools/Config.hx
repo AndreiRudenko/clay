@@ -80,10 +80,35 @@ class Config {
 		}
 
 		if(config.html5 != null){
-			kfile += 'p.targetOptions.html5.canvasId = "${config.html5.canvas}";\n';
-			kfile += 'p.targetOptions.html5.scriptName = "${config.html5.script}";\n';
-			kfile += 'p.targetOptions.html5.webgl = ${config.html5.webgl};\n';
+			if(config.html5.canvas != null) {
+				kfile += 'p.targetOptions.html5.canvasId = "${config.html5.canvas}";\n';
+			}
+			if(config.html5.script != null) {
+				kfile += 'p.targetOptions.html5.scriptName = "${config.html5.script}";\n';
+			}
+			if(config.html5.webgl != null) {
+				kfile += 'p.targetOptions.html5.webgl = ${config.html5.webgl};\n';
+			}
 		}
+
+		if(config.android != null){
+			if(config.android.orientation != null) {
+				kfile += 'p.targetOptions.android.screenOrientation = "${config.android.orientation}";\n';
+			}
+			if(config.android.permissions != null) {
+				kfile += 'p.targetOptions.android.permissions = "${config.android.permissions}";\n';
+			}
+			if(untyped __js__('config.android.package')) {
+				kfile += 'p.targetOptions.android.package = "${untyped __js__('config.android.package')}";\n';
+			}
+		}
+
+		if(config.ios != null){
+			if(config.ios.orientation != null) {
+				kfile += 'p.targetOptions.ios.screenOrientation = "${config.ios.orientation}";\n';
+			}
+		}
+
 
 		kfile += "resolve(p);";
 
@@ -157,7 +182,6 @@ typedef CompilerConfig = {
 
 typedef AppConfig = {
 	var name:String;
-	// var package:String;
 	var icon:String;
 }
 
@@ -179,7 +203,9 @@ typedef UWPConfig = {
 }
 
 typedef AndroidConfig = {
+	// var package:String;
 	var orientation:String;
+	var permissions:Array<String>;
 }
 typedef IOSConfig = {
 	var orientation:String;

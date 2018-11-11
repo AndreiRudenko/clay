@@ -2,9 +2,7 @@ package clay.render;
 
 
 import kha.Framebuffer;
-import kha.Scaler;
 import kha.Shaders;
-// import kha.ScreenRotation;
 import kha.graphics4.VertexStructure;
 import kha.graphics4.VertexData;
 import kha.graphics4.Graphics;
@@ -51,6 +49,7 @@ class Renderer {
 	#end
 	
 	var renderpath:RenderPath;
+	var frontbuffer:FrontBuffer;
 
 	// geometry sorting
 	var clip_bits:Int;
@@ -113,6 +112,7 @@ class Renderer {
 		camera = cameras.create('default_camera');
 
 		renderpath = new RenderPath(this);
+		frontbuffer = new FrontBuffer(this);
 		
 		#if !no_default_font
 		font = Clay.resources.font('assets/Montserrat-Regular.ttf');
@@ -173,7 +173,7 @@ class Renderer {
 		structures[0] = new VertexStructure();
 		structures[0].add("vertexPosition", VertexData.Float2);
 		structures[1] = new VertexStructure();
-		structures[1].add("m", VertexData.Float4x4);
+		structures[1].add("mvpMatrix", VertexData.Float4x4);
 		structures[1].add("vertexColor", VertexData.Float4);
 		structures[1].instanced = true;
 
@@ -193,7 +193,7 @@ class Renderer {
 		structures[0].add("vertexPosition", VertexData.Float2);
 		structures[0].add("texPosition", VertexData.Float2);
 		structures[1] = new VertexStructure();
-		structures[1].add("m", VertexData.Float4x4);
+		structures[1].add("mvpMatrix", VertexData.Float4x4);
 		structures[1].add("vertexColor", VertexData.Float4);
 		structures[1].add("texOffset", VertexData.Float2);
 		structures[1].instanced = true;
@@ -295,11 +295,7 @@ class Renderer {
 
 		target.image.g4.end();
 
-		f.g2.begin();
-		// set shader here
-		// frame.g2.pipeline = postfx;
-		Scaler.scale(target.image, f, kha.System.screenRotation);
-		f.g2.end();
+		frontbuffer.render(target.image, f, kha.System.screenRotation);
 
 		rendering = false;
 

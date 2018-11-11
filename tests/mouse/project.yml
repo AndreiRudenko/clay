@@ -18,7 +18,6 @@ input:
 
 app:
   name: app_name
-  package: com.package.name
   icon: ''
   
 html5:

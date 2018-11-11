@@ -3,11 +3,11 @@
 in vec2 vertexPosition;
 
 in vec4 vertexColor;
-in mat4 m;
+in mat4 mvpMatrix;
 
 out vec4 fragmentColor;
 
 void main() {
-	gl_Position =  m * vec4(vertexPosition, 0.0, 1.0);
+	gl_Position =  mvpMatrix * vec4(vertexPosition, 0.0, 1.0);
 	fragmentColor = vertexColor;
 }

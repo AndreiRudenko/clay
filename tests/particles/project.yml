@@ -18,9 +18,12 @@ input:
 
 app:
   name: app_name
-  package: com.package.name
   icon: ''
   
+android:
+  package: com.clayengine.clay_bunnies
+  orientation: 'landscape'
+
 html5:
   webgl: true
   canvas: 'kanvas'
