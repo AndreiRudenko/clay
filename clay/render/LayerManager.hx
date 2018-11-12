@@ -62,6 +62,10 @@ class LayerManager {
 			log('can`t remove layer: "${_layer.name}" , already removed?');
 		}
 
+		for (c in Clay.renderer.cameras.cameras) {
+			c.visible_layers_mask.enable(_layer.id);
+		}
+
 		_layer.destroy();
 
 	}

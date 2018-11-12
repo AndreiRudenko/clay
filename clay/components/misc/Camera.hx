@@ -12,6 +12,8 @@ import clay.ds.BitVector;
 import clay.core.Signal;
 import clay.components.common.Transform;
 import clay.render.CameraManager;
+import clay.render.Layer;
+import clay.utils.Log.*;
 
 using clay.render.utils.FastMatrix3Extender;
 
@@ -87,27 +89,39 @@ class Camera {
 
 	}
 
-	public function hide_layers(?layers:Array<Int>) {
+	public function hide_layers(?layers:Array<String>) {
 
-		// if(layers != null) {
-		// 	for (i in layers) {
-		// 		visible_layers_mask.disable(i);
-		// 	}
-		// } else {
-		// 	visible_layers_mask.disable_all();
-		// }
+		if(layers != null) {
+			var l:Layer;
+			for (n in layers) {
+				l = Clay.renderer.layers.get(n);
+				if(l != null) {
+					visible_layers_mask.disable(l.id);
+				} else {
+					log('can`t hide layer `${n}` for camera `${name}`');
+				}
+			}
+		} else {
+			visible_layers_mask.disable_all();
+		}
 		
 	}
 
-	public function show_layers(?layers:Array<Int>) {
+	public function show_layers(?layers:Array<String>) {
 
-		// if(layers != null) {
-		// 	for (i in layers) {
-		// 		visible_layers_mask.enable(i);
-		// 	}
-		// } else {
-		// 	visible_layers_mask.enable_all();
-		// }
+		if(layers != null) {			
+			var l:Layer;
+			for (n in layers) {
+				l = Clay.renderer.layers.get(n);
+				if(l != null) {
+					visible_layers_mask.enable(l.id);
+				} else {
+					log('can`t show layer `${n}` for camera `${name}`');
+				}
+			}
+		} else {
+			visible_layers_mask.enable_all();
+		}
 
 	}
 
