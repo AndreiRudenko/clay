@@ -107,7 +107,7 @@ class Build extends Command {
 		}
 
 		switch (config.target) {
-			case 'windows' : {
+			case 'windows' | 'windows-hl': {
 				if(config.windows != null) {
 					if(config.windows.graphics != null) {
 						if(windows_graphics.indexOf(config.windows.graphics) == -1) {

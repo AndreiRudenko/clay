@@ -148,7 +148,7 @@ class Gamepads extends Input {
 
     function check_binding(_gamepad:Int, _button:Int, _pressed:Bool) {
 
-    	for (k in gamepad_bindings.keys()) {
+    	for (k in gamepad_bindings.keys()) { // todo: using this is broke hashlink build, ftw?
     		var g = gamepad_bindings.get(k);
     		if(g != null) {
     			if(g.exists(_gamepad)) {

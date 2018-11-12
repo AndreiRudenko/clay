@@ -379,7 +379,7 @@ commands_Build.prototype = $extend(Command.prototype,{
 				}
 			}
 			break;
-		case "windows":
+		case "windows":case "windows-hl":
 			if(config.windows != null) {
 				if(config.windows.graphics != null) {
 					if(this.windows_graphics.indexOf(config.windows.graphics) == -1) {
@@ -969,7 +969,7 @@ js_Boot.__string_rec = function(o,s) {
 var js_node_ChildProcess = require("child_process");
 var js_node_Fs = require("fs");
 var js_node_Path = require("path");
-var js_node_buffer_Buffer = require("buffer").Buffer.alloc;
+var js_node_buffer_Buffer = require("buffer").Buffer;
 var sys_FileSystem = function() { };
 sys_FileSystem.__name__ = true;
 sys_FileSystem.exists = function(path) {
@@ -1026,7 +1026,7 @@ CLI.engine_name = "clay2d";
 CLI.templates_path = "templates";
 CLI.backend_path = "backend";
 CLI.kha_path = "Kha";
-CLI.targets = ["html5","windows","osx","linux","android","ios","uwp"];
-sys_io_File.copyBuf = new js_node_buffer_Buffer(65536);
+CLI.targets = ["html5","windows","windows-hl","osx","linux","android","android-native","android-native-hl","ios","uwp"];
+sys_io_File.copyBuf = new js_node_buffer_Buffer.alloc(65536);
 CLI.main();
 })();

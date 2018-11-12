@@ -115,7 +115,7 @@ class Mouse extends Input {
 
     function check_binding(_key:Int, _pressed:Bool) {
 
-    	for (k in mouse_bindings.keys()) {
+    	for (k in mouse_bindings.keys()) { // todo: using this is broke hashlink build, ftw?
     		if(mouse_bindings.exists(k)) {
     			var n = mouse_bindings.get(k);
 	    		if(Bits.check(n, _key)) {

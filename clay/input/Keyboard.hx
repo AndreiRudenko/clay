@@ -121,7 +121,7 @@ class Keyboard extends Input {
 
     function check_binding(_key:Int, _pressed:Bool) {
 
-    	for (k in key_bindings.keys()) {
+    	for (k in key_bindings.keys()) { // todo: using this is broke hashlink build, ftw?
     		if(key_bindings.get(k).exists(_key)) {
 		    	binding.input_event.set_key(k, key_event);
 			    if(_pressed) {
