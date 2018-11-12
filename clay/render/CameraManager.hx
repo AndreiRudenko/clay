@@ -18,8 +18,8 @@ class CameraManager {
 
 	public var length(default, null):Int;
 
-	var active_cameras:Array<Camera>;
-	var cameras:Map<String, Camera>;
+	@:noCompletion public var active_cameras:Array<Camera>;
+	@:noCompletion public var cameras:Map<String, Camera>;
 
 
 	public function new() {
@@ -130,7 +130,7 @@ class CameraManager {
 
 	}
 
-	@:noCompletion public inline function iterator():Iterator<Camera> {
+	@:noCompletion public inline function iterator():Iterator<Camera> { // todo: using this is broke hashlink build, ftw?
 
 		return active_cameras.iterator();
 

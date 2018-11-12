@@ -266,10 +266,8 @@ class Renderer {
 
 	public function update(dt:Float) {
 		
-		for (cam in cameras) {
-			if(cam.active) {
-				cam.update();
-			}
+		for (cam in cameras.active_cameras) {
+			cam.update();
 		}
 
 	}
@@ -285,12 +283,10 @@ class Renderer {
 	    target.image.g4.begin();
 		target.image.g4.clear(clear_color.to_int());
 
-		for (cam in cameras) {
-			if(cam.active) {
-		    	cam.prerender(target.image.g4);
-				layers.render(target.image.g4, cam);
-		    	cam.postrender(target.image.g4);
-			}
+		for (cam in cameras.active_cameras) {
+		    cam.prerender(target.image.g4);
+			layers.render(target.image.g4, cam);
+		    cam.postrender(target.image.g4);
 		}
 
 		target.image.g4.end();
