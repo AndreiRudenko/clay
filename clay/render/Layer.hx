@@ -7,7 +7,7 @@ import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
 import clay.render.GeometryList;
 import clay.components.graphics.Geometry;
-import clay.components.misc.Camera;
+import clay.render.Camera;
 import clay.resources.Texture;
 import clay.core.Signal;
 import clay.utils.Log.*;

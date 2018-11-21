@@ -11,7 +11,7 @@ import kha.arrays.Float32Array;
 import kha.arrays.Uint32Array;
 import kha.Image;
 
-import clay.components.misc.Camera;
+import clay.render.Camera;
 import clay.resources.Texture;
 import clay.components.graphics.Geometry;
 import clay.components.graphics.Geometry.InstancedGeometry;

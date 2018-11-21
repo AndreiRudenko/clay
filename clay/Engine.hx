@@ -10,7 +10,7 @@ import kha.WindowOptions.WindowFeatures;
 import clay.math.Random;
 
 import clay.components.event.Events;
-import clay.components.misc.Camera;
+import clay.render.Camera;
 
 import clay.core.Inputs;
 import clay.core.Resources;

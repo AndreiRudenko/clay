@@ -3,7 +3,7 @@ package clay.render;
 
 import kha.graphics4.Graphics;
 
-import clay.components.misc.Camera;
+import clay.render.Camera;
 import clay.resources.Texture;
 import clay.components.graphics.Geometry;
 import clay.render.Shader;

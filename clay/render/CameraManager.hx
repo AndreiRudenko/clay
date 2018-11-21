@@ -5,11 +5,11 @@ import kha.graphics4.Graphics;
 
 import clay.Entity;
 import clay.math.Rectangle;
-import clay.components.misc.Camera;
+import clay.render.Camera;
 import clay.core.Signal;
 import clay.utils.Log.*;
 
-@:access(clay.components.misc.Camera)
+@:access(clay.render.Camera)
 class CameraManager {
 
 

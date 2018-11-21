@@ -1,7 +1,7 @@
 package clay.processors.debug;
 
 
-import clay.components.misc.Camera;
+import clay.render.Camera;
 import clay.objects.Text;
 import clay.data.Color;
 import clay.ds.Dll;
@@ -19,7 +19,7 @@ import clay.utils.Log.*;
 @:access(
 	clay.render.Renderer, 
 	clay.render.RenderPath, 
-	clay.components.misc.Camera
+	clay.render.Camera
 )
 class StatsDebugView extends DebugView {
 

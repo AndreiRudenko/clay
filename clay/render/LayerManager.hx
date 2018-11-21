@@ -4,13 +4,13 @@ package clay.render;
 import kha.graphics4.Graphics;
 
 import clay.render.Layer;
-import clay.components.misc.Camera;
+import clay.render.Camera;
 import clay.ds.Int32RingBuffer;
 import clay.utils.Log.*;
 
 
 @:access(
-	clay.components.misc.Camera,
+	clay.render.Camera,
 	clay.render.Layer
 )
 class LayerManager {

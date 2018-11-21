@@ -8,7 +8,7 @@ import kha.graphics4.VertexData;
 import kha.graphics4.Graphics;
 import kha.graphics4.BlendingFactor;
 
-import clay.components.misc.Camera;
+import clay.render.Camera;
 import clay.components.graphics.Geometry;
 import clay.resources.Texture;
 import clay.resources.FontResource;

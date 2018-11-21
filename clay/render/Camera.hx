@@ -1,4 +1,4 @@
-package clay.components.misc;
+package clay.render;
 
 
 import kha.math.FastMatrix3;

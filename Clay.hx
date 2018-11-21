@@ -15,7 +15,7 @@ class Clay {
 
 	public static var screen      	(get, never):clay.core.Screen;
 	public static var renderer 	    (get, never):clay.render.Renderer;
-	public static var camera 	    (get, never):clay.components.misc.Camera;
+	public static var camera 	    (get, never):clay.render.Camera;
 	public static var cameras 	    (get, never):clay.render.CameraManager;
 	public static var layers 	    (get, never):clay.render.LayerManager;
 	public static var draw     	    (get, never):clay.render.Draw;
