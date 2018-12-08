@@ -3,6 +3,7 @@ package clay.components.graphics;
 
 import clay.math.Mathf;
 import clay.components.event.Events;
+import clay.resources.Texture;
 import clay.utils.Log.*;
 
 
