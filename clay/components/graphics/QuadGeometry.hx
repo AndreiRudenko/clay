@@ -76,34 +76,13 @@ class QuadGeometry extends Geometry {
 		uv.set(_x, _y, _w, _h);
 		uv.ignore_listeners = lstate;
 
-		_set_uv(_x, _y, _w, _h);
-
-	}
-
-	inline function _set_uv(_x:Float, _y:Float, _w:Float, _h:Float) {
-		
-		vertices[0].tcoord.set(_x,    _y);
-		vertices[1].tcoord.set(_x+_w, _y);
-		vertices[2].tcoord.set(_x+_w, _y+_h);
-		vertices[3].tcoord.set(_x,    _y+_h);
+		update_tcoord();
 
 	}
 
 	function uv_changed(v:Float) {
 
-		// if(texture == null) {
-		// 	log('Calling UV on a geometry with null texture.');
-		// 	return;
-		// }
-
-        // var tlx = uv.x/texture.width_actual;
-        // var tly = uv.y/texture.height_actual;
-        // var szx = uv.w/texture.width_actual;
-        // var szy = uv.h/texture.height_actual;
-
-        // set_uv_space(tlx, tly, szx, szy);
-
-		_set_uv(uv.x, uv.y, uv.w, uv.h);
+		update_tcoord();
 
 	}
 
@@ -121,33 +100,49 @@ class QuadGeometry extends Geometry {
 
 	function update_tcoord() {
 		
-		var tl:Vector = vertices[0].tcoord;
-		var tr:Vector = vertices[1].tcoord;
-		var br:Vector = vertices[2].tcoord;
-		var bl:Vector = vertices[3].tcoord;
+		var tl_x = uv.x;
+		var tl_y = uv.y;
+		var tr_x = uv.x + uv.w;
+		var tr_y = uv.y;
+		var br_x = uv.x + uv.w;
+		var br_y = uv.y + uv.h;
+		var bl_x = uv.x;
+		var bl_y = uv.y + uv.h;
 
-		if(flipx) {
-			var tmp:Vector = tl;
-			tl = tr;
-			tr = tmp;
-			tmp = bl;
-			bl = br;
-			br = tmp;
+		if(_flipx) {
+			var tmp_x = tl_x;
+			var tmp_y = tl_y;
+			tl_x = tr_x;
+			tl_y = tr_y;
+			tr_x = tmp_x;
+			tr_y = tmp_y;
+			tmp_x = bl_x;
+			tmp_y = bl_y;
+			bl_x = br_x;
+			bl_y = br_y;
+			br_x = tmp_x;
+			br_y = tmp_y;
 		}
 
-		if(flipy) {
-			var tmp:Vector = tl;
-			tl = bl;
-			bl = tmp;
-			tmp = tr;
-			tr = br;
-			br = tmp;
+		if(_flipy) {
+			var tmp_x = tl_x;
+			var tmp_y = tl_y;
+			tl_x = bl_x;
+			tl_y = bl_y;
+			bl_x = tmp_x;
+			bl_y = tmp_y;
+			tmp_x = tr_x;
+			tmp_y = tr_y;
+			tr_x = br_x;
+			tr_y = br_y;
+			br_x = tmp_x;
+			br_y = tmp_y;
 		}
 
-		vertices[0].tcoord = tl;
-		vertices[1].tcoord = tr;
-		vertices[2].tcoord = br;
-		vertices[3].tcoord = bl;
+		vertices[0].tcoord.set(tl_x, tl_y);
+		vertices[1].tcoord.set(tr_x, tr_y);
+		vertices[2].tcoord.set(br_x, br_y);
+		vertices[3].tcoord.set(bl_x, bl_y);
 
 	}
 

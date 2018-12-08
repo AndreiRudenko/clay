@@ -45,10 +45,10 @@ class LineGeometry extends Geometry {
 		p0.listen(update_line_geom);
 		p1.listen(update_line_geom);
 
-		add(new Vertex(new Vector()));
-		add(new Vertex(new Vector()));
-		add(new Vertex(new Vector()));
-		add(new Vertex(new Vector()));
+		add(new Vertex(new Vector(), null, new Vector(0,0)));
+		add(new Vertex(new Vector(), null, new Vector(1,0)));
+		add(new Vertex(new Vector(), null, new Vector(1,1)));
+		add(new Vertex(new Vector(), null, new Vector(0,1)));
 
 		set_geometry_type(GeometryType.polygon);
 
