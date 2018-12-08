@@ -39,9 +39,10 @@ class Shader extends kha.graphics4.PipelineState {
 		super.compile();
 
 		blendSource_default = blendSource;
-		alphaBlendDestination_default = alphaBlendDestination;
-		alphaBlendSource_default = alphaBlendSource;
 		blendDestination_default = blendDestination;
+		alphaBlendSource_default = alphaBlendSource;
+		alphaBlendDestination_default = alphaBlendDestination;
+
 		blendOperation_default = blendOperation;
 
 	}
@@ -49,10 +50,11 @@ class Shader extends kha.graphics4.PipelineState {
 	public function reset_blendmodes() {
 		
 		blendSource = blendSource_default;
-		alphaBlendDestination = alphaBlendDestination_default;
-		alphaBlendSource = alphaBlendSource_default;
 		blendDestination = blendDestination_default;
-		blendOperation = blendOperation_default;
+		alphaBlendSource = alphaBlendSource_default;
+		alphaBlendDestination = alphaBlendDestination_default;
+
+		blendOperation = blendOperation_default;	
 		
 	}
 

@@ -187,8 +187,8 @@ class RenderPath {
 					projection_loc = shader.getConstantLocation("mvpMatrix");
 				}
 
-				g.setPipeline(shader);
 				update_blendmode(shader);
+				g.setPipeline(shader);
 
 				if(geom.texture != null) {
 					texture_loc = shader.getTextureUnit("tex");

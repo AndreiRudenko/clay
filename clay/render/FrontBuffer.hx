@@ -122,6 +122,8 @@ class FrontBuffer {
 		g.begin();
 		g.clear(kha.Color.Black);
 
+		shader.reset_blendmodes();
+		
 		g.setPipeline(shader);
 		g.setMatrix3(projection_loc, projection_matrix);
 		g.setTexture(texture_loc, source);
