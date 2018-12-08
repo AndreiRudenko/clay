@@ -4,7 +4,7 @@ package clay.resources;
 class JsonResource extends Resource {
 
 
-	@:noCompletion public var json:Dynamic;
+	public var json:Dynamic;
 
 
 	public function new(_json:Dynamic) {
