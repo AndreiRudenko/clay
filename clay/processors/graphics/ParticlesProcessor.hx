@@ -51,6 +51,8 @@ class ParticlesProcessor extends Processor {
 	function pst_removed(e:Entity) {
 
 		_debug('pst_removed $e');
+		var ps = pst_family.get_particleSystem(e);
+		ps.stop(true);
 
 	}
 
@@ -61,7 +63,6 @@ class ParticlesProcessor extends Processor {
 		for (e in pst_family) {	
 			ps = pst_family.get_particleSystem(e);
 			t = pst_family.get_transform(e);
-			t.pos.set(Clay.input.mouse.x, Clay.input.mouse.y);
 			ps.pos.copy_from(t.pos);
 		}
 		

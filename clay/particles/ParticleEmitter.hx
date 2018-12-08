@@ -96,7 +96,6 @@ class ParticleEmitter {
 
 		name = options.name != null ? options.name : 'emitter.${Math.random()}';
 
-		pos = new Vector();
 		modules = new Map();
 		active_modules = [];
 
@@ -112,6 +111,8 @@ class ParticleEmitter {
 		components = new ComponentManager(cache_size);
 		particles_data = [];
 
+		pos = options.pos != null ? options.pos : new Vector();
+		
 		active = options.active != null ? options.active : true;
 		enabled = options.enabled != null ? options.enabled : true;
 
@@ -718,6 +719,7 @@ typedef ParticleEmitterOptions = {
 
 	@:optional var active:Bool;
 	@:optional var enabled:Bool;
+	@:optional var pos:Vector;
 
 	@:optional var cache_wrap:Bool;
 	@:optional var cache_size:Int;
