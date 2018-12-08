@@ -47,6 +47,10 @@ class CameraManager {
 
 		oncameracreate.emit(_camera);
 
+		#if !no_debug_console
+		_camera.hide_layers(['debug_layer']);
+		#end
+
 		return _camera;
 
 	}
