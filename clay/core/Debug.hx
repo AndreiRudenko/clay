@@ -121,6 +121,11 @@ class Debug {
 
 		#if !no_debug_console
 
+		var c = Clay.cameras.create('debug', null, 999);
+		c.hide_layers();
+		c.show_layers(['debug_layer']);
+		Clay.camera.hide_layers(['debug_layer']);
+
 		padding = new Vector(Clay.screen.width*0.05,Clay.screen.height*0.05);
 
 		haxe_trace = haxe.Log.trace;
