@@ -91,7 +91,7 @@ class Processors {
 
 	}
 
-	function _add(_processor:Processor, _enabled:Bool) {
+	@:noCompletion function _add(_processor:Processor, _enabled:Bool) {
 
 		_processors.set(_processor.name, _processor);
 		_processor._world = world;
@@ -109,7 +109,7 @@ class Processors {
 
 	}
 
-	function _remove(_processor:Processor) {
+	@:noCompletion function _remove(_processor:Processor) {
 
 		_disable(_processor);
 
@@ -121,7 +121,7 @@ class Processors {
 
 	}
 
-	function _enable(_processor:Processor) {
+	@:noCompletion function _enable(_processor:Processor) {
 
 		if(_processor.active) {
 			return;
@@ -135,7 +135,7 @@ class Processors {
 
 	}
 
-	function _disable(_processor:Processor) {
+	@:noCompletion function _disable(_processor:Processor) {
 
 		if(!_processor.active) {
 			return;

@@ -77,7 +77,12 @@ class Entities {
 	public function destroy(e:Entity) {
 
 		if(!has(e)) {
-			throw('entity ${e.id} destroying repeatedly ');
+			var _comps = world.components.get_all(e);
+			var _list = [];
+			for (c in _comps) {
+				_list.push(Type.getClassName(Type.getClass(c)));
+			}
+			throw('entity ${e.id} destroying repeatedly / components: [${_list.join(',')}]');
 		}
 
 		world.components.clear_flags(e);

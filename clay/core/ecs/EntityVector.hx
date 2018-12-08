@@ -51,11 +51,15 @@ class EntityVector {
 		return _has(e.id);
 
 	}
-
+	
 	@:access(clay.Entity)
-	public inline function get(_index:Int):Entity { // todo
+	public function get(_index:UInt):Entity {
 
-		return new Entity(_index);
+		if(_index >= length) {
+			return Entity.NULL;
+		}
+
+		return new Entity(buffer[_index]);
 
 	}
 

@@ -60,6 +60,12 @@ class FamilyData {
 
 	}
 
+	@:noCompletion public function get_by_index(idx:Int):Entity {
+		
+		return entities.get(idx);
+
+	}
+
 	public function listen(_onadded:Entity->Void, _onremoved:Entity->Void) {
 		
 		onadded.add(_onadded);
@@ -195,6 +201,10 @@ class FamilyData {
 	function _match_entity(e:Entity):Bool {
 
 		var entity_flags = cm.flags[e.id];
+
+		if(entity_flags == null) {
+			return false;
+		}
 
 		if(include_flags_count > 0 && !entity_flags.contains(include_flags)) {
 			return false;
