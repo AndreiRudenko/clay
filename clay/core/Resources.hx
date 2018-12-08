@@ -323,12 +323,14 @@ class Resources {
 		kha.Assets.loadSoundFromPath(
 			id, 
 			function(snd:kha.Sound){
-				res = new AudioResource(snd);
-				res.id = id;
-				cache.set(id, res);
-				if(oncomplete != null) {
-					oncomplete(res);
-				}
+				snd.uncompress(function() {
+					res = new AudioResource(snd);
+					res.id = id;
+					cache.set(id, res);
+					if(oncomplete != null) {
+						oncomplete(res);
+					}
+				});
 			},
 			onerror
 		);
