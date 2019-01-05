@@ -92,7 +92,7 @@ class Sound extends AudioChannel{
 				var addressable_data = sound_data.length - position;
 				var next_chunk = addressable_data < (samples - w_ptr) ? addressable_data : (samples - w_ptr);
 				while (chk_ptr < next_chunk) {
-					cache[w_ptr] = sound_data[position] * volume;
+					cache[w_ptr] = sound_data[position];
 					++position;
 					++chk_ptr;
 					++w_ptr;

@@ -17,6 +17,7 @@ class Audio extends AudioGroup {
 
 	public var sample_rate(default, null): Int = 44100;
 
+	var data: Float32Array;
 
     @:allow(clay.Engine)
 	function new() {
@@ -24,6 +25,7 @@ class Audio extends AudioGroup {
 		super();
 
 		kha.audio2.Audio.audioCallback = mix;
+		data = new Float32Array(512);
 
 	}
 
@@ -50,10 +52,18 @@ class Audio extends AudioGroup {
 
 		sample_rate = buffer.samplesPerSecond;
 
-		process(cache, samples);
+		if (data.length < samples) {
+			data = new Float32Array(samples);
+		}
 
 		for (i in 0...samples) {
-			buffer.data.set(buffer.writeLocation, Mathf.clamp(cache[i], -1.0, 1.0) * volume);
+			data[i] = 0;
+		}
+
+		process(data, samples);
+
+		for (i in 0...samples) {
+			buffer.data.set(buffer.writeLocation, Mathf.clamp(data[i], -1.0, 1.0) * volume);
 			buffer.writeLocation += 1;
 			if (buffer.writeLocation >= buffer.size) {
 				buffer.writeLocation = 0;
