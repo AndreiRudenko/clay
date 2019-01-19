@@ -166,6 +166,7 @@ class ProcessorMacro {
 					'onpause',
 					'onresume',
 					'update',
+					'fixedupdate',
 					'onkeydown',
 					'onkeyup',
 					'ontextinput',
@@ -330,7 +331,7 @@ class ProcessorMacro {
 			var _event_name:String = field.name;
 			var _event_field_name:String = field.name;
 
-			if(_event_name != 'update'){
+			if(_event_name != 'update' && _event_name != 'fixedupdate'){
 				_event_name = _event_name.substr(2).toLowerCase();
 			}
 

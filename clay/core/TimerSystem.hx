@@ -6,44 +6,34 @@ import clay.Timer;
 class TimerSystem {
 
 
-	static var timers_tb:Array<Timer> = []; // time based timers
-	static var timers_fb:Array<Timer> = []; // frame based timers
-	static var _time:Float = 0;
+	static var timers:Array<Timer> = [];
 
 	@:noCompletion public function new() {}
 
 
 	@:allow(clay.Timer) 
-	static inline function add(_timer:Timer):Timer { // add timer to the end
+	static inline function add(_timer:Timer) { // add timer to the end
 
-		if(_timer.time_based) {
-			timers_tb.push(_timer);
-		} else {
-			timers_fb.push(_timer);
+		if(!_timer.manual_update) {
+			timers.push(_timer);
+			_timer._added = true;
 		}
-
-		return _timer;
 
 	}
 
 	@:allow(clay.Timer) 
 	static inline function remove(_timer:Timer) {
 		
-		if(_timer.time_based) {
-			timers_tb.remove(_timer);
-		} else {
-			timers_fb.remove(_timer);
+		if(!_timer.manual_update) {
+			timers.remove(_timer);
+			_timer._added = false;
 		}
 
 	}
 
 	public function reset() {
 
-		for (t in timers_fb) {
-			t.stop();
-		}
-
-		for (t in timers_tb) {
+		for (t in timers) {
 			t.stop();
 		}
 
@@ -73,32 +63,17 @@ class TimerSystem {
 
 	}
 	
-		/** Cycles through timers_tb and calls update() on each one. */
-	@:noCompletion public function process(time:Float) {
-
-		for (t in timers_tb) {
-			if (t.active && !t.finished && t.time_limit >= 0){
-				t.update(time);
-			}
-		}
-
-	}
-
 	@:noCompletion public function update(dt:Float) {
 
-		_time += dt;
-
-		for (t in timers_fb) {
-			if (t.active && !t.finished && t.time_limit >= 0){
-				t.update(_time);
-			}
+		for (t in timers) {
+			t.update(dt);
 		}
 
 	}
 
 	inline function toString() {
 
-		return 'timers: [${timers_tb.length + timers_fb.length}]';
+		return 'timers: ${timers.length}';
 
 	}
 

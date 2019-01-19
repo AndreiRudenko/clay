@@ -12,18 +12,18 @@ class TweenSequence {
 	public var active  	    (default, null):Bool;
 	public var paused  	    (default, null):Bool;
 	public var complete  	(default, null):Bool;
-	public var time_based	(default, null):Bool;
+
+	public var manual_update:Bool;
+	public var timescaled:Bool;
 
 	@:noCompletion
-	public var next_time:Float;
-
-	var pause_time:Float;
+	public var time_remains:Float; // remaining time after action finished
 
 	var head:TweenNode;
 	var next:TweenNode;
 
 
-	public function new(_manager:TweenManager, _time_based:Bool) {
+	public function new(_manager:TweenManager, _manual_update:Bool) {
 
 		manager = _manager;
 		active = false;
@@ -31,13 +31,13 @@ class TweenSequence {
 		added = false;
 		complete = false;
 		started = false;
-		time_based = _time_based;
-		next_time = 0;
-		pause_time = 0;
+		timescaled = false;
+		manual_update = _manual_update;
+		time_remains = 0;
 
 	}
 
-	@:noCompletion public function step(t:Float) {
+	@:noCompletion public function step(dt:Float) {
 
 		if(paused || complete) {
 			return;
@@ -54,7 +54,10 @@ class TweenSequence {
 		if(next == null) {
 			finish();
 		} else {
-			next.step(t);
+			if(timescaled) {
+				dt *= Clay.timescale;
+			}
+			next.step(dt);
 			if(next.complete) {
 				next_node();
 			}
@@ -99,8 +102,6 @@ class TweenSequence {
 			manager.add_sequence(this);
 		}
 
-		pause_time = 0;
-
 		started = true;
 
 		active = true;
@@ -130,18 +131,11 @@ class TweenSequence {
 
 		paused = true;
 
-		pause_time = time_based ? Clay.time : manager.time_fb;
-
 	}
 
 	public function unpause() {
 
 		paused = false;
-
-		var offset_time:Float = (time_based ? Clay.time : manager.time_fb) - pause_time;
-		if(next != null) {
-			next.offset_start_time(offset_time);
-		}
 
 	}
 

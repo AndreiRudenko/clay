@@ -4,13 +4,23 @@
 
 package clay.tween.easing;
 
+import clay.tween.TweenNode;
+
+
 class Linear {
 
 
-	public static inline function none(start:Float, delta:Float, time:Float):Float {
+    public static var none (get, never):EaseFunc;
 
-		return start + delta * time;
 
+	static function get_none():EaseFunc {
+		
+		return function(start:Float, delta:Float, t:Float) {
+
+			return start + delta * t;
+
+		};
+		
 	}
 
 

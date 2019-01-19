@@ -22,6 +22,7 @@ class EngineSignals {
 	public var tickend           	(default, null):Signal<Void->Void>;
 
 	public var update            	(default, null):Signal<Float->Void>;
+	public var fixedupdate            	(default, null):Signal<Float->Void>;
 
 	public var keydown         	    (default, null):Signal<KeyEvent->Void>;
 	public var keyup           	    (default, null):Signal<KeyEvent->Void>;
@@ -73,6 +74,7 @@ class EngineSignals {
 		tickstart = new Signal();
 		tickend = new Signal();
 		update = new Signal();
+		fixedupdate = new Signal();
 		keydown = new Signal();
 		keyup = new Signal();
 		textinput = new Signal();
@@ -114,6 +116,7 @@ class EngineSignals {
 		tickstart.destroy();
 		tickend.destroy();
 		update.destroy();
+		fixedupdate.destroy();
 		keydown.destroy();
 		keyup.destroy();
 		textinput.destroy();

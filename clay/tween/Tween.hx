@@ -18,6 +18,7 @@ class Tween {
 	public var start_time(default, null):Float;
 	public var duration(default, null):Float;
 	public var duration_inv(default, null):Float;
+	public var time(default, null):Float;
 
 	var target:Dynamic;
 
@@ -29,6 +30,7 @@ class Tween {
 		active = false;
 		complete = false;
 		inited = false;
+		time = 0;
 
 		if(_duration > 0) {
 			duration = _duration;
@@ -40,19 +42,22 @@ class Tween {
 
 	}
 
-	public function step(t:Float) {
+	public function step(dt:Float) {
 
 		if(!active) {
 			return;
 		}
 
-		if (start_time + duration < t) {
-			action.sequence.next_time = start_time + duration;
+		time += dt;
+
+		if(time > duration) {
+			action.sequence.time_remains = time - duration;
+			time = duration;
 			complete = true;
 			active = false;
 			_finish();
 		} else {
-			_update_props(t);
+			_update_props();
 		}
 
 	}
@@ -65,7 +70,7 @@ class Tween {
 
 		active = true;
 		complete = false;
-		start_time = t;
+		time = t;
 
 		if(!inited) {
 			init();
@@ -100,7 +105,11 @@ class Tween {
 
 	public inline function set_prop(_name:String, _value:Float) {
 
-		Reflect.setProperty(target, _name, _value);
+		if(Reflect.hasField(target, _name)) {
+			Reflect.setField(target, _name, _value);
+		} else {
+			Reflect.setProperty(target, _name, _value);
+		}
 		
 	}
 
@@ -110,12 +119,12 @@ class Tween {
 		
 	}
 
-	inline function _update_props(t:Float) {
+	inline function _update_props() {
 
 		if(!action.node.reverse) {
-			apply((t - start_time) * duration_inv);
+			apply(time * duration_inv);
 		} else {
-			apply(1 - (t - start_time) * duration_inv);
+			apply(1 - time * duration_inv);
 		}
 		
 	}

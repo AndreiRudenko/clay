@@ -6,26 +6,45 @@
 
 
 package clay.tween.easing;
+
+import clay.tween.TweenNode;
 	
 	
 class Sine {
 	
 	
-	public static inline function easeIn(start:Float, delta:Float, t:Float):Float {
+    public static var easeIn (get, never):EaseFunc;
+    public static var easeInOut (get, never):EaseFunc;
+    public static var easeOut (get, never):EaseFunc;
+    
+
+	static function get_easeIn():EaseFunc {
 		
-		return -delta * Math.cos(t * (Math.PI / 2)) + delta + start;
+		return function(start:Float, delta:Float, t:Float) {
+
+			return -delta * Math.cos(t * (Math.PI / 2)) + delta + start;
+
+		};
 		
 	}
 	
-	public static inline function easeOut(start:Float, delta:Float, t:Float):Float {
+	static function get_easeOut():EaseFunc {
 		
-		return delta * Math.sin(t * (Math.PI / 2)) + start;
+		return function(start:Float, delta:Float, t:Float) {
+
+			return delta * Math.sin(t * (Math.PI / 2)) + start;
+
+		};
 		
 	}
 
-	public static inline function easeInOut(start:Float, delta:Float, t:Float):Float {
+	static function get_easeInOut():EaseFunc {
 		
-		return (-delta * 0.5) * (Math.cos(Math.PI * t) - 1) + start;
+		return function(start:Float, delta:Float, t:Float) {
+
+			return (-delta * 0.5) * (Math.cos(Math.PI * t) - 1) + start;
+
+		};
 		
 	}
 	

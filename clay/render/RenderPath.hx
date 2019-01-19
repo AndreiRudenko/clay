@@ -182,7 +182,6 @@ class RenderPath {
 			}
 
 			if(shader != last_shader) {
-
 				if(!draw_instanced) {
 					projection_loc = shader.getConstantLocation("mvpMatrix");
 				}

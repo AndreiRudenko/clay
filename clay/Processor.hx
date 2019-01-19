@@ -85,6 +85,7 @@ class Processor {
 	@:noCompletion function onresume() {}
 
 	@:noCompletion function update(dt:Float) {}
+	@:noCompletion function fixedupdate(rate:Float) {}
 
 	@:noCompletion function onkeydown(e:KeyEvent) {}
 	@:noCompletion function onkeyup(e:KeyEvent) {}

@@ -70,7 +70,9 @@ class Worlds {
 		}
 
 		if(_add_default_processors) {
-			_world.processors.add(new clay.processors.common.TransformProcessor(), 998);
+			_world.processors.add(new clay.processors.common.TransformProcessor(), 980);
+			_world.processors.add(new clay.processors.graphics.ParticlesProcessor(), 991);
+			_world.processors.add(new clay.processors.graphics.AnimationProcessor(), 992);
 			_world.processors.add(new clay.processors.graphics.RenderProcessor(), 999);
 		}
 
@@ -209,6 +211,16 @@ class Worlds {
 
 		for (w in active_worlds) {
 			w.update(dt);
+		}
+
+	}
+
+	inline function fixedupdate(rate:Float) {
+
+		_verboser('fixedupdate rate:${rate}');
+
+		for (w in active_worlds) {
+			w.signals.fixedupdate.emit(rate);
 		}
 
 	}

@@ -50,7 +50,7 @@ class TweenNode {
 
 	}
 
-	@:noCompletion public function step(t:Float) {
+	@:noCompletion public function step(dt:Float) {
 
 		if(!active || paused) {
 			return;
@@ -62,7 +62,7 @@ class TweenNode {
 			if(_onupdate != null) {
 				_onupdate();
 			}
-			current.step(t);
+			current.step(dt);
 			if(current.complete) {
 				next_action();
 			}
@@ -93,14 +93,10 @@ class TweenNode {
 
 	inline function set_current(_action:TweenAction) {
 
-		// if(current != null) {
-		// 	current.finish(); // onleave ?
-		// }
-
 		current = _action;
 
 		if(current != null) {
-			current.start(sequence.next_time);
+			current.start(sequence.time_remains);
 		}
 		
 	}
@@ -188,16 +184,6 @@ class TweenNode {
 
 	}
 
-	@:noCompletion public function offset_start_time(amount:Float) {
-
-		if(current != null) {
-			for (t in current.tweens) {
-				t.start_time += amount;
-			}
-		}
-
-	}
-
 	inline function _finish() {
 
 		complete = true;
@@ -230,12 +216,6 @@ class TweenNode {
 		}
 
 		set_current(a);
-
-		// if(!reverse) {
-		// 	set_current(head);
-		// } else {
-		// 	set_current(tail);
-		// }
 
 	}
 

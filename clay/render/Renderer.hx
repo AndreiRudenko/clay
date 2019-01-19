@@ -264,14 +264,6 @@ class Renderer {
 
 	}
 
-	public function update(dt:Float) {
-		
-		for (cam in cameras.active_cameras) {
-			cam.update();
-		}
-
-	}
-
 	public function process(f:Framebuffer) {
 
 		rendering = true;
@@ -284,6 +276,7 @@ class Renderer {
 		target.image.g4.clear(clear_color.to_int());
 
 		for (cam in cameras.active_cameras) {
+			cam.update();
 		    cam.prerender(target.image.g4);
 			layers.render(target.image.g4, cam);
 		    cam.postrender(target.image.g4);

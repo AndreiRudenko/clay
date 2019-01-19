@@ -7,30 +7,48 @@
 
 package clay.tween.easing;
 
+import clay.tween.TweenNode;
 
 
 class Quad {
 	
 	
-	public static inline function easeIn(start:Float, delta:Float, t:Float):Float {
-		
-		return delta * t * t + start;
-		
-	}
+    public static var easeIn (get, never):EaseFunc;
+    public static var easeInOut (get, never):EaseFunc;
+    public static var easeOut (get, never):EaseFunc;
+    
 
-	public static inline function easeOut(start:Float, delta:Float, t:Float):Float {
+	static function get_easeIn():EaseFunc {
 		
-		return -delta * t * (t - 2) + start;
+		return function(start:Float, delta:Float, t:Float) {
+
+			return delta * t * t + start;
+
+		};
 		
 	}
 	
-	public static inline function easeInOut(start:Float, delta:Float, t:Float):Float {
+	static function get_easeOut():EaseFunc {
 		
-		t *= 2;
-		if (t < 1) {
-			return delta / 2 * t * t + start;
-		}
-		return -delta / 2 * ((t - 1) * (t - 3) - 1) + start;
+		return function(start:Float, delta:Float, t:Float) {
+
+			return -delta * t * (t - 2) + start;
+
+		};
+		
+	}
+
+	static function get_easeInOut():EaseFunc {
+		
+		return function(start:Float, delta:Float, t:Float) {
+
+			t *= 2;
+			if (t < 1) {
+				return delta / 2 * t * t + start;
+			}
+			return -delta / 2 * ((t - 1) * (t - 3) - 1) + start;
+
+		};
 		
 	}
 	

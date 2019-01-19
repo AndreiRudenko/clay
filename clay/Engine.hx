@@ -59,28 +59,30 @@ class Engine {
 	public var random 	    (default, null):Random;
 	public var motion 	    (default, null):TweenManager;
 
-	public var dt 	        (get, never):Float;
-	public var time 	    (default, null):Float;
+	public var in_focus     (default, null):Bool = true;
+
+	// average delta time
+	public var dt 	        (default, null):Float = 0;
+	// frame time
+	public var frame_delta  (default, null):Float = 0;
+
+	public var time 	    (default, null):Float = 0;
 	public var timescale 	(default, set):Float = 1;
 
-	public var fixed_timestep:Bool = true;
+	// public var fixed_timestep:Bool = true;
 	public var fixed_frame_time	(default, set):Float = 1/60;
-	public var frame_max_delta 	(default, set):Float = 0.25;
 
-	// Timing information.
-	public var frame_delta (default, null):Float = 0;
-	
+	var frame_max_delta:Float = 0.25;
+	var delta_smoothing:Int = 10;
+	var delta_index:Int = 0;
+	var deltas:Array<Float>;
+
 	var fixed_overflow:Float = 0;
-	var frame_start:Float = 0;
-	var frame_start_prev:Float = 0;
-	var fixed_time_scaled:Float = 0;
-	var sim_time:Float = 0;
-	var sim_delta:Float = 0;
+	var last_time:Float = 0;
 
 	var options:ClayOptions;
 
 	var inited:Bool = false;
-	var tick_task_id:Int;
 
 	var next_queue:Array<Void->Void> = [];
 	var defer_queue:Array<Void->Void> = [];
@@ -170,7 +172,6 @@ class Engine {
 
 		#end
 
-
 	}
 
 	function init() {
@@ -178,7 +179,12 @@ class Engine {
 		_debug('init');
 
 		time = kha.System.time;
-		frame_start_prev = time;
+		last_time = time;
+
+		deltas = [];
+		for (i in 0...delta_smoothing) {
+			deltas.push(1/60);
+		}
 
 		input.init();
 		
@@ -231,7 +237,7 @@ class Engine {
 		options.title = def(_options.title, 'clay game');
 		options.width = def(_options.width, 800);
 		options.height = def(_options.height, 600);
-		options.vsync = def(_options.vsync, true);
+		options.vsync = def(_options.vsync, false);
 		options.antialiasing = def(_options.antialiasing, 1);
 		options.window = def(_options.window, {});
 		options.renderer = def(_options.renderer, {});
@@ -268,55 +274,75 @@ class Engine {
 		System.notifyOnFrames(render);
 		System.notifyOnApplicationState(foreground, resume, pause, background, null);
 
-		tick_task_id = Scheduler.addFrameTask(internal_tick, 0);
-
 		input.enable();
 
 	}
 
 	function disconnect_events() {
 
-		Scheduler.removeFrameTask(tick_task_id);
 		System.removeFramesListener(render);
 
 		input.disable();
 		
 	}
 
-	// tick
-	function internal_tick() {
+	var render_counter:Int = 0;
+	var step_counter:Int = 0;
 
-		_verboser('internal_tick');
+	function step() {
+
+		if(!in_focus) {
+			return;
+		}
 
 		tickstart();
 
 		time = kha.System.time;
+		frame_delta = time - last_time;
 
-		frame_start = time;
-		frame_delta = frame_start - frame_start_prev;
-		frame_start_prev = frame_start;
-
-		sim_delta = frame_delta * timescale;
-		if(sim_delta > frame_max_delta) {
-			sim_delta = frame_max_delta;
+		if(frame_delta > frame_max_delta) {
+			frame_delta = 1/60;
 		}
+
+		// Smooth out the delta over the previous X frames
+		deltas[delta_index] = frame_delta;
+		
+		delta_index++;
+
+		if(delta_index > delta_smoothing) {
+			delta_index = 0;
+		}
+
+		dt = 0;
+
+		for (i in 0...delta_smoothing) {
+			dt += deltas[i];
+		}
+
+		dt /= delta_smoothing;
 
 		tick();
 
-		if(fixed_timestep) {
-			fixed_overflow += sim_delta;
-			fixed_time_scaled = fixed_frame_time * timescale;
-			while(fixed_overflow >= fixed_frame_time) {
-				update(fixed_time_scaled);
-				sim_time += fixed_time_scaled;
-				fixed_overflow -= fixed_time_scaled;
-			}
-		} else {
-			update(sim_delta);
-			sim_time += sim_delta;
+		fixed_overflow += frame_delta;
+		while(fixed_overflow >= fixed_frame_time) {
+			fixedupdate(fixed_frame_time);
+			fixed_overflow -= fixed_frame_time;
 		}
 
+		update(dt);
+
+		last_time = time;
+
 		tickend();
+
+	}
+
+	function fixedupdate(rate:Float) {
+
+		_verboser('fixedupdate rate:${dt}');
+
+		signals.fixedupdate.emit(rate);
+		worlds.fixedupdate(rate);
 
 	}
 
@@ -324,13 +350,8 @@ class Engine {
 
 		_verboser('update dt:${dt}');
 
-		events.process();
-		timer.update(dt);
-		motion.step(dt);
-		draw.update();
 		signals.update.emit(dt);
 		worlds.update(dt);
-		renderer.update(dt);
 
 	}
 
@@ -349,9 +370,11 @@ class Engine {
 
 		_verboser('tick');
 		
-		timer.process(frame_start);
-		motion.tick();
-		
+		timer.update(dt);
+		events.process();
+		motion.step(dt);
+		draw.update();
+
 	}
 
 	inline function tickend() {
@@ -370,6 +393,8 @@ class Engine {
 	function render(f:Array<Framebuffer>) {
 
 		_verboser('render');
+
+		step(); // todo
 
 		prerender();
 
@@ -405,12 +430,16 @@ class Engine {
 		signals.foreground.emit();
 		worlds.foreground();
 
+		in_focus = true;
+
 	}
 
 	function background() {
 
 		signals.background.emit();
 		worlds.background();
+
+		in_focus = false;
 
 	}
 
@@ -419,6 +448,7 @@ class Engine {
 
 		signals.pause.emit();
 		worlds.pause();
+		trace('pause');
 
 	}
 
@@ -426,6 +456,7 @@ class Engine {
 
 		signals.resume.emit();
 		worlds.resume();
+		trace('resume');
 
 	}
 
@@ -622,22 +653,5 @@ class Engine {
 		return fixed_frame_time;
 		
 	}
-
-	function set_frame_max_delta(v:Float):Float {
-
-		if(v > 0) {
-			frame_max_delta = v;
-		}
-
-		return frame_max_delta;
-		
-	}
-
-	inline function get_dt():Float {
-
-		return frame_delta;
-		
-	}
-
 
 }
