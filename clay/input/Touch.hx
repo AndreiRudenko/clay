@@ -72,7 +72,7 @@ class Touch extends Input {
 		for (t in touches) {
 			t.reset();
 		}
-		count = 0;
+		// count = 0; // todo
 
 	}
 
