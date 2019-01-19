@@ -6,6 +6,7 @@ import kha.graphics4.Graphics;
 
 import clay.math.Matrix;
 import clay.math.Vector;
+import clay.math.VectorCallback;
 import clay.math.Rectangle;
 import clay.math.Mathf;
 import clay.ds.BitVector;
@@ -23,7 +24,7 @@ class Camera {
 
 
 	public var name (default, null):String;
-	public var active     	(get, set):Bool;
+	public var active (get, set):Bool;
 	public var viewport:Rectangle;
 
 	public var priority(default, null):Int;
@@ -40,6 +41,10 @@ class Camera {
 	public var zoom(default, set):Float;
 	public var pos(get, null):Vector;
 	public var rotation(get, set):Float;
+	public var size(default, null):VectorCallback;
+	public var size_mode (default, set):SizeMode;
+
+	@:noCompletion public var _size_factor:Vector;
 
 	var _active:Bool = false;
 	var visible_layers_mask:BitVector;
@@ -51,6 +56,10 @@ class Camera {
 		name = _name;
 		priority = _priority;
 		manager = _manager;
+
+		size = new VectorCallback();
+		_size_factor = new Vector(1,1);
+		size.listen(set_size);
 
 		viewport = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
 
@@ -72,6 +81,8 @@ class Camera {
 		onprerender = new Signal();
 		onpostrender = new Signal();
 
+		size_mode = SizeMode.fit;
+
 	}
 
 	function destroy() {
@@ -89,7 +100,48 @@ class Camera {
 
 	}
 
-	public function hide_layers(?layers:Array<String>) {
+	function set_size_mode( _m:SizeMode ) : SizeMode {
+
+		size_mode = _m;
+		set_size(0);
+
+		return _m;
+
+	}
+
+	function set_size(v:Float) {
+
+		if(size.x == 0 || size.y == 0) {
+			return;
+		}
+		
+		var _ratio_x = viewport.w / size.x;
+		var _ratio_y = viewport.h / size.y;
+		var _shortest = Math.max( _ratio_x, _ratio_y );
+		var _longest = Math.min( _ratio_x, _ratio_y );
+
+        switch(size_mode) {
+
+            case SizeMode.fit:{
+                _ratio_x = _ratio_y = _longest;
+            }
+
+            case SizeMode.cover: {
+                _ratio_x = _ratio_y = _shortest;
+            }
+
+            case SizeMode.contain: {
+                //use actual size
+            }
+
+        }
+
+		_size_factor.x = _ratio_x;
+		_size_factor.y = _ratio_y;
+
+	}
+
+	public function hide_layers(?layers:Array<String>):Camera {
 
 		if(layers != null) {
 			var l:Layer;
@@ -104,10 +156,12 @@ class Camera {
 		} else {
 			visible_layers_mask.disable_all();
 		}
+
+		return this;
 		
 	}
 
-	public function show_layers(?layers:Array<String>) {
+	public function show_layers(?layers:Array<String>):Camera {
 
 		if(layers != null) {			
 			var l:Layer;
@@ -122,6 +176,8 @@ class Camera {
 		} else {
 			visible_layers_mask.enable_all();
 		}
+		
+		return this;
 
 	}
 
@@ -256,14 +312,26 @@ class CameraTransform extends Transform {
 
 		var hw:Float = camera.viewport.w * 0.5;
 		var hh:Float = camera.viewport.h * 0.5;
-		var z:Float = 1/camera.zoom;
+		var corx:Float = 0;
+		var cory:Float = 0;
+
+		var zx:Float = 1 / (camera._size_factor.x * camera.zoom);
+		var zy:Float = 1 / (camera._size_factor.y * camera.zoom);
+
+		if(camera.size.x != 0 && camera.size.y != 0) {
+			hw = camera.size.x * 0.5;
+			hh = camera.size.y * 0.5;
+			corx = hw - camera.viewport.w / 2;
+			cory = hh - camera.viewport.h / 2;
+		}
 
 		local.identity()
-		.translate(pos.x, pos.y)
-		.translate(hw, hh) // translate to rotate origin
-		.rotate(Mathf.radians(-rotation)) // negative ?
-		.scale(z, z)
-		.apply(-hw, -hh); // revert rotate origin translation
+		.translate(pos.x, pos.y) // apply position
+		.translate(hw, hh) // translate to origin
+		.rotate(Mathf.radians(-rotation)) // rotate
+		.scale(zx, zy) // scale
+		.apply(-hw + corx, -hh + cory) // revert origin translation
+		;
 
 		if(parent != null) {
 			world.copy(parent.world).multiply(local); // todo: check
@@ -275,5 +343,17 @@ class CameraTransform extends Transform {
 
 	}
 
+
+}
+
+
+@:enum abstract SizeMode(Int) from Int to Int {
+
+		/** fit the size into the camera viewport (possible letter/pillar box) */
+	var fit = 0;
+		/** cover the viewport with the size (possible cropping) */
+	var cover = 1;
+		/** contain the size (stretch to fit the viewport)*/
+	var contain = 2;
 
 }
