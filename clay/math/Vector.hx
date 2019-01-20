@@ -8,6 +8,7 @@ class Vector {
     public var y(default, set):Float;
 
     public var length(get, set):Float;
+    public var lengthsq(get, never):Float;
 
 
     public function new(_x:Float = 0, _y:Float = 0) {
@@ -59,12 +60,6 @@ class Vector {
 
         return this;
         
-    }
-
-    public inline function lengthsq() {
-
-        return x * x + y * y;
-
     }
 
     public inline function add(_other:Vector) {
@@ -169,6 +164,12 @@ class Vector {
 
         return this;
         
+    }
+    
+    inline function get_lengthsq() {
+
+        return x * x + y * y;
+
     }
 
     inline function get_length() {

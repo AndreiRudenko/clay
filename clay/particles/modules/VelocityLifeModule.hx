@@ -63,7 +63,7 @@ class VelocityLifeModule extends VelocityModule {
 			velocity_delta[p.id].y = end_velocity.y - v.y;
 		}
 
-		if(velocity_delta[p.id].lengthsq() != 0) {
+		if(velocity_delta[p.id].lengthsq != 0) {
 			velocity_delta[p.id].divide_scalar(particles_data[p.id].lifetime);
 		}
 
