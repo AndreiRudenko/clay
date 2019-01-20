@@ -48,10 +48,8 @@ class Text extends Geometry {
 	var size_dirty:Bool = true;
 	var font_dirty:Bool = true;
 
-
-	var _kravur:KravurImage;
-
 	var _setup:Bool = true;
+	var _kravur:KravurImage;
 
 
 	public function new(_options:TextOptions) {
@@ -240,8 +238,6 @@ class Text extends Geometry {
 			size_dirty = false;
 		}
 
-		vertices = [];
-
 		var _text = text;
 		if(text.length == 0) {
 			_text = ' ';
@@ -312,30 +308,60 @@ class Text extends Geometry {
 							_color = color;
 						}
 					}
-					var q:AlignedQuad = _kravur.getBakedQuad(quad_cache, find_index(l.charCodeAt(i)), xpos, 0);
+					var cidx = find_index(l.charCodeAt(i));
+					var q:AlignedQuad = _kravur.getBakedQuad(quad_cache, cidx, xpos, 0);
 					if (q != null) {
 						lw = q.xadvance + letter_spacing;
 
-						var t0x = q.s0 * w_ratio;
-						var t0y = q.t0 * h_ratio;
-						var t1x = q.s1 * w_ratio;
-						var t1y = q.t1 * h_ratio;
+						if(cidx > 0) { // skip space
 
-						add(new Vertex(new Vector(q.x0+xoffset, q.y1+yoffset), _color, new Vector(t0x, t1y)));
-						add(new Vertex(new Vector(q.x0+xoffset, q.y0+yoffset), _color, new Vector(t0x, t0y)));
-						add(new Vertex(new Vector(q.x1+xoffset, q.y0+yoffset), _color, new Vector(t1x, t0y)));
-						add(new Vertex(new Vector(q.x1+xoffset, q.y1+yoffset), _color, new Vector(t1x, t1y)));
+							if(vertices[n*4] == null) {
+								vertices[n*4] = new Vertex();
+								vertices[n*4+1] = new Vertex();
+								vertices[n*4+2] = new Vertex();
+								vertices[n*4+3] = new Vertex();
+							}
+
+							var t0x = q.s0 * w_ratio;
+							var t0y = q.t0 * h_ratio;
+							var t1x = q.s1 * w_ratio;
+							var t1y = q.t1 * h_ratio;
+
+							var v0 = vertices[n*4];
+							var v1 = vertices[n*4+1];
+							var v2 = vertices[n*4+2];
+							var v3 = vertices[n*4+3];
+
+							v0.pos.set(q.x0+xoffset, q.y1+yoffset);
+							v0.tcoord.set(t0x, t1y);
+							v0.color = _color;
+
+							v1.pos.set(q.x0+xoffset, q.y0+yoffset);
+							v1.tcoord.set(t0x, t0y);
+							v1.color = _color;
+
+							v2.pos.set(q.x1+xoffset, q.y0+yoffset);
+							v2.tcoord.set(t1x, t0y);
+							v2.color = _color;
+
+							v3.pos.set(q.x1+xoffset, q.y1+yoffset);
+							v3.tcoord.set(t1x, t1y);
+							v3.color = _color;
+
+							n++;
+						}
 
 						xpos += lw;
 					}
-					n++;
 				}
-				n++;
 			}
 
 			yoffset += font_heght + line_spacing;
 
 		}
+
+		vertices.splice(n*4, vertices.length);
+
 		// todo: instances
 	}
 

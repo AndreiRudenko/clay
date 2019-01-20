@@ -13,9 +13,9 @@ class Vertex {
     public var color:Color;
 
 
-    public function new(_pos:Vector, _color:Color = null, _tcoord:Vector = null) {
+    public function new(?_pos:Vector, ?_color:Color, ?_tcoord:Vector) {
         
-        pos = _pos;
+        pos = _pos == null ? new Vector() : _pos;
         color = _color == null ? new Color() : _color;
         tcoord = _tcoord == null ? new Vector() : _tcoord;
 
