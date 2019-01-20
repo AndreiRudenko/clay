@@ -1,6 +1,6 @@
 package clay.utils;
 
-#if kha_android
+#if kha_android_java
 
 /*
  * Copyright (C)2005-2018 Haxe Foundation
