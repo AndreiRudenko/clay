@@ -64,7 +64,7 @@ class ProcessorMacro {
 		var uuid:String = family_map.get(name);
 
 		if(uuid == null) {
-			uuid = 'Family_${UUID.get(++idx)}';
+			uuid = 'Family_${UUID.get(idx++)}';
 			family_map.set(name, uuid);
 		}
 
