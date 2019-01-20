@@ -6,6 +6,7 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import clay.types.macro.MacroUtils;
+// import clay.utils.UUID;
 // using StringTools;
 
 
@@ -160,7 +161,8 @@ class FamilyMacro {
 
 				var info = MacroUtils.get_path_info(types[i]);
 				var comp_type = TPath({pack: info.pack, name: info.module, sub: info.name});
-				var comp_name = info.name.substr(0, 1).toLowerCase() + info.name.substr(1); // cameCase or lowercase?
+				// var comp_name = info.name.substr(0, 1).toLowerCase() + info.name.substr(1); // cameCase or lowercase?
+				var comp_name = info.name.toLowerCase(); // cameCase or lowercase?
 				var array_name = '${comp_name}_array';
 				var comp_type_id = '${comp_name}_tid';
 
@@ -267,9 +269,11 @@ class FamilyMacro {
 				}
 			}
 
+			var uuid = ProcessorMacro.family_map.get(name);
+
 			Context.defineType({
-				pack: ['clay'],
-				name: name,
+				pack: ['clay', 'families'],
+				name: uuid,
 				pos: pos,
 				meta: [],
 				kind: TDClass({
@@ -284,7 +288,7 @@ class FamilyMacro {
 
 		}
 
-		return Context.getType('clay.$name');
+		return Context.getType('clay.families.${ProcessorMacro.family_map.get(name)}');
 
 	}
 

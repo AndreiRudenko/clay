@@ -99,10 +99,10 @@ class BunniesTestProcessor extends clay.Processor {
 		var av:AngularVelocity;
 
 		for (e in bunnies_family) {
-			q = bunnies_family.get_quadGeometry(e);
+			q = bunnies_family.get_quadgeometry(e);
 			t = bunnies_family.get_transform(e);
 			v = bunnies_family.get_velocity(e);
-			av = bunnies_family.get_angularVelocity(e);
+			av = bunnies_family.get_angularvelocity(e);
 
 			t.pos.x += v.x * dt;
 			v.y += gravity * dt;

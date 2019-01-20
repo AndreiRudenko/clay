@@ -127,21 +127,21 @@ class RenderProcessor extends Processor {
 
 	function quad_added(e:Entity) {
 
-		var geom = quad_family.get_quadGeometry(e);
+		var geom = quad_family.get_quadgeometry(e);
 		add_geom_to_renderer(geom);
 
 	}
 	
 	function quad_removed(e:Entity) {
 
-		var geom = quad_family.get_quadGeometry(e);
+		var geom = quad_family.get_quadgeometry(e);
 		remove_geom_from_renderer(geom);
 
 	}
 
 	function qt_added(e:Entity) {
 
-		var g = qt_family.get_quadGeometry(e);
+		var g = qt_family.get_quadgeometry(e);
 		var t = qt_family.get_transform(e);
 		add_transform_to_geom(t, g);
 
@@ -149,7 +149,7 @@ class RenderProcessor extends Processor {
 	
 	function qt_removed(e:Entity) {
 
-		var g = qt_family.get_quadGeometry(e);
+		var g = qt_family.get_quadgeometry(e);
 		remove_transform_from_geom(g);
 
 	}
@@ -159,21 +159,21 @@ class RenderProcessor extends Processor {
 
 	function quadpack_added(e:Entity) {
 
-		var geom = quadpack_family.get_quadPack(e);
+		var geom = quadpack_family.get_quadpack(e);
 		add_geom_to_renderer(geom);
 
 	}
 	
 	function quadpack_removed(e:Entity) {
 
-		var geom = quadpack_family.get_quadPack(e);
+		var geom = quadpack_family.get_quadpack(e);
 		remove_geom_from_renderer(geom);
 
 	}
 
 	function qpt_added(e:Entity) {
 
-		var g = qpt_family.get_quadPack(e);
+		var g = qpt_family.get_quadpack(e);
 		var t = qpt_family.get_transform(e);
 		add_transform_to_geom(t, g);
 
@@ -181,7 +181,7 @@ class RenderProcessor extends Processor {
 	
 	function qpt_removed(e:Entity) {
 
-		var g = qpt_family.get_quadPack(e);
+		var g = qpt_family.get_quadpack(e);
 		remove_transform_from_geom(g);
 
 	}
@@ -191,21 +191,21 @@ class RenderProcessor extends Processor {
 
 	function ns_added(e:Entity) {
 
-		var g = ns_family.get_nineSlice(e);
+		var g = ns_family.get_nineslice(e);
 		add_geom_to_renderer(g);
 
 	}
 	
 	function ns_removed(e:Entity) {
 
-		var g = ns_family.get_nineSlice(e);
+		var g = ns_family.get_nineslice(e);
 		remove_geom_from_renderer(g);
 
 	}
 
 	function nst_added(e:Entity) {
 
-		var g = nst_family.get_nineSlice(e);
+		var g = nst_family.get_nineslice(e);
 		var t = nst_family.get_transform(e);
 		add_transform_to_geom(t, g);
 
@@ -213,7 +213,7 @@ class RenderProcessor extends Processor {
 	
 	function nst_removed(e:Entity) {
 
-		var g = nst_family.get_nineSlice(e);
+		var g = nst_family.get_nineslice(e);
 		remove_transform_from_geom(g);
 
 	}
@@ -254,14 +254,14 @@ class RenderProcessor extends Processor {
 	
 	function lg_added(e:Entity) {
 
-		var g = lg_family.get_lineGeometry(e);
+		var g = lg_family.get_linegeometry(e);
 		add_geom_to_renderer(g);
 
 	}
 	
 	function lg_removed(e:Entity) {
 
-		var g = lg_family.get_lineGeometry(e);
+		var g = lg_family.get_linegeometry(e);
 		remove_geom_from_renderer(g);
 
 	}

@@ -42,7 +42,7 @@ class ParticlesProcessor extends Processor {
 
 		_debug('pst_added $e');
 
-		var ps = pst_family.get_particleSystem(e);
+		var ps = pst_family.get_particlesystem(e);
 		var t = pst_family.get_transform(e);
 		ps.pos.copy_from(t.pos);
 
@@ -51,7 +51,7 @@ class ParticlesProcessor extends Processor {
 	function pst_removed(e:Entity) {
 
 		_debug('pst_removed $e');
-		var ps = pst_family.get_particleSystem(e);
+		var ps = pst_family.get_particlesystem(e);
 		ps.stop(true);
 
 	}
@@ -61,13 +61,13 @@ class ParticlesProcessor extends Processor {
 		var ps:ParticleSystem = null;
 		var t:Transform = null;
 		for (e in pst_family) {	
-			ps = pst_family.get_particleSystem(e);
+			ps = pst_family.get_particlesystem(e);
 			t = pst_family.get_transform(e);
 			ps.pos.copy_from(t.pos);
 		}
 		
 		for (e in ps_family) {	
-			ps = ps_family.get_particleSystem(e);
+			ps = ps_family.get_particlesystem(e);
 			ps.update(dt);
 		}
 

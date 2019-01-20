@@ -7,19 +7,22 @@ import haxe.macro.Expr;
 import haxe.macro.ExprTools;
 import haxe.macro.Type;
 import clay.types.macro.MacroUtils;
+import clay.utils.UUID;
 
 
 class ProcessorMacro {
 
+	public static var family_map:Map<String, String> = new Map();
 
 	static var onadded_field:Field;
 	static var onremoved_field:Field;
 	static var listen_field:Field;
 	static var unlisten_field:Field;
 	static var init_field:Field;
+	static var idx:Int = 0;
 
 
-	static function get_family_name(params:Array<TypeParam>):String {
+	public static function get_family_name(params:Array<TypeParam>):String {
 
 	    var include_comps = [];
 		var exclude_comps = [];
@@ -58,7 +61,14 @@ class ProcessorMacro {
 		}
 		var name = 'Family_${types_string}${exclude_types_string}${one_types_string}';
 
-		return name;
+		var uuid:String = family_map.get(name);
+
+		if(uuid == null) {
+			uuid = 'Family_${UUID.get(++idx)}';
+			family_map.set(name, uuid);
+		}
+
+		return uuid;
 
 	}
 
@@ -279,7 +289,7 @@ class ProcessorMacro {
 					case EBlock(exprs):{
 						for(i in 0...inject_ftypes.length) {
 							var f = inject_ffields[i];
-							var expr = Context.parse('${f.name} = world.families.get(clay.${inject_ftypes[i]})', onadded_field.pos);
+							var expr = Context.parse('${f.name} = world.families.get(clay.families.${inject_ftypes[i]})', onadded_field.pos);
 							exprs.insert(i, expr);
 						}
 						for(i in 0...inject_ctypes.length) {

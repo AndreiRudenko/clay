@@ -37,7 +37,7 @@ class FPSProcessor extends clay.Processor {
 
 		for (e in fps_family) {
 			t = fps_family.get_text(e);
-			fps = fps_family.get_fPS(e);
+			fps = fps_family.get_fps(e);
 			fps.value = Math.round(1/dt_average);
 			t.text = 'FPS:${fps.value}';
 		}

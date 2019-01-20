@@ -36,7 +36,7 @@ class AnimationProcessor extends Processor {
 	function a_added(e:Entity) {
 
 		var a = aq_family.get_animation(e);
-		a.geometry = aq_family.get_quadGeometry(e);
+		a.geometry = aq_family.get_quadgeometry(e);
 		a.init();
 
 	}
@@ -71,7 +71,7 @@ class AnimationProcessor extends Processor {
 		for (e in aq_family) {	
 			
 			a = aq_family.get_animation(e);
-			q = aq_family.get_quadGeometry(e);
+			q = aq_family.get_quadgeometry(e);
 
 			if(!a.active || a.paused || a.current == null) {
 				continue;
