@@ -3,9 +3,11 @@ package clay.core.ecs;
 
 import clay.Entity;
 import clay.Family;
-import clay.ds.BitVector;
 import clay.World;
 import clay.core.ecs.Components;
+// import clay.types.macro.MacroUtils;
+
+import clay.ds.BitVector;
 
 
 @:access(clay.core.ecs.Components, clay.FamilyData)
@@ -30,37 +32,43 @@ class Families {
 		changed = [];
 
 	}
+	
+	public function get<T:FamilyData>(family_class:Class<T>):T {
 
-	@:noCompletion public function get<T:FamilyData>(_family_class:Class<T>):T {
-
-		var _class_name = Type.getClassName(_family_class);
-		var _family:T = null;
+		var class_name = Type.getClassName(family_class);
+		var family:T = null;
 
 		for (f in families) {
-			if(f.name == _class_name) {
-				_family = cast f;
+			if(f.name == class_name) {
+				family = cast f;
 				break;
 			}
 		}
 
-		if(_family == null) {
-			_family = Type.createEmptyInstance(_family_class);
-			_family.setup(world);
-			if(inited) {
-				_family.init();
-			}
-			families.push(_family);
-		}
+		return family;
 
-		return _family;
-		
+	}
+
+	public function add<T:FamilyData>(family:T):T {
+
+		family.setup(world);
+		if(inited) {
+			family.init();
+		}
+		families.push(family);
+
+		return family;
+
 	}
 	
+
 	public function update() {
 		
 		if(changed.length > 0) {
 			for (e in changed) {
-				check_entity(e);
+				for (f in families) {
+					f.check(e);
+				}
 				changed_mask.disable(e.id);
 			}
 			changed.splice(0, changed.length);
@@ -68,11 +76,12 @@ class Families {
 		
 	}
 
-		/** check entity if it match families */
-	public function check_entity(e:Entity) {
+	@:allow(clay.core.ecs.Components)
+	function mark_check_entity(e:Entity) {
 		
-		for (f in families) {
-			f.check(e);
+		if(!changed_mask.get(e.id)) {
+			changed.push(e);
+			changed_mask.enable(e.id);
 		}
 
 	}
@@ -91,15 +100,6 @@ class Families {
 		}
 		inited = true;
 		
-	}
-
-	@:noCompletion public function check_entity_delayed(e:Entity) {
-
-		if(!changed_mask.get(e.id)) {
-			changed.push(e);
-			changed_mask.enable(e.id);
-		}
-
 	}
 
 	@:noCompletion public function toString() {

@@ -69,10 +69,14 @@ class Touch extends Input {
 
 	function reset() {
 
+		#if use_touch_input
+		
 		for (t in touches) {
 			t.reset();
 		}
-		// count = 0; // todo
+		// count = 0; // todo: check this
+
+		#end
 
 	}
 
@@ -89,7 +93,7 @@ class Touch extends Input {
 		t.down = true;
 		t.set(_x, _y, 0, 0, TouchEventState.down);
 
-		engine.touchdown(t);
+		engine.signals.touchdown.emit(t);
 
 	}
 
@@ -105,7 +109,7 @@ class Touch extends Input {
 		t.down = false;
 		t.set(_x, _y, 0, 0, TouchEventState.up);
 
-		engine.touchup(t);
+		engine.signals.touchup.emit(t);
 
 	}
 
@@ -116,7 +120,7 @@ class Touch extends Input {
 		var t = touches[_id];
 		t.set(_x, _y, _x-t.x, _y-t.y, TouchEventState.move);
 
-		engine.touchmove(t);
+		engine.signals.touchmove.emit(t);
 
 	}
 

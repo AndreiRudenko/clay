@@ -8,50 +8,71 @@ import clay.math.Mathf;
 import clay.utils.Log.*;
 import kha.arrays.Float32Array;
 import clay.audio.AudioEffect;
+import clay.utils.ArrayTools;
 
 
 class AudioGroup extends AudioChannel {
 
 
-	var cache: Float32Array;
+	var _cache: Float32Array;
 
+	@:noCompletion public var childs:Array<AudioChannel>;
+	var _to_remove:Array<AudioChannel>;
 
 	public function new() {
 
 		super();
 
-		cache = new Float32Array(512);
-		output = Clay.audio;
+		_cache = new Float32Array(512);
+		// output = Clay.audio;
+
+		childs = [];
+		_to_remove = [];
 
 	}
 
-	override function process(data: Float32Array, samples: Int) {
+	public inline function add(channel:AudioChannel) {
+		
+		childs.push(channel);
+
+	}
+
+	public inline function remove(channel:AudioChannel) {
+
+		_to_remove.push(channel);
+
+	}
+
+	override function process(data:Float32Array, samples:Int) {
 	    
-		if (cache.length < samples) {
-			cache = new Float32Array(samples);
+		if (_cache.length < samples) {
+			_cache = new Float32Array(samples);
 		}
 
 		for (i in 0...samples) {
-			cache[i] = 0;
+			_cache[i] = 0;
 		}
 
 		if(mute) {
 			return;
 		}
 
-		var ch:AudioChannel = childs.head;
-		var n:AudioChannel;
-		while (ch != null) {
-			n = ch.next;
-			ch.process(cache, samples);
-			ch = n;
+		for (ch in childs) {
+			ch.process(_cache, samples);
 		}
-		
-		process_effects(cache, samples);
+
+		if(_to_remove.length > 0) {
+			for (c in _to_remove) {
+				childs.remove(c);
+			}
+			ArrayTools.clear(_to_remove);
+		}
+
+		process_effects(_cache, samples);
 
 		for (i in 0...Std.int(samples/2)) {
-			data[i*2] += cache[i*2] * volume * l;
-			data[i*2+1] += cache[i*2+1] * volume * r;
+			data[i*2] += _cache[i*2] * volume * l;
+			data[i*2+1] += _cache[i*2+1] * volume * r;
 		}
 
 	}

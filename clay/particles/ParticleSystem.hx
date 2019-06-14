@@ -1,20 +1,17 @@
 package clay.particles;
 
 
-import clay.particles.render.Renderer;
-import clay.render.Layer;
-
 import clay.particles.ParticleEmitter;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
 import clay.particles.core.Particle;
+import clay.render.DisplayObject;
+import clay.render.RenderPath;
+import clay.render.Camera;
 import clay.math.Vector;
 
+
 @:access(clay.particles.ParticleEmitter)
-class ParticleSystem {
-
-
-	public static var renderer:Renderer;
+class ParticleSystem extends DisplayObject {
 
 
 		/** if the system is active, it will update */
@@ -30,53 +27,41 @@ class ParticleSystem {
 		/** the system emitters */
 	public var emitters(default, null):Array<ParticleEmitter>;
 
-		/** the system z-ordering depth, used in some renderers */
-	public var depth(default, set):Float;
-		/** the system layer */
-	public var layer(get, set):Layer;
-	var _layer:Layer;
-
 		/** the system active emitters */
 	var active_emitters:Int = 0;
 
 
-	public function new(?options:ParticleSystemOptions) {
+	public function new(options:ParticleSystemOptions) {
+
+		super(options);
 
 		active = true;
 		pos = new Vector();
 		emitters = [];
 
-		depth = 0;
-		_layer = Clay.renderer.layer;
+		if(options.active != null) {
+			active = options.active;
+		}
 
-		if(options != null) {
+		if(options.pos != null) {
+			pos = options.pos;
+		}
 
-			if(options.active != null) {
-				active = options.active;
-			}
-
-			if(options.pos != null) {
-				pos = options.pos;
-			}
-
-			if(options.emitters != null) {
-				emitters = options.emitters;
-			}
-
-			if(options.depth != null) {
-				depth = options.depth;
-			}
-
-			if(options.layer != null) {
-				_layer = options.layer;
-			}
-			
+		if(options.emitters != null) {
+			emitters = options.emitters;
 		}
 
 		_init();
 
 	}
 
+	override function render(r:RenderPath, c:Camera) {
+
+		r.set_object_renderer(r.particles_renderer);
+		r.particles_renderer.render(this);
+		
+	}
+	
 		/** add emitter to the system */
 	public function add(_emitter:ParticleEmitter):ParticleSystem {
 
@@ -205,49 +190,18 @@ class ParticleSystem {
 
 	}
 
-	function set_depth(v:Float):Float {
-
-		depth = v;
-		
-		for (e in emitters) {
-			e.renderer.ondepth(depth);
-		}
-
-		return v;
-
-	}
-
-	inline function get_layer():Layer {
-
-		return _layer;
-
-	}
-
-	function set_layer(v:Layer):Layer {
-
-		_layer = v;
-		
-		for (e in emitters) {
-			e.renderer.onlayer(_layer);
-		}
-
-		return v;
-
-	}
-
 
 }
 
 
 typedef ParticleSystemOptions = {
 
+	>DisplayObjectOptions,
+
 	@:optional var active:Bool;
 	@:optional var pos:Vector;
 
 	@:optional var emitters:Array<ParticleEmitter>;
-
-	@:optional var depth:Float;
-	@:optional var layer:Layer;
 
 }
 

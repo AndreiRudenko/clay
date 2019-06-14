@@ -6,6 +6,9 @@ import clay.math.Vector;
 import clay.math.Matrix;
 import clay.math.Rectangle;
 import clay.data.Color;
+import clay.render.RenderPath;
+import clay.render.Camera;
+import clay.render.GeometryType;
 import clay.render.Vertex;
 import clay.resources.FontResource;
 import clay.resources.Texture;
@@ -22,41 +25,48 @@ class QuadPack extends Geometry {
 	var _quad_id:Int = 0;
 
 
-	public function new(_options:QuadPackOptions) {
+	public function new(options:QuadPackOptions) {
 
-		super(_options);
+		super(options);
+
+		sort_key.geomtype = GeometryType.quadpack;
 
 		quads = new Map();
 
-		set_geometry_type(GeometryType.quad);
+	}
+
+	override function render_geometry(r:RenderPath, c:Camera) {
+
+		r.set_object_renderer(r.quadpack_renderer);
+		r.quadpack_renderer.render(this);
 
 	}
 	
-	public function quad_add( _options:PackedQuadOptions ):Int {
+	public function quad_add(options:PackedQuadOptions):Int {
 
-		def(_options.visible, true);
-		def(_options.flipx, false);
-		def(_options.flipy, false);
+		def(options.visible, true);
+		def(options.flipx, false);
+		def(options.flipy, false);
 
 		var _id = _quad_id++;
 
-		var vert0 = new Vertex( new Vector( _options.x, _options.y ), _options.color);
-		var vert1 = new Vertex( new Vector( _options.x + _options.w, _options.y ), _options.color);
-		var vert2 = new Vertex( new Vector( _options.x + _options.w, _options.y + _options.h ), _options.color);
-		var vert3 = new Vertex( new Vector( _options.x, _options.y + _options.h ), _options.color);
+		var vert0 = new Vertex(new Vector(options.x, options.y), options.color);
+		var vert1 = new Vertex(new Vector(options.x + options.w, options.y), options.color);
+		var vert2 = new Vertex(new Vector(options.x + options.w, options.y + options.h), options.color);
+		var vert3 = new Vertex(new Vector(options.x, options.y + options.h), options.color);
 
-		add( vert0 );
-		add( vert1 );
-		add( vert2 );
-		add( vert3 );
+		add(vert0);
+		add(vert1);
+		add(vert2);
+		add(vert3);
 
 		var _quad:PackedQuad = new PackedQuad();
 
 		_quad.uid = _id;
 		_quad.verts = [];
-		_quad.flipx = _options.flipx;
-		_quad.flipy = _options.flipx;
-		_quad.visible = _options.visible;
+		_quad.flipx = options.flipx;
+		_quad.flipy = options.flipx;
+		_quad.visible = options.visible;
 		_quad._uv_cache = new Rectangle(0,0,1,1);
 
 		_quad.verts.push( vert0 );
@@ -66,8 +76,8 @@ class QuadPack extends Geometry {
 
 		quads.set(_id, _quad);
 
-		if(_options.uv != null) {
-			quad_uv(_id, _options.uv);
+		if(options.uv != null) {
+			quad_uv(_id, options.uv);
 		}
 
 		return _id;
@@ -80,20 +90,20 @@ class QuadPack extends Geometry {
 
 		if(_quad != null) {
 
-			remove( _quad.verts[0] );
-			remove( _quad.verts[1] );
-			remove( _quad.verts[2] );
-			remove( _quad.verts[3] );
+			remove(_quad.verts[0]);
+			remove(_quad.verts[1]);
+			remove(_quad.verts[2]);
+			remove(_quad.verts[3]);
 
-			quads.remove( _quad_id );
+			quads.remove(_quad_id);
 
 		}
 
 	}
 
-	public function quad_visible( _quad_id:Int, visible:Bool ) {
+	public function quad_visible(_quad_id:Int, visible:Bool) {
 
-		var _quad = quads.get( _quad_id );
+		var _quad = quads.get(_quad_id);
 
 		if(_quad != null) {
 
@@ -297,6 +307,7 @@ class QuadPack extends Geometry {
         }
 
     }
+
 
 }
 

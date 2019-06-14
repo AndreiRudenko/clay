@@ -170,7 +170,6 @@ class EntityVectorIterator {
 
 	public inline function hasNext():Bool {
 
-		// todo check for active ?
 		return index != end;
 
 	}

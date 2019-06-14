@@ -1,38 +1,26 @@
-package clay.render;
+package clay.render.renderers;
 
-
-import kha.graphics4.Graphics;
-
-import clay.render.Camera;
-import clay.resources.Texture;
-import clay.components.graphics.Geometry;
-import clay.render.Shader;
-import clay.render.types.BlendMode;
-import clay.render.types.BlendEquation;
-import clay.math.Matrix;
-import clay.math.Rectangle;
-import clay.math.Mathf;
-import clay.utils.Log.*;
-
+import clay.Clay;
 
 class ObjectRenderer {
 
 
-	public function new() {}
+	var renderpath:RenderPath;
 
 
-	public function onenter(l:Layer, g:Graphics, cam:Camera) {
-		
-	}
+	public function new(renderpath:RenderPath) {
 
-	public function onleave(l:Layer, g:Graphics) {
+		this.renderpath = renderpath;
 
 	}
 
-	public function batch(g:Graphics, geom:Geometry) {
-		
+	public function start() {
 
 	}
-	
+
+	public function end() {
+
+	}
+
 
 }

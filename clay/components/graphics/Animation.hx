@@ -350,7 +350,7 @@ class AnimationData {
 	@:noCompletion public var _loop:Int;
 	@:noCompletion public var _oncomplete:Void->Void;
 
-	var last_frame:Int;
+	var _last_frame:Int;
 
 
 	public function new(_anim:Animation, _name:String, ?_frames:Array<Int>) {
@@ -358,7 +358,7 @@ class AnimationData {
 		anim = _anim;
 		name = _name;
 		frameset = [];
-		last_frame = 0;
+		_last_frame = 0;
 		_loop = 0;
 		speed = 1;
 		frame = 0;
@@ -376,7 +376,7 @@ class AnimationData {
 			for (f in _frames) {
 				frameset.push(create_frame(f));
 			}
-			last_frame = _frames[_frames.length-1];
+			_last_frame = _frames[_frames.length-1];
 		}
 
 		return this;
@@ -397,7 +397,7 @@ class AnimationData {
 			frameset.push(create_frame(i));
 		}
 
-		last_frame = max;
+		_last_frame = max;
 
 		return this;
 		
@@ -412,7 +412,7 @@ class AnimationData {
 	public function hold(_f:Int):AnimationData {
 
 		for (i in 0..._f) {
-			frameset.push(create_frame(last_frame));
+			frameset.push(create_frame(_last_frame));
 		}
 
 		return this;

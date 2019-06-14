@@ -119,6 +119,13 @@ class Processor {
 	@:noCompletion function __listen_emitter() {}
 	@:noCompletion function __unlisten_emitter() {}
 
+	@:noCompletion function __update(dt:Float) {
+
+		update(dt);
+		world.update();
+
+	}
+
 	@:noCompletion inline function get_priority():Int {
 
 		return _priority;

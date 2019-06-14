@@ -10,7 +10,6 @@ import clay.utils.Bits;
 @:access(clay.Engine)
 class Mouse extends Input {
 
-	// todo: Vector?
 	public var x(default, null):Int = 0;
 	public var y(default, null):Int = 0;
 
@@ -134,9 +133,12 @@ class Mouse extends Input {
 
 	function reset() {
 
+		#if use_mouse_input
+		
 		buttons_pressed = 0;
 		buttons_released = 0;
 
+		#end
 	}
 
 	function onpressed(_button:Int, _x:Int, _y:Int) {
@@ -153,7 +155,7 @@ class Mouse extends Input {
 
 		check_binding(_button, true);
 
-		engine.mousedown(mouse_event);
+		engine.signals.mousedown.emit(mouse_event);
 
 	}
 
@@ -172,7 +174,7 @@ class Mouse extends Input {
 
 		check_binding(_button, false);
 
-		engine.mouseup(mouse_event);
+		engine.signals.mouseup.emit(mouse_event);
 
 	}
 
@@ -184,7 +186,7 @@ class Mouse extends Input {
 
 		check_binding(MouseButton.none, false); // todo: check this
 
-		engine.mousewheel(mouse_event);
+		engine.signals.mousewheel.emit(mouse_event);
 
 	}
 
@@ -197,7 +199,7 @@ class Mouse extends Input {
 
 		mouse_event.set(x, y, _x_rel, _y_rel, 0, MouseEventState.up, MouseButton.none);
 
-		engine.mousemove(mouse_event);
+		engine.signals.mousemove.emit(mouse_event);
 
 	}
 

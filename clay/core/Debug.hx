@@ -6,14 +6,18 @@ import clay.World;
 import clay.math.Vector;
 import clay.utils.Log.*;
 
-import clay.processors.debug.Inspector;
 import clay.processors.debug.DebugView;
-import clay.render.Layer;
 
+#if !no_debug_console
+import clay.processors.debug.Inspector;
+import clay.processors.debug.ProfilerDebugView;
+import clay.render.Layer;
+#end
 
 @:allow(clay.Engine)
 class Debug {
 
+	#if !no_debug_console
 	public static var trace_callbacks : Array<Dynamic->?haxe.PosInfos->Void> = [];
 
 	static var shut_down:Bool = false;
@@ -43,20 +47,21 @@ class Debug {
 
 	}
 
-
 	public var views:Array<DebugView>;
 	public var inspector:Inspector;
+	public var profiller:ProfilerDebugView;
 	public var padding:Vector;
     public var margin:Float = 32;
 
 	@:noCompletion public var current_view:DebugView;
 
 	public var layer(default, null):Layer;
+	public var world(default, null):World;
 	var engine:Engine;
-	var world:World;
+	#end
 
-	var current_view_index = 0;
-	var last_view_index = 0;
+	// var current_view_index = 0;
+	// var last_view_index = 0;
 
 	function new(_engine:Engine) {
 
@@ -71,6 +76,8 @@ class Debug {
 
 		#if !no_debug_console
 
+		_view.index = views.length;
+		inspector.add_tab(_view.debug_name);
 		views.push(_view);
 		world.processors.add(_view, null, false);
 
@@ -93,25 +100,30 @@ class Debug {
 
 	}
 
-	@:noCompletion public function switch_view(_next:Bool = true) {
+	@:noCompletion public function switch_view(index:Int) {
 
 		#if !no_debug_console
 
 		// log('switch_view');
 
-		last_view_index = current_view_index;
-		current_view_index = _next ? current_view_index + 1 : current_view_index - 1;
+		// current_view_index = _next ? current_view_index + 1 : current_view_index - 1;
 
-		if(current_view_index < 0) {
-			current_view_index = views.length-1;
-		} else if(current_view_index > views.length-1) {
-			current_view_index = 0;
+		if(index < 0) {
+			index = views.length-1;
+		} else if(index > views.length-1) {
+			index = 0;
 		}
 
-		views[last_view_index].disable();
-		current_view = views[current_view_index];
+		// last_view_index = index;
 
+		// views[last_view_index].disable();
+		if(current_view != null) {
+			current_view.disable();
+		}
+
+		current_view = views[index];
 		current_view.enable();
+		inspector.enable_tab(index);
 
 		#end
 
@@ -131,7 +143,7 @@ class Debug {
 		haxe_trace = haxe.Log.trace;
 		haxe.Log.trace = internal_trace;
 
-		world = engine.worlds.create('debug_world', null, true);
+		world = engine.worlds.create('debug_world', {capacity: 4096}, true);
 
 		inspector = new Inspector(this);
 
@@ -140,8 +152,13 @@ class Debug {
 		add_view(new clay.processors.debug.FamiliesDebugView(this));
 		add_view(new clay.processors.debug.ProcessorsDebugView(this));
 		add_view(new clay.processors.debug.StatsDebugView(this));
+		add_view(new clay.processors.debug.AudioDebugView(this));
+		profiller = new clay.processors.debug.ProfilerDebugView(this);
+		add_view(profiller);
 
 		current_view = views[0];
+		inspector.enable_tab(0);
+		// switch_view(0);
 
 		world.processors.add(inspector);
 
@@ -159,22 +176,29 @@ class Debug {
 
 	}
 
-	public function start(_name:String) {
+	public function start(name:String, ?max:Float) {
 
 		#if !no_debug_console
-		
+			profiller.start(name, max);
 		#end
 
 	}
 
-	public function end(_name:String) {
+	public function end(name:String) {
 
 		#if !no_debug_console
-
+			profiller.end(name);
 		#end
 		
 	}
+	
+	public function remove(name:String) {
 
+		#if !no_debug_console
+			profiller.remove(name);
+		#end
+		
+	}
 
 
 }

@@ -69,10 +69,14 @@ class Pen extends Input {
 
 	function reset() {
 
+		#if use_pen_input
+		
 		pen_pressed = false;
 		pen_released = false;
 		dx = 0;
 		dy = 0;
+
+		#end
 
 	}
 
@@ -90,7 +94,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, 0, 0, PenEventState.down, pressure);
 
-		engine.pendown(pen_event);
+		engine.signals.pendown.emit(pen_event);
 
 	}
 
@@ -108,7 +112,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, 0, 0, PenEventState.up, pressure);
 
-		engine.penup(pen_event);
+		engine.signals.penup.emit(pen_event);
 
 	}
 
@@ -124,7 +128,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, dx, dy, PenEventState.move, pressure);
 
-		engine.penmove(pen_event);
+		engine.signals.penmove.emit(pen_event);
 
 	}
 

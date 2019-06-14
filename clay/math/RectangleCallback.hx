@@ -29,7 +29,7 @@ class RectangleCallback extends Rectangle {
 		
 	}
 
-	override inline function set_x(v:Float):Float {
+	override function set_x(v:Float):Float {
 
 		super.set_x(v);
 
@@ -41,7 +41,7 @@ class RectangleCallback extends Rectangle {
 
 	}
 
-	override inline function set_y(v:Float):Float {
+	override function set_y(v:Float):Float {
 
 		super.set_y(v);
 
@@ -53,7 +53,7 @@ class RectangleCallback extends Rectangle {
 
 	}
 
-	override inline function set_w(v:Float):Float {
+	override function set_w(v:Float):Float {
 
 		super.set_w(v);
 
@@ -65,7 +65,7 @@ class RectangleCallback extends Rectangle {
 
 	}
 
-	override inline function set_h(v:Float):Float {
+	override function set_h(v:Float):Float {
 
 		super.set_h(v);
 

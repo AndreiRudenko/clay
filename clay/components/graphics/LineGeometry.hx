@@ -5,6 +5,10 @@ import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.data.Color;
 import clay.render.Vertex;
+import clay.render.GeometryType;
+import clay.render.RenderPath;
+import clay.render.GeometryType;
+import clay.render.Camera;
 import clay.components.graphics.Geometry;
 import clay.utils.Log.*;
 
@@ -24,22 +28,22 @@ class LineGeometry extends Geometry {
 	var _tmp:Vector;
 
 
-	public function new(_options:LineGeometryOptions) {
+	public function new(options:LineGeometryOptions) {
 
-		_options.indices = [0,1,2,0,2,3];
+		super(options);
 
-		super(_options);
+		sort_key.geomtype = GeometryType.quad;
 
 		p0 = new VectorCallback();
 		p1 = new VectorCallback();
 		_tmp = new Vector();
 
-		if(_options.p0 != null) {
-			p0.copy_from(_options.p0);
+		if(options.p0 != null) {
+			p0.copy_from(options.p0);
 		}
 
-		if(_options.p1 != null) {
-			p1.copy_from(_options.p1);
+		if(options.p1 != null) {
+			p1.copy_from(options.p1);
 		}
 
 		p0.listen(update_line_geom);
@@ -50,12 +54,18 @@ class LineGeometry extends Geometry {
 		add(new Vertex(new Vector(), null, new Vector(1,1)));
 		add(new Vertex(new Vector(), null, new Vector(0,1)));
 
-		set_geometry_type(GeometryType.polygon);
+		color0 = def(options.color0, new Color());
+		color1 = def(options.color1, new Color());
 
-		color0 = def(_options.color0, new Color());
-		color1 = def(_options.color1, new Color());
+		strength = def(options.strength, 1);
 
-		strength = def(_options.strength, 1);
+
+	}
+
+	override function render_geometry(r:RenderPath, c:Camera) {
+
+		r.set_object_renderer(r.quad_renderer);
+		r.quad_renderer.render(this);
 
 	}
 
@@ -99,7 +109,6 @@ class LineGeometry extends Geometry {
 		}
 
 		update_line_geom(0);
-
 
 		return p1;
 

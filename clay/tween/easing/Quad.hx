@@ -1,55 +1,25 @@
-/**
- * @author Joshua Granick
- * @author Andreas Rønning
- * @author Robert Penner / http://www.robertpenner.com/easing_terms_of_use.html
- */
-
-
 package clay.tween.easing;
-
-import clay.tween.TweenNode;
 
 
 class Quad {
 	
 	
-    public static var easeIn (get, never):EaseFunc;
-    public static var easeInOut (get, never):EaseFunc;
-    public static var easeOut (get, never):EaseFunc;
-    
+	public static inline function easeIn(t:Float):Float {
 
-	static function get_easeIn():EaseFunc {
-		
-		return function(start:Float, delta:Float, t:Float) {
+		return t * t;
 
-			return delta * t * t + start;
-
-		};
-		
 	}
 	
-	static function get_easeOut():EaseFunc {
-		
-		return function(start:Float, delta:Float, t:Float) {
+	public static inline function easeOut(t:Float):Float {
 
-			return -delta * t * (t - 2) + start;
+		return -t * (t - 2);
 
-		};
-		
 	}
 
-	static function get_easeInOut():EaseFunc {
-		
-		return function(start:Float, delta:Float, t:Float) {
+	public static inline function easeInOut(t:Float):Float {
 
-			t *= 2;
-			if (t < 1) {
-				return delta / 2 * t * t + start;
-			}
-			return -delta / 2 * ((t - 1) * (t - 3) - 1) + start;
+		return t <= 0.5 ? t * t * 2 : 1 - (--t) * t * 2;
 
-		};
-		
 	}
 	
 	

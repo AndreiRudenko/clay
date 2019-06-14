@@ -413,9 +413,6 @@ commands_Build.prototype = $extend(Command.prototype,{
 				args.push(compiler.ffmpeg);
 			}
 		}
-		if(config.onlydata) {
-			args.push("--onlydata");
-		}
 		if(config.compile) {
 			args.push("--compile");
 		}

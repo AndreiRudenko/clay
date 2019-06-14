@@ -10,6 +10,7 @@ class DebugView extends Processor {
 
 
     public var debug_name:String;
+    public var index:Int;
     var debug:Debug;
 
 

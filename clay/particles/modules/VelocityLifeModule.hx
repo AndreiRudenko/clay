@@ -1,10 +1,10 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
 import clay.particles.components.Velocity;
+import clay.particles.components.VelocityDelta;
 import clay.particles.modules.VelocityModule;
 import clay.math.Vector;
 
@@ -17,15 +17,12 @@ class VelocityLifeModule extends VelocityModule {
 	public var end_velocity(default, null):Vector;
 	public var end_velocity_max:Vector;
 
-	var velocity_delta:Array<Vector>;
-	var particles_data:Array<ParticleData>;
+	var velocity_delta:Components<VelocityDelta>;
 
 
 	public function new(_options:VelocityLifeModuleOptions) {
 
 		super(_options);
-
-		velocity_delta = [];
 
 		end_velocity = _options.end_velocity != null ? _options.end_velocity : new Vector();
 		end_velocity_max = _options.end_velocity_max;
@@ -36,17 +33,13 @@ class VelocityLifeModule extends VelocityModule {
 
 		super.init();
 
-		particles_data = emitter.particles_data;
-
-		for (i in 0...particles.capacity) {
-			velocity_delta[i] = new Vector();
-		}
+		velocity_delta = emitter.components.get(VelocityDelta);
 	    
 	}
 
 	override function onspawn(p:Particle) {
 
-		var v:Velocity = vel_comps.get(p);
+		var v:Velocity = vel_comps.get(p.id);
 		if(initial_velocity_max != null) {
 			v.x = emitter.random_float(initial_velocity.x, initial_velocity_max.x);
 			v.y = emitter.random_float(initial_velocity.y, initial_velocity_max.y);
@@ -56,15 +49,15 @@ class VelocityLifeModule extends VelocityModule {
 		}
 
 		if(end_velocity_max != null) {
-			velocity_delta[p.id].x = emitter.random_float(end_velocity.x, end_velocity_max.x) - v.x;
-			velocity_delta[p.id].y = emitter.random_float(end_velocity.y, end_velocity_max.y) - v.y;
+			velocity_delta.get(p.id).x = emitter.random_float(end_velocity.x, end_velocity_max.x) - v.x;
+			velocity_delta.get(p.id).y = emitter.random_float(end_velocity.y, end_velocity_max.y) - v.y;
 		} else {
-			velocity_delta[p.id].x = end_velocity.x - v.x;
-			velocity_delta[p.id].y = end_velocity.y - v.y;
+			velocity_delta.get(p.id).x = end_velocity.x - v.x;
+			velocity_delta.get(p.id).y = end_velocity.y - v.y;
 		}
 
-		if(velocity_delta[p.id].lengthsq != 0) {
-			velocity_delta[p.id].divide_scalar(particles_data[p.id].lifetime);
+		if(velocity_delta.get(p.id).lengthsq != 0) {
+			velocity_delta.get(p.id).divide_scalar(p.lifetime);
 		}
 
 	}
@@ -74,15 +67,15 @@ class VelocityLifeModule extends VelocityModule {
 		var v:Vector;
 		if(velocity_random != null) {
 			for (p in particles) {
-				v = vel_comps.get(p);
-				v.x += velocity_delta[p.id].x * dt + velocity_random.x * emitter.random_1_to_1();
-				v.y += velocity_delta[p.id].y * dt + velocity_random.x * emitter.random_1_to_1();
+				v = vel_comps.get(p.id);
+				v.x += velocity_delta.get(p.id).x * dt + velocity_random.x * emitter.random_1_to_1();
+				v.y += velocity_delta.get(p.id).y * dt + velocity_random.y * emitter.random_1_to_1();
 			}
 		} else {
 			for (p in particles) {
-				v = vel_comps.get(p);
-				v.x += velocity_delta[p.id].x * dt;
-				v.y += velocity_delta[p.id].y * dt;
+				v = vel_comps.get(p.id);
+				v.x += velocity_delta.get(p.id).x * dt;
+				v.y += velocity_delta.get(p.id).y * dt;
 			}
 		}
 

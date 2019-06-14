@@ -8,6 +8,7 @@ import kha.WindowOptions;
 import kha.WindowOptions.WindowFeatures;
 
 import clay.math.Random;
+import clay.math.Mathf;
 
 import clay.components.event.Events;
 import clay.render.Camera;
@@ -18,7 +19,8 @@ import clay.core.EngineSignals;
 import clay.core.Audio;
 import clay.core.Debug;
 import clay.core.Screen;
-import clay.core.TimerSystem;
+import clay.core.Timers;
+import clay.tween.TweenManager;
 import clay.core.ecs.Worlds;
 
 import clay.input.Key;
@@ -32,7 +34,7 @@ import clay.input.Bindings;
 import clay.render.Renderer;
 import clay.render.Draw;
 
-import clay.tween.TweenManager;
+import clay.types.ClayOptions;
 
 import clay.utils.Log.*;
 
@@ -46,8 +48,7 @@ class Engine {
 	public var audio        (default, null):Audio;
 	public var debug        (default, null):Debug;
 
-	@:allow(Clay)
-	public var world 	    (default, null):World;
+	public var world:World;
 	public var worlds	    (default, null):Worlds;
 
 	public var screen	    (default, null):Screen;
@@ -55,9 +56,9 @@ class Engine {
 	public var resources	(default, null):Resources;
 	public var signals	    (default, null):EngineSignals;
 	public var events	    (default, null):Events;
-	public var timer 	    (default, null):TimerSystem;
+	public var timer 	    (default, null):Timers;
 	public var random 	    (default, null):Random;
-	public var motion 	    (default, null):TweenManager;
+	public var tween 	    (default, null):TweenManager;
 
 	public var in_focus     (default, null):Bool = true;
 
@@ -69,7 +70,6 @@ class Engine {
 	public var time 	    (default, null):Float = 0;
 	public var timescale 	(default, set):Float = 1;
 
-	// public var fixed_timestep:Bool = true;
 	public var fixed_frame_time	(default, set):Float = 1/60;
 
 	var frame_max_delta:Float = 0.25;
@@ -132,9 +132,9 @@ class Engine {
 		Clay.engine = this;
 
 		signals = new EngineSignals();
-		motion = new TweenManager();
+		tween = new TweenManager();
 		random = new Random(options.random_seed);
-		timer = new TimerSystem();
+		timer = new Timers();
 
 		renderer = new Renderer(options.renderer);
 		draw = new Draw();
@@ -148,29 +148,29 @@ class Engine {
 		worlds = new Worlds();
 		debug = new Debug(this);
 
-		#if !no_default_font
 
-		Clay.resources.load_all(
-			[
-			'assets/Montserrat-Regular.ttf',
-			'assets/Montserrat-Bold.ttf',
-			], 
-			function() {
+		if(options.no_default_font != true) {
+			
+			Clay.resources.load_all(
+				[
+				'assets/Montserrat-Regular.ttf',
+				'assets/Montserrat-Bold.ttf',
+				], 
+				function() {
 
-				init();
-				_debug('onready');
-				_onready();
+					init();
+					_debug('onready');
+					_onready();
 
-			}
-		);
+				}
+			);
 
-		#else
+		} else {
 
-		init();
-		_debug('onready');
-		_onready();
-
-		#end
+			init();
+			_debug('onready');
+			_onready();
+		}
 
 	}
 
@@ -195,11 +195,15 @@ class Engine {
 		worlds.init();
 		inited = true;
 
-		#if !no_default_world
+		if(options.no_default_world != true) {
 			world = worlds.create('default_world', { capacity: 32768, component_types: 64 }, true);
-		#end
+		}
 		
 		debug.init();
+
+		debug.start(Tag.process);
+		debug.start(Tag.update);
+		debug.start(Tag.render);
 
 	}
 
@@ -216,13 +220,16 @@ class Engine {
 		timer.destroy();
 		signals.destroy();
 
+		debug = null;
 		screen = null;
 		world = null;
 		worlds = null;
+		events = null;
 		input = null;
-		audio = null;
 		renderer = null;
-		motion = null;
+		audio = null;
+		timer = null;
+		tween = null;
 		signals = null;
 		next_queue = null;
 		defer_queue = null;
@@ -325,33 +332,15 @@ class Engine {
 
 		fixed_overflow += frame_delta;
 		while(fixed_overflow >= fixed_frame_time) {
-			fixedupdate(fixed_frame_time);
+			signals.fixedupdate.emit(fixed_frame_time);
 			fixed_overflow -= fixed_frame_time;
 		}
 
-		update(dt);
+		signals.update.emit(dt);
 
 		last_time = time;
 
 		tickend();
-
-	}
-
-	function fixedupdate(rate:Float) {
-
-		_verboser('fixedupdate rate:${dt}');
-
-		signals.fixedupdate.emit(rate);
-		worlds.fixedupdate(rate);
-
-	}
-
-	function update(dt:Float) {
-
-		_verboser('update dt:${dt}');
-
-		signals.update.emit(dt);
-		worlds.update(dt);
 
 	}
 
@@ -362,7 +351,6 @@ class Engine {
 		cycle_next_queue();
 
 		signals.tickstart.emit();
-		worlds.tickstart();
 		
 	}
 
@@ -372,7 +360,7 @@ class Engine {
 		
 		timer.update(dt);
 		events.process();
-		motion.step(dt);
+		tween.step(dt);
 		draw.update();
 
 	}
@@ -382,7 +370,6 @@ class Engine {
 		_verboser('ontickend');
 
 		signals.tickend.emit();
-		worlds.tickend();
 		input.reset();
 
 		cycle_defer_queue();
@@ -394,33 +381,24 @@ class Engine {
 
 		_verboser('render');
 
-		step(); // todo
+		debug.start(Tag.process);
 
-		prerender();
+		debug.start(Tag.update);
+		step(); // todo: move to another place?
+		debug.end(Tag.update);
 
-		signals.render.emit();
-		worlds.render();
-		renderer.process(f[0]);
-		
-		postrender();
-
-	}
-
-	inline function prerender() {
-
-		_verboser('onprerender');
+		debug.start(Tag.render);
 
 		signals.prerender.emit();
-		worlds.prerender();
 
-	}
-
-	inline function postrender() {
-
-		_verboser('onpostrender');
-
+		signals.render.emit();
+		renderer.process(f[0]);
+		
 		signals.postrender.emit();
-		worlds.postrender();
+
+		debug.end(Tag.render);
+
+		debug.end(Tag.process);
 
 	}
 
@@ -428,7 +406,6 @@ class Engine {
 	function foreground() {
 
 		signals.foreground.emit();
-		worlds.foreground();
 
 		in_focus = true;
 
@@ -437,7 +414,6 @@ class Engine {
 	function background() {
 
 		signals.background.emit();
-		worlds.background();
 
 		in_focus = false;
 
@@ -447,164 +423,12 @@ class Engine {
 	function pause() {
 
 		signals.pause.emit();
-		worlds.pause();
-		trace('pause');
 
 	}
 
 	function resume() {
 
 		signals.resume.emit();
-		worlds.resume();
-		trace('resume');
-
-	}
-
-	// inputs
-
-	// key
-	function keydown(e:KeyEvent) {
-
-		signals.keydown.emit(e);
-		worlds.keydown(e);
-		
-	}
-
-	function keyup(e:KeyEvent) {
-
-		signals.keyup.emit(e);
-		worlds.keyup(e);
-
-	}
-
-	function textinput(e:String) {
-
-		signals.textinput.emit(e);
-		worlds.textinput(e);
-
-	}
-
-	// mouse
-	function mousedown(e:MouseEvent) {
-
-		signals.mousedown.emit(e);
-		worlds.mousedown(e);
-
-	}
-
-	function mouseup(e:MouseEvent) {
-
-		signals.mouseup.emit(e);
-		worlds.mouseup(e);
-
-	}
-
-	function mousemove(e:MouseEvent) {
-
-		signals.mousemove.emit(e);
-		worlds.mousemove(e);
-
-	}
-
-	function mousewheel(e:MouseEvent) {
-
-		signals.mousewheel.emit(e);
-		worlds.mousewheel(e);
-
-	}
-
-	// gamepad
-	function gamepadadd(e:GamepadEvent) {
-
-		signals.gamepadadd.emit(e);
-		worlds.gamepadadd(e);
-
-	}
-
-	function gamepadremove(e:GamepadEvent) {
-
-		signals.gamepadremove.emit(e);
-		worlds.gamepadremove(e);
-
-	}
-
-	function gamepaddown(e:GamepadEvent) {
-
-		signals.gamepaddown.emit(e);
-		worlds.gamepaddown(e);
-
-	}
-
-	function gamepadup(e:GamepadEvent) {
-
-		signals.gamepadup.emit(e);
-		worlds.gamepadup(e);
-
-	}
-
-	function gamepadaxis(e:GamepadEvent) {
-
-		signals.gamepadaxis.emit(e);
-		worlds.gamepadaxis(e);
-
-	}
-
-	// touch
-	function touchdown(e:TouchEvent) {
-
-		signals.touchdown.emit(e);
-		worlds.touchdown(e);
-
-	}
-
-	function touchup(e:TouchEvent) {
-
-		signals.touchup.emit(e);
-		worlds.touchup(e);
-
-	}
-
-	function touchmove(e:TouchEvent) {
-
-		signals.touchmove.emit(e);
-		worlds.touchmove(e);
-
-	}
-
-	// pen
-	function pendown(e:PenEvent) {
-
-		signals.pendown.emit(e);
-		worlds.pendown(e);
-
-	}
-
-	function penup(e:PenEvent) {
-
-		signals.penup.emit(e);
-		worlds.penup(e);
-
-	}
-
-	function penmove(e:PenEvent) {
-
-		signals.penmove.emit(e);
-		worlds.penmove(e);
-
-	}
-
-	// bindings
-	function inputdown(e:InputEvent) {
-
-		signals.inputdown.emit(e);
-		worlds.inputdown(e);
-
-	}
-
-	function inputup(e:InputEvent) {
-
-		signals.inputup.emit(e);
-		worlds.inputup(e);
 
 	}
 
@@ -632,13 +456,11 @@ class Engine {
 
 	function set_timescale(v:Float):Float {
 
-		if(v < 0) {
-			v = 0;
-		}
+		v = Mathf.clamp_bottom(v, 0);
+
 		timescale = v;
 
 		signals.timescale.emit(v);
-		worlds.timescale(v);
 
 		return v;
 		
@@ -646,12 +468,24 @@ class Engine {
 
 	function set_fixed_frame_time(v:Float):Float {
 
-		if(v > 0) {
-			fixed_frame_time = v;
-		}
-
-		return fixed_frame_time;
+		return fixed_frame_time = Mathf.clamp_bottom(v, 0);
 		
 	}
 
+}
+
+@:noCompletion
+@:allow(clay.Engine)
+class Tag {
+    static var process      = 'core.process';
+    static var update       = 'core.update';
+    static var tick         = 'core.tick';
+    static var render       = 'core.render';
+    static var debug        = 'core.debug';
+    static var updates      = 'core.updates';
+    static var events       = 'core.events';
+    static var audio        = 'core.audio';
+    static var input        = 'core.input';
+    static var timer        = 'core.timer';
+    static var scene        = 'core.scene';
 }

@@ -170,9 +170,6 @@ class Build extends Command {
 
 		// args.push('--from');
 		// args.push('build');
-		if(config.onlydata) {
-			args.push('--onlydata');
-		}
 
 		if(config.compile) {
 			args.push('--compile');

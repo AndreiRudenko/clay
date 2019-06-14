@@ -3,9 +3,10 @@ package clay.core.ecs;
 
 import clay.World;
 import clay.Entity;
+import clay.core.ecs.EntityVector;
+
 import clay.ds.Int32RingBuffer;
 import clay.ds.BitVector;
-import clay.core.ecs.EntityVector;
 
 
 class Entities {
@@ -85,8 +86,6 @@ class Entities {
 			throw('entity ${e.id} destroying repeatedly / components: [${_list.join(',')}]');
 		}
 
-		world.components.clear_flags(e);
-
 		_alive_mask.disable(e.id);
 		_active_mask.disable(e.id);
 
@@ -149,7 +148,7 @@ class Entities {
 
 	}
 
-	@:noCompletion public function delayed_destroy() {
+	public function update() {
 
 		if(_destroyed_entities.length > 0) {
 			for (e in _destroyed_entities) {
@@ -162,15 +161,15 @@ class Entities {
 
 	function _destroy(e:Entity) {
 		
+		if(ondestroy != null) { // todo: is there right place?
+			ondestroy(e);
+		}
+
 		_entities.remove_unsafe(e);
 		push_entity_id(e.id);
 		
 		world.tags.unregister_entity(e);
 		world.groups.unregister_entity(e);
-
-		if(ondestroy != null) { // todo: is there right place?
-			ondestroy(e);
-		}
 
 	}
 

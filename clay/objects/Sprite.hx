@@ -29,6 +29,7 @@ class Sprite extends GameObject {
 	public var layer             (get,never):Layer;
 
 	public var clip_rect         (get,set):Rectangle;
+	public var region            (get,set):Rectangle;
 	public var shader            (get,set):Shader;
 
 	public var uv                (get,never):Rectangle;
@@ -50,6 +51,7 @@ class Sprite extends GameObject {
 			flipy: _options.flipy,
 			depth: _options.depth,
 			visible: _options.visible,
+			region: _options.region,
 			clip_rect: _options.clip_rect
 		});
 
@@ -75,6 +77,9 @@ class Sprite extends GameObject {
 	inline function get_clip_rect() return geometry.clip_rect;
 	inline function set_clip_rect(v) return geometry.clip_rect = v;
 
+	inline function get_region() return geometry.region;
+	inline function set_region(v) return geometry.region = v;
+	
 	inline function get_shader() return geometry.shader;
 	inline function set_shader(v) return geometry.shader = v;
 
@@ -119,5 +124,6 @@ typedef SpriteOptions = {
 	@:optional var color:Color;
 	// @:optional var geometry:QuadGeometry;
 	@:optional var clip_rect:Rectangle;
+	@:optional var region:Rectangle;
 	
 }

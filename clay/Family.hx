@@ -6,8 +6,9 @@ import clay.World;
 import clay.core.ecs.Components;
 import clay.core.ecs.Families;
 import clay.core.ecs.EntityVector;
-import clay.core.ecs.ComponentType;
-import clay.core.Signal;
+import clay.types.ComponentType;
+
+import clay.components.event.Signal;
 import clay.ds.BitFlag;
 
 
@@ -41,11 +42,11 @@ class FamilyData {
 
 	var include_flags:BitFlag;
 	var exclude_flags:BitFlag;
-	var one_flags:BitFlag;
+	// var one_flags:BitFlag;
 
 	var include_flags_count:Int;
 	var exclude_flags_count:Int;
-	var one_flags_count:Int;
+	// var one_flags_count:Int;
 
 	var ent_id:IntArray;       // [ comp_idx | ent_id    ]
 	var comp_idx:IntArray;     // [ entity   | comp_idx  ]
@@ -87,7 +88,7 @@ class FamilyData {
 
 		include_flags_count = 0;
 		exclude_flags_count = 0;
-		one_flags_count = 0;
+		// one_flags_count = 0;
 		count = 0;
 
 		world = _world;
@@ -109,7 +110,7 @@ class FamilyData {
 		var mct:Int = cm.max_comptypes;
 		include_flags = new BitFlag(mct);
 		exclude_flags = new BitFlag(mct);
-		one_flags = new BitFlag(mct);
+		// one_flags = new BitFlag(mct);
 
 	}
 
@@ -140,16 +141,16 @@ class FamilyData {
 
 	}
 
-	function one(_comps:Array<Class<Dynamic>>) {
+	// function one(_comps:Array<Class<Dynamic>>) {
 
-		var ct:ComponentType;
-		for (c in _comps) {
-			ct = cm.get_type(c);
-			one_flags.enable(ct.id);
-			one_flags_count++;
-		}
+	// 	var ct:ComponentType;
+	// 	for (c in _comps) {
+	// 		ct = cm.get_type(c);
+	// 		one_flags.enable(ct.id);
+	// 		one_flags_count++;
+	// 	}
 
-	}
+	// }
 
 	function check(e:Entity) {
 
@@ -214,9 +215,9 @@ class FamilyData {
 			return false;
 		}
 
-		if(one_flags_count > 0 && !one_flags.intersects(entity_flags)) {
-			return false;
-		}
+		// if(one_flags_count > 0 && !one_flags.intersects(entity_flags)) {
+		// 	return false;
+		// }
 
 		return true;
 
@@ -266,4 +267,4 @@ class FamilyData {
 
 
 typedef Exclude<T> = T;
-typedef One<T> = T;
+// typedef One<T> = T;

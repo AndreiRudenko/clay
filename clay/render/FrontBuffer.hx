@@ -15,6 +15,7 @@ import kha.math.FastMatrix3;
 import kha.math.FastVector2;
 
 import clay.render.Shader;
+import clay.resources.Texture;
 
 using clay.render.utils.FastMatrix3Extender;
 
@@ -22,24 +23,25 @@ using clay.render.utils.FastMatrix3Extender;
 class FrontBuffer {
 
 
-	public var shader(default, set):Shader;
+	public var shader:Shader;
 
-	var vertexbuffer:VertexBuffer;
-	var indexbuffer:IndexBuffer;
-	var texture_loc:TextureUnit;
-	var projection_loc:ConstantLocation;
+	var _vertexbuffer:VertexBuffer;
+	var _indexbuffer:IndexBuffer;
+	var _texture_loc:TextureUnit;
 
-	var renderer:Renderer;
-	var projection_matrix:FastMatrix3;
+	var _renderer:Renderer;
+	var _projection_matrix:FastMatrix3;
 
 
-	public function new(_renderer:Renderer) {
+	public function new(renderer:Renderer) {
 		
-		renderer = _renderer;
-		shader = renderer.shader_textured;
+		_renderer = renderer;
+		shader = _renderer.shader_textured;
+		
+		_projection_matrix = FastMatrix3.identity();
 
-    	vertexbuffer = new VertexBuffer(4, shader.inputLayout[0], Usage.StaticUsage);
-		var vertices = vertexbuffer.lock();
+    	_vertexbuffer = new VertexBuffer(4, shader.pipeline.inputLayout[0], Usage.StaticUsage);
+		var vertices = _vertexbuffer.lock();
 
 		// colors
 		var index:Int = 0;
@@ -51,10 +53,10 @@ class FrontBuffer {
 			vertices.set(index + 5, 1);
 		}
 
-		vertexbuffer.unlock();
+		_vertexbuffer.unlock();
 
-		indexbuffer = new IndexBuffer(6, Usage.StaticUsage);
-		var indices = indexbuffer.lock();
+		_indexbuffer = new IndexBuffer(6, Usage.StaticUsage);
+		var indices = _indexbuffer.lock();
 
 		indices[0] = 0;
 		indices[1] = 1;
@@ -63,20 +65,20 @@ class FrontBuffer {
 		indices[4] = 2;
 		indices[5] = 3;
 		
-		indexbuffer.unlock();
+		_indexbuffer.unlock();
 
 	}
 
-	function set_vertices(img:Image, transformation:FastMatrix3) {
+	function set_vertices(texture:Texture, transformation:FastMatrix3) {
 
-		var vertices = vertexbuffer.lock();
+		var vertices = _vertexbuffer.lock();
 
 		var x = 0;
 		var y = 0;
-		var w = x + img.width;
-		var h = y + img.height;
-		var wr = w / img.realWidth;
-		var hr = h / img.realHeight;
+		var w = x + texture.width;
+		var h = y + texture.height;
+		var wr = w / texture.width_actual;
+		var hr = h / texture.height_actual;
 		var p1 = transformation.multvec(new FastVector2(x, y));
 		var p2 = transformation.multvec(new FastVector2(w, y));
 		var p3 = transformation.multvec(new FastVector2(w, h));
@@ -106,15 +108,17 @@ class FrontBuffer {
 		vertices.set(index + 6, 0);
 		vertices.set(index + 7, hr);
 
-		vertexbuffer.unlock();
+		_vertexbuffer.unlock();
 
 	}
 
-	public function render(source:Image, destination:Canvas, rotation:ScreenRotation) {
+	public function render(source:Texture, destination:Canvas, rotation:ScreenRotation) {
+
+		Clay.debug.start('frontbuffer');
 
 		var g = destination.g4;
 
-		projection_matrix = FastMatrix3.identity().orto(0, Clay.screen.width, Clay.screen.height, 0);
+		_projection_matrix.identity().orto(0, Clay.screen.width, Clay.screen.height, 0);
 
 		var transformation = Scaler.getScaledTransformation(source.width, source.height, destination.width, destination.height, rotation);
 		set_vertices(source, transformation);
@@ -122,31 +126,23 @@ class FrontBuffer {
 		g.begin();
 		g.clear(kha.Color.Black);
 
-		shader.reset_blendmodes();
-		
-		g.setPipeline(shader);
-		g.setMatrix3(projection_loc, projection_matrix);
-		g.setTexture(texture_loc, source);
+		_texture_loc = shader.set_texture('tex', source).location;
+		shader.set_matrix3('mvpMatrix', _projection_matrix);
 
-		g.setVertexBuffer(vertexbuffer);
-		g.setIndexBuffer(indexbuffer);
+		shader.reset_blendmodes();
+		shader.use(g);
+		shader.apply(g);
+
+		g.setVertexBuffer(_vertexbuffer);
+		g.setIndexBuffer(_indexbuffer);
 
 		g.drawIndexedVertices();
 
-		g.setTexture(texture_loc, null);
+		g.setTexture(_texture_loc, null);
 
 		g.end();
-
-	}
-
-	function set_shader(v:Shader):Shader {
-
-		shader = v;
-
-		texture_loc = shader.getTextureUnit("tex");
-		projection_loc = shader.getConstantLocation("mvpMatrix");
 		
-		return v;
+		Clay.debug.end('frontbuffer');
 
 	}
 	

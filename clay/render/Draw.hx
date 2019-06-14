@@ -79,8 +79,8 @@ class Draw {
 			depth: options.depth,
 			layer: layer
 		});
-
-		update_matrix(rect.transform_matrix, x, y, ox, oy, angle);
+		
+		update_matrix(rect.matrix, x, y, ox, oy, angle);
 
 		if(!no_add) {
 			add_to_layer(rect, options.depth);
@@ -142,7 +142,7 @@ class Draw {
 			color: color
 		});
 
-		update_matrix(geom.transform_matrix, cx, cy, ox, oy, 0);
+		update_matrix(geom.matrix, cx, cy, ox, oy, 0);
 
 		if(!no_add) {
 			add_to_layer(geom, options.depth);
@@ -213,7 +213,7 @@ class Draw {
 			color: color
 		});
 
-		update_matrix(geom.transform_matrix, x, y, ox, oy, angle);
+		update_matrix(geom.matrix, x, y, ox, oy, angle);
 
 		if(!no_add) {
 			add_to_layer(geom, options.depth);
@@ -251,7 +251,7 @@ class Draw {
 			texture: texture
 		});
 
-		update_matrix(rect.transform_matrix, x, y, ox, oy, angle);
+		update_matrix(rect.matrix, x, y, ox, oy, angle);
 
 		if(!no_add) {
 			add_to_layer(rect, options.depth);
@@ -292,7 +292,7 @@ class Draw {
 			align_vertical: options.align_vertical
 		});
 
-		update_matrix(text.transform_matrix, x, y, ox, oy, angle);
+		update_matrix(text.matrix, x, y, ox, oy, angle);
 
 		if(!no_add) {
 			add_to_layer(text, options.depth);

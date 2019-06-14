@@ -1,8 +1,7 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
 
 
@@ -11,8 +10,6 @@ class ScaleModule extends ParticleModule {
 
 	public var initial_scale:Float;
 	public var initial_scale_max:Float;
-
-	var particles_data:Array<ParticleData>;
 
 
 	public function new(_options:ScaleModuleOptions) {
@@ -26,30 +23,25 @@ class ScaleModule extends ParticleModule {
 
 	override function init() {
 
-		particles_data = emitter.particles_data;
-
 	}
 
 	override function ondisabled() {
 
-		for (pd in particles_data) {
-			pd.s = 1;
+		for (p in particles) {
+			p.s = 1;
 		}
 		
 	}
 
 	override function onspawn(p:Particle) {
 
-		var pd:ParticleData = particles_data[p.id];
-
 		if(initial_scale_max > initial_scale) {
-			pd.s = emitter.random_float(initial_scale, initial_scale_max);
+			p.s = emitter.random_float(initial_scale, initial_scale_max);
 		} else {
-			pd.s = initial_scale;
+			p.s = initial_scale;
 		}
 
 	}
-
 
 
 // import/export

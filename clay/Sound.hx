@@ -6,44 +6,45 @@ import kha.arrays.Float32Array;
 import clay.resources.AudioResource;
 import clay.audio.AudioChannel;
 import clay.audio.AudioEffect;
+import clay.audio.AudioGroup;
 import clay.math.Mathf;
 import clay.utils.Log.*;
 
-class Sound extends AudioChannel{
+class Sound extends AudioChannel {
 
 
-	public var resource     (default, set): AudioResource;
+	public var resource     (default, set):AudioResource;
 
-	public var pitch        (default, set): Float;
+	public var pitch        (default, set):Float;
 
-	public var time         (get, set): Float;
-	public var duration     (get, never): Float;
-	public var position     (default, set): Int;
-	public var length       (get, never): Int;
+	public var time         (get, set):Float;
+	public var duration     (get, never):Float;
+	public var position     (default, set):Int;
+	public var length       (get, never):Int;
 
-	public var paused       (default, null): Bool;
-	public var playing      (get, never): Bool;
-	public var finished     (default, null): Bool;
-	public var stream       (default, set): Bool;
+	public var paused       (default, null):Bool;
+	public var playing      (get, never):Bool;
+	public var finished     (default, null):Bool;
+	public var stream       (default, set):Bool;
+	public var channels     (get, never):Int;
 
-	public var loop: Bool;
+	public var loop:Bool;
 
-	@:noCompletion public var added: Bool;
+	@:noCompletion public var added:Bool;
 
 	#if (!kha_no_ogg)
-	@:noCompletion public var reader: Reader;
+	@:noCompletion public var reader:Reader;
 	#end
 
-	var cache: Float32Array;
+	var _position:Float;
+	var _cache:Float32Array;
 
-	var channels: Int = 2;
 
-
-	public function new(?_res: AudioResource) {
+	public function new(?resource:AudioResource, output:AudioGroup = null) {
 
 		super();
 
-		resource = _res;
+		this.resource = resource;
 
 		pitch = 1;
 
@@ -57,20 +58,25 @@ class Sound extends AudioChannel{
 
 		effects = [];
 
-		output = Clay.audio;
+		this.output = output != null ? output : Clay.audio;
 
-		cache = new Float32Array(512);
+		_position = 0;
+		_cache = new Float32Array(512);
 		
 	}
 
-	override function process(data: Float32Array, samples: Int) {
+	override function process(data:Float32Array, samples:Int) {
+
+		if(resource == null) {
+			return;
+		}
 	    
-		if (cache.length < samples) {
-			cache = new Float32Array(samples);
+		if (_cache.length < samples) {
+			_cache = new Float32Array(samples);
 		}
 
 		for (i in 0...samples) {
-			cache[i] = 0;
+			_cache[i] = 0;
 		}
 
 		if(mute) {
@@ -78,7 +84,7 @@ class Sound extends AudioChannel{
 		}
 
 		if(finished) {
-			output.childs.remove(this);
+			output.remove(this);
 			added = false;
 			return;
 		}
@@ -92,8 +98,10 @@ class Sound extends AudioChannel{
 				var addressable_data = sound_data.length - position;
 				var next_chunk = addressable_data < (samples - w_ptr) ? addressable_data : (samples - w_ptr);
 				while (chk_ptr < next_chunk) {
-					cache[w_ptr] = sound_data[position];
-					++position;
+					_cache[w_ptr] = sound_data[position];
+					_position += pitch;
+					position = Math.floor(_position);
+					// ++position;
 					++chk_ptr;
 					++w_ptr;
 				}
@@ -104,36 +112,36 @@ class Sound extends AudioChannel{
 					chk_ptr = 0;
 					if (position >= sound_data.length) {
 						position = 0;
+						_position = 0;
 					}
 				}
 			}
 			// fill empty
 			while (w_ptr < samples) {
-				cache[w_ptr] = 0;
+				_cache[w_ptr] = 0;
 				++w_ptr;
 			}
 
 		} else {
 			#if (!kha_no_ogg)
-			var count = reader.read(cache, Std.int(samples / 2), 2, Clay.audio.sample_rate, true) * 2;
+			var count = reader.read(_cache, Std.int(samples / 2), 2, Clay.audio.sample_rate, true) * 2; // todo: check channels
 			if (count < samples) {
 				if (loop) {
 					position = 0;
 				}
 				for (i in count...samples) {
-					cache[i] = 0;
+					_cache[i] = 0;
 				}
 			}
 			position = reader.currentSample;
-
 			#end
 		}
 
-		process_effects(cache, samples);
+		process_effects(_cache, samples);
 
 		for (i in 0...Std.int(samples/2)) {
-			data[i*2] += cache[i*2] * volume * l;
-			data[i*2+1] += cache[i*2+1] * volume * r;
+			data[i*2] += _cache[i*2] * volume * l;
+			data[i*2+1] += _cache[i*2+1] * volume * r;
 		}
 
 		if (position >= length) {
@@ -142,7 +150,7 @@ class Sound extends AudioChannel{
 
 	}
 
-	public function play(): Sound {
+	public function play():Sound {
 
 		paused = false;
 		position = 0;
@@ -150,7 +158,7 @@ class Sound extends AudioChannel{
 		if(resource != null) {
 			if(output != null) {
 				if(!added) {
-					output.childs.add(this);
+					output.add(this);
 					added = true;
 				}
 			} else {
@@ -164,7 +172,7 @@ class Sound extends AudioChannel{
 
 	}
 
-	public function stop(): Sound {
+	public function stop():Sound {
 		
 		if(resource != null) {
 			if(output != null) {
@@ -183,7 +191,7 @@ class Sound extends AudioChannel{
 
 	}
 
-	public function pause(): Sound {
+	public function pause():Sound {
 		
 		paused = true;
 
@@ -191,7 +199,7 @@ class Sound extends AudioChannel{
 
 	}
 
-	public function unpause(): Sound {
+	public function unpause():Sound {
 
 		paused = false;
 		
@@ -199,7 +207,7 @@ class Sound extends AudioChannel{
 
 	}
 
-	override function set_output(v: AudioChannel): AudioChannel {
+	override function set_output(v:AudioGroup):AudioGroup {
 
 		if(output != null) {
 			output.childs.remove(this);
@@ -211,7 +219,7 @@ class Sound extends AudioChannel{
 
 	}
 
-	function set_resource(v: AudioResource): AudioResource {
+	function set_resource(v:AudioResource):AudioResource {
 
 		resource = v;
 
@@ -225,39 +233,39 @@ class Sound extends AudioChannel{
 
 	}
 
-	function set_pitch(v: Float): Float {
+	function set_pitch(v:Float):Float {
 
-		pitch = Mathf.clamp_bottom(v, 0.5);
+		pitch = Mathf.clamp_bottom(v, 0.01); // todo: 0?
 
 		return pitch;
 
 	}
 
-	function get_time(): Float { // todo: check for stream
+	function get_time():Float { // todo: check for stream
 
 		return position / Clay.audio.sample_rate / channels;
 
 	}
 
-	function set_time(v: Float): Float { // todo: check for stream
+	function set_time(v:Float):Float { // todo: check for stream
 
 		return position = Std.int(v * Clay.audio.sample_rate * channels);
 
 	}
 
-	inline function get_finished(): Bool { 
+	inline function get_finished():Bool { 
 
 		return position >= length;
 
 	}
 
-	inline function get_playing(): Bool { 
+	inline function get_playing():Bool { 
 
 		return added;
 
 	}
 
-	function set_position(v: Int): Int {
+	function set_position(v:Int):Int {
 
 		if(stream) {	
 			#if (kha_no_ogg) 
@@ -271,7 +279,7 @@ class Sound extends AudioChannel{
 
 	}
 
-	function set_stream(v: Bool): Bool {
+	function set_stream(v:Bool):Bool {
 
 		stream = v;
 
@@ -285,7 +293,7 @@ class Sound extends AudioChannel{
 
 	}
 
-	function get_length(): Int {
+	function get_length():Int {
 
 		if(resource != null) {
 			if(stream) {	
@@ -300,9 +308,27 @@ class Sound extends AudioChannel{
 
 		return 0;
 
+
 	}
 
-	function get_duration(): Float {
+	function get_channels():Int {
+
+		if(resource != null) {
+			if(stream) {	
+				#if (kha_no_ogg) 
+				return 0; 
+				#else 
+				return reader.header.channel; // todo: check this
+				#end
+			}
+			return resource.channels;
+		}
+
+		return 0;
+
+	}
+
+	function get_duration():Float {
 
 		if(resource != null) {
 			if(stream) {	

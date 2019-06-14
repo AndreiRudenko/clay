@@ -6,6 +6,10 @@ import clay.utils.Log.def;
 import clay.render.types.TextureFilter;
 import clay.render.types.MipMapFilter;
 import clay.render.types.TextureAddressing;
+import clay.render.types.TextureFormat;
+import clay.render.types.DepthStencilFormat;
+import clay.render.types.Usage;
+import clay.core.Resources;
 
 
 @:access(clay.render.Renderer)
@@ -29,7 +33,9 @@ class Texture extends clay.resources.Resource {
 	public static function create_rendertarget(width:Int, height:Int, ?format:TextureFormat, ?depth_stencil:DepthStencilFormat, ?antialiasing:Int, ?context_id:Int, ?no_id:Bool) {
 		
 		var img = kha.Image.createRenderTarget(width, height, format, depth_stencil, antialiasing, context_id);
-		return new Texture(img, no_id);
+		var t = new Texture(img, no_id);
+		t.resource_type = ResourceType.render_texture;
+		return t;
 
 	}
 
@@ -53,19 +59,19 @@ class Texture extends clay.resources.Resource {
 
 	@:noCompletion public var image:kha.Image;
 
-	var no_id:Bool;
+	var _no_id:Bool;
 
 
-	public function new(_image:kha.Image, _no_id:Bool = false) {
+	public function new(image:kha.Image, no_id:Bool = false) {
 
 		tid = 0;
-		no_id = _no_id;
 
-		if(!no_id) {
+		this.image = image;
+		_no_id = no_id;
+
+		if(!_no_id) {
 			tid = Clay.renderer.pop_texture_id();
 		}
-
-		image = _image;
 
 		filter_min = TextureFilter.LinearFilter;
 		filter_mag = TextureFilter.LinearFilter;
@@ -73,17 +79,19 @@ class Texture extends clay.resources.Resource {
 		u_addressing = TextureAddressing.Clamp;
 		v_addressing = TextureAddressing.Clamp;
 
-	}
-
-	public inline function generate_mipmaps(_levels:Int) {
-
-		image.generateMipmaps(_levels);
+		resource_type = ResourceType.texture;
 
 	}
 
-	public inline function lock(_levels:Int = 0):Bytes {
+	public inline function generate_mipmaps(levels:Int) {
 
-		return image.lock(_levels);
+		image.generateMipmaps(levels);
+
+	}
+
+	public inline function lock(level:Int = 0):Bytes {
+
+		return image.lock(level);
 
 	}
 
@@ -93,9 +101,15 @@ class Texture extends clay.resources.Resource {
 
 	}
 
-	public function destroy() {
+	public inline function get_bytes():Bytes {
 
-        if(!no_id) {
+		return image.getPixels();
+
+	}
+
+	override function unload() {
+
+        if(!_no_id) {
 			Clay.renderer.push_texture_id(tid);
 		}
 
@@ -104,10 +118,10 @@ class Texture extends clay.resources.Resource {
 		
 	}
 
-	override function unload() {
-
-		image.unload();
+	override function memory_use() {
 		
+        return (width_actual * height_actual * image.depth);
+
 	}
 
 	inline function get_width_actual() return image.realWidth;
@@ -119,7 +133,3 @@ class Texture extends clay.resources.Resource {
 
 
 }
-
-typedef TextureFormat = kha.graphics4.TextureFormat;
-typedef Usage = kha.graphics4.Usage;
-typedef DepthStencilFormat = kha.graphics4.DepthStencilFormat;

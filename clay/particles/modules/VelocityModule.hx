@@ -4,7 +4,6 @@ import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
 import clay.particles.core.Components;
 import clay.particles.components.Velocity;
-import clay.particles.modules.helpers.VelocityUpdateModule;
 import clay.math.Vector;
 
 using clay.particles.utils.VectorExtender;
@@ -32,17 +31,12 @@ class VelocityModule extends ParticleModule {
 
 	override function init() {
 
-		if(emitter.get_module(VelocityUpdateModule) == null) {
-			emitter.add_module(new VelocityUpdateModule());
-		}
-
 		vel_comps = emitter.components.get(Velocity);
 
 	}
 
 	override function onremoved() {
 
-		emitter.remove_module(VelocityUpdateModule);
 		vel_comps = null;
 		
 	}
@@ -51,7 +45,7 @@ class VelocityModule extends ParticleModule {
 
 		particles.for_each(
 			function(p) {
-				vel_comps.get(p).set(0,0);
+				vel_comps.get(p.id).set(0,0);
 			}
 		);
 		
@@ -59,7 +53,7 @@ class VelocityModule extends ParticleModule {
 	
 	override function onspawn(p:Particle) {
 
-		var v:Velocity = vel_comps.get(p);
+		var v:Velocity = vel_comps.get(p.id);
 		if(initial_velocity_max != null) {
 			v.x = emitter.random_float(initial_velocity.x, initial_velocity_max.x);
 			v.y = emitter.random_float(initial_velocity.y, initial_velocity_max.y);
@@ -75,7 +69,7 @@ class VelocityModule extends ParticleModule {
 		if(velocity_random != null) {
 			var v:Velocity;
 			for (p in particles) {
-				v = vel_comps.get(p);
+				v = vel_comps.get(p.id);
 				v.x += velocity_random.x * emitter.random_1_to_1();
 				v.y += velocity_random.y * emitter.random_1_to_1();
 			}

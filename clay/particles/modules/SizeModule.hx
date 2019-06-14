@@ -1,8 +1,7 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
 import clay.math.Vector;
 
@@ -14,8 +13,6 @@ class SizeModule extends ParticleModule {
 
 	public var initial_size	(default, null):Vector;
 	public var initial_size_max:Vector;
-
-	var particles_data:Array<ParticleData>;
 
 
 	public function new(_options:SizeModuleOptions) {
@@ -29,13 +26,9 @@ class SizeModule extends ParticleModule {
 
 	override function init() {
 
-		particles_data = emitter.particles_data;
-
 	}
 
-	override function onspawn(p:Particle) {
-
-		var pd:ParticleData = particles_data[p.id];
+	override function onspawn(pd:Particle) {
 
 		if(initial_size_max != null) {
 			pd.w = emitter.random_float(initial_size.x, initial_size_max.x);

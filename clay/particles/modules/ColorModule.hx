@@ -1,8 +1,7 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
 import clay.math.Vector;
 import clay.data.Color;
@@ -14,8 +13,6 @@ class ColorModule extends ParticleModule {
 	public var initial_color	(default, null):Color;
 	public var initial_color_max:Color;
 
-	var particles_data:Array<ParticleData>;
-
 
 	public function new(_options:ColorModuleOptions) {
 
@@ -26,21 +23,9 @@ class ColorModule extends ParticleModule {
 
 	}
 
-	override function init() {
-
-		particles_data = emitter.particles_data;
-	    
-	}
-
-	override function onremoved() {
-
-	    particles_data = null;
-
-	}
-
 	override function onspawn(p:Particle) {
 
-		var pcolor:Color = particles_data[p.id].color;
+		var pcolor:Color = p.color;
 
 		if(initial_color_max != null) {
 			pcolor.r = initial_color_max.r > initial_color.r ? emitter.random_float(initial_color.r, initial_color_max.r) : initial_color.r;

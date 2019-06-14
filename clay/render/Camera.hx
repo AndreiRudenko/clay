@@ -10,7 +10,7 @@ import clay.math.VectorCallback;
 import clay.math.Rectangle;
 import clay.math.Mathf;
 import clay.ds.BitVector;
-import clay.core.Signal;
+import clay.components.event.Signal;
 import clay.components.common.Transform;
 import clay.render.CameraManager;
 import clay.render.Layer;
@@ -47,32 +47,32 @@ class Camera {
 	@:noCompletion public var _size_factor:Vector;
 
 	var _active:Bool = false;
-	var visible_layers_mask:BitVector;
-	var manager:CameraManager;
+	var _visible_layers_mask:BitVector;
+	var _manager:CameraManager;
 
 
-	function new(_manager:CameraManager, _name:String, _viewport:Rectangle, _priority:Int) {
+	function new(manager:CameraManager, name:String, viewport:Rectangle, priority:Int) {
 
-		name = _name;
-		priority = _priority;
-		manager = _manager;
+		this.name = name;
+		this.priority = priority;
+		_manager = manager;
 
 		size = new VectorCallback();
 		_size_factor = new Vector(1,1);
 		size.listen(set_size);
 
-		viewport = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
+		this.viewport = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
 
-		if(_viewport != null) {
-			viewport.copy_from(_viewport);
+		if(viewport != null) {
+			this.viewport.copy_from(viewport);
 		}
 
 		view_matrix = new Matrix();
 		view_matrix_inverted = new Matrix();
 		projection_matrix = FastMatrix3.identity();
 
-		visible_layers_mask = new BitVector(Clay.renderer.layers.capacity);
-		visible_layers_mask.enable_all();
+		_visible_layers_mask = new BitVector(Clay.renderer.layers.capacity);
+		_visible_layers_mask.enable_all();
 
 		transform = new CameraTransform(this);
 
@@ -95,8 +95,8 @@ class Camera {
 		view_matrix = null;
 		view_matrix_inverted = null;
 		projection_matrix = null;
-		visible_layers_mask = null;
-		manager = null;
+		_visible_layers_mask = null;
+		_manager = null;
 
 	}
 
@@ -148,13 +148,13 @@ class Camera {
 			for (n in layers) {
 				l = Clay.renderer.layers.get(n);
 				if(l != null) {
-					visible_layers_mask.disable(l.id);
+					_visible_layers_mask.disable(l.id);
 				} else {
 					log('can`t hide layer `${n}` for camera `${name}`');
 				}
 			}
 		} else {
-			visible_layers_mask.disable_all();
+			_visible_layers_mask.disable_all();
 		}
 
 		return this;
@@ -168,13 +168,13 @@ class Camera {
 			for (n in layers) {
 				l = Clay.renderer.layers.get(n);
 				if(l != null) {
-					visible_layers_mask.enable(l.id);
+					_visible_layers_mask.enable(l.id);
 				} else {
 					log('can`t show layer `${n}` for camera `${name}`');
 				}
 			}
 		} else {
-			visible_layers_mask.enable_all();
+			_visible_layers_mask.enable_all();
 		}
 		
 		return this;
@@ -276,11 +276,11 @@ class Camera {
 
 		_active = value;
 
-		if(manager != null) {
+		if(_manager != null) {
 			if(_active){
-				manager.enable(this);
+				_manager.enable(this);
 			} else {
-				manager.disable(this);
+				_manager.disable(this);
 			}
 		}
 		
@@ -325,7 +325,7 @@ class CameraTransform extends Transform {
 			cory = hh - camera.viewport.h / 2;
 		}
 
-		local.identity()
+		_local.matrix.identity()
 		.translate(pos.x, pos.y) // apply position
 		.translate(hw, hh) // translate to origin
 		.rotate(Mathf.radians(-rotation)) // rotate
@@ -334,12 +334,14 @@ class CameraTransform extends Transform {
 		;
 
 		if(parent != null) {
-			world.copy(parent.world).multiply(local); // todo: check
+			_world.matrix.copy(parent._world.matrix).multiply(_local.matrix);
 		} else {
-			world.copy(local);
+			_world.matrix.copy(_local.matrix);
 		}
 
-		camera.view_matrix.copy(world);
+        _world.decompose(false);
+
+		camera.view_matrix.copy(_world.matrix);
 
 	}
 

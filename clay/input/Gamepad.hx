@@ -170,9 +170,13 @@ class Gamepads extends Input {
 
 	function reset() {
 
+		#if use_gamepad_input
+		
 		for (g in gamepads) {
 			g.clear();
 		}
+
+		#end
 
 	}
 
@@ -187,7 +191,7 @@ class Gamepads extends Input {
 
 		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEventState.device_added);
 
-		engine.gamepadadd(gamepad_event);
+		engine.signals.gamepadadd.emit(gamepad_event);
 
 	}
 
@@ -202,7 +206,7 @@ class Gamepads extends Input {
 
 		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEventState.device_removed);
 		
-		engine.gamepadremove(gamepad_event);
+		engine.signals.gamepadremove.emit(gamepad_event);
 
 	}
 
@@ -299,7 +303,7 @@ class Gamepad {
 
 		gamepad_event.set(gamepad, id, -1, axis_id, axis_value, GamepadEventState.axis);
 
-		gamepads.engine.gamepadaxis(gamepad_event);
+		gamepads.engine.signals.gamepadaxis.emit(gamepad_event);
 
 	}
 
@@ -326,7 +330,7 @@ class Gamepad {
 
 		gamepads.check_binding(gamepad, _b, true);
 
-		gamepads.engine.gamepaddown(gamepad_event);
+		gamepads.engine.signals.gamepaddown.emit(gamepad_event);
 
 	}
 
@@ -342,7 +346,7 @@ class Gamepad {
 
 		gamepads.check_binding(gamepad, _b, false);
 
-		gamepads.engine.gamepadup(gamepad_event);
+		gamepads.engine.signals.gamepadup.emit(gamepad_event);
 
 	}
 

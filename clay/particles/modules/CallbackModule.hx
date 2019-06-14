@@ -1,5 +1,6 @@
 package clay.particles.modules;
 
+
 import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
 import particles.ParticleEmitter;

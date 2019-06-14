@@ -4,7 +4,6 @@ import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
 import clay.particles.core.Components;
 import clay.particles.components.Velocity;
-import clay.particles.modules.helpers.VelocityUpdateModule;
 import clay.math.Vector;
 
 using clay.particles.utils.VectorExtender;
@@ -30,10 +29,6 @@ class ForceModule extends ParticleModule {
 
 	override function init() {
 
-	    if(emitter.get_module(VelocityUpdateModule) == null) {
-			emitter.add_module(new VelocityUpdateModule());
-		}
-
 		vel_comps = emitter.components.get(Velocity);
 
 	}
@@ -42,7 +37,7 @@ class ForceModule extends ParticleModule {
 		
 		particles.for_each(
 			function(p) {
-				vel_comps.get(p).set(0,0);
+				vel_comps.get(p.id).set(0,0);
 			}
 		);
 		
@@ -57,8 +52,7 @@ class ForceModule extends ParticleModule {
 
 	override function onunspawn(p:Particle) {
 
-		var v:Velocity = vel_comps.get(p);
-		v.set(0,0);
+		vel_comps.get(p.id).set(0,0);
 		
 	}
 
@@ -66,7 +60,7 @@ class ForceModule extends ParticleModule {
 
 		var vel:Vector;
 		for (p in particles) {
-			vel = vel_comps.get(p);
+			vel = vel_comps.get(p.id);
 			vel.x += force.x * dt;
 			vel.y += force.y * dt;
 			if(force_random != null) {

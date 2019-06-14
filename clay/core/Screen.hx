@@ -4,6 +4,8 @@ import kha.System;
 import kha.WindowMode;
 import kha.graphics4.DepthStencilFormat;
 import clay.types.ScreenRotation;
+import clay.render.types.TextureFormat;
+import clay.render.types.Usage;
 import clay.resources.Texture;
 import clay.math.Vector;
 
@@ -60,7 +62,8 @@ class Screen {
 	function update_buffer() {
 		
 		if(buffer != null) {
-			buffer.destroy();
+			buffer.unload();
+			Clay.resources.remove(buffer);
 		}
 
 		buffer = Texture.create_rendertarget(
@@ -72,6 +75,9 @@ class Screen {
 			null,
 			true
 		);
+		
+		buffer.id = 'frontbuffer';
+		Clay.resources.add(buffer);
 		
 		mid.set(window.width*0.5, window.height*0.5);
 
@@ -146,7 +152,7 @@ class Screen {
 
 class Cursor {
 
-	public var pos(default, null):Vector; // todo
+	public var pos(default, null):Vector;
 	public var visible(get, set):Bool;
 	var _visible:Bool = true;
 
@@ -155,6 +161,11 @@ class Cursor {
 
 		pos = new Vector();
 		
+		var m = kha.input.Mouse.get();
+		if(m != null) {
+			m.notify(null, null, onmove, null);
+		}
+
 	}
 
 	public function lock() {
@@ -179,6 +190,12 @@ class Cursor {
 
 		return _visible;
 		
+	}
+
+	function onmove(x:Int, y:Int, x_rel:Int, y_rel:Int) {
+
+		pos.set(x, y);
+
 	}
 
 	function set_visible(v:Bool):Bool {

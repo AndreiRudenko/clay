@@ -1,5 +1,7 @@
 package clay.resources;
 
+import clay.core.Resources;
+
 
 class VideoResource extends Resource {
 
@@ -10,8 +12,15 @@ class VideoResource extends Resource {
 	public function new(_video:kha.Video) {
 
 		video = _video;
+		resource_type = ResourceType.video;
 		
 	}
 
+	override function unload() {
+
+		video.unload();
+		
+	}
+	
 
 }

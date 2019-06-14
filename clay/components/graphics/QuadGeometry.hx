@@ -10,59 +10,60 @@ import clay.math.Matrix;
 import clay.math.Rectangle;
 import clay.data.Color;
 import clay.render.Vertex;
+import clay.render.GeometryType;
+import clay.render.DisplayObject;
+import clay.render.RenderPath;
+import clay.render.Camera;
 import clay.resources.FontResource;
-import clay.resources.Texture;
 import clay.components.graphics.Geometry;
+import clay.resources.Texture;
 import clay.utils.Log.*;
 
-@:keep
+// @:keep
 class QuadGeometry extends Geometry {
 
 
-	public var size(default, null):VectorCallback;
-	public var uv(default, null):RectangleCallback;
-	public var flipx(get, set):Bool;
-	public var flipy(get, set):Bool;
+	public var size             (default, null):VectorCallback;
+	public var uv               (default, null):RectangleCallback;
+	public var flipx            (get, set):Bool;
+	public var flipy            (get, set):Bool;
 
 	var _flipx:Bool = false;
 	var _flipy:Bool = false;
 
 
-	public function new(_options:QuadGeometryOptions) {
+	public function new(options:QuadGeometryOptions) {
 
 		size = new VectorCallback(32, 32);
-		if(_options.size != null) {
-			size.copy_from(_options.size);
+		if(options.size != null) {
+			size.copy_from(options.size);
 		}
 		size.listen(size_changed);
 
 		uv = new RectangleCallback();
 		uv.listen(uv_changed);
 
-		var verts:Array<Vertex> = [];
-		var inds:Array<Int> = [0,1,2,0,2,3];
 		var _w:Float = size.x;
 		var _h:Float = size.y;
 
-		verts.push(new Vertex(new Vector( 0,  0)));
-		verts.push(new Vertex(new Vector(_w,  0)));
-		verts.push(new Vertex(new Vector(_w, _h)));
-		verts.push(new Vertex(new Vector( 0, _h)));
+		options.vertices = [
+			new Vertex(new Vector( 0,  0)),
+			new Vertex(new Vector(_w,  0)),
+			new Vertex(new Vector(_w, _h)),
+			new Vertex(new Vector( 0, _h))
+		];
 
-		_options.vertices = verts;
-		_options.indices = inds;
+		_flipx = def(options.flipx, false);
+		_flipy = def(options.flipy, false);
 
-		_flipx = def(_options.flipx, false);
-		_flipy = def(_options.flipy, false);
-
-		super(_options);
-
-		set_geometry_type(GeometryType.quad);
+		super(options);
+		
+		sort_key.geomtype = GeometryType.quad;
 
 		update_tcoord();
 
-		if(_options.uv != null) {
-			uv.copy_from(_options.uv);
+		if(options.uv != null) {
+			uv.copy_from(options.uv);
 		} else {
 			set_uv(0, 0, 1, 1);
 		}
@@ -77,6 +78,13 @@ class QuadGeometry extends Geometry {
 		uv.ignore_listeners = lstate;
 
 		update_tcoord();
+
+	}
+
+	override function render_geometry(r:RenderPath, c:Camera) {
+
+		r.set_object_renderer(r.quad_renderer);
+		r.quad_renderer.render(this);
 
 	}
 

@@ -137,6 +137,8 @@ class Keyboard extends Input {
 
 	function reset() {
 
+		#if use_keyboard_input
+		
 		_verboser("reset");
 
 		if(dirty) {
@@ -145,6 +147,7 @@ class Keyboard extends Input {
 			dirty = false;
 		}
 
+		#end
 	}
 
 	function onkeypressed(_key:Int) {
@@ -160,7 +163,7 @@ class Keyboard extends Input {
 
 		check_binding(_key, true);
 
-		engine.keydown(key_event);
+		engine.signals.keydown.emit(key_event);
 
 	}
 
@@ -178,7 +181,7 @@ class Keyboard extends Input {
 
 		check_binding(_key, false);
 
-		engine.keyup(key_event);
+		engine.signals.keyup.emit(key_event);
 
 	}
 	
@@ -186,7 +189,7 @@ class Keyboard extends Input {
 
 		_verboser('ontextinput: $_char');
 
-		engine.textinput(_char);
+		engine.signals.textinput.emit(_char);
 
 	}
 

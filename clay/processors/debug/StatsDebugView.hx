@@ -1,6 +1,7 @@
 package clay.processors.debug;
 
 
+import clay.Clay;
 import clay.render.Camera;
 import clay.objects.Text;
 import clay.data.Color;
@@ -13,6 +14,15 @@ import clay.input.Keyboard;
 import clay.input.Key;
 import clay.input.Mouse;
 import clay.render.Layer;
+import clay.core.Resources;
+import clay.resources.Resource;
+import clay.resources.AudioResource;
+import clay.resources.BytesResource;
+import clay.resources.FontResource;
+import clay.resources.JsonResource;
+import clay.resources.TextResource;
+import clay.resources.Texture;
+import clay.resources.VideoResource;
 import clay.utils.Log.*;
 
 
@@ -25,10 +35,12 @@ class StatsDebugView extends DebugView {
 
 
 	var render_stats_text:Text;
+	var resource_list_text:Text;
 
-    var font_size:Int = 15;
-    var hide_layers:Bool = true;
-    var camera_stats:String = '';
+	var font_size:Int = 15;
+	var hide_layers:Bool = true;
+	var camera_stats:String = '';
+	var _byte_levels : Array<String> = ['bytes', 'Kb', 'MB', 'GB', 'TB'];
 
 
 	public function new(_debug:Debug) {
@@ -59,6 +71,23 @@ class StatsDebugView extends DebugView {
 			visible : false
 		});
 
+		resource_list_text = new Text({
+			name : 'debug.resource.stats',
+			world : world,
+			depth : 999.3,
+			color : new Color().from_int(0xffa563),
+			pos: new Vector(rect.x, rect.y),
+			width : rect.w,
+			height : 0,
+			clip_rect : rect,
+			wrap : true,
+			text : '',
+			align : TextAlign.right,
+			size : font_size,
+			layer : debug.layer,
+			visible : false
+		});
+
 		Clay.renderer.cameras.oncameracreate.add(camera_added);
 		Clay.renderer.cameras.oncameradestroy.add(camera_removed);
 
@@ -73,6 +102,9 @@ class StatsDebugView extends DebugView {
 		render_stats_text.destroy();
 		render_stats_text = null;
 
+		resource_list_text.destroy();
+		resource_list_text = null;
+
 		Clay.renderer.cameras.oncameracreate.remove(camera_added);
 		Clay.renderer.cameras.oncameradestroy.remove(camera_removed);
 
@@ -81,6 +113,7 @@ class StatsDebugView extends DebugView {
 	override function onenabled() {
 
 		render_stats_text.visible = true;
+		resource_list_text.visible = true;
 		refresh();
 
 	}
@@ -88,6 +121,7 @@ class StatsDebugView extends DebugView {
 	override function ondisabled() {
 
 		render_stats_text.visible = false;
+		resource_list_text.visible = false;
 
 	}
 
@@ -100,26 +134,51 @@ class StatsDebugView extends DebugView {
 
 	}
 
-    override function onmousewheel(e:MouseEvent) {
+	override function onmousewheel(e:MouseEvent) {
 
-        var h = render_stats_text.text_height;
-        var vh = debug.inspector.size.y - debug.margin;
-        var diff = h - vh;
+		var px = e.x/Clay.screen.width;
 
-        var new_y = render_stats_text.pos.y;
-        var max_y = debug.padding.y +(debug.margin*1.5);
-        var min_y = max_y;
+		if(px > 0.5) {
+			
+			var h = resource_list_text.text_height;
+			var vh = debug.inspector.size.y - debug.margin;
+			var diff = h - vh;
 
-        if(diff > 0) {
-            min_y = (max_y - (diff+(debug.margin*2)));
-        }
+			var new_y = resource_list_text.pos.y;
+			var max_y = debug.padding.y +(debug.margin*1.5);
+			var min_y = max_y;
 
-        new_y -= (debug.margin/2) * e.wheel;
-        new_y = Mathf.clamp(new_y, min_y, max_y);
+			if(diff > 0) {
+				min_y = (max_y - (diff+(debug.margin*2)));
+			}
 
-        render_stats_text.pos.y = new_y;
+			new_y -= (debug.margin/2) * e.wheel;
+			new_y = Mathf.clamp(new_y, min_y, max_y);
 
-    }
+			resource_list_text.pos.y = new_y;
+
+		} else {
+
+			var h = render_stats_text.text_height;
+			var vh = debug.inspector.size.y - debug.margin;
+			var diff = h - vh;
+
+			var new_y = render_stats_text.pos.y;
+			var max_y = debug.padding.y +(debug.margin*1.5);
+			var min_y = max_y;
+
+			if(diff > 0) {
+				min_y = (max_y - (diff+(debug.margin*2)));
+			}
+
+			new_y -= (debug.margin/2) * e.wheel;
+			new_y = Mathf.clamp(new_y, min_y, max_y);
+
+			render_stats_text.pos.y = new_y;
+
+		}
+
+	}
 
 	override function onrender() {
 
@@ -141,77 +200,206 @@ class StatsDebugView extends DebugView {
 
 	function add_camera_stats(c:Camera) {
 
-		camera_stats += get_camera_info(c);
+		if(active) {
+			camera_stats += get_camera_info(c);
+		}
 		
 	}
 
-    function get_render_stats() {
+	function bytes_to_string( bytes:Int, ?precision:Int=3 ) : String {
 
-        var _render_stats = Clay.renderer.stats;
+		var index = bytes == 0 ? 0 : Math.floor(Math.log(bytes) / Math.log(1024));
+		var _byte_value = bytes / Math.pow(1024, index);
+			_byte_value = clay.math.Mathf.fixed(_byte_value, precision);
 
-        return
-            'Renderer Statistics\n\n' +
-            'total geometry : ' + _render_stats.geometry + '\n' +
-            'visible geometry : ' + _render_stats.visible_geometry + '\n' +
-            'vertices : ' + _render_stats.vertices + '\n' +
-            'indices : ' + _render_stats.indices + '\n' +
-            'instanced : ' + _render_stats.instanced + '\n' +
-            'draw calls : ' + _render_stats.draw_calls + '\n' +
-            'layers : ' + Clay.renderer.layers.active_count + '\n' +
-            'cameras : ' + Clay.renderer.cameras.length + '\n' +
-            camera_stats;
+		return _byte_value + ' ' + _byte_levels[index];
 
-    }
+	}
 
-    inline function get_camera_info(c:Camera) {
+	@:access(kha.Kravur)
+	function get_recource_stats():String {
 
-    	var _layers = [];
-    	for (l in Clay.renderer.layers) {
-    		if(c.visible_layers_mask.get(l.id)) {
-    			_layers.push(l);
-    		}
-    	}
 
-        var _active = c.active ? '' : '/ inactive';
+		var bytes_lists = '';
+		var text_lists = '';
+		var json_lists = '';
+		var texture_lists = '';
+		var font_lists = '';
+		var rtt_lists = '';
+		// var shader_lists = '';
+		var audio_lists = '';
+		var video_lists = '';
 
-        var _s =  '    ${c.name} ( ${_layers.length} ) ${_active}\n';
+		var _total_txt = 0;
+		var _total_bts = 0;
+		var _total_tex = 0;
+		var _total_rtt = 0;
+		var _total_snd = 0;
+		var _total_vid = 0;
+		var _total_fnt = 0;
+		var _total_all = 0;
 
-    	if(!hide_layers && c.active) {
-    		for (l in _layers) {
-    			_s += get_layer_info(l);
-    		}
-    	}
+		inline function _res(res:Resource) return '${res.id} • ${res.ref}\t\n';
 
-        return _s;
-    }
+		
+		inline function _fnt(res:FontResource) {
+			_total_fnt += res.memory_use();
+			return '(~${bytes_to_string(res.memory_use())}) ${res.id} • ${Lambda.count(res.font.images)}\t\n';
+		}
 
-    inline function get_layer_info(l:Layer) {
+		inline function _txt(res:TextResource) {
+			var _l = if(res.text != null) res.text.length else 0;
+			_total_txt += _l;
+			return '(~${bytes_to_string(_l)}) ${res.id} • ${res.ref}\t\n';
+		}
 
-        return
-            '        ${l.name} | ${l.priority}\n' +
-            '            total geometry : ' + l.stats.geometry + '\n' +
-            '            visible geometry : ' + l.stats.visible_geometry + '\n' +
-            '            vertices : ' + l.stats.vertices + '\n' +
-            '            indices : ' + l.stats.indices + '\n' +
-            '            instanced : ' + l.stats.instanced + '\n' +
-            '            draw calls : ' + l.stats.draw_calls + '\n';
+		inline function _bts(res:BytesResource) {
+			var _l = res.blob != null ? res.memory_use() : 0;
+			_total_bts += _l;
+			return '(~${bytes_to_string(_l)}) ${res.id} • ${res.ref}\t\n';
+		}
 
-    }
+		inline function _tex(res:Texture) {
+			if(res.resource_type == ResourceType.render_texture) {
+				_total_rtt += res.memory_use();
+			} else {
+				_total_tex += res.memory_use();
+			}
+			return '(${res.width_actual}x${res.height_actual} ~${bytes_to_string(res.memory_use())})    ${res.id} • ${res.ref}\t\n';
+		}
 
-    function refresh() {
+		inline function _snd(res:AudioResource) return {
+			_total_snd += res.memory_use();
+			return '(${clay.math.Mathf.fixed(res.duration, 2)}s ${res.channels}ch ~${bytes_to_string(res.memory_use())})    ${res.id} • ${res.ref}\t\n';
+		}
 
-        render_stats_text.text = get_render_stats();
-        camera_stats = '';
+		inline function _vid(res:VideoResource) {
+			_total_vid += res.memory_use();
+			return '(${res.video.width}x${res.video.height} ~${bytes_to_string(res.memory_use())})    ${res.id} • ${res.ref}\t\n';
+		}
 
-    }
+		for(res in Clay.resources.cache) {
+			switch(res.resource_type) {
+				case ResourceType.bytes:            bytes_lists += _bts(cast res);
+				case ResourceType.text:             text_lists += _txt(cast res);
+				case ResourceType.json:             json_lists += _res(res);
+				case ResourceType.texture:          texture_lists += _tex(cast res);
+				case ResourceType.render_texture:   rtt_lists += _tex(cast res);
+				case ResourceType.font:             font_lists += _fnt(cast res);
+				// case ResourceType.shader:           shader_lists += _shd(cast res);
+				case ResourceType.audio:            audio_lists += _snd(cast res);
+				case ResourceType.video:            video_lists += _vid(cast res);
+				default:
+			}
+		}
 
- 	function tabs(_d:Int) {
+		inline function orblank(v:String) return (v == '') ? '-\t\n' : v;
 
-        var res = '';
-        for(i in 0 ... _d) res += '    ';
-        return res;
+		_total_all += _total_bts;
+		_total_all += _total_txt;
+		_total_all += _total_tex;
+		_total_all += _total_rtt;
+		_total_all += _total_snd;
+		_total_all += _total_fnt;
+		_total_all += _total_vid;
 
-    }
+		var lists = 'Resource list (${Clay.resources.stats.total} • ~${bytes_to_string(_total_all)})\n\n';
+
+			lists += 'Bytes (${Clay.resources.stats.bytes} • ~${bytes_to_string(_total_bts)}))\n';
+				lists += orblank(bytes_lists);
+			lists += '\nText (${Clay.resources.stats.texts} • ~${bytes_to_string(_total_txt)})\n';
+				lists += orblank(text_lists);
+			lists += '\nJSON (${Clay.resources.stats.jsons})\n';
+				lists += orblank(json_lists);
+			lists += '\nTexture (${Clay.resources.stats.textures} • ~${bytes_to_string(_total_tex)})\n';
+				lists += orblank(texture_lists);
+			lists += '\nRenderTexture (${Clay.resources.stats.rtt} • ~${bytes_to_string(_total_rtt)})\n';
+				lists += orblank(rtt_lists);
+			lists += '\nFont (${Clay.resources.stats.fonts} • ~${bytes_to_string(_total_fnt)})\n';
+				lists += orblank(font_lists);
+			// lists += '\nShader (${Clay.resources.stats.shaders})\n';
+				// lists += orblank(shader_lists);
+			lists += '\nAudio (${Clay.resources.stats.audios} • ~${bytes_to_string(_total_snd)})\n';
+				lists += orblank(audio_lists);
+			lists += '\nVideo (${Clay.resources.stats.videos} • ~${bytes_to_string(_total_vid)})\n';
+				lists += orblank(video_lists);
+
+
+		return lists;
+
+	}
+
+
+	function get_render_stats():String {
+
+		var _render_stats = Clay.renderer.stats;
+
+		return
+			'Renderer Statistics\n\n' +
+			'total geometry : ' + _render_stats.geometry + '\n' +
+			'visible geometry : ' + _render_stats.visible_geometry + '\n' +
+			'static geometry : ' + _render_stats.locked + '\n' +
+			'vertices : ' + _render_stats.vertices + '\n' +
+			'indices : ' + _render_stats.indices + '\n' +
+			'draw calls : ' + _render_stats.draw_calls + '\n' +
+			'layers : ' + Clay.renderer.layers.active_count + '\n' +
+			'cameras : ' + Clay.renderer.cameras.length + '\n' +
+			camera_stats;
+
+	}
+
+	inline function get_camera_info(c:Camera) {
+
+
+		var _layers = [];
+		for (l in Clay.renderer.layers) {
+			if(c._visible_layers_mask.get(l.id)) {
+				_layers.push(l);
+			}
+		}
+
+		var _active = c.active ? '' : '/ inactive';
+
+		var _s =  '    ${c.name} ( ${_layers.length} ) ${_active}\n';
+
+		if(!hide_layers && c.active) {
+			for (l in _layers) {
+				_s += get_layer_info(l);
+			}
+		}
+
+		return _s;
+		
+	}
+
+	inline function get_layer_info(l:Layer) {
+
+		return
+			'        ${l.name} | ${l.priority}\n' +
+			'            total geometry : ' + l.stats.geometry + '\n' +
+			'            visible geometry : ' + l.stats.visible_geometry + '\n' +
+			'            static geometry : ' + l.stats.locked + '\n' +
+			'            vertices : ' + l.stats.vertices + '\n' +
+			'            indices : ' + l.stats.indices + '\n' +
+			'            draw calls : ' + l.stats.draw_calls + '\n';
+
+	}
+
+	function refresh() {
+
+		render_stats_text.text = get_render_stats();
+		resource_list_text.text = get_recource_stats();
+		camera_stats = '';
+
+	}
+
+	function tabs(_d:Int) {
+
+		var res = '';
+		for(i in 0 ... _d) res += '    ';
+		return res;
+
+	}
 
 
 }

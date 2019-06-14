@@ -1,7 +1,7 @@
 package clay.core;
 
 
-import clay.core.Signal;
+import clay.components.event.Signal;
 
 import clay.input.Keyboard;
 import clay.input.Mouse;
@@ -22,7 +22,7 @@ class EngineSignals {
 	public var tickend           	(default, null):Signal<Void->Void>;
 
 	public var update            	(default, null):Signal<Float->Void>;
-	public var fixedupdate            	(default, null):Signal<Float->Void>;
+	public var fixedupdate          (default, null):Signal<Float->Void>;
 
 	public var keydown         	    (default, null):Signal<KeyEvent->Void>;
 	public var keyup           	    (default, null):Signal<KeyEvent->Void>;

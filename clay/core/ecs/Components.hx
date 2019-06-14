@@ -1,14 +1,15 @@
 package clay.core.ecs;
 
-import haxe.ds.Vector;
 
 import clay.Entity;
 import clay.World;
 import clay.core.ecs.Entities;
-import clay.core.ecs.ComponentType;
+import clay.types.ComponentType;
+import clay.ComponentMapper;
+
 import clay.ds.BitFlag;
 import clay.ds.BitVector;
-import clay.ComponentMapper;
+import haxe.ds.Vector;
 
 
 @:allow(clay.ComponentMapper)
@@ -53,7 +54,7 @@ class Components {
 			extends another component class and you want the framework to treat the component as of
 			the base class type. If not set, the class type is determined directly from the component.
 			@return A reference to component. */
-	public inline function set<T>(_entity:Entity, _component:T, ?_component_class:Class<Dynamic>):T {
+	public function set<T>(_entity:Entity, _component:T, ?_component_class:Class<Dynamic>):T {
 
 		if(_component_class == null){
 			_component_class = Type.getClass(_component);
@@ -67,15 +68,15 @@ class Components {
 		/** add a array of components to the entity.
 			@param _entity The entity.
 			@param _components Array of components to add. */
-	public inline function set_many(_entity:Entity, _components:Array<Dynamic>) {
+	public function set_many(_entity:Entity, _components:Array<Dynamic>) {
 
 		var ct:ComponentType = new ComponentType(-1);
 		for (c in _components) {
 			ct = get_type(Type.getClass(c));
 			components[ct.id]._set(_entity, c); // don't notify families
 		}
-		// now we can send events, immediate
-		entity_changed(_entity);
+		// now we can send events
+		mark_entity_changed(_entity);
 
 	}
 
@@ -83,7 +84,7 @@ class Components {
 			@param _entity The entity.
 			@param _component_class The class of the component requested.
 			@return The component, or null if none was found. */
-	public inline function get<T>(_entity:Entity, _component_class:Class<T>):T {
+	public function get<T>(_entity:Entity, _component_class:Class<T>):T {
 
 		var ct:ComponentType = get_type(_component_class);
 		return cast components[ct.id].get(_entity);
@@ -110,7 +111,7 @@ class Components {
 			@param _entity The entity.
 			@param _component_class The class of the component requested.
 			@return true, or false if none was found. */
-	public inline function has(_entity:Entity, _component_class:Class<Dynamic>):Bool {
+	public function has(_entity:Entity, _component_class:Class<Dynamic>):Bool {
 
 		var ct:ComponentType = get_type(_component_class);
 		return _has(_entity, ct.id);
@@ -121,7 +122,7 @@ class Components {
 			@param _entity The entity.
 			@param _component_class The class of the component to be removed.
 			@return true if component removed. */
-	public inline function remove(_entity:Entity, _component_class:Class<Dynamic>):Bool {
+	public function remove(_entity:Entity, _component_class:Class<Dynamic>):Bool {
 
 		var ct:ComponentType = get_type(_component_class);
 		return components[ct.id].remove(_entity);
@@ -143,13 +144,6 @@ class Components {
 		for (e in world.entities) {
 			remove_all(e);
 		}
-
-	}
-
-	@:noCompletion public function clear_flags(e:Entity) {
-
-		flags[e.id].clear();
-		entity_changed_delayed(e);
 
 	}
 
@@ -192,19 +186,9 @@ class Components {
 
 	}
 
-	inline function entity_changed(e:Entity) {
+	inline function mark_entity_changed(e:Entity) {
 
-		if(world.entities.has(e)) {
-			world.families.check_entity(e);
-		}
-
-	}
-
-	inline function entity_changed_delayed(e:Entity) {
-
-		if(world.entities.has(e)) {
-			world.families.check_entity_delayed(e);
-		}
+		world.families.mark_check_entity(e);
 
 	}
 

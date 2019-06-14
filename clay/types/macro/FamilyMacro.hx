@@ -6,9 +6,6 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import clay.types.macro.MacroUtils;
-// import clay.utils.UUID;
-// using StringTools;
-
 
 class FamilyMacro {
 
@@ -103,7 +100,7 @@ class FamilyMacro {
 
 		var include_comps = [];
 		var exclude_comps = [];
-		var one_comps = [];
+		// var one_comps = [];
 
 		for (param in params) {
 			switch (param) {
@@ -112,7 +109,7 @@ class FamilyMacro {
 				case TType(i, j): 
 					switch (i.get().name) {
 					case 'Exclude': exclude_comps.push(j[0]);
-					case 'One': one_comps.push(j[0]);
+					// case 'One': one_comps.push(j[0]);
 					default: null;
 				};
 				default: null;
@@ -127,11 +124,12 @@ class FamilyMacro {
 		if(exclude_comps.length > 0) {
 			exclude_types_string = '_EX_${MacroUtils.create_string(exclude_comps)}';
 		}
-		var one_types_string:String = '';
-		if(one_comps.length > 0) {
-			one_types_string = '_ONE_${MacroUtils.create_string(one_comps)}';
-		}
-		var name = '${type_name}_${types_string}${exclude_types_string}${one_types_string}';
+		// var one_types_string:String = '';
+		// if(one_comps.length > 0) {
+		// 	one_types_string = '_ONE_${MacroUtils.create_string(one_comps)}';
+		// }
+		// var name = '${type_name}_${types_string}${exclude_types_string}${one_types_string}';
+		var name = '${type_name}_${types_string}${exclude_types_string}';
 
 		if(families.indexOf(name) == -1) {
 
@@ -149,13 +147,13 @@ class FamilyMacro {
 				}
 			}
 
-			if(one_comps.length > 0) {
-				for (c in one_comps) {
-					var info = MacroUtils.get_path_info(c);
-					var ctn = info.pack.concat([info.module, info.name]).join(".");
-					one_types.push(ctn);
-				}
-			}
+			// if(one_comps.length > 0) {
+			// 	for (c in one_comps) {
+			// 		var info = MacroUtils.get_path_info(c);
+			// 		var ctn = info.pack.concat([info.module, info.name]).join(".");
+			// 		one_types.push(ctn);
+			// 	}
+			// }
 
 			for (i in 0...len) {
 
@@ -172,7 +170,7 @@ class FamilyMacro {
 				// var ctn = info.pack.concat([info.name]).join(".");
 				ctypes.push(ctn);
 
-				var ctype = TPath({pack: ['clay', 'core', 'ecs'], name: 'ComponentType'});
+				var ctype = TPath({pack: ['clay', 'types'], name: 'ComponentType'});
 
 				fields.push(MacroUtils.build_var(comp_type_id, [], ctype));
 
@@ -211,10 +209,10 @@ class FamilyMacro {
 									expr = Context.parse('exclude(${excl_types})', init_field.pos);
 									exprs.insert(0,expr);
 								}
-								if(one_types.length > 0) {
-									expr = Context.parse('one(${one_types})', init_field.pos);
-									exprs.insert(0,expr);
-								}
+								// if(one_types.length > 0) {
+								// 	expr = Context.parse('one(${one_types})', init_field.pos);
+								// 	exprs.insert(0,expr);
+								// }
 							}
 							default:
 						}

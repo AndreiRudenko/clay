@@ -1,11 +1,9 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
 import clay.particles.components.Velocity;
-import clay.particles.modules.helpers.VelocityUpdateModule;
 
 
 
@@ -18,7 +16,6 @@ class DirectionModule extends ParticleModule {
 	public var speed_variance:Float;
 
 	var vel_comps:Components<Velocity>;
-	var particles_data:Array<ParticleData>;
 
 
 	public function new(_options:DirectionModuleOptions) {
@@ -33,14 +30,8 @@ class DirectionModule extends ParticleModule {
 	}
 
 	override function init() {
-
-		if(emitter.get_module(VelocityUpdateModule) == null) {
-			emitter.add_module(new VelocityUpdateModule());
-		}
-
+		
 		vel_comps = emitter.components.get(Velocity);
-
-		particles_data = emitter.particles_data;
 
 	}
 
@@ -48,7 +39,7 @@ class DirectionModule extends ParticleModule {
 
 		particles.for_each(
 			function(p) {
-				vel_comps.get(p).set(0,0);
+				vel_comps.get(p.id).set(0,0);
 			}
 		);
 		
@@ -58,11 +49,10 @@ class DirectionModule extends ParticleModule {
 
 		emitter.remove_module(VelocityUpdateModule);
 		vel_comps = null;
-		particles_data = null;
 		
 	}
 
-	override function onspawn(p:Particle) {
+	override function onspawn(pd:Particle) {
 
 		var angle:Float = (direction + direction_variance * emitter.random_1_to_1()) * 0.017453292519943295; // Math.PI / 180
 
@@ -72,7 +62,7 @@ class DirectionModule extends ParticleModule {
 			spd += speed_variance * emitter.random_1_to_1();
 		}
 
-		var v:Velocity = vel_comps.get(p);
+		var v:Velocity = vel_comps.get(pd.id);
 		v.x = spd * Math.cos(angle);
 		v.y = spd * Math.sin(angle);
 

@@ -30,6 +30,9 @@ class ModulesFactory {
 		modules.set(Type.getClassName(SizeLifeModule),        function(o) { return new SizeLifeModule(o);});
 		modules.set(Type.getClassName(VelocityLifeModule),    function(o) { return new VelocityLifeModule(o);});
 		modules.set(Type.getClassName(VelocityModule),        function(o) { return new VelocityModule(o);});
+		modules.set(Type.getClassName(VelocityUpdateModule),  function(o) { return new VelocityUpdateModule(o);});
+		modules.set(Type.getClassName(RadialEdgeSpawnModule), function(o) { return new RadialEdgeSpawnModule(o);});
+		modules.set(Type.getClassName(PolyLineSpawnModule),   function(o) { return new PolyLineSpawnModule(o);});
 	    
 	}
 

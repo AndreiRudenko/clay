@@ -1,7 +1,16 @@
 package clay.math;
 
 
+import clay.components.common.Transform;
 
+/*
+
+| a | c | tx |
+| b | d | ty |
+| 0 | 0 | 1  |
+
+ */
+ 
 class Matrix {
 
 
@@ -23,7 +32,7 @@ class Matrix {
 	 * Set the matrix to the identity matrix - when appending or prepending this matrix to another there will be no change in the resulting matrix
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public function identity():Matrix {
+	@:extern public inline function identity():Matrix {
 
 		set(
 			1, 0,
@@ -45,7 +54,7 @@ class Matrix {
 	 * @param  _ty  Matrix component
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public inline function set(_a:Float, _b:Float, _c:Float, _d:Float, _tx:Float, _ty:Float):Matrix {
+	@:extern public inline function set(_a:Float, _b:Float, _c:Float, _d:Float, _tx:Float, _ty:Float):Matrix {
 		
 		a = _a;
 		b = _b;
@@ -65,7 +74,7 @@ class Matrix {
 	 * @param _y How much to translate y by
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public function translate(_x:Float, _y:Float):Matrix {
+	@:extern public inline function translate(_x:Float, _y:Float):Matrix {
 		
 		tx += _x;
 		ty += _y;
@@ -74,7 +83,7 @@ class Matrix {
 
 	}    
 
-	public function apply(_x:Float, _y:Float):Matrix {
+	@:extern public inline function apply(_x:Float, _y:Float):Matrix {
 		
 		tx = a * _x + c * _y + tx;
 		ty = b * _x + d * _y + ty;
@@ -91,7 +100,7 @@ class Matrix {
 	 * @param _y The amount to scale vertically
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public function scale(_x:Float, _y:Float):Matrix {
+	@:extern public inline function scale(_x:Float, _y:Float):Matrix {
 		
 		a *= _x;
 		b *= _x;
@@ -108,7 +117,7 @@ class Matrix {
 	 * @param _angle The angle in radians.
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public function rotate(_angle:Float):Matrix {
+	@:extern public inline function rotate(_angle:Float):Matrix {
 		
 		var _sin:Float = Math.sin(_angle);
 		var _cos:Float = Math.cos(_angle);
@@ -133,7 +142,7 @@ class Matrix {
 	 * @param m The matrix to append.
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public function append(m:Matrix):Matrix {
+	@:extern public inline function append(m:Matrix):Matrix {
 		
 		var a1 = a;
 		var b1 = b;
@@ -152,7 +161,7 @@ class Matrix {
 
 	}
 
-	public function orto(left:Float, right:Float,  bottom:Float, top:Float):Matrix {
+	@:extern public inline function orto(left:Float, right:Float,  bottom:Float, top:Float):Matrix {
 
 		var sx:Float = 1.0 / (right - left);
 		var sy:Float = 1.0 / (top - bottom);
@@ -167,7 +176,7 @@ class Matrix {
 
 	}
 
-	public function multiply(m:Matrix):Matrix {
+	@:extern public inline function multiply(m:Matrix):Matrix {
 
 		a = a * m.a + b * m.c;
 		b = a * m.b + b * m.d;
@@ -184,7 +193,7 @@ class Matrix {
 	 * 
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public function invert():Matrix {
+	@:extern public inline function invert():Matrix {
 
 		var a1:Float = a;
 		var b1:Float = b;
@@ -204,7 +213,7 @@ class Matrix {
 
 	}
 
-	public function copy(other:Matrix):Matrix {
+	@:extern public inline function copy(other:Matrix):Matrix {
 
 		set(
 			other.a,  other.b,
@@ -216,5 +225,26 @@ class Matrix {
 
 	}
 
+	@:extern public inline function decompose(into:Spatial) {
+
+		var determ = a * d - b * c;
+
+		into.pos.set(tx, ty);
+
+		if(a != 0 || b != 0) {
+			var r = Math.sqrt(a * a + b * b);
+			into.rotation = (b > 0) ? Math.acos(a / r) : -Math.acos(a / r);
+			into.scale.set(r, determ / r);
+		} else if(c != 0 || d != 0) {
+			var s = Math.sqrt(c * c + d * d);
+			into.rotation = Math.PI * 0.5 - (d > 0 ? Math.acos(-c / s) : -Math.acos(c / s));
+			into.scale.set(determ / s, s);
+		} else {
+			into.rotation = 0;
+			into.scale.set(0,0);
+		}
+
+	}
+	
 
 }

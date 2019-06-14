@@ -54,7 +54,6 @@ class MacroUtils {
 		return types_strings.join(delimiter);
 
 	}
-
 	
 	public static function build_type_expr(pack:Array<String>, module:String, name:String):Expr {
 		var pack_module = pack.concat([module, name]);
@@ -73,7 +72,8 @@ class MacroUtils {
 		return name.substr(0, 1).toLowerCase() + name.substr(1);
 
 	}
-	
+
+	#if macro
 	public static function build_var(name:String, access:Array<Access>, type:ComplexType, e:Expr = null, m:Metadata = null):Field {
 
 		return {
@@ -113,6 +113,23 @@ class MacroUtils {
 		};
 
 	}
+
+	public static function build_constructor(name:String, pack:Array<String>, params:Array<TypeParam>, exprs:Array<Expr>):Expr {
+
+		return {
+			pos: Context.currentPos(),
+			expr: ENew(
+				{
+					name: name, 
+					pack: pack, 
+					params: params
+				}, 
+				exprs
+			)
+		}
+
+	}
+	#end
 	
 	public static function get_path_info(type:Type):PathInfo {
 
@@ -127,11 +144,30 @@ class MacroUtils {
 				data.pack = ref.get().pack;
 				data.module = ref.get().module.split('.').pop();
 				data.name = ref.get().name;
+			case TType(ref, types):
+				data.pack = ref.get().pack;
+				data.module = ref.get().module.split('.').pop();
+				data.name = ref.get().name;
 			default:
 				throw false;
 		}
 		
 		return data;
+
+	}
+
+	public static function get_class_typepath(type:haxe.macro.Type) {
+
+		switch (type) {
+			case TType(ref, types):
+				var name = ref.get().name;
+				if(!StringTools.startsWith(name, 'Class')) throw '$name must be Class<T>';
+				var pack = name.substring(6, name.length-1).split('.');
+				name = pack.pop();
+				return {pack: pack, name: name, sub: null, params: []};
+			default:
+				throw 'Invalid type';
+		}
 
 	}
 

@@ -1,9 +1,9 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
+import clay.particles.components.ScaleDelta;
 import clay.math.Mathf;
 
 
@@ -15,15 +15,12 @@ class ScaleLifeModule extends ParticleModule {
 	public var end_scale:Float;
 	public var end_scale_max:Float;
 
-	var scale_delta:Array<Float>;
-	var particles_data:Array<ParticleData>;
+	var scale_delta:Components<ScaleDelta>;
 
 
 	public function new(_options:ScaleLifeModuleOptions) {
 
 		super(_options);
-
-		scale_delta = [];
 
 		initial_scale = _options.initial_scale != null ? _options.initial_scale : 1;
 		initial_scale_max = _options.initial_scale_max != null ? _options.initial_scale_max : 0;
@@ -34,17 +31,13 @@ class ScaleLifeModule extends ParticleModule {
 
 	override function init() {
 
-		particles_data = emitter.particles_data;
+		scale_delta = emitter.components.get(ScaleDelta);
 
-		for (i in 0...particles.capacity) {
-			scale_delta[i] = 0;
-		}
-	    
 	}
 
 	override function ondisabled() {
 
-		for (pd in particles_data) {
+		for (pd in particles) {
 			pd.s = 1;
 		}
 		
@@ -52,33 +45,29 @@ class ScaleLifeModule extends ParticleModule {
 
 	override function onspawn(p:Particle) {
 
-		var pd:ParticleData = particles_data[p.id];
-
 		if(initial_scale_max > initial_scale) {
-			pd.s = emitter.random_float(initial_scale, initial_scale_max);
+			p.s = emitter.random_float(initial_scale, initial_scale_max);
 		} else {
-			pd.s = initial_scale;
+			p.s = initial_scale;
 		}
 
 		if(end_scale_max > end_scale) {
-			scale_delta[p.id] = emitter.random_float(end_scale, end_scale_max) - pd.s;
+			scale_delta.get(p.id).value = emitter.random_float(end_scale, end_scale_max) - p.s;
 		} else {
-			scale_delta[p.id] = end_scale - pd.s;
+			scale_delta.get(p.id).value = end_scale - p.s;
 		}
 
-		if(scale_delta[p.id] != 0) {
-			scale_delta[p.id] /= pd.lifetime;
+		if(scale_delta.get(p.id).value != 0) {
+			scale_delta.get(p.id).value /= p.lifetime;
 		}
 
 	}
 
 	override function update(dt:Float) {
 
-		var pd:ParticleData;
 		for (p in particles) {
-			if(scale_delta[p.id] != 0) {
-				pd = particles_data[p.id];
-				pd.s = Mathf.clamp_bottom(pd.s + scale_delta[p.id] * dt, 0);
+			if(scale_delta.get(p.id).value != 0) {
+				p.s = Mathf.clamp_bottom(p.s + scale_delta.get(p.id).value * dt, 0);
 			}
 		}
 

@@ -2,6 +2,7 @@ package clay.particles.core;
 
 
 import clay.particles.core.Particle;
+import clay.particles.core.ComponentManager;
 import haxe.ds.Vector;
 
 
@@ -12,60 +13,61 @@ class ParticleVector {
 	public var length(default, null):Int;
 	public var capacity(default, null):Int;
 
-	public var indexes(default, null):Vector<Int>;
-	public var buffer(default, null):Vector<Int>;
-	var wrap_index:Int = 0;
+	public var buffer(default, null):Vector<Particle>;
+
+	var _sorted:Vector<Particle>;
+	var _sort_tmp:Vector<Particle>;
+	var _components:ComponentManager;
+	var _wrap_index:Int = 0;
 
 
-	public inline function new(_capacity:Int) {
+	public inline function new(components:ComponentManager, _capacity:Int) {
 
 		length = 0;
 		capacity = _capacity;
+		_components = components;
 		
-		indexes = new Vector(capacity);
 		buffer = new Vector(capacity);
+		_sorted = new Vector(capacity);
+
+		_sort_tmp = new Vector(capacity);
 
 		for (i in 0...capacity) {
-			indexes[i] = i;
-			buffer[i] = i;
+			buffer[i] = new Particle(i);
 		}
 
 	}
 
-	@:arrayAccess
-	public inline function get(index:Int):Particle {
+	public inline function get(idx:Int):Particle {
 
-		return new Particle(buffer[index]);
-
+		return buffer[idx];
+	    
 	}
 
-	public inline function ensure():Particle { // todo: add first into array
+	public inline function ensure():Particle {
 
-		var p:Particle = new Particle(buffer[length]);
-		length++;
-
-		return p;
+		return buffer[length++];
 
 	}
 
 	public inline function wrap():Particle {
 
+		_wrap_index %= length - 1;
 		var last_idx:Int = length - 1;
-		swap_from_buffer(wrap_index, last_idx);
-		wrap_index++;
-		wrap_index %= capacity-1;
+		swap(_wrap_index, last_idx);
+		_wrap_index++;
 
-		return new Particle(buffer[last_idx]);
+		return buffer[last_idx];
 
 	}
 
 	public inline function remove(p:Particle) {
 
-		var idx:Int = indexes[p.id];
+		var idx:Int = p.id;
 
 		var last_idx:Int = length - 1;
 		if(idx != last_idx) {
-			swap_from_buffer(idx, last_idx);
+			swap(idx, last_idx);
 		}
 
 		length--;
@@ -75,8 +77,7 @@ class ParticleVector {
 	public inline function reset() {
 
 		for (i in 0...capacity) {
-			indexes[i] = i;
-			buffer[i] = i;
+			buffer[i].id = i;
 		}
 
 		length = 0;
@@ -86,21 +87,69 @@ class ParticleVector {
 	@:access(clay.particles.ParticleVector)
 	public function for_each(f:Particle->Void) {
 		
-		for (i in buffer) {
-			f(new Particle(i));
+		for (p in buffer) {
+			f(p);
 		}
 
 	}
 
-	inline function swap_from_buffer(a:Int, b:Int) {
+	public function sort(compare:Particle->Particle->Int):Vector<Particle> {
 
-		var idx_a:Int = buffer[a];
-		var idx_b:Int = buffer[b];
+		for (i in 0...length) {
+			_sorted[i] = buffer[i];
+		}
 
-		indexes[idx_a] = b;
-		indexes[idx_b] = a;
-		buffer[a] = idx_b;
-		buffer[b] = idx_a;
+		_sort(_sorted, _sort_tmp, 0, length-1, compare);
+
+		return _sorted;
+
+	}
+	
+	// merge sort
+	function _sort(a:Vector<Particle>, aux:Vector<Particle>, l:Int, r:Int, compare:Particle->Particle->Int) { 
+		
+		if (l < r) {
+			var m = Std.int(l + (r - l) / 2);
+			_sort(a, aux, l, m, compare);
+			_sort(a, aux, m + 1, r, compare);
+			_merge(a, aux, l, m, r, compare);
+		}
+
+	}
+
+	inline function _merge(a:Vector<Particle>, aux:Vector<Particle>, l:Int, m:Int, r:Int, compare:Particle->Particle->Int) { 
+
+		var k = l;
+		while (k <= r) {
+			aux[k] = a[k];
+			k++;
+		}
+
+		k = l;
+		var i = l;
+		var j = m + 1;
+		while (k <= r) {
+			if (i > m) a[k] = aux[j++];
+			else if (j > r) a[k] = aux[i++];
+			else if (compare(aux[j], aux[i]) < 0) a[k] = aux[j++];
+			else a[k] = aux[i++];
+			k++;
+		}
+		
+	}
+
+	inline function swap(a:Int, b:Int) {
+
+		var pa = buffer[a];
+		var pb = buffer[b];
+
+		pa.id = b;
+		pb.id = a;
+
+		buffer[a] = pb;
+		buffer[b] = pa;
+
+		_components.swap(a, b);
 		
 	}
 
@@ -116,12 +165,11 @@ class ParticleVector {
 
 	}
 
-	public inline function iterator():ParticleVectorIterator {
+	@noCompletion public inline function iterator():ParticleVectorIterator {
 
-		return new ParticleVectorIterator(this);
+		return new ParticleVectorIterator(buffer, length);
 
 	}
-
 
 }
 
@@ -133,14 +181,14 @@ class ParticleVectorIterator {
 
 	public var index:Int;
 	public var end:Int;
-	public var data:Vector<Int>;
+	public var data:Vector<Particle>;
 
 
-	public inline function new(_vector:ParticleVector) {
+	public inline function new(data:Vector<Particle>, length:Int) {
 
 		index = 0;
-		end = _vector.length;
-		data = _vector.buffer;
+		end = length;
+		this.data = data;
 
 	}
 
@@ -150,10 +198,9 @@ class ParticleVectorIterator {
 
 	}
 
-	@:access(clay.particles.core.Particle)
 	public inline function next():Particle {
 
-		return new Particle(data[index++]);
+		return data[index++];
 
 	}
 

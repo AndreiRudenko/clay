@@ -1,9 +1,9 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
+import clay.particles.components.RotationDelta;
 
 
 class RotationModule extends ParticleModule {
@@ -15,15 +15,12 @@ class RotationModule extends ParticleModule {
 	public var angular_velocity_max:Float;
 	public var rotation_random:Float;
 
-	var rotation_delta:Array<Float>;
-	var particles_data:Array<ParticleData>;
+	var rotation_delta:Components<RotationDelta>;
 
 
 	public function new(_options:RotationModuleOptions) {
 
 		super(_options);
-
-		rotation_delta = [];
 
 		initial_rotation = _options.initial_rotation != null ? _options.initial_rotation : 0;
 		initial_rotation_max = _options.initial_rotation_max != null ? _options.initial_rotation_max : 0;
@@ -35,36 +32,30 @@ class RotationModule extends ParticleModule {
 
 	override function init() {
 
-		particles_data = emitter.particles_data;
-
-		for (i in 0...particles.capacity) {
-			rotation_delta[i] = 0;
-		}
+		rotation_delta = emitter.components.get(RotationDelta);
 	    
 	}
 
 	override function ondisabled() {
 		
-		for (pd in particles_data) {
-			pd.r = 0;
+		for (p in particles) {
+			p.r = 0;
 		}
 
 	}
 
 	override function onspawn(p:Particle) {
 
-		var pd:ParticleData = particles_data[p.id];
-
 		if(initial_rotation_max != 0) {
-			pd.r = emitter.random_float(initial_rotation, initial_rotation_max);
+			p.r = emitter.random_float(initial_rotation, initial_rotation_max);
 		} else {
-			pd.r = initial_rotation;
+			p.r = initial_rotation;
 		}
 
 		if(angular_velocity_max != 0) {
-			rotation_delta[p.id] = emitter.random_float(angular_velocity, angular_velocity_max) * 360;
+			rotation_delta.get(p.id).value = emitter.random_float(angular_velocity, angular_velocity_max) * 360;
 		} else {
-			rotation_delta[p.id] = angular_velocity * 360;
+			rotation_delta.get(p.id).value = angular_velocity * 360;
 		}
 
 	}
@@ -73,15 +64,15 @@ class RotationModule extends ParticleModule {
 
 		if(rotation_random > 0) {
 			for (p in particles) {
-				if(rotation_delta[p.id] != 0) {
-					particles_data[p.id].r += rotation_delta[p.id] * dt;
+				if(rotation_delta.get(p.id).value != 0) {
+					p.r += rotation_delta.get(p.id).value * dt;
 				}
-				particles_data[p.id].r += rotation_random * 360 * emitter.random_1_to_1() * dt;
+				p.r += rotation_random * 360 * emitter.random_1_to_1() * dt;
 			}
 		} else {
 			for (p in particles) {
-				if(rotation_delta[p.id] != 0) {
-					particles_data[p.id].r += rotation_delta[p.id] * dt;
+				if(rotation_delta.get(p.id).value != 0) {
+					p.r += rotation_delta.get(p.id).value * dt;
 				}
 			}
 		}

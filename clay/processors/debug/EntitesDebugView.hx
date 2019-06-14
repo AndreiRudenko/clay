@@ -143,9 +143,8 @@ class EntitesDebugView extends DebugView {
 				_result += '( ${_world.entities.used} / ${_world.entities.capacity} )\n';
 
 				if(!hide_ents) {
-					var tmp = '';
 					for(_entity in _world.entities._entities) {
-						tmp = list_entity(tmp, _world, _entity);
+						var tmp = list_entity('', _world, _entity);
 						if((_result.length + tmp.length) * 4 >= Clay.renderer.batch_size) {
 							break;
 						}

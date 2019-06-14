@@ -1,9 +1,9 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
+import clay.particles.components.SizeDelta;
 import clay.math.Vector;
 import clay.math.Mathf;
 
@@ -18,15 +18,12 @@ class SizeLifeModule extends ParticleModule {
 	public var initial_size_max:Vector;
 	public var end_size_max:Vector;
 
-	var size_delta:Array<Vector>;
-	var particles_data:Array<ParticleData>;
+	var size_delta:Components<SizeDelta>;
 
 
 	public function new(_options:SizeLifeModuleOptions) {
 
 		super(_options);
-
-		size_delta = [];
 
 		initial_size = _options.initial_size != null ? _options.initial_size : new Vector(32, 32);
 		initial_size_max = _options.initial_size_max;
@@ -37,18 +34,13 @@ class SizeLifeModule extends ParticleModule {
 
 	override function init() {
 
-		particles_data = emitter.particles_data;
-
-		for (i in 0...particles.capacity) {
-			size_delta[i] = new Vector();
-		}
-	    
+		size_delta = emitter.components.get(SizeDelta);
+		
 	}
 
-	override function onspawn(p:Particle) {
+	override function onspawn(pd:Particle) {
 
-		var szd:Vector = size_delta[p.id];
-		var pd:ParticleData = particles_data[p.id];
+		var szd:Vector = size_delta.get(pd.id);
 		var lf:Float = pd.lifetime;
 
 		if(initial_size_max != null) {
@@ -80,12 +72,10 @@ class SizeLifeModule extends ParticleModule {
 	override function update(dt:Float) {
 
 		var szd:Vector;
-		var pd:ParticleData;
 		for (p in particles) {
-			szd = size_delta[p.id];
-			pd = particles_data[p.id];
-			pd.w = Mathf.clamp_bottom(pd.w + szd.x * dt, 0);
-			pd.h = Mathf.clamp_bottom(pd.h + szd.y * dt, 0);
+			szd = size_delta.get(p.id);
+			p.w = Mathf.clamp_bottom(p.w + szd.x * dt, 0);
+			p.h = Mathf.clamp_bottom(p.h + szd.y * dt, 0);
 		}
 
 	}

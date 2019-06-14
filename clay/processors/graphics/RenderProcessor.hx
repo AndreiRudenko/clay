@@ -14,6 +14,7 @@ import clay.components.graphics.LineGeometry;
 
 import clay.math.Matrix;
 import clay.render.Renderer;
+import clay.render.DisplayObject;
 import clay.utils.Log.*;
 
 
@@ -96,14 +97,14 @@ class RenderProcessor extends Processor {
 	function geom_added(e:Entity) {
 
 		var geom = geom_family.get_geometry(e);
-		add_geom_to_renderer(geom);
+		add_to_renderer(geom);
 
 	}
 	
 	function geom_removed(e:Entity) {
 
 		var geom = geom_family.get_geometry(e);
-		remove_geom_from_renderer(geom);
+		remove_from_renderer(geom);
 
 	}
 
@@ -128,14 +129,14 @@ class RenderProcessor extends Processor {
 	function quad_added(e:Entity) {
 
 		var geom = quad_family.get_quadgeometry(e);
-		add_geom_to_renderer(geom);
+		add_to_renderer(geom);
 
 	}
 	
 	function quad_removed(e:Entity) {
 
 		var geom = quad_family.get_quadgeometry(e);
-		remove_geom_from_renderer(geom);
+		remove_from_renderer(geom);
 
 	}
 
@@ -160,14 +161,14 @@ class RenderProcessor extends Processor {
 	function quadpack_added(e:Entity) {
 
 		var geom = quadpack_family.get_quadpack(e);
-		add_geom_to_renderer(geom);
+		add_to_renderer(geom);
 
 	}
 	
 	function quadpack_removed(e:Entity) {
 
 		var geom = quadpack_family.get_quadpack(e);
-		remove_geom_from_renderer(geom);
+		remove_from_renderer(geom);
 
 	}
 
@@ -192,14 +193,14 @@ class RenderProcessor extends Processor {
 	function ns_added(e:Entity) {
 
 		var g = ns_family.get_nineslice(e);
-		add_geom_to_renderer(g);
+		add_to_renderer(g);
 
 	}
 	
 	function ns_removed(e:Entity) {
 
 		var g = ns_family.get_nineslice(e);
-		remove_geom_from_renderer(g);
+		remove_from_renderer(g);
 
 	}
 
@@ -223,14 +224,14 @@ class RenderProcessor extends Processor {
 	function text_added(e:Entity) {
 
 		var txt = text_family.get_text(e);
-		add_geom_to_renderer(txt);
+		add_to_renderer(txt);
 
 	}
 	
 	function text_removed(e:Entity) {
 
 		var txt = text_family.get_text(e);
-		remove_geom_from_renderer(txt);
+		remove_from_renderer(txt);
 
 	}
 
@@ -255,18 +256,18 @@ class RenderProcessor extends Processor {
 	function lg_added(e:Entity) {
 
 		var g = lg_family.get_linegeometry(e);
-		add_geom_to_renderer(g);
+		add_to_renderer(g);
 
 	}
 	
 	function lg_removed(e:Entity) {
 
 		var g = lg_family.get_linegeometry(e);
-		remove_geom_from_renderer(g);
+		remove_from_renderer(g);
 
 	}
 
-	inline function add_geom_to_renderer(g:Geometry) {
+	inline function add_to_renderer(g:DisplayObject) {
 
 		if(g.added) {
 			log('Error geometry `${g.name}` already added');
@@ -284,23 +285,25 @@ class RenderProcessor extends Processor {
 
 	}
 
-	inline function remove_geom_from_renderer(g:Geometry) {
+	inline function remove_from_renderer(g:DisplayObject) {
 		
 		g.drop();
 
 	}
 
-	@:access(clay.components.graphics.Geometry)
-	inline function add_transform_to_geom(t:Transform, g:Geometry) {
+	@:access(clay.components.graphics.DisplayObject)
+	inline function add_transform_to_geom(t:Transform, g:DisplayObject) {
 
-		g.transform_matrix = t.world;
+		g.matrix = t.world.matrix;
 
 	}
 
-	@:access(clay.components.graphics.Geometry)
-	inline function remove_transform_from_geom(g:Geometry) {
+	@:access(clay.components.graphics.DisplayObject)
+	inline function remove_transform_from_geom(g:DisplayObject) {
 
-		g.transform_matrix = new Matrix();
+		// var m = g.matrix;
+		// g.matrix = new Matrix().copy(m);
+		g.matrix = new Matrix();
 
 	}
 

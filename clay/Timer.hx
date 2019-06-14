@@ -2,7 +2,7 @@ package clay;
 
 
 import clay.utils.Log._debug;
-import clay.core.TimerSystem;
+import clay.core.Timers;
 
 class Timer {
 	
@@ -50,7 +50,7 @@ class Timer {
 
 	public function destroy() {
 
-		TimerSystem.remove(this);
+		Clay.timer.remove(this);
 		active = false;
 		finished = true;
 		_oncomplete = null;
@@ -69,7 +69,7 @@ class Timer {
 
 		stop(false); // here we remove from timers array
 
-		TimerSystem.add(this);
+		Clay.timer.add(this);
 		
 		active = true;
 		finished = false;
@@ -96,7 +96,7 @@ class Timer {
 		}
 
 		if(!_added) {
-			TimerSystem.add(this);
+			Clay.timer.add(this);
 		}
 
 		finished = false;
@@ -128,7 +128,7 @@ class Timer {
 			active = false;
 			
 			if (_added){
-				TimerSystem.remove(this);
+				Clay.timer.remove(this);
 			}
 			
 			if (_finish && _oncomplete != null) {

@@ -26,7 +26,7 @@ class ProcessorMacro {
 
 	    var include_comps = [];
 		var exclude_comps = [];
-		var one_comps = [];
+		// var one_comps = [];
 
 		for(param in params) {
 			switch(param) {
@@ -38,12 +38,12 @@ class ProcessorMacro {
 							exclude_comps.push(Context.getType('${_t.name}'));
 							default: null;
 						}
-						case 'One': 
-						switch(ctp.params[0]) {
-							case TPType(TPath(_t)):
-							one_comps.push(Context.getType('${_t.name}'));
-							default: null;
-						}
+						// case 'One': 
+						// switch(ctp.params[0]) {
+						// 	case TPType(TPath(_t)):
+						// 	one_comps.push(Context.getType('${_t.name}'));
+						// 	default: null;
+						// }
 						default: include_comps.push(Context.getType('${ctp.name}'));
 					}
 				default: null;
@@ -55,11 +55,12 @@ class ProcessorMacro {
 		if(exclude_comps.length > 0) {
 			exclude_types_string = '_EX_${MacroUtils.create_string(exclude_comps)}';
 		}
-		var one_types_string:String = '';
-		if(one_comps.length > 0) {
-			one_types_string = '_ONE_${MacroUtils.create_string(one_comps)}';
-		}
-		var name = 'Family_${types_string}${exclude_types_string}${one_types_string}';
+		// var one_types_string:String = '';
+		// if(one_comps.length > 0) {
+		// 	one_types_string = '_ONE_${MacroUtils.create_string(one_comps)}';
+		// }
+		// var name = 'Family_${types_string}${exclude_types_string}${one_types_string}';
+		var name = 'Family_${types_string}${exclude_types_string}';
 
 		var uuid:String = family_map.get(name);
 
@@ -289,7 +290,14 @@ class ProcessorMacro {
 					case EBlock(exprs):{
 						for(i in 0...inject_ftypes.length) {
 							var f = inject_ffields[i];
-							var expr = Context.parse('${f.name} = world.families.get(clay.families.${inject_ftypes[i]})', onadded_field.pos);
+							var fe = Context.parse('clay.families.${inject_ftypes[i]}', onadded_field.pos);
+							var fetp = {name: inject_ftypes[i], pack: ['clay', 'families']};
+							var expr = macro {
+								$i{f.name} = world.families.get($fe);
+								if($i{f.name} == null) {
+									$i{f.name} = world.families.add(new $fetp());
+								}
+							}
 							exprs.insert(i, expr);
 						}
 						for(i in 0...inject_ctypes.length) {
@@ -340,6 +348,10 @@ class ProcessorMacro {
 
 			var _event_name:String = field.name;
 			var _event_field_name:String = field.name;
+
+			if(_event_name == 'update'){
+				_event_field_name = '__update';
+			}
 
 			if(_event_name != 'update' && _event_name != 'fixedupdate'){
 				_event_name = _event_name.substr(2).toLowerCase();

@@ -1,13 +1,12 @@
 package clay.particles.modules;
 
-import clay.particles.core.Particle;
+
 import clay.particles.core.ParticleModule;
-import clay.particles.core.ParticleData;
+import clay.particles.core.Particle;
 import clay.particles.core.Components;
-import clay.math.Vector;
+import clay.particles.components.ColorDelta;
 import clay.data.Color;
 import clay.math.Mathf;
-
 
 
 class ColorLifeModule extends ParticleModule {
@@ -18,15 +17,12 @@ class ColorLifeModule extends ParticleModule {
 	public var initial_color_max:Color;
 	public var end_color_max:Color;
 
-	var color_delta:Array<Color>;
-	var particles_data:Array<ParticleData>;
+	var color_delta:Components<ColorDelta>;
 
 
 	public function new(_options:ColorLifeModuleOptions) {
 
 		super(_options);
-
-		color_delta = [];
 
 		initial_color = _options.initial_color != null ? _options.initial_color : new Color();
 		initial_color_max = _options.initial_color_max;
@@ -37,25 +33,13 @@ class ColorLifeModule extends ParticleModule {
 
 	override function init() {
 
-		particles_data = emitter.particles_data;
-
-		for (i in 0...particles.capacity) {
-			color_delta[i] = new Color();
-		}
+		color_delta = emitter.components.get(ColorDelta);
 	    
 	}
 
-	override function onremoved() {
+	override function onspawn(pd:Particle) {
 
-	    particles_data = null;
-	    color_delta.splice(0, color_delta.length);
-
-	}
-
-	override function onspawn(p:Particle) {
-
-		var pd:ParticleData = particles_data[p.id];
-		var cd:Color = color_delta[p.id];
+		var cd:Color = color_delta.get(pd.id);
 		var lf:Float = pd.lifetime;
 		var pcolor:Color = pd.color;
 
@@ -95,8 +79,8 @@ class ColorLifeModule extends ParticleModule {
 		var cd:Color;
 		var pcolor:Color;
 		for (p in particles) {
-			cd = color_delta[p.id];
-			pcolor = particles_data[p.id].color;
+			cd = color_delta.get(p.id);
+			pcolor = p.color;
 			pcolor.r = Mathf.clamp(pcolor.r + cd.r * dt, 0, 1);
 			pcolor.g = Mathf.clamp(pcolor.g + cd.g * dt, 0, 1);
 			pcolor.b = Mathf.clamp(pcolor.b + cd.b * dt, 0, 1);
@@ -159,7 +143,6 @@ class ColorLifeModule extends ParticleModule {
 
 
 }
-
 
 typedef ColorLifeModuleOptions = {
 

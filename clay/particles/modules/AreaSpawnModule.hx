@@ -1,9 +1,8 @@
 package clay.particles.modules;
 
+
 import clay.particles.core.Particle;
-import clay.particles.core.ParticleData;
 import clay.particles.core.ParticleModule;
-import clay.particles.core.Components;
 import clay.math.Vector;
 
 using clay.particles.utils.VectorExtender;
@@ -27,18 +26,8 @@ class AreaSpawnModule extends ParticleModule {
 
 	override function onspawn(p:Particle) {
 
-		emitter.show_particle(p);
-		
-		var pd:ParticleData = emitter.get_particle_data(p);
-
-		pd.x = emitter.system.pos.x + emitter.pos.x + (size.x * 0.5 * emitter.random_1_to_1());
-		pd.y = emitter.system.pos.y + emitter.pos.y + (size.y * 0.5 * emitter.random_1_to_1());
-
-	}
-
-	override function onunspawn(p:Particle) {
-
-		emitter.hide_particle(p);
+		p.x = emitter.system.pos.x + emitter.pos.x + (size.x * 0.5 * emitter.random_1_to_1());
+		p.y = emitter.system.pos.y + emitter.pos.y + (size.y * 0.5 * emitter.random_1_to_1());
 
 	}
 

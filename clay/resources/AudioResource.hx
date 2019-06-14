@@ -3,12 +3,16 @@ package clay.resources;
 
 import haxe.io.Bytes;
 import kha.arrays.Float32Array;
+import clay.core.Resources;
 
 
 class AudioResource extends Resource {
 
 
-	@:noCompletion public var sound:kha.Sound;
+	public var sound:kha.Sound;
+
+	public var duration(get, never):Float;
+	public var channels(get, never):Int;
 
 	public var compressed_data(get, set):Bytes;
 	public var uncompressed_data(get, set):kha.arrays.Float32Array;
@@ -21,8 +25,25 @@ class AudioResource extends Resource {
 		}
 
 		sound = _sound;
+
+		resource_type = ResourceType.audio;
 		
 	}
+
+	override function unload() {
+
+		sound.unload();
+		
+	}
+
+	override function memory_use() {
+		
+        return sound.uncompressedData.length * sound.channels;
+        
+	}
+
+	inline function get_duration() return sound.length;
+	inline function get_channels() return sound.channels;
 
 	inline function get_compressed_data() return sound.compressedData;
 	inline function set_compressed_data(v:Bytes) return sound.compressedData = v;

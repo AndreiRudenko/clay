@@ -13,12 +13,11 @@ npm install
 * Input: Mouse, Keyboard, Touch, Gamepad, Pen
 * Audio
 * Entity Component System
-* [Particles](https://github.com/RudenkoArts/sparkler)
+* Particles
 * Tweening 
 * Animation
 * Timer
 * Events
-* Instanced Rendering
 
 ### Command Line Interface
 - clay2d init [ -t template ]: *initialize a new project*.

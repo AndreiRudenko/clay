@@ -170,7 +170,7 @@ class Bindings extends Input {
 		add_pressed(input_event.name);
 		add_down(input_event.name);
 
-		engine.inputdown(input_event);
+		engine.signals.inputdown.emit(input_event);
 
 	}
 
@@ -184,7 +184,7 @@ class Bindings extends Input {
 		remove_pressed(input_event.name);
 		remove_down(input_event.name);
 
-		engine.inputup(input_event);
+		engine.signals.inputup.emit(input_event);
 
 	}
 
@@ -212,53 +212,53 @@ class InputEvent {
 
 	}
 
-	inline function set(_mouse:MouseEvent, _keyboard:KeyEvent, _gamepad:GamepadEvent, _touch:TouchEvent, _pen:PenEvent) {
+	inline function set(mouse:MouseEvent, keyboard:KeyEvent, gamepad:GamepadEvent, touch:TouchEvent, pen:PenEvent) {
 
-		mouse = _mouse;
-		keyboard = _keyboard;
-		gamepad = _gamepad;
-		touch = _touch;
-		pen = _pen;
+		this.mouse = mouse;
+		this.keyboard = keyboard;
+		this.gamepad = gamepad;
+		this.touch = touch;
+		this.pen = pen;
 		
 	}
 
-	@:noCompletion public function set_mouse(_name:String, _mouse:MouseEvent) {
+	@:noCompletion public function set_mouse(name:String, mouse:MouseEvent) {
 
-		name = _name;
+		this.name = name;
 		type = InputType.mouse;
-		set(_mouse, null, null, null, null);
+		set(mouse, null, null, null, null);
 
 	}
 
-	@:noCompletion public function set_key(_name:String, _keyboard:KeyEvent) {
+	@:noCompletion public function set_key(name:String, keyboard:KeyEvent) {
 
-		name = _name;
+		this.name = name;
 		type = InputType.keyboard;
 		set(null, keyboard, null, null, null);
 
 	}
 
-	@:noCompletion public function set_gamepad(_name:String, _gamepad:GamepadEvent) {
+	@:noCompletion public function set_gamepad(name:String, gamepad:GamepadEvent) {
 
-		name = _name;
+		this.name = name;
 		type = InputType.gamepad;
-		set(null, null, _gamepad, null, null);
+		set(null, null, gamepad, null, null);
 
 	}
 
-	@:noCompletion public function set_touch(_name:String, _touch:TouchEvent) {
+	@:noCompletion public function set_touch(name:String, touch:TouchEvent) {
 
-		name = _name;
+		this.name = name;
 		type = InputType.touch;
-		set(null, null, null, _touch, null);
+		set(null, null, null, touch, null);
 
 	}
 
-	@:noCompletion public function set_pen(_name:String, _pen:PenEvent) {
+	@:noCompletion public function set_pen(name:String, pen:PenEvent) {
 
-		name = _name;
+		this.name = name;
 		type = InputType.pen;
-		set(null, null, null, null, _pen);
+		set(null, null, null, null, pen);
 
 	}
 

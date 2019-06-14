@@ -15,17 +15,19 @@ import clay.utils.Log.*;
 import haxe.io.Path;
 
 
+
 @:allow(clay.Engine)
 class Resources {
 
 
 	public var cache(default, null):Map<String, Resource>;
+    public var stats : ResourceStats;
 
-    var texture_ext:Array<String>;
-    var audio_ext:Array<String>;
-    var font_ext:Array<String>;
-    var video_ext:Array<String>;
-    
+	var texture_ext:Array<String>;
+	var audio_ext:Array<String>;
+	var font_ext:Array<String>;
+	var video_ext:Array<String>;
+	
 
 	function new() {
 		
@@ -35,6 +37,8 @@ class Resources {
 		video_ext = kha.Assets.videoFormats;
 
 		cache = new Map();
+
+        stats = new ResourceStats();
 
 	}
 
@@ -96,38 +100,38 @@ class Resources {
 
 		var res = get(id);
 		if(res != null) {
-            log('resource already exists: $id');
+			log('resource already exists: $id');
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
 			return;
 		}
 
-        var ext = Path.extension(id);
+		var ext = Path.extension(id);
 
-        switch (ext) {
-            case e if (texture_ext.indexOf(e) != -1):{
-                load_texture(id, oncomplete);
-            }
-            case e if (font_ext.indexOf(e) != -1):{
-                load_font(id, oncomplete);
-            }
-            case e if (audio_ext.indexOf(e) != -1):{
-                load_audio(id, oncomplete);
-            }
-            case e if (video_ext.indexOf(e) != -1):{
-                load_video(id, oncomplete);
-            }
-            case "json":{
-                load_json(id, oncomplete);
-            }
-            case "txt":{
-                load_text(id, oncomplete);
-            }
-            default:{
-                load_bytes(id, oncomplete);
-            }
-        }
+		switch (ext) {
+			case e if (texture_ext.indexOf(e) != -1):{
+				load_texture(id, oncomplete);
+			}
+			case e if (font_ext.indexOf(e) != -1):{
+				load_font(id, oncomplete);
+			}
+			case e if (audio_ext.indexOf(e) != -1):{
+				load_audio(id, oncomplete);
+			}
+			case e if (video_ext.indexOf(e) != -1):{
+				load_video(id, oncomplete);
+			}
+			case "json":{
+				load_json(id, oncomplete);
+			}
+			case "txt":{
+				load_text(id, oncomplete);
+			}
+			default:{
+				load_bytes(id, oncomplete);
+			}
+		}
 		
 	}
 
@@ -137,6 +141,7 @@ class Resources {
 
 		if(res != null) {
 			log('bytes resource already exists: $id');
+			// res.ref++;
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
@@ -150,7 +155,7 @@ class Resources {
 			function(blob:kha.Blob){
 				res = new BytesResource(blob);
 				res.id = id;
-				cache.set(id, res);
+				add(res);
 				if(oncomplete != null) {
 					oncomplete(res);
 				}
@@ -179,7 +184,7 @@ class Resources {
 			function(blob:kha.Blob){
 				res = new TextResource(blob.toString());
 				res.id = id;
-				cache.set(id, res);
+				add(res);
 				if(oncomplete != null) {
 					oncomplete(res);
 				}
@@ -208,7 +213,7 @@ class Resources {
 			function(blob:kha.Blob){
 				res = new JsonResource(haxe.Json.parse(blob.toString()));
 				res.id = id;
-				cache.set(id, res);
+				add(res);
 				if(oncomplete != null) {
 					oncomplete(res);
 				}
@@ -238,7 +243,7 @@ class Resources {
 			function(img:kha.Image){
 				res = new Texture(img);
 				res.id = id;
-				cache.set(id, res);
+				add(res);
 				if(oncomplete != null) {
 					oncomplete(res);
 				}
@@ -267,7 +272,7 @@ class Resources {
 			function(f:kha.Font){
 				res = new FontResource(f);
 				res.id = id;
-				cache.set(id, res);
+				add(res);
 				if(oncomplete != null) {
 					oncomplete(res);
 				}
@@ -296,7 +301,7 @@ class Resources {
 			function(v:kha.Video){
 				res = new VideoResource(v);
 				res.id = id;
-				cache.set(id, res);
+				add(res);
 				if(oncomplete != null) {
 					oncomplete(res);
 				}
@@ -326,7 +331,7 @@ class Resources {
 				snd.uncompress(function() {
 					res = new AudioResource(snd);
 					res.id = id;
-					cache.set(id, res);
+					add(res);
 					if(oncomplete != null) {
 						oncomplete(res);
 					}
@@ -334,6 +339,26 @@ class Resources {
 			},
 			onerror
 		);
+
+	}
+
+	public function add(resource:Resource) {
+
+		assert(!cache.exists(resource.id));
+
+		cache.set(resource.id, resource);
+
+		update_stats(resource, 1);
+
+	}
+
+	public function remove(resource:Resource):Bool {
+
+		assert(cache.exists(resource.id));
+
+		update_stats(resource, -1);
+
+		return cache.remove(resource.id);
 
 	}
 
@@ -350,15 +375,14 @@ class Resources {
 
 	}
 
-	// get
-	public inline function has      (id:String):Bool           return cache.exists(id);
-	public inline function get      (id:String):Resource       return fetch(id);
+	public inline function has      (id:String):Bool                   return cache.exists(id);
+	public inline function get      (id:String):Resource               return fetch(id);
 	public inline function bytes    (id:String):BytesResource          return fetch(id);
 	public inline function text     (id:String):TextResource           return fetch(id);
 	public inline function json     (id:String):JsonResource           return fetch(id);
-	public inline function texture    (id:String):Texture        return fetch(id);
+	public inline function texture  (id:String):Texture                return fetch(id);
 	public inline function font     (id:String):FontResource           return fetch(id);
-	public inline function video    (id:String):VideoResource         return fetch(id);
+	public inline function video    (id:String):VideoResource          return fetch(id);
 	public inline function audio    (id:String):AudioResource          return fetch(id);
 
 	inline function fetch<T>(id:String):T {
@@ -366,12 +390,101 @@ class Resources {
 		return cast cache.get(id);
 
 	}
-	
+
+	inline function update_stats(_res:Resource, _offset:Int) {
+
+        switch(_res.resource_type) {
+            case ResourceType.unknown:          stats.unknown   += _offset;
+            case ResourceType.bytes:            stats.bytes     += _offset;
+            case ResourceType.text:             stats.texts     += _offset;
+            case ResourceType.json:             stats.jsons     += _offset;
+            case ResourceType.texture:          stats.textures  += _offset;
+            case ResourceType.render_texture:   stats.rtt       += _offset;
+            case ResourceType.font:             stats.fonts     += _offset;
+            // case ResourceType.shader:           stats.shaders   += _offset;
+            case ResourceType.audio:            stats.audios    += _offset;
+            case ResourceType.video:            stats.videos    += _offset;
+        }
+
+        stats.total += _offset;
+
+    }
 	function onerror(err:kha.AssetError) {
 
 		log('failed to load resource: ${err.url}');
 
 	}
 
+
+}
+
+
+class ResourceStats {
+
+    public var total : Int = 0;
+    public var fonts : Int = 0;
+    public var textures : Int = 0;
+    public var rtt : Int = 0;
+    // public var shaders : Int = 0;
+    public var texts : Int = 0;
+    public var jsons : Int = 0;
+    public var bytes : Int = 0;
+    public var audios : Int = 0;
+    public var videos : Int = 0;
+    public var unknown : Int = 0;
+
+    public function new() {
+
+    } 
+
+    function toString() {
+
+        return
+            'Resource Statistics\n' +
+            '\ttotal : ' + total + '\n' +
+            '\ttexture : ' + textures + ' \n' + '' +
+            '\trender texture : ' + rtt + ' \n' +
+            '\tfont : ' + fonts + '\n' +
+            // '\tshader : ' + shaders + '\n' +
+            '\ttext : ' + texts + '\n' +
+            '\tjson : ' + jsons + '\n' +
+            '\tbytes : ' + bytes + '\n' +
+            '\taudios : ' + audios + '\n' +
+            '\tvideos : ' + audios + '\n' +
+            '\tunknown : ' + unknown;
+
+    } 
+
+    public function reset() {
+
+        total = 0;
+        fonts = 0;
+        textures = 0;
+        rtt = 0;
+        // shaders = 0;
+        texts = 0;
+        jsons = 0;
+        bytes = 0;
+        audios = 0;
+        videos = 0;
+        unknown = 0;
+
+    } 
+
+
+}
+
+@:enum abstract ResourceType(Int) from Int to Int {
+
+	var unknown         = 0;
+	var text            = 1;
+	var json            = 2;
+	var bytes           = 3;
+	var texture         = 4;
+	var render_texture  = 5;
+	var font            = 6;
+	var shader          = 7;
+	var audio           = 8;
+	var video           = 9;
 
 }

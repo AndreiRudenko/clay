@@ -1,13 +1,15 @@
 package clay;
 
 
+import clay.core.ecs.Tags;
+import clay.core.ecs.Groups;
+
 import clay.core.ecs.Entities;
 import clay.core.ecs.Components;
 import clay.core.ecs.Processors;
 import clay.core.ecs.Families;
 import clay.core.ecs.Worlds;
-import clay.core.ecs.TagSystem;
-import clay.core.ecs.GroupSystem;
+
 import clay.core.EngineSignals;
 
 @:allow(clay.core.ecs.Worlds)
@@ -18,8 +20,8 @@ class World {
 	public var inited     	(default, null):Bool = false;
 	public var active     	(get, set):Bool;
 
-	public var tags         (default, null):TagSystem;
-	public var groups       (default, null):GroupSystem;
+	public var tags         (default, null):Tags;
+	public var groups       (default, null):Groups;
 	
 	public var entities   	(default, null):Entities;
 	public var components 	(default, null):Components;
@@ -45,8 +47,9 @@ class World {
 
 		signals = new EngineSignals();
 
-		tags = new TagSystem(_capacity);
-		groups = new GroupSystem();
+		tags = new Tags(_capacity);
+		groups = new Groups();
+		
 		entities = new Entities(this, _capacity);
 		components = new Components(this, _comp_types);
 		families = new Families(this);
@@ -64,6 +67,14 @@ class World {
 		processors.empty();
 
 		changed();
+
+	}
+
+		/* update changed entities and remove destroyed */
+	public inline function update() {
+		
+		entities.update();
+		families.update();
 
 	}
 
@@ -102,14 +113,6 @@ class World {
 		families = null;
 		processors = null;
 		signals = null;
-
-	}
-
-	inline function update(dt:Float) {
-		
-		families.update();
-		signals.update.emit(dt);
-		entities.delayed_destroy();
 
 	}
 

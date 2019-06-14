@@ -3,7 +3,8 @@ package clay;
 
 import clay.Entity;
 import clay.core.ecs.Components;
-import clay.core.ecs.ComponentType;
+import clay.types.ComponentType;
+
 import haxe.ds.Vector;
 
 
@@ -21,7 +22,6 @@ class ComponentMapper<T> {
 		type = _ctype;
 		manager = _manager;
 		components = new Vector(manager.world.entities.capacity);
-		// trace(Type.getClassName(Type.getClass(this)));
 
 	}
 
@@ -29,7 +29,7 @@ class ComponentMapper<T> {
 
 		_set(e, c);
 
-		manager.entity_changed(e);
+		manager.mark_entity_changed(e);
 
 		return c;
 
@@ -40,7 +40,7 @@ class ComponentMapper<T> {
 		var c = components[from.id];
 		components[to.id] = c;
 		manager.flags[to.id].enable(type.id);
-		manager.entity_changed(to);
+		manager.mark_entity_changed(to);
 
 		manager.world.changed();
 
@@ -64,7 +64,7 @@ class ComponentMapper<T> {
 		
 		if(_has) {
 			manager.flags[e.id].disable(type.id);
-			manager.entity_changed_delayed(e);
+			manager.mark_entity_changed(e);
 			components[e.id] = null;
 
 			manager.world.changed();
@@ -80,7 +80,7 @@ class ComponentMapper<T> {
 		for (i in 0...components.length) {
 			if(components[i] != null) {
 				manager.flags[i].disable(type.id);
-				manager.entity_changed_delayed(new Entity(i));
+				manager.mark_entity_changed(new Entity(i));
 				components[i] = null;
 			}
 		}

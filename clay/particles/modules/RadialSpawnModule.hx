@@ -1,7 +1,6 @@
 package clay.particles.modules;
 
 import clay.particles.core.Particle;
-import clay.particles.core.ParticleData;
 import clay.particles.core.ParticleModule;
 import clay.math.Vector;
 
@@ -27,20 +26,10 @@ class RadialSpawnModule  extends ParticleModule {
 
 	override function onspawn(p:Particle) {
 
-		emitter.show_particle(p);
-		
-		var pd:ParticleData = emitter.get_particle_data(p);
-
 		random_point_in_unit_circle();
 
-		pd.x = emitter.system.pos.x + emitter.pos.x + rnd_point.x * radius;
-		pd.y = emitter.system.pos.y + emitter.pos.y + rnd_point.y * radius;
-
-	}
-
-	override function onunspawn(p:Particle) {
-
-		emitter.hide_particle(p);
+		p.x = emitter.system.pos.x + emitter.pos.x + rnd_point.x * radius;
+		p.y = emitter.system.pos.y + emitter.pos.y + rnd_point.y * radius;
 
 	}
 

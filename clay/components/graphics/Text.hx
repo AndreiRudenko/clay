@@ -10,6 +10,11 @@ import clay.math.Matrix;
 import clay.data.Color;
 import clay.render.Shader;
 import clay.render.Vertex;
+import clay.render.RenderPath;
+import clay.render.GeometryType;
+import clay.render.Camera;
+import clay.render.types.BlendMode;
+import clay.render.types.BlendEquation;
 import clay.resources.FontResource;
 import clay.resources.Texture;
 import clay.components.graphics.Geometry;
@@ -52,55 +57,40 @@ class Text extends Geometry {
 	var _kravur:KravurImage;
 
 
-	public function new(_options:TextOptions) {
+	public function new(options:TextOptions) {
 
 		text_colors = [];
 
-		super(_options);
+		super(options);
+		
+		sort_key.geomtype = GeometryType.quadpack;
 
-		font = def(_options.font, Clay.renderer.font);
-		size = def(_options.size, 12);
-		text = def(_options.text, '');
-		align = def(_options.align, TextAlign.left);
-		align_vertical = def(_options.align_vertical, TextAlign.top);
-		width = def(_options.width, 0);
-		height = def(_options.height, 0);
-		line_spacing = def(_options.line_spacing, 0);
-		letter_spacing = def(_options.letter_spacing, 0);
-		tab_width = def(_options.tab_width, 4);
-		wrap = def(_options.wrap, false);
+		font = def(options.font, Clay.renderer.font);
+		size = def(options.size, 12);
+		text = def(options.text, '');
+		align = def(options.align, TextAlign.left);
+		align_vertical = def(options.align_vertical, TextAlign.top);
+		width = def(options.width, 0);
+		height = def(options.height, 0);
+		line_spacing = def(options.line_spacing, 0);
+		letter_spacing = def(options.letter_spacing, 0);
+		tab_width = def(options.tab_width, 4);
+		wrap = def(options.wrap, false);
 
-		if(_options.text_colors != null) {
-			text_colors = _options.text_colors;
+		if(options.text_colors != null) {
+			text_colors = options.text_colors;
 		}
-
-		set_geometry_type(GeometryType.text);
 
 		_setup = false;
 
+		set_blendmode(BlendMode.SourceAlpha, BlendMode.InverseSourceAlpha, BlendEquation.Add);
 		update_text();
 
 	}
 
-	override function setup_instanced(_instances:Int):Geometry {
+	override function get_default_shader():Shader {
 
-		setup_text_indices();
-
-		return super.setup_instanced(_instances);
-
-	}
-
-	override function update_instanced():Geometry {
-
-		setup_text_indices();
-
-		return super.update_instanced();
-
-	}
-
-	override function get_default_shader(_instanced:Bool):Shader {
-
-		return _instanced ? Clay.renderer.shader_instanced_text : Clay.renderer.shader_text;
+		return Clay.renderer.shaders.get('text');
 
 	}
 
@@ -115,20 +105,10 @@ class Text extends Geometry {
 		
 	}
 
-	function setup_text_indices() {
+	override function render_geometry(r:RenderPath, c:Camera) {
 
-		if(instanced) {
-			indices = [];
-			var quads_count = Std.int(vertices.length / 4);
-			for (i in 0...quads_count) {
-				indices[i * 3 * 2 + 0] = i * 4 + 0;
-				indices[i * 3 * 2 + 1] = i * 4 + 1;
-				indices[i * 3 * 2 + 2] = i * 4 + 2;
-				indices[i * 3 * 2 + 3] = i * 4 + 0;
-				indices[i * 3 * 2 + 4] = i * 4 + 2;
-				indices[i * 3 * 2 + 5] = i * 4 + 3;
-			}
-		}
+		r.set_object_renderer(r.quadpack_renderer);
+		r.quadpack_renderer.render(this);
 
 	}
 
@@ -150,7 +130,6 @@ class Text extends Geometry {
 
 	}
 
-	// based on https://github.com/Nazariglez/Gecko2D/blob/master/Sources/gecko/components/draw/TextComponent.hx
 	function split_in_lines(_text:String, _font:KravurImage):Array<String> {
 
 		var txt = tab_regex.replace(_text, tab_string);
@@ -159,6 +138,8 @@ class Text extends Geometry {
 		if(!wrap || (width == 0 && height == 0)) {
 			return lines;
 		}
+
+		inline function in_hb(th:Float) return height > 0 && height <= th-line_spacing;
 
         var parsed_lines:Array<String> = [];
 
@@ -175,7 +156,7 @@ class Text extends Geometry {
 
 			for (word in words) {
 
-				if(height > 0 && height <= th-line_spacing) {
+				if(in_hb(th)) {
 					_stop = true;
 					break;
 				}
@@ -195,7 +176,7 @@ class Text extends Geometry {
 					}
 				} else {
 					th += _text_height;
-					if(height > 0 && height <= th-line_spacing) { // todo: i know...
+					if(in_hb(th)) {
 						_stop = true;
 						break;
 					}
@@ -224,145 +205,137 @@ class Text extends Geometry {
 		}
 
 		if(font_dirty || size_dirty) {
-			var tex_name:String = '${font.id}_$size';
-			var t = Clay.resources.texture(tex_name);
 			_kravur = font.font._get(size); // note: this is expensive if creating new font or font size
-			if(t == null) {
-				texture = new Texture(_kravur.getTexture());
-				texture.id = tex_name;
-				Clay.resources.cache.set(tex_name, texture);
-			} else if (t != texture) {
-				texture = t;
-			}
+			texture = font.get(size);
 			font_dirty = false;
 			size_dirty = false;
 		}
 
-		var _text = text;
-		if(text.length == 0) {
-			_text = ' ';
-		}
-
-		var lines = split_in_lines(_text, _kravur);
-
-		var quad_cache = new AlignedQuad();
-
-		var _text_width:Float = 0;
-		var font_heght:Float = _kravur.getHeight();
-		text_width = 0;
-		text_height = (font_heght + line_spacing) * lines.length;
-
-		var xoffset:Float = 0;
-		var yoffset:Float = 0;
-
-		var img = texture.image;
-		var custom_colors = text_colors.length != 0;
-		var _color = color;
-
-		var w_ratio:Float = img.width / img.realWidth;
-		var h_ratio:Float = img.height / img.realHeight;
-
-		switch (align_vertical) {
-			case TextAlign.bottom:{
-				yoffset = height - text_height;
-			}
-			case TextAlign.center:{
-				yoffset = height*0.5 - text_height/2;
-			}
-			default:{
-				yoffset = 0;
-			}
-		}
-
 		var n:Int = 0;
-		for (l in lines) {
-			
-			if(l != null && l.length > 0) {
 
-				_text_width = _kravur.stringWidth(l) + (l.length * letter_spacing);
+		if(text.length > 0) {
 
-				if(_text_width > text_width) {
-					text_width = _text_width;
+			var lines = split_in_lines(text, _kravur);
+
+			var quad_cache = new AlignedQuad();
+
+			var _text_width:Float = 0;
+			var font_heght:Float = _kravur.getHeight();
+			text_width = 0;
+			text_height = (font_heght + line_spacing) * lines.length;
+
+			var xoffset:Float = 0;
+			var yoffset:Float = 0;
+
+			var img = texture.image;
+			var custom_colors = text_colors.length != 0;
+			var _color = color;
+
+			var w_ratio:Float = img.width / img.realWidth;
+			var h_ratio:Float = img.height / img.realHeight;
+
+			switch (align_vertical) {
+				case TextAlign.bottom:{
+					yoffset = height - text_height;
 				}
-
-				var xpos:Float = 0;
-
-				switch (align) {
-					case TextAlign.right:{
-						xoffset = width-_text_width;
-					}
-					case TextAlign.center:{
-						xoffset = width*0.5-_text_width/2;
-					}
-					default:{
-						xoffset = 0;
-					}
+				case TextAlign.center:{
+					yoffset = height*0.5 - text_height/2;
 				}
+				default:{
+					yoffset = 0;
+				}
+			}
 
-				var lw:Float = 0;
+			for (l in lines) {
+				
+				if(l != null && l.length > 0) {
 
-				for (i in 0...l.length) {
-					if(custom_colors) {
-						_color = text_colors[n];
-						if(_color == null) {
-							_color = color;
+					_text_width = _kravur.stringWidth(l) + (l.length * letter_spacing);
+
+					if(_text_width > text_width) {
+						text_width = _text_width;
+					}
+
+					var xpos:Float = 0;
+
+					switch (align) {
+						case TextAlign.right:{
+							xoffset = width-_text_width;
+						}
+						case TextAlign.center:{
+							xoffset = width*0.5-_text_width/2;
+						}
+						default:{
+							xoffset = 0;
 						}
 					}
-					var cidx = find_index(l.charCodeAt(i));
-					var q:AlignedQuad = _kravur.getBakedQuad(quad_cache, cidx, xpos, 0);
-					if (q != null) {
-						lw = q.xadvance + letter_spacing;
 
-						if(cidx > 0) { // skip space
+					var lw:Float = 0;
 
-							if(vertices[n*4] == null) {
-								vertices[n*4] = new Vertex();
-								vertices[n*4+1] = new Vertex();
-								vertices[n*4+2] = new Vertex();
-								vertices[n*4+3] = new Vertex();
+					for (i in 0...l.length) {
+						if(custom_colors) {
+							_color = text_colors[n];
+							if(_color == null) {
+								_color = color;
+							}
+						}
+						var cidx = find_index(l.charCodeAt(i));
+						var q:AlignedQuad = _kravur.getBakedQuad(quad_cache, cidx, xpos, 0);
+						if (q != null) {
+							lw = q.xadvance + letter_spacing;
+
+							if(cidx > 0) { // skip space
+
+								if(vertices[n*4] == null) {
+									vertices[n*4] = new Vertex();
+									vertices[n*4+1] = new Vertex();
+									vertices[n*4+2] = new Vertex();
+									vertices[n*4+3] = new Vertex();
+								}
+
+								var t0x = q.s0 * w_ratio;
+								var t0y = q.t0 * h_ratio;
+								var t1x = q.s1 * w_ratio;
+								var t1y = q.t1 * h_ratio;
+
+								var v0 = vertices[n*4];
+								var v1 = vertices[n*4+1];
+								var v2 = vertices[n*4+2];
+								var v3 = vertices[n*4+3];
+
+								v0.pos.set(q.x0+xoffset, q.y1+yoffset);
+								v0.tcoord.set(t0x, t1y);
+								v0.color = _color;
+
+								v1.pos.set(q.x0+xoffset, q.y0+yoffset);
+								v1.tcoord.set(t0x, t0y);
+								v1.color = _color;
+
+								v2.pos.set(q.x1+xoffset, q.y0+yoffset);
+								v2.tcoord.set(t1x, t0y);
+								v2.color = _color;
+
+								v3.pos.set(q.x1+xoffset, q.y1+yoffset);
+								v3.tcoord.set(t1x, t1y);
+								v3.color = _color;
+
+								n++;
 							}
 
-							var t0x = q.s0 * w_ratio;
-							var t0y = q.t0 * h_ratio;
-							var t1x = q.s1 * w_ratio;
-							var t1y = q.t1 * h_ratio;
-
-							var v0 = vertices[n*4];
-							var v1 = vertices[n*4+1];
-							var v2 = vertices[n*4+2];
-							var v3 = vertices[n*4+3];
-
-							v0.pos.set(q.x0+xoffset, q.y1+yoffset);
-							v0.tcoord.set(t0x, t1y);
-							v0.color = _color;
-
-							v1.pos.set(q.x0+xoffset, q.y0+yoffset);
-							v1.tcoord.set(t0x, t0y);
-							v1.color = _color;
-
-							v2.pos.set(q.x1+xoffset, q.y0+yoffset);
-							v2.tcoord.set(t1x, t0y);
-							v2.color = _color;
-
-							v3.pos.set(q.x1+xoffset, q.y1+yoffset);
-							v3.tcoord.set(t1x, t1y);
-							v3.color = _color;
-
-							n++;
+							xpos += lw;
 						}
-
-						xpos += lw;
 					}
 				}
+
+				yoffset += font_heght + line_spacing;
+
 			}
-
-			yoffset += font_heght + line_spacing;
-
 		}
 
-		vertices.splice(n*4, vertices.length);
+		if(vertices.length > n*4) {
+			vertices.splice(n*4, vertices.length);
+		}
 
-		// todo: instances
 	}
 
 	function set_text(v:String):String {

@@ -1,97 +1,103 @@
 package clay.tween;
 
-import haxe.ds.ObjectMap;
-import clay.tween.TweenSequence;
-import clay.tween.tweens.FuncTween;
 
+import haxe.ds.ObjectMap;
+
+import clay.tween.tweens.Tween;
+import clay.tween.tweens.TweenFn;
+import clay.tween.tweens.TweenObject;
+
+
+@:allow(clay.tween.tweens.Tween)
+@:access(clay.tween.tweens.Tween)
 class TweenManager {
 
-	/*
-	
-		sequence: node -> node -> node
-		node: action -> action -> action
-		action: [ tween, tween, tween ] // to(...), fn(...)
 
-	 */
-
-
-	public var targets(default, null):ObjectMap<Dynamic, Array<TweenNode>>;
-
-	var sequences(default, null):Array<TweenSequence>;
-	var check_time:Int;
+	var _active_tweens:Array<Tween<Dynamic>>;
+	var _targets:ObjectMap<Dynamic, Array<Tween<Dynamic>>>;
+	var _check_time:Int;
 
 
 	public function new() {
 
-		sequences = [];
-
-		targets = new ObjectMap();
-		check_time = 0;
+		_active_tweens = [];
+		_targets = new ObjectMap();
+		_check_time = 0;
 
 	}
 
-	public function tween(target:Dynamic, manual_update:Bool = false):TweenAction {
+	public function object<T>(target:T, manual_update:Bool = false):TweenObject<T> {
 
-		var s = new TweenSequence(this, manual_update);
-
-		add_sequence(s);
-		
-		return s.add(new TweenNode(s, target)).create_action();
+		return new TweenObject(this, target, manual_update);
 		
 	}
 
-	public function update(fn:Dynamic, duration:Float, start:Array<Float> = null, end:Array<Float> = null, manual_update:Bool = false):TweenAction {
-				
-		var s = new TweenSequence(this, manual_update);
+	public function fun<T>(target:T, manual_update:Bool = false):TweenFn<T> {
 
-		add_sequence(s);
+		return new TweenFn(this, target, manual_update);
 
-		var n = s.add(new TweenNode(s, null));
-		var a = n.create_action();
-		a.tweens.push(new FuncTween(a, fn, duration, start, end));
-		
-		return a;
-		
 	}
 
-	public function stop(target:Dynamic, _complete:Bool = false) {
+	public function stop(target:Dynamic) {
 		
-		var nodes = targets.get(target);
+		var tweens = _targets.get(target);
 
-		if(nodes != null) {
-			for (n in nodes) {
-				n.sequence.stop(_complete);
+		if(tweens != null) {
+			for (t in tweens) {
+				t.stop();
 			}
 		}
 
 	}
 
-	@:noCompletion public function step(dt:Float) {
+	public function step(time:Float) {
 
-		for (s in sequences) {
-			if(!s.manual_update) { // todo: optimise?
-				s.step(dt);
-			}
+		for (s in _active_tweens) {
+			s.step(time);
 		}
 
-		check_time++;
-		if(check_time > 60) {
-			check_time = 0;
-			var n = sequences.length;
+		_check_time++;
+		if(_check_time > 60) {
+			_check_time = 0;
+			var n = _active_tweens.length;
 			while(n-- > 0) {
-				if(!sequences[n].active) {
-					sequences[n].added = false;
-					sequences.splice(n, 1);
+				if(!_active_tweens[n].active) {
+					_active_tweens[n].drop();
+					_active_tweens.splice(n, 1);
 				}
 			}
 		}
 
 	}
 
-	@:noCompletion public inline function add_sequence(s:TweenSequence) {
+	function add_target_tween<T>(tween:Tween<T>, target:T) {
 
-		s.added = true;
-		sequences.push(s);
+		var _target_tweens = _targets.get(target);
+		if(_target_tweens == null) {
+			_target_tweens = [];
+			_targets.set(target, _target_tweens);
+		}
+		
+		_target_tweens.push(tween);
+
+	}
+
+	function remove_target_tween<T>(tween:Tween<T>, target:T) {
+
+		var target_tweens = _targets.get(target);
+
+		if(target_tweens != null) {
+			target_tweens.remove(tween);
+			if(target_tweens.length == 0) {
+				_targets.remove(target);
+			}
+		}
+
+	}
+
+	function add_tween<T>(tween:Tween<T>) {
+
+		_active_tweens.push(tween);
 
 	}
 

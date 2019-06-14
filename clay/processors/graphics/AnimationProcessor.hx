@@ -67,11 +67,9 @@ class AnimationProcessor extends Processor {
 	override function update(dt:Float) {
 
 		var a:Animation = null;
-		var q:QuadGeometry = null;
 		for (e in aq_family) {	
 			
 			a = aq_family.get_animation(e);
-			q = aq_family.get_quadgeometry(e);
 
 			if(!a.active || a.paused || a.current == null) {
 				continue;

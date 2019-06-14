@@ -16,6 +16,7 @@ class Audio extends AudioGroup {
 
 
 	public var sample_rate(default, null): Int = 44100;
+	public var gain: Float;
 
 	var data: Float32Array;
 
@@ -23,24 +24,26 @@ class Audio extends AudioGroup {
 	function new() {
 
 		super();
-
+		#if !kha_android_java
 		kha.audio2.Audio.audioCallback = mix;
+		#end
 		data = new Float32Array(512);
+		gain = 0;
 
 	}
 
-	public function play(res:AudioResource):Sound {
+	public function play(res:AudioResource, output:AudioGroup = null):Sound {
 
-		var sound = new Sound(res);
+		var sound = new Sound(res, output);
 		sound.play();
 		
 		return sound;
 		
 	}
 
-	public function stream(res:AudioResource):Sound {
+	public function stream(res:AudioResource, output:AudioGroup = null):Sound {
 
-		var sound = new Sound(res);
+		var sound = new Sound(res, output);
 		sound.stream = true;
 		sound.play();
 
@@ -49,7 +52,7 @@ class Audio extends AudioGroup {
 	}
 
 	function mix(samples: Int, buffer: Buffer) {
-
+		
 		sample_rate = buffer.samplesPerSecond;
 
 		if (data.length < samples) {
@@ -60,10 +63,15 @@ class Audio extends AudioGroup {
 			data[i] = 0;
 		}
 
+
 		process(data, samples);
 
+		gain = 0;
 		for (i in 0...samples) {
 			buffer.data.set(buffer.writeLocation, Mathf.clamp(data[i], -1.0, 1.0) * volume);
+			if(gain < data[i]) {
+				gain = data[i];
+			}
 			buffer.writeLocation += 1;
 			if (buffer.writeLocation >= buffer.size) {
 				buffer.writeLocation = 0;
