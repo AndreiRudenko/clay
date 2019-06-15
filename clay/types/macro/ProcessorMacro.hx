@@ -167,38 +167,49 @@ class ProcessorMacro {
 		for(field in fields) {
 			switch(field.name) {
 				case
-					'ontickstart',
-					'ontickend',
+
 					'onprerender',
 					'onrender',
 					'onpostrender',
+
+					'ontickstart',
+					'ontickend',
+
 					'onforeground',
 					'onbackground',
 					'onpause',
 					'onresume',
+
 					'update',
 					'fixedupdate',
+					'ontimescale',
+
 					'onkeydown',
 					'onkeyup',
 					'ontextinput',
+
 					'oninputdown',
 					'oninputup',
+
 					'onmousedown',
 					'onmouseup',
 					'onmousemove',
 					'onmousewheel',
+
 					'ongamepadadd',
 					'ongamepadremove',
 					'ongamepaddown',
 					'ongamepadup',
 					'ongamepadaxis',
+
 					'ontouchdown',
 					'ontouchup',
 					'ontouchmove',
+
 					'onpendown',
 					'onpenup',
-					'onpenmove',
-					'ontimescale':
+					'onpenmove':
+
 				{
 					connect_event(field);
 				}
@@ -342,6 +353,57 @@ class ProcessorMacro {
 
 	}
 
+	static function get_event_name(name:String):String {
+
+		return switch (name) {
+
+			case 'onprerender':       	'clay.events.RenderEvent.PRERENDER';
+			case 'onrender':       	    'clay.events.RenderEvent.RENDER';
+			case 'onpostrender':       	'clay.events.RenderEvent.POSTRENDER';
+
+			case 'ontickstart':       	'clay.events.AppEvent.TICKSTART';
+			case 'ontickend':       	'clay.events.AppEvent.TICKEND';
+			case 'onforeground':       	'clay.events.AppEvent.FOREGROUND';
+			case 'onbackground':       	'clay.events.AppEvent.BACKGROUND';
+			case 'onpause':       	    'clay.events.AppEvent.PAUSE';
+			case 'onresume':       	    'clay.events.AppEvent.RESUME';
+			case 'ontimescale':       	'clay.events.AppEvent.TIMESCALE';
+
+			case 'update':       	    'clay.events.AppEvent.UPDATE';
+			case 'fixedupdate':       	'clay.events.AppEvent.FIXEDUPDATE';
+
+			case 'onkeydown':       	'clay.events.KeyEvent.KEY_DOWN';
+			case 'onkeyup':         	'clay.events.KeyEvent.KEY_UP';
+			case 'ontextinput':     	'clay.events.KeyEvent.TEXT_INPUT';
+
+			case 'onmousedown':     	'clay.events.MouseEvent.MOUSE_DOWN';
+			case 'onmouseup':       	'clay.events.MouseEvent.MOUSE_UP';
+			case 'onmousemove':     	'clay.events.MouseEvent.MOUSE_MOVE';
+			case 'onmousewheel':    	'clay.events.MouseEvent.MOUSE_WHEEL';
+
+			case 'ongamepadadd':    	'clay.events.GamepadEvent.DEVICE_ADDED';
+			case 'ongamepadremove': 	'clay.events.GamepadEvent.DEVICE_REMOVED';
+			case 'ongamepaddown':   	'clay.events.GamepadEvent.BUTTON_DOWN';
+			case 'ongamepadup':     	'clay.events.GamepadEvent.BUTTON_UP';
+			case 'ongamepadaxis':   	'clay.events.GamepadEvent.AXIS';
+
+			case 'onpendown':   	    'clay.events.PenEvent.PEN_DOWN';
+			case 'onpenup':   	        'clay.events.PenEvent.PEN_UP';
+			case 'onpenmove':   	    'clay.events.PenEvent.PEN_MOVE';
+
+			case 'ontouchdown':   	    'clay.events.TouchEvent.TOUCH_DOWN';
+			case 'ontouchup':   	    'clay.events.TouchEvent.TOUCH_UP';
+			case 'ontouchmove':   	    'clay.events.TouchEvent.TOUCH_MOVE';
+
+			case 'oninputdown':   	    'clay.events.InputEvent.INPUT_DOWN';
+			case 'oninputup':   	    'clay.events.InputEvent.INPUT_UP';
+
+			case _ : '';
+
+		}
+
+	}
+
 	static function connect_event(field:haxe.macro.Field) {
 
 		if(field.access.indexOf(AOverride) != -1) {
@@ -349,12 +411,26 @@ class ProcessorMacro {
 			var _event_name:String = field.name;
 			var _event_field_name:String = field.name;
 
-			if(_event_name == 'update'){
-				_event_field_name = '__update';
+			switch (_event_name) {
+				case 
+					'update', 
+					'onprerender', 
+					'onrender', 
+					'onpostrender', 
+					'ontickstart', 
+					'ontickend', 
+					'onforeground', 
+					'onbackground', 
+					'onpause', 
+					'onresume':
+				{
+					_event_field_name = '__${_event_name}';
+				}
 			}
 
-			if(_event_name != 'update' && _event_name != 'fixedupdate'){
-				_event_name = _event_name.substr(2).toLowerCase();
+			_event_name = get_event_name(_event_name);
+			if(_event_name.length == 0) {
+				return;
 			}
 
 			switch(listen_field.kind) {
@@ -362,7 +438,7 @@ class ProcessorMacro {
 				case FFun(f):{
 					switch(f.expr.expr) {
 						case EBlock(exprs):{
-							exprs.push( Context.parse('world.signals.${_event_name}.add(${_event_field_name}, this.priority)', field.pos) );
+							exprs.push( Context.parse('world.emitter.on(${_event_name}, ${_event_field_name}, this.priority)', field.pos) );
 						}
 						default:
 					}
@@ -374,7 +450,7 @@ class ProcessorMacro {
 				case FFun(f):{
 					switch(f.expr.expr) {
 						case EBlock(exprs):{
-							exprs.push( Context.parse('world.signals.${_event_name}.remove(${_event_field_name})', field.pos) );
+							exprs.push( Context.parse('world.emitter.off(${_event_name}, ${_event_field_name})', field.pos) );
 						}
 						default:
 					}

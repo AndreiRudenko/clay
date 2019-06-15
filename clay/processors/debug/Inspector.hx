@@ -15,6 +15,7 @@ import clay.types.TextAlign;
 import clay.core.Debug;
 import clay.math.Mathf;
 import clay.math.Rectangle;
+import clay.events.*;
 
 
 class Inspector extends Processor {

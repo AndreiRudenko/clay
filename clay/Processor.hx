@@ -12,6 +12,7 @@ import clay.input.Touch;
 import clay.input.Pen;
 import clay.input.Bindings;
 import clay.utils.Log.*;
+import clay.events.*;
 
 
 #if !macro
@@ -125,6 +126,16 @@ class Processor {
 		world.update();
 
 	}
+
+	@:noCompletion function __onprerender(e)  	onprerender();
+	@:noCompletion function __onrender(e)  	    onrender();
+	@:noCompletion function __onpostrender(e)  	onpostrender();
+	@:noCompletion function __ontickstart(e)  	ontickstart();
+	@:noCompletion function __ontickend(e)    	ontickend();
+	@:noCompletion function __onforeground(e) 	onforeground();
+	@:noCompletion function __onbackground(e) 	onbackground();
+	@:noCompletion function __onpause(e)      	onpause();
+	@:noCompletion function __onresume(e)     	onresume();
 
 	@:noCompletion inline function get_priority():Int {
 

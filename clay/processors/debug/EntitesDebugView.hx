@@ -12,6 +12,7 @@ import clay.input.Keyboard;
 import clay.input.Key;
 import clay.input.Mouse;
 import clay.utils.Log.*;
+import clay.events.*;
 
 
 @:access(

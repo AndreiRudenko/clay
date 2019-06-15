@@ -5,6 +5,7 @@ import clay.Engine;
 import clay.ds.Uint4Vector;
 import clay.utils.Log.*;
 import clay.utils.Bits;
+import clay.events.PenEvent;
 
 
 @:allow(clay.core.Inputs)
@@ -92,9 +93,9 @@ class Pen extends Input {
 		pen_released = false;
 		pen_down = true;
 
-		pen_event.set(x, y, 0, 0, PenEventState.down, pressure);
+		pen_event.set(x, y, 0, 0, PenEvent.PEN_DOWN, pressure);
 
-		engine.signals.pendown.emit(pen_event);
+		engine.emitter.emit(PenEvent.PEN_DOWN, pen_event);
 
 	}
 
@@ -110,9 +111,9 @@ class Pen extends Input {
 		pen_released = true;
 		pen_down = false;
 
-		pen_event.set(x, y, 0, 0, PenEventState.up, pressure);
+		pen_event.set(x, y, 0, 0, PenEvent.PEN_UP, pressure);
 
-		engine.signals.penup.emit(pen_event);
+		engine.emitter.emit(PenEvent.PEN_UP, pen_event);
 
 	}
 
@@ -126,49 +127,11 @@ class Pen extends Input {
 		y = _y;
 		pressure = _pressure;
 
-		pen_event.set(x, y, dx, dy, PenEventState.move, pressure);
+		pen_event.set(x, y, dx, dy, PenEvent.PEN_MOVE, pressure);
 
-		engine.signals.penmove.emit(pen_event);
-
-	}
-
-
-}
-
-@:allow(clay.input.Pen)
-class PenEvent {
-
-
-	public var x(default, null):Int = 0;
-	public var y(default, null):Int = 0;
-	public var dx(default, null):Int = 0;
-	public var dy(default, null):Int = 0;
-	
-	public var pressure(default, null):Float = 0;
-	public var state(default, null):PenEventState = PenEventState.none;
-
-	
-	function new() {}
-
-	inline function set(_x:Int, _y:Int, _dx:Int, _dy:Int, _state:PenEventState, _pressure:Float) {
-		
-		x = _x;
-		y = _y;
-		dx = _dx;
-		dy = _dy;
-		state = _state;
-		pressure = _pressure;
+		engine.emitter.emit(PenEvent.PEN_MOVE, pen_event);
 
 	}
 
-}
-
-@:enum abstract PenEventState(Int) from Int to Int {
-
-    var none  = 0;
-    var down  = 1;
-    var up    = 2;
-    var move  = 3;
 
 }
-

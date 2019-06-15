@@ -10,6 +10,7 @@ import clay.core.Debug;
 import clay.types.TextAlign;
 import clay.input.Mouse;
 import clay.utils.Log.*;
+import clay.events.*;
 
 
 class ProcessorsDebugView extends DebugView {

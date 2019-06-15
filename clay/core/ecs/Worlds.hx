@@ -13,6 +13,7 @@ import clay.input.Gamepad;
 import clay.input.Touch;
 import clay.input.Pen;
 import clay.input.Bindings;
+import clay.events.*;
 
 
 @:allow(clay.Engine)
@@ -20,9 +21,9 @@ class Worlds {
 
 
 	var inited:Bool = false;
-    var worlds:Map<String, World>;
+	var worlds:Map<String, World>;
 	var active_worlds:Array<World>;
-	var signals_order:Int = 999;
+	var events_priority:Int = 999;
 
 
 	public function new() {
@@ -175,115 +176,140 @@ class Worlds {
 	}
 
 	function listen_engine_signals() {
-		
-		Clay.signals.prerender.add(prerender, signals_order);
-		Clay.signals.render.add(render, signals_order);
-		Clay.signals.postrender.add(postrender, signals_order);
-		Clay.signals.tickstart.add(tickstart, signals_order);
-		Clay.signals.tickend.add(tickend, signals_order);
-		Clay.signals.update.add(update, signals_order);
-		Clay.signals.fixedupdate.add(fixedupdate, signals_order);
-		Clay.signals.keydown.add(keydown, signals_order);
-		Clay.signals.keyup.add(keyup, signals_order);
-		Clay.signals.textinput.add(textinput, signals_order);
-		Clay.signals.mousedown.add(mousedown, signals_order);
-		Clay.signals.mouseup.add(mouseup, signals_order);
-		Clay.signals.mousemove.add(mousemove, signals_order);
-		Clay.signals.mousewheel.add(mousewheel, signals_order);
-		Clay.signals.gamepadadd.add(gamepadadd, signals_order);
-		Clay.signals.gamepadremove.add(gamepadremove, signals_order);
-		Clay.signals.gamepaddown.add(gamepaddown, signals_order);
-		Clay.signals.gamepadup.add(gamepadup, signals_order);
-		Clay.signals.gamepadaxis.add(gamepadaxis, signals_order);
-		Clay.signals.touchdown.add(touchdown, signals_order);
-		Clay.signals.touchup.add(touchup, signals_order);
-		Clay.signals.touchmove.add(touchmove, signals_order);
-		Clay.signals.pendown.add(pendown, signals_order);
-		Clay.signals.penup.add(penup, signals_order);
-		Clay.signals.penmove.add(penmove, signals_order);
-		Clay.signals.inputdown.add(inputdown, signals_order);
-		Clay.signals.inputup.add(inputup, signals_order);
-		Clay.signals.timescale.add(timescale, signals_order);
-		Clay.signals.foreground.add(foreground, signals_order);
-		Clay.signals.background.add(background, signals_order);
-		Clay.signals.pause.add(pause, signals_order);
-		Clay.signals.resume.add(resume, signals_order);
+
+		Clay.on(RenderEvent.PRERENDER,       	prerender,     events_priority);     	
+		Clay.on(RenderEvent.RENDER,          	render,        events_priority);     	    
+		Clay.on(RenderEvent.POSTRENDER,      	postrender,    events_priority);     	
+
+		Clay.on(AppEvent.TICKSTART,          	tickstart,     events_priority);     	
+		Clay.on(AppEvent.TICKEND,            	tickend,       events_priority);     	
+		Clay.on(AppEvent.FOREGROUND,         	foreground,    events_priority);     	
+		Clay.on(AppEvent.BACKGROUND,         	background,    events_priority);     	
+		Clay.on(AppEvent.PAUSE,              	pause,         events_priority);     	    
+		Clay.on(AppEvent.RESUME,             	resume,        events_priority);     	    
+		Clay.on(AppEvent.TIMESCALE,          	timescale,     events_priority);     	
+
+		Clay.on(AppEvent.UPDATE,             	update,        events_priority);     	    
+		Clay.on(AppEvent.FIXEDUPDATE,        	fixedupdate,   events_priority);     	
+
+		Clay.on(KeyEvent.KEY_DOWN,           	keydown,       events_priority);     	
+		Clay.on(KeyEvent.KEY_UP,             	keyup,         events_priority);       	
+		Clay.on(KeyEvent.TEXT_INPUT,         	textinput,     events_priority);   	
+
+		Clay.on(MouseEvent.MOUSE_DOWN,       	mousedown,     events_priority);   	
+		Clay.on(MouseEvent.MOUSE_UP,         	mouseup,       events_priority);     	
+		Clay.on(MouseEvent.MOUSE_MOVE,       	mousemove,     events_priority);   	
+		Clay.on(MouseEvent.MOUSE_WHEEL,      	mousewheel,    events_priority);  	
+
+		Clay.on(GamepadEvent.DEVICE_ADDED,   	gamepadadd,    events_priority);  	
+		Clay.on(GamepadEvent.DEVICE_REMOVED, 	gamepadremove, events_priority);
+		Clay.on(GamepadEvent.BUTTON_DOWN,    	gamepaddown,   events_priority); 	
+		Clay.on(GamepadEvent.BUTTON_UP,      	gamepadup,     events_priority);   	
+		Clay.on(GamepadEvent.AXIS,           	gamepadaxis,   events_priority); 	
+
+		Clay.on(PenEvent.PEN_DOWN,           	pendown,       events_priority); 	    
+		Clay.on(PenEvent.PEN_UP,             	penup,         events_priority); 	        
+		Clay.on(PenEvent.PEN_MOVE,           	penmove,       events_priority); 
+
+		Clay.on(TouchEvent.TOUCH_DOWN,          touchdown,     events_priority); 	    
+		Clay.on(TouchEvent.TOUCH_UP,            touchup,       events_priority); 	        
+		Clay.on(TouchEvent.TOUCH_MOVE,          touchmove,     events_priority); 	    
+
+		Clay.on(InputEvent.INPUT_DOWN,       	inputdown,     events_priority); 	    
+		Clay.on(InputEvent.INPUT_UP,         	inputup,       events_priority); 	    
 
 	}
 
 	function unlisten_engine_signals() {
 		
-		Clay.signals.prerender.remove(prerender);
-		Clay.signals.render.remove(render);
-		Clay.signals.postrender.remove(postrender);
-		Clay.signals.tickstart.remove(tickstart);
-		Clay.signals.tickend.remove(tickend);
-		Clay.signals.update.remove(update);
-		Clay.signals.fixedupdate.remove(fixedupdate);
-		Clay.signals.keydown.remove(keydown);
-		Clay.signals.keyup.remove(keyup);
-		Clay.signals.textinput.remove(textinput);
-		Clay.signals.mousedown.remove(mousedown);
-		Clay.signals.mouseup.remove(mouseup);
-		Clay.signals.mousemove.remove(mousemove);
-		Clay.signals.mousewheel.remove(mousewheel);
-		Clay.signals.gamepadadd.remove(gamepadadd);
-		Clay.signals.gamepadremove.remove(gamepadremove);
-		Clay.signals.gamepaddown.remove(gamepaddown);
-		Clay.signals.gamepadup.remove(gamepadup);
-		Clay.signals.gamepadaxis.remove(gamepadaxis);
-		Clay.signals.touchdown.remove(touchdown);
-		Clay.signals.touchup.remove(touchup);
-		Clay.signals.touchmove.remove(touchmove);
-		Clay.signals.pendown.remove(pendown);
-		Clay.signals.penup.remove(penup);
-		Clay.signals.penmove.remove(penmove);
-		Clay.signals.inputdown.remove(inputdown);
-		Clay.signals.inputup.remove(inputup);
-		Clay.signals.timescale.remove(timescale);
-		Clay.signals.foreground.remove(foreground);
-		Clay.signals.background.remove(background);
-		Clay.signals.pause.remove(pause);
-		Clay.signals.resume.remove(resume);
+		Clay.off(RenderEvent.PRERENDER,       	prerender);     	
+		Clay.off(RenderEvent.RENDER,          	render);     	    
+		Clay.off(RenderEvent.POSTRENDER,      	postrender);     	
+
+		Clay.off(AppEvent.TICKSTART,          	tickstart);     	
+		Clay.off(AppEvent.TICKEND,            	tickend);     	
+		Clay.off(AppEvent.FOREGROUND,         	foreground);     	
+		Clay.off(AppEvent.BACKGROUND,         	background);     	
+		Clay.off(AppEvent.PAUSE,              	pause);     	    
+		Clay.off(AppEvent.RESUME,             	resume);     	    
+		Clay.off(AppEvent.TIMESCALE,          	timescale);     	
+
+		Clay.off(AppEvent.UPDATE,             	update);     	    
+		Clay.off(AppEvent.FIXEDUPDATE,        	fixedupdate);     	
+
+		Clay.off(KeyEvent.KEY_DOWN,           	keydown);     	
+		Clay.off(KeyEvent.KEY_UP,             	keyup);       	
+		Clay.off(KeyEvent.TEXT_INPUT,         	textinput);   	
+
+		Clay.off(MouseEvent.MOUSE_DOWN,       	mousedown);   	
+		Clay.off(MouseEvent.MOUSE_UP,         	mouseup);     	
+		Clay.off(MouseEvent.MOUSE_MOVE,       	mousemove);   	
+		Clay.off(MouseEvent.MOUSE_WHEEL,      	mousewheel);  	
+
+		Clay.off(GamepadEvent.DEVICE_ADDED,   	gamepadadd);  	
+		Clay.off(GamepadEvent.DEVICE_REMOVED, 	gamepadremove);
+		Clay.off(GamepadEvent.BUTTON_DOWN,    	gamepaddown); 	
+		Clay.off(GamepadEvent.BUTTON_UP,      	gamepadup);   	
+		Clay.off(GamepadEvent.AXIS,           	gamepadaxis); 	
+
+		Clay.off(PenEvent.PEN_DOWN,           	pendown); 	    
+		Clay.off(PenEvent.PEN_UP,             	penup); 	        
+		Clay.off(PenEvent.PEN_MOVE,           	penmove); 	   
+
+		Clay.off(TouchEvent.TOUCH_DOWN,          touchdown); 	    
+		Clay.off(TouchEvent.TOUCH_UP,            touchup); 	        
+		Clay.off(TouchEvent.TOUCH_MOVE,          touchmove); 	 
+
+		Clay.off(InputEvent.INPUT_DOWN,       	inputdown); 	    
+		Clay.off(InputEvent.INPUT_UP,         	inputup); 	  
 
 	}
-
-	function prerender() {
+	function prerender(e) {
 
 		_verboser('prerender');
 
 		for (w in active_worlds) {
-			w.signals.prerender.emit();
+			w.emitter.emit(RenderEvent.PRERENDER, e);
 		}
 		
 	}
 
-	function postrender() {
+	function render(e) {
+
+		_verboser('render');
+
+		for (w in active_worlds) {
+			w.emitter.emit(RenderEvent.RENDER, e);
+		}
+
+	}
+
+	function postrender(e) {
 
 		_verboser('postrender');
 
 		for (w in active_worlds) {
-			w.signals.postrender.emit();
+			w.emitter.emit(RenderEvent.POSTRENDER, e);
 		}
 
 	}
 
-	function tickstart() {
+	function tickstart(e) {
 
 		_verboser('tickstart');
 
 		for (w in active_worlds) {
-			w.signals.tickstart.emit();
+			w.emitter.emit(AppEvent.TICKSTART, e);
 		}
 
 	}
 
-	function tickend() {
+	function tickend(e) {
 
 		_verboser('tickend');
 
 		for (w in active_worlds) {
-			w.signals.tickend.emit();
+			w.emitter.emit(AppEvent.TICKEND, e);
 		}
 
 	}
@@ -295,7 +321,7 @@ class Worlds {
 		for (w in active_worlds) {
 			Clay.debug.start(w.name+'.update');
 			w.update();
-			w.signals.update.emit(dt);
+			w.emitter.emit(AppEvent.UPDATE, dt);
 			Clay.debug.end(w.name+'.update');
 		}
 
@@ -306,27 +332,16 @@ class Worlds {
 		_verboser('fixedupdate rate:${rate}');
 
 		for (w in active_worlds) {
-			w.signals.fixedupdate.emit(rate);
+			w.emitter.emit(AppEvent.FIXEDUPDATE, rate);
 		}
 
 	}
-
-	function render() {
-
-		_verboser('render');
-
-		for (w in active_worlds) {
-			w.signals.render.emit();
-		}
-
-	}
-
 
 	// key
 	function keydown(e:KeyEvent) {
 
 		for (w in active_worlds) {
-			w.signals.keydown.emit(e);
+			w.emitter.emit(KeyEvent.KEY_DOWN, e);  
 		}
 
 	}
@@ -334,7 +349,7 @@ class Worlds {
 	function keyup(e:KeyEvent) {
 
 		for (w in active_worlds) {
-			w.signals.keyup.emit(e);
+			w.emitter.emit(KeyEvent.KEY_UP, e);
 		}
 
 	}
@@ -342,7 +357,7 @@ class Worlds {
 	function textinput(e:String) {
 
 		for (w in active_worlds) {
-			w.signals.textinput.emit(e);
+			w.emitter.emit(KeyEvent.TEXT_INPUT, e);
 		}
 
 	}
@@ -351,7 +366,7 @@ class Worlds {
 	function mousedown(e:MouseEvent) {
 
 		for (w in active_worlds) {
-			w.signals.mousedown.emit(e);
+			w.emitter.emit(MouseEvent.MOUSE_DOWN, e);  
 		}
 
 	}
@@ -359,7 +374,7 @@ class Worlds {
 	function mouseup(e:MouseEvent) {
 
 		for (w in active_worlds) {
-			w.signals.mouseup.emit(e);
+			w.emitter.emit(MouseEvent.MOUSE_UP, e);
 		}
 
 	}
@@ -367,7 +382,7 @@ class Worlds {
 	function mousemove(e:MouseEvent) {
 
 		for (w in active_worlds) {
-			w.signals.mousemove.emit(e);
+			w.emitter.emit(MouseEvent.MOUSE_MOVE, e); 
 		}
 
 	}
@@ -375,7 +390,7 @@ class Worlds {
 	function mousewheel(e:MouseEvent) {
 
 		for (w in active_worlds) {
-			w.signals.mousewheel.emit(e);
+			w.emitter.emit(MouseEvent.MOUSE_WHEEL, e);  
 		}
 
 	}
@@ -384,7 +399,7 @@ class Worlds {
 	function gamepadadd(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.signals.gamepadadd.emit(e);
+			w.emitter.emit(GamepadEvent.DEVICE_ADDED, e);  
 		}
 
 	}
@@ -392,7 +407,7 @@ class Worlds {
 	function gamepadremove(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.signals.gamepadremove.emit(e);
+			w.emitter.emit(GamepadEvent.DEVICE_REMOVED, e);
 		}
 
 	}
@@ -400,7 +415,7 @@ class Worlds {
 	function gamepaddown(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.signals.gamepaddown.emit(e);
+			w.emitter.emit(GamepadEvent.BUTTON_DOWN, e);
 		}
 
 	}
@@ -408,7 +423,7 @@ class Worlds {
 	function gamepadup(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.signals.gamepadup.emit(e);
+			w.emitter.emit(GamepadEvent.BUTTON_UP, e);
 		}
 
 	}
@@ -416,7 +431,7 @@ class Worlds {
 	function gamepadaxis(e:GamepadEvent) {
 
 		for (w in active_worlds) {
-			w.signals.gamepadaxis.emit(e);
+			w.emitter.emit(GamepadEvent.AXIS, e);
 		}
 
 	}
@@ -425,7 +440,7 @@ class Worlds {
 	function touchdown(e:TouchEvent) {
 
 		for (w in active_worlds) {
-			w.signals.touchdown.emit(e);
+			w.emitter.emit(TouchEvent.TOUCH_DOWN, e);
 		}
 
 	}
@@ -433,7 +448,7 @@ class Worlds {
 	function touchup(e:TouchEvent) {
 
 		for (w in active_worlds) {
-			w.signals.touchup.emit(e);
+			w.emitter.emit(TouchEvent.TOUCH_UP, e);
 		}
 
 	}
@@ -441,7 +456,7 @@ class Worlds {
 	function touchmove(e:TouchEvent) {
 
 		for (w in active_worlds) {
-			w.signals.touchmove.emit(e);
+			w.emitter.emit(TouchEvent.TOUCH_MOVE, e);
 		}
 
 	}
@@ -450,7 +465,7 @@ class Worlds {
 	function pendown(e:PenEvent) {
 
 		for (w in active_worlds) {
-			w.signals.pendown.emit(e);
+			w.emitter.emit(PenEvent.PEN_DOWN, e);
 		}
 
 	}
@@ -458,7 +473,7 @@ class Worlds {
 	function penup(e:PenEvent) {
 
 		for (w in active_worlds) {
-			w.signals.penup.emit(e);
+			w.emitter.emit(PenEvent.PEN_UP, e);
 		}
 
 	}
@@ -466,7 +481,7 @@ class Worlds {
 	function penmove(e:PenEvent) {
 
 		for (w in active_worlds) {
-			w.signals.penmove.emit(e);
+			w.emitter.emit(PenEvent.PEN_MOVE, e);
 		}
 
 	}
@@ -475,7 +490,7 @@ class Worlds {
 	function inputdown(e:InputEvent) {
 
 		for (w in active_worlds) {
-			w.signals.inputdown.emit(e);
+			w.emitter.emit(InputEvent.INPUT_UP, e);
 		}
 
 	}
@@ -483,7 +498,7 @@ class Worlds {
 	function inputup(e:InputEvent) {
 
 		for (w in active_worlds) {
-			w.signals.inputup.emit(e);
+			w.emitter.emit(InputEvent.INPUT_DOWN, e);
 		}
 
 	}
@@ -492,39 +507,39 @@ class Worlds {
 	function timescale(t:Float) {
 
 		for (w in active_worlds) {
-			w.signals.timescale.emit(t);
+			w.emitter.emit(AppEvent.TIMESCALE, t);
 		}
 
 	}
 
-	function foreground() {
+	function foreground(e) {
 
 		for (w in active_worlds) {
-			w.signals.foreground.emit();
+			w.emitter.emit(AppEvent.FOREGROUND, e);
 		}
 
 	}
 
-	function background() {
+	function background(e) {
 
 		for (w in active_worlds) {
-			w.signals.background.emit();
+			w.emitter.emit(AppEvent.BACKGROUND, e);
 		}
 
 	}
 
-	function pause() {
+	function pause(e) {
 
 		for (w in active_worlds) {
-			w.signals.pause.emit();
+			w.emitter.emit(AppEvent.PAUSE, e);
 		}
 
 	}
 
-	function resume() {
+	function resume(e) {
 
 		for (w in active_worlds) {
-			w.signals.resume.emit();
+			w.emitter.emit(AppEvent.RESUME, e);
 		}
 
 	}
@@ -563,9 +578,9 @@ class Worlds {
 
 typedef WorldOptions = {
 
-    @:optional var active:Bool;
-    @:optional var priority:Int;
-    @:optional var capacity:Int;
-    @:optional var component_types:Int;
+	@:optional var active:Bool;
+	@:optional var priority:Int;
+	@:optional var capacity:Int;
+	@:optional var component_types:Int;
 
 }

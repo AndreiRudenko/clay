@@ -9,8 +9,7 @@ import clay.core.ecs.Components;
 import clay.core.ecs.Processors;
 import clay.core.ecs.Families;
 import clay.core.ecs.Worlds;
-
-import clay.core.EngineSignals;
+import clay.events.Emitter;
 
 @:allow(clay.core.ecs.Worlds)
 class World {
@@ -28,7 +27,7 @@ class World {
 	public var processors 	(default, null):Processors;
 	public var families     (default, null):Families;
 	
-	public var signals      (default, null):EngineSignals;
+	public var emitter      (default, null):Emitter;
 
 	#if !no_debug_console
 
@@ -45,7 +44,7 @@ class World {
 
 		name = _name;
 
-		signals = new EngineSignals();
+		emitter = new Emitter();
 
 		tags = new Tags(_capacity);
 		groups = new Groups();
@@ -104,7 +103,7 @@ class World {
 		
 		empty();
 
-		signals.destroy();
+		// emitter.destroy();
 
 		tags = null;
 		groups = null;
@@ -112,7 +111,7 @@ class World {
 		components = null;
 		families = null;
 		processors = null;
-		signals = null;
+		emitter = null;
 
 	}
 

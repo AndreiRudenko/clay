@@ -30,8 +30,6 @@ class Clay {
 	
 	public static var random    	(get, never):clay.math.Random;
 
-	public static var signals      	(get, never):clay.core.EngineSignals;
-
 	public static var tags   	    (get, never):clay.core.ecs.Tags;
 	public static var groups   	    (get, never):clay.core.ecs.Groups;
 	
@@ -60,6 +58,18 @@ class Clay {
 
 	}
 
+	public static inline function on<T>(event:clay.events.EventType<T>, handler:T->Void, priority:Int = 0) {
+
+		engine.emitter.on(event, handler, priority);
+
+	}
+
+	public static inline function off<T>(event:clay.events.EventType<T>, handler:T->Void):Bool {
+
+		return engine.emitter.off(event, handler);
+
+	}
+
 	public static inline function next(func:Void->Void) engine.next(func);
 	public static inline function defer(func:Void->Void) engine.defer(func);
 
@@ -85,7 +95,6 @@ class Clay {
 	static inline function get_tween() return engine.tween;
 
 	static inline function get_random() return engine.random;
-	static inline function get_signals() return engine.signals;
 
 	static inline function get_tags() return world.tags;
 	static inline function get_groups() return world.groups;

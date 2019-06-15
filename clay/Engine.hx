@@ -15,7 +15,6 @@ import clay.render.Camera;
 
 import clay.core.Inputs;
 import clay.core.Resources;
-import clay.core.EngineSignals;
 import clay.core.Audio;
 import clay.core.Debug;
 import clay.core.Screen;
@@ -33,6 +32,9 @@ import clay.input.Bindings;
 
 import clay.render.Renderer;
 import clay.render.Draw;
+import clay.events.Emitter;
+import clay.events.AppEvent;
+import clay.events.RenderEvent;
 
 import clay.types.ClayOptions;
 
@@ -51,10 +53,11 @@ class Engine {
 	public var world:World;
 	public var worlds	    (default, null):Worlds;
 
+	public var emitter	    (default, null):Emitter;
 	public var screen	    (default, null):Screen;
 	public var input	    (default, null):Inputs;
 	public var resources	(default, null):Resources;
-	public var signals	    (default, null):EngineSignals;
+	// public var signals	    (default, null):EngineSignals;
 	public var events	    (default, null):Events;
 	public var timer 	    (default, null):Timers;
 	public var random 	    (default, null):Random;
@@ -86,6 +89,9 @@ class Engine {
 
 	var next_queue:Array<Void->Void> = [];
 	var defer_queue:Array<Void->Void> = [];
+
+	var _app_event:AppEvent;
+	var _render_event:RenderEvent;
 
 
 	public function new(_options:ClayOptions, _onready:Void->Void) {
@@ -131,7 +137,11 @@ class Engine {
 
 		Clay.engine = this;
 
-		signals = new EngineSignals();
+		_app_event = new AppEvent();
+		_render_event = new RenderEvent();
+
+		emitter = new Emitter();
+		// signals = new EngineSignals();
 		tween = new TweenManager();
 		random = new Random(options.random_seed);
 		timer = new Timers();
@@ -218,7 +228,7 @@ class Engine {
 		renderer.destroy();
 		// audio.destroy();
 		timer.destroy();
-		signals.destroy();
+		// signals.destroy();
 
 		debug = null;
 		screen = null;
@@ -230,7 +240,7 @@ class Engine {
 		audio = null;
 		timer = null;
 		tween = null;
-		signals = null;
+		// signals = null;
 		next_queue = null;
 		defer_queue = null;
 
@@ -332,11 +342,11 @@ class Engine {
 
 		fixed_overflow += frame_delta;
 		while(fixed_overflow >= fixed_frame_time) {
-			signals.fixedupdate.emit(fixed_frame_time);
+			emitter.emit(AppEvent.FIXEDUPDATE, fixed_frame_time);
 			fixed_overflow -= fixed_frame_time;
 		}
 
-		signals.update.emit(dt);
+		emitter.emit(AppEvent.UPDATE, dt);
 
 		last_time = time;
 
@@ -350,7 +360,7 @@ class Engine {
 		
 		cycle_next_queue();
 
-		signals.tickstart.emit();
+		emitter.emit(AppEvent.TICKSTART, _app_event);
 		
 	}
 
@@ -369,7 +379,7 @@ class Engine {
 
 		_verboser('ontickend');
 
-		signals.tickend.emit();
+		emitter.emit(AppEvent.TICKEND, _app_event);
 		input.reset();
 
 		cycle_defer_queue();
@@ -389,12 +399,14 @@ class Engine {
 
 		debug.start(Tag.render);
 
-		signals.prerender.emit();
+		_render_event.set(f[0]);
 
-		signals.render.emit();
+		emitter.emit(RenderEvent.PRERENDER, _render_event);
+
+		emitter.emit(RenderEvent.RENDER, _render_event);
 		renderer.process(f[0]);
 		
-		signals.postrender.emit();
+		emitter.emit(RenderEvent.POSTRENDER, _render_event);
 
 		debug.end(Tag.render);
 
@@ -405,7 +417,7 @@ class Engine {
 	// screen
 	function foreground() {
 
-		signals.foreground.emit();
+		emitter.emit(AppEvent.FOREGROUND, _app_event);
 
 		in_focus = true;
 
@@ -413,7 +425,7 @@ class Engine {
 
 	function background() {
 
-		signals.background.emit();
+		emitter.emit(AppEvent.BACKGROUND, _app_event);
 
 		in_focus = false;
 
@@ -422,13 +434,13 @@ class Engine {
 	// engine
 	function pause() {
 
-		signals.pause.emit();
+		emitter.emit(AppEvent.PAUSE, _app_event);
 
 	}
 
 	function resume() {
 
-		signals.resume.emit();
+		emitter.emit(AppEvent.RESUME, _app_event);
 
 	}
 
@@ -460,7 +472,7 @@ class Engine {
 
 		timescale = v;
 
-		signals.timescale.emit(v);
+		emitter.emit(AppEvent.TIMESCALE, v);
 
 		return v;
 		

@@ -4,6 +4,7 @@ package clay.input;
 import clay.ds.BitVector;
 import clay.input.Key;
 import clay.utils.Log.*;
+import clay.events.KeyEvent;
 
 
 @:allow(clay.core.Inputs)
@@ -159,11 +160,11 @@ class Keyboard extends Input {
 		key_code_pressed.enable(_key);
 		key_code_down.enable(_key);
 
-		key_event.set(_key, KeyEventState.down);
+		key_event.set(_key, KeyEvent.KEY_DOWN);
 
 		check_binding(_key, true);
 
-		engine.signals.keydown.emit(key_event);
+		engine.emitter.emit(KeyEvent.KEY_DOWN, key_event);
 
 	}
 
@@ -177,11 +178,11 @@ class Keyboard extends Input {
 		key_code_pressed.disable(_key);
 		key_code_down.disable(_key);
 
-		key_event.set(_key, KeyEventState.up);
+		key_event.set(_key, KeyEvent.KEY_UP);
 
 		check_binding(_key, false);
 
-		engine.signals.keyup.emit(key_event);
+		engine.emitter.emit(KeyEvent.KEY_UP, key_event);
 
 	}
 	
@@ -189,38 +190,9 @@ class Keyboard extends Input {
 
 		_verboser('ontextinput: $_char');
 
-		engine.signals.textinput.emit(_char);
+		engine.emitter.emit(KeyEvent.TEXT_INPUT, _char);
 
 	}
 
 
 }
-
-@:allow(clay.input.Keyboard)
-class KeyEvent {
-
-
-    public var key (default, null):Int;
-	public var state (default, null):KeyEventState;
-
-
-	function new() {}
-
-	inline function set(_key:Int, _state:KeyEventState) {
-		
-		key = _key;
-		state = _state;
-
-	}
-
-
-}
-
-@:enum abstract KeyEventState(Int) from Int to Int {
-
-    var none         = 0;
-    var down         = 1;
-    var up           = 2;
-
-}
-

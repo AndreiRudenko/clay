@@ -4,10 +4,11 @@ package clay.input;
 import clay.Engine;
 import clay.utils.Log.*;
 import clay.utils.Bits;
+import clay.events.GamepadEvent;
 
 
 @:allow(clay.core.Inputs)
-@:access(clay.Engine, clay.input.GamepadEvent)
+@:access(clay.Engine, clay.events.GamepadEvent)
 class Gamepads extends Input {
 
 
@@ -189,9 +190,9 @@ class Gamepads extends Input {
 		g.listen_events();
 		gamepads.set(_gamepad, g);
 
-		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEventState.device_added);
+		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_ADDED);
 
-		engine.signals.gamepadadd.emit(gamepad_event);
+		engine.emitter.emit(GamepadEvent.DEVICE_ADDED, gamepad_event);
 
 	}
 
@@ -204,9 +205,9 @@ class Gamepads extends Input {
 		g.unlisten_events();
 		gamepads.remove(_gamepad);
 
-		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEventState.device_removed);
+		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_REMOVED);
 		
-		engine.signals.gamepadremove.emit(gamepad_event);
+		engine.emitter.emit(GamepadEvent.DEVICE_REMOVED, gamepad_event);
 
 	}
 
@@ -301,9 +302,9 @@ class Gamepad {
 		axis_id = _a;
 		axis_value = _v;
 
-		gamepad_event.set(gamepad, id, -1, axis_id, axis_value, GamepadEventState.axis);
+		gamepad_event.set(gamepad, id, -1, axis_id, axis_value, GamepadEvent.AXIS);
 
-		gamepads.engine.signals.gamepadaxis.emit(gamepad_event);
+		gamepads.engine.emitter.emit(GamepadEvent.AXIS, gamepad_event);
 
 	}
 
@@ -326,11 +327,11 @@ class Gamepad {
 		buttons_pressed = Bits.set(buttons_pressed, _b);
 		buttons_down = Bits.set(buttons_down, _b);
 
-		gamepad_event.set(gamepad, id, _b, -1, 0, GamepadEventState.button_down);
+		gamepad_event.set(gamepad, id, _b, -1, 0, GamepadEvent.BUTTON_DOWN);
 
 		gamepads.check_binding(gamepad, _b, true);
 
-		gamepads.engine.signals.gamepaddown.emit(gamepad_event);
+		gamepads.engine.emitter.emit(GamepadEvent.BUTTON_DOWN, gamepad_event);
 
 	}
 
@@ -342,55 +343,13 @@ class Gamepad {
 		buttons_down = Bits.clear(buttons_down, _b);
 		buttons_released = Bits.set(buttons_released, _b);
 
-		gamepad_event.set(gamepad, id, _b, -1, 0, GamepadEventState.button_up);
+		gamepad_event.set(gamepad, id, _b, -1, 0, GamepadEvent.BUTTON_UP);
 
 		gamepads.check_binding(gamepad, _b, false);
 
-		gamepads.engine.signals.gamepadup.emit(gamepad_event);
+		gamepads.engine.emitter.emit(GamepadEvent.BUTTON_UP, gamepad_event);
 
 	}
 
-
-}
-
-
-@:allow(clay.input.Gamepad)
-class GamepadEvent {
-
-
-	public var id (default, null):String;
-	public var gamepad (default, null):Int;
-
-	public var button (default, null):Int;
-	public var axis (default, null):Int;
-	public var value (default, null):Float;
-
-	public var state (default, null):GamepadEventState;
-
-
-	function new() {}
-
-	inline function set(_gamepad:Int, _id:String, _button:Int, axis_id:Int, _value:Float, _state:GamepadEventState) {
-
-		id = _id;
-		gamepad = _gamepad;
-		button = _button;
-		axis = axis_id;
-		value = _value;
-		state = _state;
-
-	}
-
-
-}
-
-@:enum abstract GamepadEventState(Int) from Int to Int {
-
-    var none                = 0;
-    var button_down         = 1;
-    var button_up           = 2;
-    var axis                = 3;
-    var device_added    	= 4;
-    var device_removed  	= 5;
 
 }

@@ -20,6 +20,7 @@ import clay.audio.AudioChannel;
 import clay.audio.AudioGroup;
 import clay.Sound;
 import clay.ds.Pool;
+import clay.events.*;
 
 
 @:access(

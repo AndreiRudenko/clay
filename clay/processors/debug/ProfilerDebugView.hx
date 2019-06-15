@@ -28,6 +28,7 @@ import clay.resources.TextResource;
 import clay.resources.Texture;
 import clay.resources.VideoResource;
 import clay.utils.Log.*;
+import clay.events.*;
 
 
 @:access(
@@ -90,9 +91,9 @@ class ProfilerDebugView extends DebugView {
 
 	}
 
-	override function onmousewheel(e:MouseEvent) {
+	// override function onmousewheel(e:MouseEvent) {
 
-	}
+	// }
 
 	override function onrender() {
 
