@@ -10,7 +10,7 @@ import kha.graphics4.Graphics;
 import kha.arrays.Float32Array;
 
 
-import clay.components.graphics.Geometry;
+import clay.graphics.Mesh;
 import clay.render.Camera;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
@@ -32,7 +32,7 @@ class QuadPackRenderer extends ObjectRenderer {
 	var _quads_max:Int = 0;
 	var _buffer_index:Int = 0;
 
-	var _geometry:Array<Geometry>;
+	var _geometry:Array<Mesh>;
 
 	var _shader:Shader;
 	var _texture:Texture;
@@ -91,13 +91,15 @@ class QuadPackRenderer extends ObjectRenderer {
 		
 	}
 
-	public function render(geom:Geometry) {
+	public function render(geom:Mesh) {
 
 		if(geom.vertices.length == 0) {
 			return;
 		}
+		
+		var shader = geom.shader != null ? geom.shader : geom.shader_default;
 
-		if(_shader != geom.shader 
+		if(_shader != shader 
 			|| _texture != geom.texture
 			|| !check_blendmode(geom)
 			|| _clip_rect != null && !_clip_rect.equals(geom.clip_rect)
@@ -107,7 +109,7 @@ class QuadPackRenderer extends ObjectRenderer {
 
 		_geometry.push(geom);
 
-		_shader = geom.shader;
+		_shader = shader;
 		_texture = geom.texture;
 		_clip_rect = geom.clip_rect;
 
@@ -197,7 +199,7 @@ class QuadPackRenderer extends ObjectRenderer {
 					_vertexbuffer = renderpath.get_buffer(_quads_total * 4);
 					vertices = _vertexbuffer.lock();
 				}
-				set_quad_vertices(vertices, geom.matrix, geom.vertices, i);
+				set_quad_vertices(vertices, geom.transform.world.matrix, geom.vertices, i);
 				i += 4;
 			}	
 		}
@@ -228,7 +230,7 @@ class QuadPackRenderer extends ObjectRenderer {
 
 	}
 
-	inline function check_blendmode(geom:Geometry):Bool {
+	inline function check_blendmode(geom:Mesh):Bool {
 
 		return geom.blend_src == _blend_src 
 			&& geom.blend_dst == _blend_dst 

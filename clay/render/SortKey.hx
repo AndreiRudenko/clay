@@ -2,7 +2,7 @@ package clay.render;
 
 
 import clay.utils.Bits;
-import clay.math.Mathf;
+import clay.utils.Mathf;
 
 // @:keep
 @:access(clay.render.Renderer)

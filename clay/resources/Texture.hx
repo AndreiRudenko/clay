@@ -9,7 +9,7 @@ import clay.render.types.TextureAddressing;
 import clay.render.types.TextureFormat;
 import clay.render.types.DepthStencilFormat;
 import clay.render.types.Usage;
-import clay.core.Resources;
+import clay.system.ResourceManager;
 
 
 @:access(clay.render.Renderer)

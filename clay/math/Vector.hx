@@ -18,7 +18,7 @@ class Vector {
         
     }
 
-    @:extern public inline function set(_x:Float, _y:Float) {
+    public inline function set(_x:Float, _y:Float) {
 
         x = _x;
         y = _y;
@@ -27,7 +27,7 @@ class Vector {
         
     }
 
-    @:extern public inline function copy_from(_other:Vector) {
+    public inline function copy_from(_other:Vector) {
 
         x = _other.x;
         y = _other.y;
@@ -36,31 +36,31 @@ class Vector {
         
     }
 
-    @:extern public inline function equals(_other:Vector):Bool {
+    public inline function equals(_other:Vector):Bool {
 
         return x == _other.x && y == _other.y;
         
     }
 
-    @:extern public inline function clone() {
+    public inline function clone() {
 
         return new Vector(x, y);
         
     }
 
-    @:extern public inline function normalize() {
+    public inline function normalize() {
 
         return divide_scalar(length);
         
     }
 
-    @:extern public inline function dot(_other:Vector) {
+    public inline function dot(_other:Vector) {
 
         return x * _other.x + y * _other.y;
 
     }
 
-    @:extern public inline function invert() {
+    public inline function invert() {
 
         set(-x, -y);
 
@@ -68,7 +68,7 @@ class Vector {
         
     }
 
-    @:extern public inline function add(_other:Vector) {
+    public inline function add(_other:Vector) {
 
         set(x + _other.x, y + _other.y);
 
@@ -76,7 +76,7 @@ class Vector {
         
     }
 
-    @:extern public inline function add_xy(_x:Float, _y:Float) {
+    public inline function add_xy(_x:Float, _y:Float) {
 
         set(x + _x, y + _y);
 
@@ -84,7 +84,7 @@ class Vector {
         
     }
 
-    @:extern public inline function add_scalar(_v:Float) {
+    public inline function add_scalar(_v:Float) {
 
         set(x + _v, y + _v);
 
@@ -92,7 +92,7 @@ class Vector {
         
     }
 
-    @:extern public inline function subtract(_other:Vector) {
+    public inline function subtract(_other:Vector) {
 
         set(x - _other.x, y - _other.y);
 
@@ -100,7 +100,7 @@ class Vector {
         
     }
 
-    @:extern public inline function subtract_xy(_x:Float, _y:Float) {
+    public inline function subtract_xy(_x:Float, _y:Float) {
 
         set(x - _x, y - _y);
 
@@ -108,7 +108,7 @@ class Vector {
         
     }
 
-    @:extern public inline function subtract_scalar(_v:Float) {
+    public inline function subtract_scalar(_v:Float) {
 
         set(x - _v, y - _v);
 
@@ -116,7 +116,7 @@ class Vector {
         
     }
 
-    @:extern public inline function multiply(_other:Vector) {
+    public inline function multiply(_other:Vector) {
 
         set(x * _other.x, y * _other.y);
 
@@ -124,7 +124,7 @@ class Vector {
         
     }
 
-    @:extern public inline function multiply_xy(_x:Float, _y:Float) {
+    public inline function multiply_xy(_x:Float, _y:Float) {
 
         set(x * _x, y * _y);
 
@@ -132,7 +132,7 @@ class Vector {
         
     }
 
-    @:extern public inline function multiply_scalar(_v:Float) {
+    public inline function multiply_scalar(_v:Float) {
 
         set(x * _v, y * _v);
 
@@ -140,7 +140,7 @@ class Vector {
         
     }
 
-    @:extern public inline function divide(_other:Vector) {
+    public inline function divide(_other:Vector) {
 
         set(x / _other.x, y / _other.y);
 
@@ -148,7 +148,7 @@ class Vector {
         
     }
 
-    @:extern public inline function divide_xy(_x:Float, _y:Float) {
+    public inline function divide_xy(_x:Float, _y:Float) {
 
         set(x / _x, y / _y);
 
@@ -156,7 +156,7 @@ class Vector {
         
     }
 
-    @:extern public inline function divide_scalar(_v:Float) {
+    public inline function divide_scalar(_v:Float) {
 
         set(x / _v, y / _v);
 
@@ -164,7 +164,7 @@ class Vector {
         
     }
 
-    @:extern public inline function transform(_m:Matrix) {
+    public inline function transform(_m:Matrix) {
 
         set(_m.a * x + _m.c * y + _m.tx, _m.b * x + _m.d * y + _m.ty);
 

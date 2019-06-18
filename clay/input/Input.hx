@@ -1,22 +1,22 @@
 package clay.input;
 
 
-import clay.Engine;
+import clay.system.App;
 import clay.utils.Log.*;
 
 
-@:allow(clay.core.Inputs)
+@:allow(clay.system.InputManager)
 class Input {
 
 
 	public var active(default, null):Bool = false;
 
-	var engine:Engine;
+	var _app:App;
 
 
-	function new(_engine:Engine) {
+	function new(app:App) {
 		
-		engine = _engine;
+		_app = app;
 
 	}
 

@@ -15,13 +15,13 @@ import clay.resources.FontResource;
 import clay.render.Layer;
 import clay.render.SortKey;
 import clay.render.renderers.ObjectRenderer;
-import clay.data.Color;
+import clay.render.Color;
 import clay.utils.Bits;
 import clay.utils.Log.*;
-import clay.ds.Int32RingBuffer;
+import clay.ds.IntRingBuffer;
 
 
-@:allow(clay.Engine)
+@:allow(clay.system.App)
 class Renderer {
 
 
@@ -51,8 +51,7 @@ class Renderer {
 	public var stats:RenderStats;
 	#end
 	
-
-	var _texture_ids:Int32RingBuffer;
+	var _texture_ids:IntRingBuffer;
 	var _textures_used:Int = 0;
 
 
@@ -69,8 +68,14 @@ class Renderer {
 		layers = new LayerManager(layers_max);
 		clear_color = new Color(0.1,0.1,0.1,1);
 		shaders = new Map();
-		_texture_ids = new Int32RingBuffer(sort_options.texture_max+1);
+		_texture_ids = new IntRingBuffer(sort_options.texture_max+1);
 
+	}
+
+	public function update(dt:Float) {
+
+		layers.update(dt);
+		
 	}
 
 	public function process(f:Framebuffer) {

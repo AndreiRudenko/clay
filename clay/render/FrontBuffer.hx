@@ -114,8 +114,6 @@ class FrontBuffer {
 
 	public function render(source:Texture, destination:Canvas, rotation:ScreenRotation) {
 
-		Clay.debug.start('frontbuffer');
-
 		var g = destination.g4;
 
 		_projection_matrix.identity().orto(0, Clay.screen.width, Clay.screen.height, 0);
@@ -141,8 +139,6 @@ class FrontBuffer {
 		g.setTexture(_texture_loc, null);
 
 		g.end();
-		
-		Clay.debug.end('frontbuffer');
 
 	}
 	

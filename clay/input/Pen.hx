@@ -1,15 +1,14 @@
 package clay.input;
 
 
-import clay.Engine;
-import clay.ds.Uint4Vector;
+import clay.system.App;
 import clay.utils.Log.*;
 import clay.utils.Bits;
 import clay.events.PenEvent;
 
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine)
+@:allow(clay.system.InputManager)
+@:access(clay.system.App)
 class Pen extends Input {
 
 
@@ -95,7 +94,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, 0, 0, PenEvent.PEN_DOWN, pressure);
 
-		engine.emitter.emit(PenEvent.PEN_DOWN, pen_event);
+		_app.emitter.emit(PenEvent.PEN_DOWN, pen_event);
 
 	}
 
@@ -113,7 +112,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, 0, 0, PenEvent.PEN_UP, pressure);
 
-		engine.emitter.emit(PenEvent.PEN_UP, pen_event);
+		_app.emitter.emit(PenEvent.PEN_UP, pen_event);
 
 	}
 
@@ -129,7 +128,7 @@ class Pen extends Input {
 
 		pen_event.set(x, y, dx, dy, PenEvent.PEN_MOVE, pressure);
 
-		engine.emitter.emit(PenEvent.PEN_MOVE, pen_event);
+		_app.emitter.emit(PenEvent.PEN_MOVE, pen_event);
 
 	}
 

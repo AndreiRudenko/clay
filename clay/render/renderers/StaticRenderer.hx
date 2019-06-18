@@ -10,7 +10,7 @@ import kha.graphics4.Graphics;
 import kha.arrays.Float32Array;
 
 
-import clay.components.graphics.Geometry;
+import clay.graphics.Mesh;
 import clay.render.Camera;
 import clay.resources.Texture;
 import clay.utils.Log.*;
@@ -35,7 +35,7 @@ class StaticRenderer extends ObjectRenderer {
 
 	}
 
-	public function render(geom:Geometry) {
+	public function render(geom:Mesh) {
 
 		if(geom.vertices.length == 0) {
 			return;

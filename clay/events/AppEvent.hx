@@ -1,7 +1,7 @@
 package clay.events;
 
 
-@:allow(clay.Engine)
+@:allow(clay.system.App)
 class AppEvent implements IEvent {
 
 

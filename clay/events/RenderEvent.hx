@@ -4,7 +4,7 @@ package clay.events;
 import kha.Framebuffer;
 
 
-@:allow(clay.Engine)
+@:allow(clay.system.App)
 class RenderEvent implements IEvent {
 
 

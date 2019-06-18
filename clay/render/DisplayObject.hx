@@ -1,167 +1,124 @@
 package clay.render;
 
 
-import clay.math.Vector;
 import clay.math.Rectangle;
-import clay.math.Matrix;
-import clay.data.Color;
+import clay.math.Transform;
 import clay.render.SortKey;
 import clay.utils.Log.*;
 
-@:keep
+
 class DisplayObject {
 
 
-    static var ID:Int = 0; // for debug
+	static var ID:Int = 0; // for debug
+
+	public var visible:Bool;
+	public var renderable:Bool;
+	public var name:String;
+
+	public var transform:Transform;
+
+	public var layer         	(get, set):Layer;
+	public var depth         	(default, set):Float;
+
+	public var shader        	(default, set):Shader;
+	public var clip_rect     	(default, set):Rectangle;
+
+	public var sort_key      	(default, null):SortKey;
+	public var shader_default	(default, null):Shader;
+
+	var _layer:Layer;
 
 
-    public var visible:Bool;
-    public var renderable:Bool;
-    public var added            (default, null):Bool = false;
-
-    public var name             (default, null):String;
-
-    public var layer            (get, set):Layer;
-    public var depth            (default, set):Float;
-
-    public var shader           (get, set):Shader;
-    public var clip_rect        (default, set):Rectangle;
-
-    public var matrix:Matrix;
-
-    @:noCompletion public var bounds:Rectangle;
-    @:noCompletion public var sort_key      (default, null):SortKey;
-
-    var _layer:Layer;
-    var _shader:Shader;
-    var _custom_shader:Bool = false;
-
-
-    public function new(options:DisplayObjectOptions) {
-        
-    	bounds = new Rectangle();
-		matrix = new Matrix();
+	public function new() {
+		
+		visible = true;
+		renderable = true;
+		name = 'display_object.${ID++}';
+		transform = new Transform();
 		sort_key = new SortKey(0,0);
+		depth = 0;
+		shader_default = Clay.renderer.shaders.get('textured');
 
-        name = def(options.name, 'display_object.${ID++}');
-        visible = def(options.visible, true);
-        renderable = def(options.renderable, true);
-        depth = def(options.depth, 0);
-        shader = options.shader;
-        if(options.clip_rect != null) {
-            clip_rect = options.clip_rect;
-        }
+	}
 
-        _layer = def(options.layer, null);
+	public function drop() {
+		
+		if(_layer != null) {
+			_layer._remove_unsafe(this);
+		}
 
-    }
+	}
 
-    public function drop() {
-        
-        if(added && _layer != null) {
-            _layer._remove_unsafe(this);
-        }
+	public function update(dt:Float) {
 
-    }
-    
-    public function render(r:RenderPath, c:Camera) {}
+		transform.update();
 
-    function get_default_shader():Shader {
+	}
+	
+	public function render(r:RenderPath, c:Camera) {}
 
-        return Clay.renderer.shaders.get('textured');
+	inline function get_layer():Layer {
 
-    }
+		return _layer;
 
-    inline function update_sorting() {
+	}
 
-        if(added && _layer != null && _layer.depth_sort) {
-            _layer.dirty_sort = true;
-        }
+	function set_layer(v:Layer):Layer {
 
-    }
+		if(_layer != null) {
+			_layer._remove_unsafe(this);
+		}
 
-    inline function get_layer():Layer {
+		_layer = v;
 
-        return _layer;
+		if(_layer != null) {
+			_layer._add_unsafe(this);
+		}
 
-    }
+		return v;
 
-    function set_layer(v:Layer):Layer {
+	}
 
-        if(_layer != null) {
-            _layer._remove_unsafe(this);
-        }
+	function set_depth(v:Float):Float {
 
-        _layer = v;
+		sort_key.depth = v;
 
-        if(_layer != null) {
-            _layer._add_unsafe(this);
-        }
+		dirty_sort();
 
-        return v;
+		return depth = v;
 
-    }
+	}
+	
+	function set_shader(v:Shader):Shader {
 
-    function set_depth(v:Float):Float {
+		sort_key.shader = v != null ? v.id : shader_default.id;
 
-        sort_key.depth = v;
+		dirty_sort();
 
-        update_sorting();
+		return shader = v;
 
-        return depth = v;
+	}
 
-    }
+	function set_clip_rect(v:Rectangle):Rectangle {
 
-    inline function get_shader():Shader {
+		sort_key.clip = v != null;
 
-        return _shader;
+		if(clip_rect == null && v != null || clip_rect != null && v == null) {
+			dirty_sort();
+		}
 
-    }
+		return clip_rect = v;
 
-    function set_shader(v:Shader):Shader {
+	}
 
-        _custom_shader = v != null;
+	inline function dirty_sort() {
 
-        if(!_custom_shader) {
-            v = get_default_shader();
-        }
+		if(layer != null && layer.depth_sort) {
+			layer.dirty_sort = true;
+		}
 
-        return _set_shader(v);
-
-    }
-
-    inline function _set_shader(v:Shader) {
-
-        sort_key.shader = v.id;
-
-        update_sorting();
-
-        return _shader = v;
-    }
-
-    function set_clip_rect(v:Rectangle):Rectangle {
-
-        sort_key.clip = v != null;
-
-        if(clip_rect == null && v != null || clip_rect != null && v == null) {
-            update_sorting();
-        }
-
-        return clip_rect = v;
-
-    }
-    
-
-}
-
-typedef DisplayObjectOptions = {
-
-    @:optional var name:String;
-    @:optional var visible:Bool;
-    @:optional var renderable:Bool;
-    @:optional var layer:Layer;
-    @:optional var shader:Shader;
-    @:optional var depth:Float;
-    @:optional var clip_rect:Rectangle;
+	}
+	
 
 }

@@ -1,7 +1,7 @@
 package clay.resources;
 
 
-import clay.core.Resources;
+import clay.system.ResourceManager;
 
 
 class TextResource extends Resource {

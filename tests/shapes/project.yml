@@ -1,0 +1,44 @@
+project:
+  title: clay_shapes
+  authors: []
+  description : ''
+  version: '0.0.1'
+  sources: ['src']
+  assets: ['assets']
+  defines: []
+  shaders: []
+  libraries: []
+
+input:
+  mouse: true
+  keyboard: true
+  gamepad: false
+  touch: false
+  pen: false
+
+app:
+  name: clay_shapes
+  package: com.package.name
+  icon: ''
+  
+html5:
+  webgl: true
+  canvas: 'kanvas'
+  script: 'game'
+  width: 960
+  height: 640
+  server_port: 8080
+  html_file: ''
+  favicon: ''
+  minify: false
+
+windows:
+  graphics: 'direct3d11'
+  
+compiler:
+  output: 'build'
+  parameters: ['-dce full']
+  options: ['']
+  haxe: ''
+  kha: ''
+  ffmpeg: ''

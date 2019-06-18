@@ -1,15 +1,14 @@
 package clay.input;
 
 
-import clay.Engine;
-import clay.ds.Uint4Vector;
+import clay.system.App;
 import clay.utils.Log.*;
 import clay.utils.Bits;
 import clay.events.TouchEvent;
 
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine)
+@:allow(clay.system.InputManager)
+@:access(clay.system.App)
 class Touch extends Input {
 
 
@@ -81,7 +80,7 @@ class Touch extends Input {
 		var t = touches[id];
 		t.set(x, y, 0, 0, TouchEvent.TOUCH_DOWN);
 
-		engine.emitter.emit(TouchEvent.TOUCH_DOWN, t);
+		_app.emitter.emit(TouchEvent.TOUCH_DOWN, t);
 
 	}
 
@@ -94,7 +93,7 @@ class Touch extends Input {
 		var t = touches[id];
 		t.set(x, y, 0, 0, TouchEvent.TOUCH_UP);
 
-		engine.emitter.emit(TouchEvent.TOUCH_UP, t);
+		_app.emitter.emit(TouchEvent.TOUCH_UP, t);
 
 	}
 
@@ -105,7 +104,7 @@ class Touch extends Input {
 		var t = touches[id];
 		t.set(x, y, x - t.x, y - t.y, TouchEvent.TOUCH_MOVE);
 
-		engine.emitter.emit(TouchEvent.TOUCH_MOVE, t);
+		_app.emitter.emit(TouchEvent.TOUCH_MOVE, t);
 
 	}
 

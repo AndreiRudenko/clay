@@ -5,7 +5,7 @@ import kha.graphics4.Graphics;
 
 import clay.math.Rectangle;
 import clay.render.Camera;
-import clay.components.event.Signal;
+import clay.events.Signal;
 import clay.utils.Log.*;
 
 @:access(clay.render.Camera)
@@ -46,9 +46,9 @@ class CameraManager {
 
 		oncameracreate.emit(camera);
 
-		#if !no_debug_console
-		camera.hide_layers(['debug_layer']);
-		#end
+		// #if !no_debug_console // todo: move this to debug and use oncameracreate signal
+		// camera.hide_layers(['debug_layer']);
+		// #end
 
 		return camera;
 

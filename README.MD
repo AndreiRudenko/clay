@@ -11,8 +11,7 @@ npm install
 
 ## Features
 * Input: Mouse, Keyboard, Touch, Gamepad, Pen
-* Audio
-* Entity Component System
+* Audio, DSP Effects
 * Particles
 * Tweening 
 * Animation

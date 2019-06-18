@@ -2,7 +2,7 @@ package clay.resources;
 
 
 import haxe.io.Bytes;
-import clay.core.Resources;
+import clay.system.ResourceManager;
 
 
 class BytesResource extends Resource {

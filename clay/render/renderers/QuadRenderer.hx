@@ -10,7 +10,7 @@ import kha.graphics4.Graphics;
 import kha.arrays.Float32Array;
 
 
-import clay.components.graphics.Geometry;
+import clay.graphics.Mesh;
 import clay.render.Camera;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
@@ -31,7 +31,7 @@ class QuadRenderer extends ObjectRenderer {
 	var _quads_draw:Int = 0;
 	var _quads_max:Int = 0;
 
-	var _geometry:Array<Geometry>;
+	var _geometry:Array<Mesh>;
 
 	var _shader:Shader;
 	var _texture:Texture;
@@ -90,9 +90,11 @@ class QuadRenderer extends ObjectRenderer {
 		
 	}
 
-	public function render(geom:Geometry) {
+	public function render(geom:Mesh) {
 
-		if(_shader != geom.shader 
+		var shader = geom.shader != null ? geom.shader : geom.shader_default;
+
+		if(_shader != shader 
 			|| _texture != geom.texture
 			|| !check_blendmode(geom)
 			|| _quads_draw + 1 > _quads_max
@@ -103,7 +105,7 @@ class QuadRenderer extends ObjectRenderer {
 
 		_geometry.push(geom);
 
-		_shader = geom.shader;
+		_shader = shader;
 		_texture = geom.texture;
 		_clip_rect = geom.clip_rect;
 
@@ -182,7 +184,7 @@ class QuadRenderer extends ObjectRenderer {
 		var v:Vertex;
 		for (geom in _geometry) {
 			set_region(geom.region, _texture);
-			m = geom.matrix;
+			m = geom.transform.world.matrix;
 			for (i in 0...4) {
 				v = geom.vertices[i];
 				vertices.set(n++, m.a * v.pos.x + m.c * v.pos.y + m.tx);
@@ -203,7 +205,7 @@ class QuadRenderer extends ObjectRenderer {
 		
 	}
 
-	inline function check_blendmode(geom:Geometry):Bool {
+	inline function check_blendmode(geom:Mesh):Bool {
 
 		return geom.blend_src == _blend_src 
 			&& geom.blend_dst == _blend_dst 

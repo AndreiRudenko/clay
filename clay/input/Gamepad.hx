@@ -1,14 +1,14 @@
 package clay.input;
 
 
-import clay.Engine;
+import clay.system.App;
 import clay.utils.Log.*;
 import clay.utils.Bits;
 import clay.events.GamepadEvent;
 
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine, clay.events.GamepadEvent)
+@:allow(clay.system.InputManager)
+@:access(clay.events.GamepadEvent)
 class Gamepads extends Input {
 
 
@@ -20,9 +20,9 @@ class Gamepads extends Input {
 	var binding:Bindings;
 
 
-	function new(_engine:Engine) {
+	function new(app:App) {
 		
-		super(_engine);
+		super(app);
 
 		gamepad_bindings = new Map();
 		binding = Clay.input.binding;
@@ -192,7 +192,7 @@ class Gamepads extends Input {
 
 		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_ADDED);
 
-		engine.emitter.emit(GamepadEvent.DEVICE_ADDED, gamepad_event);
+		_app.emitter.emit(GamepadEvent.DEVICE_ADDED, gamepad_event);
 
 	}
 
@@ -207,14 +207,14 @@ class Gamepads extends Input {
 
 		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_REMOVED);
 		
-		engine.emitter.emit(GamepadEvent.DEVICE_REMOVED, gamepad_event);
+		_app.emitter.emit(GamepadEvent.DEVICE_REMOVED, gamepad_event);
 
 	}
 
 }
 
 @:allow(clay.input.Gamepads)
-@:access(clay.Engine, clay.input.Gamepads)
+@:access(clay.system.App, clay.input.Gamepads)
 class Gamepad {
 
 
@@ -304,7 +304,7 @@ class Gamepad {
 
 		gamepad_event.set(gamepad, id, -1, axis_id, axis_value, GamepadEvent.AXIS);
 
-		gamepads.engine.emitter.emit(GamepadEvent.AXIS, gamepad_event);
+		gamepads._app.emitter.emit(GamepadEvent.AXIS, gamepad_event);
 
 	}
 
@@ -331,7 +331,7 @@ class Gamepad {
 
 		gamepads.check_binding(gamepad, _b, true);
 
-		gamepads.engine.emitter.emit(GamepadEvent.BUTTON_DOWN, gamepad_event);
+		gamepads._app.emitter.emit(GamepadEvent.BUTTON_DOWN, gamepad_event);
 
 	}
 
@@ -347,7 +347,7 @@ class Gamepad {
 
 		gamepads.check_binding(gamepad, _b, false);
 
-		gamepads.engine.emitter.emit(GamepadEvent.BUTTON_UP, gamepad_event);
+		gamepads._app.emitter.emit(GamepadEvent.BUTTON_UP, gamepad_event);
 
 	}
 

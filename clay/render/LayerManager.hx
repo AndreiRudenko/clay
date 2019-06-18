@@ -5,7 +5,7 @@ import kha.graphics4.Graphics;
 
 import clay.render.Layer;
 import clay.render.Camera;
-import clay.ds.Int32RingBuffer;
+import clay.ds.IntRingBuffer;
 import clay.utils.Log.*;
 
 
@@ -21,19 +21,21 @@ class LayerManager {
 	public var capacity(default, null):Int;
 	public var used(default, null):Int;
 
-	var _ids:Int32RingBuffer;
 	var _active_layers:Array<Layer>;
 	var _layers:Map<String, Layer>;
+
+	var _layer_ids:IntRingBuffer;
 
 
 	public function new(_capacity:Int) {
 
 		capacity = _capacity;
 		used = 0;
-		_ids = new Int32RingBuffer(capacity);
 		
 		_active_layers = [];
 		_layers = new Map();
+		
+		_layer_ids = new IntRingBuffer(capacity);
 
 	}
 
@@ -119,6 +121,14 @@ class LayerManager {
 		
 	}
 
+	public inline function update(dt:Float) {
+		
+		for (l in _active_layers) {
+			l.update(dt);
+		}
+
+	}
+
 	public inline function render(_:Graphics, cam:Camera) {
 
 		for (l in _active_layers) {
@@ -154,14 +164,14 @@ class LayerManager {
 		}
 
 		++used;
-		return _ids.pop();
+		return _layer_ids.pop();
 
 	}
 
 	function push_layer_id(id:Int) {
 
 		--used;
-		_ids.push(id);
+		_layer_ids.push(id);
 
 	}
 

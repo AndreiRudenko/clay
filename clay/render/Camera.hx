@@ -8,10 +8,10 @@ import clay.math.Matrix;
 import clay.math.Vector;
 import clay.math.VectorCallback;
 import clay.math.Rectangle;
-import clay.math.Mathf;
+import clay.utils.Mathf;
 import clay.ds.BitVector;
-import clay.components.event.Signal;
-import clay.components.common.Transform;
+import clay.events.Signal;
+import clay.math.Transform;
 import clay.render.CameraManager;
 import clay.render.Layer;
 import clay.utils.Log.*;
@@ -121,19 +121,15 @@ class Camera {
 		var _longest = Math.min( _ratio_x, _ratio_y );
 
         switch(size_mode) {
-
             case SizeMode.fit:{
                 _ratio_x = _ratio_y = _longest;
             }
-
             case SizeMode.cover: {
                 _ratio_x = _ratio_y = _shortest;
             }
-
             case SizeMode.contain: {
                 //use actual size
             }
-
         }
 
 		_size_factor.x = _ratio_x;
@@ -310,6 +306,8 @@ class CameraTransform extends Transform {
 			parent.update();
 		}
 
+		_cleaning = true;
+
 		var hw:Float = camera.viewport.w * 0.5;
 		var hh:Float = camera.viewport.h * 0.5;
 		var corx:Float = 0;
@@ -334,7 +332,7 @@ class CameraTransform extends Transform {
 		;
 
 		if(parent != null) {
-			_world.matrix.copy(parent._world.matrix).multiply(_local.matrix);
+			_world.matrix.copy(parent._world.matrix).append(_local.matrix);
 		} else {
 			_world.matrix.copy(_local.matrix);
 		}
@@ -342,6 +340,14 @@ class CameraTransform extends Transform {
         _world.decompose(false);
 
 		camera.view_matrix.copy(_world.matrix);
+
+		_cleaning = false;
+
+		if(_clean_handlers != null && _clean_handlers.length > 0) {
+			for(handler in _clean_handlers) {
+				handler(this);
+			}
+		}
 
 	}
 

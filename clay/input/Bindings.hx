@@ -11,8 +11,7 @@ import clay.utils.Log.*;
 import clay.events.*;
 
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine)
+@:allow(clay.system.InputManager)
 class Bindings extends Input {
 
 
@@ -171,7 +170,7 @@ class Bindings extends Input {
 		add_pressed(input_event.name);
 		add_down(input_event.name);
 
-		engine.emitter.emit(InputEvent.INPUT_DOWN, input_event);
+		_app.emitter.emit(InputEvent.INPUT_DOWN, input_event);
 
 	}
 
@@ -185,7 +184,7 @@ class Bindings extends Input {
 		remove_pressed(input_event.name);
 		remove_down(input_event.name);
 
-		engine.emitter.emit(InputEvent.INPUT_UP, input_event);
+		_app.emitter.emit(InputEvent.INPUT_UP, input_event);
 
 	}
 

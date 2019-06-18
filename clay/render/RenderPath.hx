@@ -14,7 +14,7 @@ import kha.arrays.Uint32Array;
 import kha.Image;
 
 import clay.math.Vector;
-import clay.data.Color;
+import clay.render.Color;
 import clay.render.renderers.ObjectRenderer;
 import clay.render.renderers.QuadRenderer;
 import clay.render.renderers.MeshRenderer;
@@ -29,7 +29,7 @@ import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
 import clay.math.Matrix;
 import clay.math.Rectangle;
-import clay.math.Mathf;
+import clay.utils.Mathf;
 import clay.utils.Log.*;
 
 @:allow(

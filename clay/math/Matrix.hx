@@ -1,7 +1,7 @@
 package clay.math;
 
 
-import clay.components.common.Transform;
+import clay.math.Transform;
 
 /*
 
@@ -32,7 +32,7 @@ class Matrix {
 	 * Set the matrix to the identity matrix - when appending or prepending this matrix to another there will be no change in the resulting matrix
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	@:extern public inline function identity():Matrix {
+	public inline function identity():Matrix {
 
 		set(
 			1, 0,
@@ -54,7 +54,7 @@ class Matrix {
 	 * @param  _ty  Matrix component
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	@:extern public inline function set(_a:Float, _b:Float, _c:Float, _d:Float, _tx:Float, _ty:Float):Matrix {
+	public inline function set(_a:Float, _b:Float, _c:Float, _d:Float, _tx:Float, _ty:Float):Matrix {
 		
 		a = _a;
 		b = _b;
@@ -74,7 +74,7 @@ class Matrix {
 	 * @param _y How much to translate y by
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	@:extern public inline function translate(_x:Float, _y:Float):Matrix {
+	public inline function translate(_x:Float, _y:Float):Matrix {
 		
 		tx += _x;
 		ty += _y;
@@ -83,7 +83,7 @@ class Matrix {
 
 	}    
 
-	@:extern public inline function apply(_x:Float, _y:Float):Matrix {
+	public inline function apply(_x:Float, _y:Float):Matrix {
 		
 		tx = a * _x + c * _y + tx;
 		ty = b * _x + d * _y + ty;
@@ -100,7 +100,7 @@ class Matrix {
 	 * @param _y The amount to scale vertically
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	@:extern public inline function scale(_x:Float, _y:Float):Matrix {
+	public inline function scale(_x:Float, _y:Float):Matrix {
 		
 		a *= _x;
 		b *= _x;
@@ -117,7 +117,7 @@ class Matrix {
 	 * @param _angle The angle in radians.
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	@:extern public inline function rotate(_angle:Float):Matrix {
+	public inline function rotate(_angle:Float):Matrix {
 		
 		var _sin:Float = Math.sin(_angle);
 		var _cos:Float = Math.cos(_angle);
@@ -142,7 +142,7 @@ class Matrix {
 	 * @param m The matrix to append.
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	@:extern public inline function append(m:Matrix):Matrix {
+	public inline function append(m:Matrix):Matrix {
 		
 		var a1 = a;
 		var b1 = b;
@@ -161,7 +161,7 @@ class Matrix {
 
 	}
 
-	@:extern public inline function orto(left:Float, right:Float,  bottom:Float, top:Float):Matrix {
+	public inline function orto(left:Float, right:Float,  bottom:Float, top:Float):Matrix {
 
 		var sx:Float = 1.0 / (right - left);
 		var sy:Float = 1.0 / (top - bottom);
@@ -176,7 +176,7 @@ class Matrix {
 
 	}
 
-	@:extern public inline function multiply(m:Matrix):Matrix {
+	public inline function multiply(m:Matrix):Matrix {
 
 		a = a * m.a + b * m.c;
 		b = a * m.b + b * m.d;
@@ -193,7 +193,7 @@ class Matrix {
 	 * 
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	@:extern public inline function invert():Matrix {
+	public inline function invert():Matrix {
 
 		var a1:Float = a;
 		var b1:Float = b;
@@ -213,7 +213,7 @@ class Matrix {
 
 	}
 
-	@:extern public inline function copy(other:Matrix):Matrix {
+	public inline function copy(other:Matrix):Matrix {
 
 		set(
 			other.a,  other.b,
@@ -225,7 +225,7 @@ class Matrix {
 
 	}
 
-	@:extern public inline function decompose(into:Spatial) {
+	public inline function decompose(into:Spatial) {
 
 		var determ = a * d - b * c;
 

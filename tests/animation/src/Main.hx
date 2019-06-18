@@ -1,17 +1,19 @@
 package;
 
 
+import clay.Clay;
+
+
 class Main {
 
 	public static function main() {
 
 		Clay.init(
 			{
-				title: 'animation',
-				width: 800,
-				height: 600,
+				title: 'clay_animation',
+				width: 960,
+				height: 640,
 				window: {
-					mode: clay.types.WindowMode.Windowed,
 					resizable: false
 				}
 			}, 

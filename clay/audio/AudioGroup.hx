@@ -1,10 +1,10 @@
 package clay.audio;
 
 
-import clay.math.Mathf;
+import clay.utils.Mathf;
 import clay.utils.Log.*;
 
-import clay.math.Mathf;
+import clay.utils.Mathf;
 import clay.utils.Log.*;
 import kha.arrays.Float32Array;
 import clay.audio.AudioEffect;

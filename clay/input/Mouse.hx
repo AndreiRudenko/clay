@@ -1,15 +1,15 @@
 package clay.input;
 
 
-import clay.Engine;
+import clay.system.App;
 import clay.utils.Log.*;
 import clay.utils.Bits;
 
 import clay.events.MouseEvent;
 
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine)
+@:allow(clay.system.InputManager)
+@:access(clay.system.App)
 class Mouse extends Input {
 
 
@@ -25,9 +25,9 @@ class Mouse extends Input {
 	var _binding:Bindings;
 
 
-	function new(engine:Engine) {
+	function new(_app:App) {
 		
-		super(engine);
+		super(_app);
 
 		_mouse_bindings = new Map();
 		_binding = Clay.input.binding;
@@ -158,7 +158,7 @@ class Mouse extends Input {
 
 		check_binding(button, true);
 
-		engine.emitter.emit(MouseEvent.MOUSE_DOWN, _mouse_event);
+		_app.emitter.emit(MouseEvent.MOUSE_DOWN, _mouse_event);
 
 	}
 
@@ -177,7 +177,7 @@ class Mouse extends Input {
 
 		check_binding(button, false);
 
-		engine.emitter.emit(MouseEvent.MOUSE_UP, _mouse_event);
+		_app.emitter.emit(MouseEvent.MOUSE_UP, _mouse_event);
 
 	}
 
@@ -189,7 +189,7 @@ class Mouse extends Input {
 
 		check_binding(MouseButton.none, false); // todo: check this
 
-		engine.emitter.emit(MouseEvent.MOUSE_WHEEL, _mouse_event);
+		_app.emitter.emit(MouseEvent.MOUSE_WHEEL, _mouse_event);
 
 	}
 
@@ -202,7 +202,7 @@ class Mouse extends Input {
 
 		_mouse_event.set(x, y, x_rel, y_rel, 0, MouseEvent.MOUSE_MOVE, MouseButton.none);
 
-		engine.emitter.emit(MouseEvent.MOUSE_MOVE, _mouse_event);
+		_app.emitter.emit(MouseEvent.MOUSE_MOVE, _mouse_event);
 
 	}
 

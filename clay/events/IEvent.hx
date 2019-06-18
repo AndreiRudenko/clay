@@ -2,7 +2,7 @@ package clay.events;
 
 
 #if !macro
-@:autoBuild(clay.types.macro.EventMacro.build())
+@:autoBuild(clay.utils.macro.EventMacro.build())
 #end
 
 interface IEvent {

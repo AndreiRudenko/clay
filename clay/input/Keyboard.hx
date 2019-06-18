@@ -5,10 +5,11 @@ import clay.ds.BitVector;
 import clay.input.Key;
 import clay.utils.Log.*;
 import clay.events.KeyEvent;
+import clay.system.App;
 
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine)
+@:allow(clay.system.InputManager)
+@:access(clay.system.App)
 class Keyboard extends Input {
 
 
@@ -23,9 +24,9 @@ class Keyboard extends Input {
 	var binding:Bindings;
 
 
-	function new(_engine:Engine) {
+	function new(app:App) {
 		
-		super(_engine);
+		super(app);
 
 		key_bindings = new Map();
 		binding = Clay.input.binding;
@@ -164,7 +165,7 @@ class Keyboard extends Input {
 
 		check_binding(_key, true);
 
-		engine.emitter.emit(KeyEvent.KEY_DOWN, key_event);
+		_app.emitter.emit(KeyEvent.KEY_DOWN, key_event);
 
 	}
 
@@ -182,7 +183,7 @@ class Keyboard extends Input {
 
 		check_binding(_key, false);
 
-		engine.emitter.emit(KeyEvent.KEY_UP, key_event);
+		_app.emitter.emit(KeyEvent.KEY_UP, key_event);
 
 	}
 	
@@ -190,7 +191,7 @@ class Keyboard extends Input {
 
 		_verboser('ontextinput: $_char');
 
-		engine.emitter.emit(KeyEvent.TEXT_INPUT, _char);
+		_app.emitter.emit(KeyEvent.TEXT_INPUT, _char);
 
 	}
 

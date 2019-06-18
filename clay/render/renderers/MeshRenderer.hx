@@ -10,7 +10,7 @@ import kha.graphics4.Graphics;
 import kha.arrays.Float32Array;
 
 
-import clay.components.graphics.Geometry;
+import clay.graphics.Mesh;
 import clay.render.Camera;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
@@ -29,7 +29,7 @@ class MeshRenderer extends ObjectRenderer {
 	var _verts_draw:Int = 0;
 	var _indices_draw:Int = 0;
 
-	var _geometry:Array<Geometry>;
+	var _geometry:Array<Mesh>;
 
 	var _shader:Shader;
 	var _texture:Texture;
@@ -77,11 +77,13 @@ class MeshRenderer extends ObjectRenderer {
 		
 	}
 
-	public function render(geom:Geometry) {
+	public function render(geom:Mesh) {
 
 		if(geom.vertices.length == 0) {
 			return;
 		}
+		
+		var shader = geom.shader != null ? geom.shader : geom.shader_default;
 		
 		if(geom.vertices.length > renderpath.max_vertices || geom.indices.length > renderpath.max_indices) {
 			log('WARNING: can`t batch a geometry `${geom.name}` 
@@ -91,7 +93,7 @@ class MeshRenderer extends ObjectRenderer {
 			return;
 		}
 
-		if(_shader != geom.shader 
+		if(_shader != shader 
 			|| _texture != geom.texture
 			|| !check_blendmode(geom)
 			|| _verts_draw + geom.vertices.length > renderpath.max_vertices
@@ -103,7 +105,7 @@ class MeshRenderer extends ObjectRenderer {
 
 		_geometry.push(geom);
 
-		_shader = geom.shader;
+		_shader = shader;
 		_texture = geom.texture;
 		_clip_rect = geom.clip_rect;
 
@@ -187,7 +189,7 @@ class MeshRenderer extends ObjectRenderer {
 		var v:Vertex;
 		for (geom in _geometry) {
 			set_region(geom.region, _texture);
-			m = geom.matrix;
+			m = geom.transform.world.matrix;
 			for (i in 0...geom.vertices.length) {
 				v = geom.vertices[i];
 				vertices.set(n++, m.a * v.pos.x + m.c * v.pos.y + m.tx);
@@ -213,7 +215,7 @@ class MeshRenderer extends ObjectRenderer {
 		
 	}
 
-	inline function check_blendmode(geom:Geometry):Bool {
+	inline function check_blendmode(geom:Mesh):Bool {
 
 		return geom.blend_src == _blend_src 
 			&& geom.blend_dst == _blend_dst 

@@ -1,9 +1,8 @@
 package clay.audio.effects;
 
 
-import clay.math.Mathf;
+import clay.utils.Mathf;
 import clay.utils.Log.*;
-import clay.Sound;
 
 
 class Compressor extends AudioEffect {

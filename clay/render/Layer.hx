@@ -8,7 +8,7 @@ import clay.render.types.BlendEquation;
 import clay.render.DisplayObject;
 import clay.render.Camera;
 import clay.resources.Texture;
-import clay.components.event.Signal;
+import clay.events.Signal;
 import clay.utils.Log.*;
 
 import clay.render.RenderStats;
@@ -117,7 +117,7 @@ class Layer {
 		
 		objects.push(geom);
 		geom._layer = this;
-		geom.added = true;
+		// geom.added = true;
 
 		if(_dirty_sort) {
 			dirty_sort = true;
@@ -131,8 +131,16 @@ class Layer {
 
 		_objects_toremove.push(geom);
 		geom._layer = null;
-		geom.added = false;
+		// geom.added = false;
 
+	}
+
+	public function update(dt:Float) {
+
+		for (o in objects) {
+			o.update(dt);
+		}
+		
 	}
 
 	public function render(g:Graphics, cam:Camera) {
@@ -196,7 +204,6 @@ class Layer {
     	return 0;
 
     }
-
 
 	inline function get_active():Bool {
 

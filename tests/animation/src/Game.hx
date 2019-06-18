@@ -1,59 +1,52 @@
 package;
 
 
+import clay.Clay;
 import clay.math.Vector;
-
-import clay.components.graphics.Animation;
-import clay.components.graphics.QuadGeometry;
-import clay.components.common.Transform;
-import clay.components.event.Events;
-
+import clay.math.Rectangle;
+import clay.render.Color;
+import clay.graphics.animation.AnimatedSprite;
+import clay.graphics.Sprite;
+import clay.events.Events;
 
 class Game {
 
 
 	public function new() {
 
-		Clay.renderer.layers.create();
-		Clay.processors.add(new clay.processors.graphics.AnimationProcessor(), 0);
-
 		Clay.resources.load_all(
 			[
-			'assets/walk_spritesheet.png',
-			'assets/walk_1.png',
-			'assets/walk_2.png',
-			'assets/walk_3.png',
-			'assets/walk_4.png',
-			'assets/walk_5.png',
-			'assets/walk_6.png',
-			'assets/walk_7.png',
-			'assets/walk_8.png',
-			'assets/walk_9.png',
-			'assets/walk_10.png',
-			'assets/walk_11.png',
-			'assets/walk_12.png',
-			'assets/walk_13.png',
-			'assets/walk_14.png',
-			'assets/walk_15.png',
-			'assets/walk_16.png',
+				'assets/walk_spritesheet.png',
+				'assets/walk_1.png',
+				'assets/walk_2.png',
+				'assets/walk_3.png',
+				'assets/walk_4.png',
+				'assets/walk_5.png',
+				'assets/walk_6.png',
+				'assets/walk_7.png',
+				'assets/walk_8.png',
+				'assets/walk_9.png',
+				'assets/walk_10.png',
+				'assets/walk_11.png',
+				'assets/walk_12.png',
+				'assets/walk_13.png',
+				'assets/walk_14.png',
+				'assets/walk_15.png',
+				'assets/walk_16.png',
 			], 
-			init
+			ready
 		);
 
 	}
 
-	function init() {
-/*
-		// images animation
-		var e = Clay.entities.create();
-		var g = new QuadGeometry({size: new Vector(64,64)});
+	function ready() {
 
-		var t = new Transform();
-		t.origin.set(32, 32);
-		t.pos.set(Clay.screen.mid.x-128, Clay.screen.mid.y);
+		var anim_sprite = new AnimatedSprite();
+		anim_sprite.size.set(64,64);
+		anim_sprite.transform.origin.set(32, 32);
+		anim_sprite.transform.pos.set(-32, Clay.screen.mid.y-64);
 
-		var a = new Animation();
-		a.from_textures(
+		anim_sprite.from_textures(
 			'walk', 
 			[			
 			'assets/walk_1.png',
@@ -78,39 +71,39 @@ class Game {
 		.set_all()
 		.loop();
 
-		a.set('walk');
-		a.play();
+		anim_sprite.set_animation('walk');
+		anim_sprite.play();
 
-		Clay.components.set_many(e, [g,t,a]);
-*/
-		// spritesheet animation
-		var e = Clay.entities.create();
-		var g = new QuadGeometry({size: new Vector(64, 64)});
-		var ev = new Events();
+		Clay.layer.add(anim_sprite);
+		Clay.tween.object(anim_sprite.transform.pos).to({x: Clay.screen.width + 32}, 4).repeat().start();
 
-		var t = new Transform();
-		t.origin.set(32, 32);
-		t.pos.set(Clay.screen.mid.x+128, Clay.screen.mid.y);
 
-		var a = new Animation();
-		a.from_grid(
+		var anim_sprite2 = new AnimatedSprite();
+		anim_sprite2.size.set(64,64);
+		anim_sprite2.transform.origin.set(32, 32);
+		anim_sprite2.transform.pos.set(-32, Clay.screen.mid.y+64);
+
+		anim_sprite2.events = new Events();
+		anim_sprite2.events.listen('test', function(e) {trace(e);});
+
+		anim_sprite2.from_grid(
 			'walk', 
 			'assets/walk_spritesheet.png',
 			4,
 			4
 		)
-		.set_speed(24)
+		.set_speed(32)
 		.set_all()
 		.loop();
-		a.add_event('walk', 6, 'test');
+		anim_sprite2.add_event('walk', 6, 'test');
 
-		a.set('walk');
-		a.play();
+		anim_sprite2.set_animation('walk');
+		anim_sprite2.play();
 
-		Clay.components.set_many(e, [g,t,a,ev]);
+		Clay.layer.add(anim_sprite2);
+		Clay.tween.object(anim_sprite2.transform.pos).to({x: Clay.screen.width + 32}, 3).repeat().start();
 
-		ev.listen('test', function(e) {trace(e);});
-		
 	}
+
 
 }

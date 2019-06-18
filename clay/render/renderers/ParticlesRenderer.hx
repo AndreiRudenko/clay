@@ -10,10 +10,10 @@ import kha.graphics4.Graphics;
 import kha.arrays.Float32Array;
 
 
-import clay.components.graphics.Geometry;
-import clay.particles.ParticleSystem;
-import clay.particles.ParticleEmitter;
-import clay.particles.core.Particle;
+import clay.graphics.Mesh;
+import clay.graphics.particles.ParticleSystem;
+import clay.graphics.particles.ParticleEmitter;
+import clay.graphics.particles.core.Particle;
 import clay.render.Camera;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
@@ -23,7 +23,7 @@ import clay.utils.ArrayTools;
 import clay.math.Rectangle;
 import clay.math.Matrix;
 import clay.math.Vector;
-import clay.math.Mathf;
+import clay.utils.Mathf;
 
 
 class ParticlesRenderer extends ObjectRenderer {
