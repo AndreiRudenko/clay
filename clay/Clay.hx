@@ -9,7 +9,7 @@ class Clay {
 
 	@:allow(clay.system.App)
 	public static var app      	(default, null):clay.system.App;
-	// public static var debug      	(get, never):clay.core.Debug;
+	public static var debug      	(get, never):clay.system.Debug;
 
 	public static var screen      	(get, never):clay.system.Screen;
 	public static var renderer 	    (get, never):clay.render.Renderer;
@@ -64,7 +64,7 @@ class Clay {
 	public static inline function next(func:Void->Void) app.next(func);
 	public static inline function defer(func:Void->Void) app.defer(func);
 
-	// static inline function get_debug() return app.debug;
+	static inline function get_debug() return app.debug;
 	
 	static inline function get_screen() return app.screen;
 	static inline function get_renderer() return app.renderer;

@@ -10,7 +10,7 @@ import kha.WindowOptions.WindowFeatures;
 import clay.system.InputManager;
 import clay.system.ResourceManager;
 import clay.system.Audio;
-// import clay.system.Debug;
+import clay.system.Debug;
 import clay.system.Screen;
 import clay.system.TimerManager;
 import clay.tween.TweenManager;
@@ -43,7 +43,7 @@ class App {
 	public var renderer     (default, null):Renderer;
 	// public var draw         (default, null):Draw;
 	public var audio        (default, null):Audio;
-	// public var debug        (default, null):Debug;
+	public var debug        (default, null):Debug;
 
 	public var emitter	    (default, null):Emitter;
 	public var events	    (default, null):Events;
@@ -148,7 +148,7 @@ class App {
 		input = new InputManager(this);
 		resources = new ResourceManager();
 
-		// debug = new Debug(this);
+		debug = new Debug(this);
 
 
 		if(options.no_default_font != true) {
@@ -196,11 +196,11 @@ class App {
 		renderer.init();
 		inited = true;
 		
-		// debug.init();
+		debug.init();
 
-		// debug.start(DebugTag.process);
-		// debug.start(DebugTag.update);
-		// debug.start(DebugTag.render);
+		debug.start(DebugTag.process);
+		debug.start(DebugTag.update);
+		debug.start(DebugTag.render);
 
 	}
 
@@ -208,7 +208,7 @@ class App {
 
 		disconnect_events();
 		
-		// debug.destroy();
+		debug.destroy();
 		events.destroy();
 		input.destroy();
 		renderer.destroy();
@@ -216,7 +216,7 @@ class App {
 		timer.destroy();
 		// signals.destroy();
 
-		// debug = null;
+		debug = null;
 		screen = null;
 		events = null;
 		input = null;
@@ -377,13 +377,13 @@ class App {
 
 		_verboser('render');
 
-		// debug.start(DebugTag.process);
+		debug.start(DebugTag.process);
 
-		// debug.start(DebugTag.update);
+		debug.start(DebugTag.update);
 		step(); // todo: move to another place?
-		// debug.end(DebugTag.update);
+		debug.end(DebugTag.update);
 
-		// debug.start(DebugTag.render);
+		debug.start(DebugTag.render);
 
 		_render_event.set(f[0]);
 
@@ -394,9 +394,9 @@ class App {
 		
 		emitter.emit(RenderEvent.POSTRENDER, _render_event);
 
-		// debug.end(DebugTag.render);
+		debug.end(DebugTag.render);
 
-		// debug.end(DebugTag.process);
+		debug.end(DebugTag.process);
 
 	}
 
