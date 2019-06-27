@@ -40,6 +40,7 @@ class QuadRenderer extends ObjectRenderer {
 
 	var _vertexbuffer:VertexBuffer;
 	var _indexbuffer:IndexBuffer;
+	var _indexbuffers:Array<IndexBuffer>;
 
 	var _texture_loc:TextureUnit;
 
@@ -57,20 +58,8 @@ class QuadRenderer extends ObjectRenderer {
 		super(renderpath);
 
     	_geometry = [];
+    	_indexbuffers = [];
     	_quads_max = Std.int(renderpath.max_vertices / 4);
-
-		_indexbuffer = new IndexBuffer(_quads_max * 6, Usage.StaticUsage);
-		var indices = _indexbuffer.lock();
-		for (i in 0..._quads_max) {
-			indices[i * 3 * 2 + 0] = i * 4 + 0;
-			indices[i * 3 * 2 + 1] = i * 4 + 1;
-			indices[i * 3 * 2 + 2] = i * 4 + 2;
-			indices[i * 3 * 2 + 3] = i * 4 + 0;
-			indices[i * 3 * 2 + 4] = i * 4 + 2;
-			indices[i * 3 * 2 + 5] = i * 4 + 3;
-		}
-		_indexbuffer.unlock();
-
 		_region_scaled = new Rectangle();
 
 	}
@@ -176,7 +165,8 @@ class QuadRenderer extends ObjectRenderer {
 
 	function upload_buffer() {
 
-		_vertexbuffer = renderpath.get_buffer(_quads_draw * 4);
+		_vertexbuffer = renderpath.get_vertexbuffer(_quads_draw * 4);
+		_indexbuffer = get_indexbuffer(_quads_draw * 6);
 		var vertices = _vertexbuffer.lock();
 
 		var n:Int = 0;
@@ -203,6 +193,31 @@ class QuadRenderer extends ObjectRenderer {
 		_vertexbuffer.unlock();
 		// _indexbuffer.unlock(_quads_draw * 6);
 		
+	}
+
+	function get_indexbuffer(size:Int):IndexBuffer {
+
+		var p2 = clay.utils.Mathf.require_pow2(size);
+		var idx = clay.utils.Mathf.log2(p2);
+		var buffer = _indexbuffers[idx];
+
+		if(buffer == null) {
+			buffer = new IndexBuffer(p2, Usage.StaticUsage);
+			var indices = buffer.lock();
+			for (i in 0...p2) {
+				indices[i * 3 * 2 + 0] = i * 4 + 0;
+				indices[i * 3 * 2 + 1] = i * 4 + 1;
+				indices[i * 3 * 2 + 2] = i * 4 + 2;
+				indices[i * 3 * 2 + 3] = i * 4 + 0;
+				indices[i * 3 * 2 + 4] = i * 4 + 2;
+				indices[i * 3 * 2 + 5] = i * 4 + 3;
+			}
+			buffer.unlock();
+			_indexbuffers[idx] = buffer;
+		}
+
+		return buffer;
+
 	}
 
 	inline function check_blendmode(geom:Mesh):Bool {

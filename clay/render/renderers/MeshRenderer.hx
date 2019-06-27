@@ -55,7 +55,6 @@ class MeshRenderer extends ObjectRenderer {
 		super(renderpath);
 
     	_geometry = [];
-		_indexbuffer = new IndexBuffer(renderpath.max_indices, Usage.StaticUsage);
 
 		_region_scaled = new Rectangle();
 		set_region(null, null);
@@ -178,7 +177,8 @@ class MeshRenderer extends ObjectRenderer {
 
 	function upload_buffer() {
 
-		_vertexbuffer = renderpath.get_buffer(_verts_draw);
+		_vertexbuffer = renderpath.get_vertexbuffer(_verts_draw);
+		_indexbuffer = renderpath.get_indexbuffer(_indices_draw);
 		var vertices = _vertexbuffer.lock();
 		var indices = _indexbuffer.lock();
 
@@ -210,7 +210,6 @@ class MeshRenderer extends ObjectRenderer {
 		}
 
 		_vertexbuffer.unlock();
-		// _indexbuffer.unlock(_indices_draw);
 		_indexbuffer.unlock();
 		
 	}

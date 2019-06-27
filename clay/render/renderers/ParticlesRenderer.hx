@@ -136,7 +136,6 @@ class ParticlesRenderer extends ObjectRenderer {
 
 		}
 
-		
 	}
 
 	function flush() {
@@ -191,7 +190,7 @@ class ParticlesRenderer extends ObjectRenderer {
 
 	function upload_buffer() {
 
-		_vertexbuffer = renderpath.get_buffer(_quads_total * 4);
+		_vertexbuffer = renderpath.get_vertexbuffer(_quads_total * 4);
 		var vertices = _vertexbuffer.lock();
 
 		var particles:haxe.ds.Vector<Particle>;
@@ -206,7 +205,7 @@ class ParticlesRenderer extends ObjectRenderer {
 					_vertexbuffer.unlock();
 					// _indexbuffer.unlock(_quads_draw * 6);
 					draw_buffer();
-					_vertexbuffer = renderpath.get_buffer(_quads_total * 4);
+					_vertexbuffer = renderpath.get_vertexbuffer(_quads_total * 4);
 					vertices = _vertexbuffer.lock();
 				}
 				set_particle_vertices(vertices, pd);

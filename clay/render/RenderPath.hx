@@ -8,6 +8,7 @@ import kha.graphics4.IndexBuffer;
 import kha.graphics4.Usage;
 import kha.graphics4.TextureFormat;
 import kha.graphics4.VertexBuffer;
+import kha.graphics4.IndexBuffer;
 import kha.graphics4.Graphics;
 import kha.arrays.Float32Array;
 import kha.arrays.Uint32Array;
@@ -56,7 +57,8 @@ class RenderPath {
 	public var stats:RenderStats;
 	// #end
 
-	var buffers:Array<VertexBuffer>;
+	var vertexbuffers:Array<VertexBuffer>;
+	var indexbuffers:Array<IndexBuffer>;
 
 	var renderer:Renderer;
 	var current:ObjectRenderer;
@@ -73,9 +75,9 @@ class RenderPath {
     	var max_quads = Std.int(max_vertices / 4);
     	max_indices = max_quads * 6; // adjusted for quads
 
-    	buffers = [];
+    	vertexbuffers = [];
+    	indexbuffers = [];
 
-    	setup_buffers();
     	setup_default_renderers();
 
 		texture_blank = Texture.create(1, 1, TextureFormat.RGBA32, Usage.StaticUsage, true);
@@ -156,68 +158,34 @@ class RenderPath {
 
 	}
 
-	// public inline function set_projection(_loc:ConstantLocation) {
+	public inline function get_vertexbuffer(size:Int):VertexBuffer {
 
-	// 	g.setMatrix3(_loc, camera.projection_matrix);
+		var p2 = Mathf.require_pow2(size);
+		var idx = Mathf.log2(p2);
+		var buffer = vertexbuffers[idx];
 
-	// }
+		if(buffer == null) {
+			var shader = renderer.shaders.get('textured');
+			buffer = new VertexBuffer(p2, shader.pipeline.inputLayout[0], Usage.DynamicUsage);
+			vertexbuffers[idx] = buffer;
+		}
 
-	public inline function get_buffer(_count:Int):VertexBuffer {
-
-		return buffers[get_buffer_index(_count)];
-		// return buffers[buffers.length-1];
+		return buffer;
 
 	}
 
-	// public function set_blendmode(sh:Shader) {
+	public inline function get_indexbuffer(size:Int):IndexBuffer {
 
-	// 	if(layer.blend_src != BlendMode.Undefined && layer.blend_dst != BlendMode.Undefined) {
-	// 		sh.blendSource = layer.blend_src;
-	// 		sh.alphaBlendDestination = layer.blend_dst;
-	// 		sh.alphaBlendSource = layer.blend_src;
-	// 		sh.blendDestination = layer.blend_dst;
-	// 		sh.blendOperation = layer.blend_eq;
-	// 	} else { // set default blend modes
-	// 		sh.reset_blendmodes();
-	// 	}
+		var p2 = Mathf.require_pow2(size);
+		var idx = Mathf.log2(p2);
+		var buffer = indexbuffers[idx];
 
-	// }
+		if(buffer == null) {
+			buffer = new IndexBuffer(p2, Usage.DynamicUsage);
+			indexbuffers[idx] = buffer;
+		}
 
-	// public inline function set_texture(_loc:TextureUnit, _texture:Texture) {
-		
-	// 	if(_texture == null) {
-	// 		_texture = texture_blank;
-	// 	}
-		
-	// 	g.setTexture(_loc, _texture.image);
-	// 	g.setTextureParameters(
-	// 		_loc, 
-	// 		_texture.u_addressing, 
-	// 		_texture.v_addressing, 
-	// 		_texture.filter_min, 
-	// 		_texture.filter_mag, 
-	// 		_texture.mipmap_filter
-	// 	);
-
-	// }
-
-	// public inline function remove_texture(_loc:TextureUnit) {
-
-	// 	g.setTexture(_loc, null);
-
-	// }
-
-	function setup_buffers() {
-
-		var shader = renderer.shaders.get('textured');
-		
-    	var size_pow = Mathf.require_pow2(max_vertices);
-    	var i:Int = 4;
-    	while(i <= size_pow) {
-    		buffers.push(new VertexBuffer(i, shader.pipeline.inputLayout[0], Usage.DynamicUsage));
-    		_debug('create buffer for $i vertices');
-    		i *= 2;
-    	}
+		return buffer;
 
 	}
 	
@@ -231,15 +199,5 @@ class RenderPath {
 
 	}
 
-	function get_buffer_index(_count:Int):Int {
-		
-		if(_count > renderer.batch_size) { //todo: assert
-			_count = renderer.batch_size;
-		}
-		
-		var p2 = Mathf.require_pow2(_count);
-		return Mathf.log2(p2)-2;
-
-	}
 
 }
