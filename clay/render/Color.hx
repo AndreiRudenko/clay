@@ -54,6 +54,7 @@ class Color {
 
 	public function from_int(_i:Int):Color {
 
+		// var _a = _i >> 24;
 		var _r = _i >> 16;
 		var _g = _i >> 8 & 0xFF;
 		var _b = _i & 0xFF;
@@ -75,7 +76,7 @@ class Color {
 
 	public function to_int():Int {
 
-		return (Std.int(r*255) << 16) | (Std.int(g*255) << 8) | Std.int(b*255);
+		return (Std.int(a * 255) << 24) | (Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255);
 		
 	}
 
