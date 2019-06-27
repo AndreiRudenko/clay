@@ -23,7 +23,7 @@ using clay.render.utils.FastMatrix3Extender;
 class FrontBuffer {
 
 
-	public var shader:Shader;
+	// public var shader:Shader;
 
 	var _vertexbuffer:VertexBuffer;
 	var _indexbuffer:IndexBuffer;
@@ -36,7 +36,7 @@ class FrontBuffer {
 	public function new(renderer:Renderer) {
 		
 		_renderer = renderer;
-		shader = _renderer.shader_textured;
+		var shader = _renderer.shader_textured;
 		
 		_projection_matrix = FastMatrix3.identity();
 
@@ -112,7 +112,7 @@ class FrontBuffer {
 
 	}
 
-	public function render(source:Texture, destination:Canvas, rotation:ScreenRotation) {
+	public function render(source:Texture, destination:Canvas, shader:Shader, rotation:ScreenRotation) {
 
 		var g = destination.g4;
 
@@ -120,9 +120,6 @@ class FrontBuffer {
 
 		var transformation = Scaler.getScaledTransformation(source.width, source.height, destination.width, destination.height, rotation);
 		set_vertices(source, transformation);
-
-		g.begin();
-		g.clear(kha.Color.Black);
 
 		_texture_loc = shader.set_texture('tex', source).location;
 		shader.set_matrix3('mvpMatrix', _projection_matrix);
@@ -137,8 +134,6 @@ class FrontBuffer {
 		g.drawIndexedVertices();
 
 		g.setTexture(_texture_loc, null);
-
-		g.end();
 
 	}
 	

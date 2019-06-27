@@ -46,10 +46,6 @@ class CameraManager {
 
 		oncameracreate.emit(camera);
 
-		// #if !no_debug_console // todo: move this to debug and use oncameracreate signal
-		// camera.hide_layers(['debug_layer']);
-		// #end
-
 		return camera;
 
 	}

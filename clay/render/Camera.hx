@@ -3,6 +3,7 @@ package clay.render;
 
 import kha.math.FastMatrix3;
 import kha.graphics4.Graphics;
+import kha.graphics4.DepthStencilFormat;
 
 import clay.math.Matrix;
 import clay.math.Vector;
@@ -14,9 +15,15 @@ import clay.events.Signal;
 import clay.math.Transform;
 import clay.render.CameraManager;
 import clay.render.Layer;
+import clay.render.types.TextureFormat;
+import clay.render.types.Usage;
+import clay.render.types.TextureFilter;
+import clay.render.types.TextureAddressing;
 import clay.utils.Log.*;
+import clay.resources.Texture;
 
 using clay.render.utils.FastMatrix3Extender;
+
 
 
 @:allow(clay.render.Renderer)
@@ -43,9 +50,15 @@ class Camera {
 	public var rotation(get, set):Float;
 	public var size(default, null):VectorCallback;
 	public var size_mode (default, set):SizeMode;
+	public var clear_color:Color;
 
+	public var antialiasing(get, set):Int;
+	public var resolution(get, set):Float;
+	public var buffer(default, null):Texture;
 	@:noCompletion public var _size_factor:Vector;
 
+	var _resolution:Float = 1;
+	var _antialiasing:Int = 1;
 	var _active:Bool = false;
 	var _visible_layers_mask:BitVector;
 	var _manager:CameraManager;
@@ -56,6 +69,7 @@ class Camera {
 		this.name = name;
 		this.priority = priority;
 		_manager = manager;
+		clear_color = new Color(0,0,0,0);
 
 		size = new VectorCallback();
 		_size_factor = new Vector(1,1);
@@ -82,6 +96,8 @@ class Camera {
 		onpostrender = new Signal();
 
 		size_mode = SizeMode.fit;
+
+		update_buffer();
 
 	}
 
@@ -134,6 +150,28 @@ class Camera {
 
 		_size_factor.x = _ratio_x;
 		_size_factor.y = _ratio_y;
+
+	}
+
+	function update_buffer() {
+		
+		if(buffer != null) {
+			buffer.unload();
+			Clay.resources.remove(buffer);
+		}
+
+		buffer = Texture.create_rendertarget(
+			Std.int(viewport.w * _resolution), 
+			Std.int(viewport.h * _resolution), 
+			TextureFormat.RGBA32, 
+			DepthStencilFormat.NoDepthAndStencil,
+			_antialiasing,
+			null,
+			true
+		);
+		
+		buffer.id = 'camera.$name';
+		Clay.resources.add(buffer);
 
 	}
 
@@ -215,16 +253,16 @@ class Camera {
 
 	}
 
-	inline function update_matrices() {
+	inline function update_matrices(g:Graphics) {
 		
 		view_matrix_inverted.copy(view_matrix);
 		view_matrix_inverted.invert();
 		projection_matrix.identity();
 
-		if (Clay.renderer.target.image.g4.renderTargetsInvertedY()) {
-			projection_matrix.orto(0, viewport.w, 0, viewport.h);
+		if (g.renderTargetsInvertedY()) {
+			projection_matrix.orto(0, viewport.w / _resolution, 0, viewport.h / _resolution);
 		} else {
-			projection_matrix.orto(0, viewport.w, viewport.h, 0);
+			projection_matrix.orto(0, viewport.w / _resolution, viewport.h / _resolution, 0);
 		}
 
 		projection_matrix.append_matrix(view_matrix_inverted);
@@ -234,6 +272,8 @@ class Camera {
 	inline function get_pos() return transform.pos;
 	inline function get_rotation() return transform.rotation;
 	inline function set_rotation(v:Float) return transform.rotation = v;
+	inline function get_antialiasing():Int return _antialiasing;
+	inline function get_resolution():Float return _resolution;
 
 	function set_zoom(v:Float):Float {
 
@@ -245,18 +285,26 @@ class Camera {
 
 	}
 
-	function prerender(g:Graphics) {
+	function prerender() {
 
 		onprerender.emit(this);
 
-		update_matrices();
+		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : buffer.image.g4;
+
+		g.begin();
+		g.clear(clear_color.to_int());
+
+		update_matrices(g);
 		g.viewport(Std.int(viewport.x), Std.int(viewport.y), Std.int(viewport.w), Std.int(viewport.h));
 
 	}
 
-	function postrender(g:Graphics) {
+	function postrender() {
+
+		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : buffer.image.g4;
 
 		g.disableScissor();
+		g.end();
 		
 		onpostrender.emit(this);
 		
@@ -281,6 +329,34 @@ class Camera {
 		}
 		
 		return _active;
+
+	}
+
+	function set_antialiasing(v:Int):Int {
+
+		if(Clay.renderer.rendering) {
+			throw('you cant change antialiasing while rendering');
+		}
+
+		_antialiasing = v;
+
+		update_buffer();
+
+		return v;
+		
+	}
+
+	function set_resolution(value:Float):Float {
+
+		if(Clay.renderer.rendering) {
+			throw('you cant change antialiasing while rendering');
+		}
+
+		_resolution = Mathf.clamp(value, 0.1, 1);
+
+		update_buffer();
+
+		return _resolution;
 
 	}
 
@@ -328,7 +404,7 @@ class CameraTransform extends Transform {
 		.translate(hw, hh) // translate to origin
 		.rotate(Mathf.radians(-rotation)) // rotate
 		.scale(zx, zy) // scale
-		.apply(-hw + corx, -hh + cory) // revert origin translation
+		.apply((-hw + corx), (-hh + cory)) // revert origin translation
 		;
 
 		if(parent != null) {

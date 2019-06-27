@@ -129,11 +129,11 @@ class LayerManager {
 
 	}
 
-	public inline function render(_:Graphics, cam:Camera) {
+	public inline function render(cam:Camera) {
 
 		for (l in _active_layers) {
 			if(cam._visible_layers_mask[l.id]) {
-				l.render(Clay.renderer.target.image.g4, cam);
+				l.render(cam);
 			}
 		}
 		

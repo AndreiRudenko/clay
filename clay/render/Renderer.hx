@@ -45,7 +45,6 @@ class Renderer {
 	public var camera:Camera;
 	public var layer:Layer;
 	public var font:FontResource;
-	public var clear_color:Color;
 
 	#if !no_debug_console
 	public var stats:RenderStats;
@@ -66,7 +65,6 @@ class Renderer {
 		sort_options = new SortOptions(_options.shader_bits, _options.texture_bits, _options.geomtype_bits);
 		cameras = new CameraManager();
 		layers = new LayerManager(layers_max);
-		clear_color = new Color(0.1,0.1,0.1,1);
 		shaders = new Map();
 		_texture_ids = new IntRingBuffer(sort_options.texture_max+1);
 
@@ -86,19 +84,23 @@ class Renderer {
 		stats.reset();
 		#end
 
-	    target.image.g4.begin();
-		target.image.g4.clear(clear_color.to_int()); //todo: move to camera?
-
 		for (cam in cameras.active_cameras) {
 			cam.update();
-		    cam.prerender(target.image.g4);
-			layers.render(target.image.g4, cam);
-		    cam.postrender(target.image.g4);
+		    cam.prerender();
+			layers.render(cam);
+		    cam.postrender();
 		}
 
-		target.image.g4.end();
+		var g = f.g4;
+		g.begin();
 
-		frontbuffer.render(target, f, kha.System.screenRotation);
+		for (cam in cameras.active_cameras) {
+			g.scissor(Std.int(cam.viewport.x), Std.int(cam.viewport.y), Std.int(cam.viewport.w), Std.int(cam.viewport.h));
+			frontbuffer.render(cam.buffer, f, shader_textured, kha.System.screenRotation);
+		}
+
+		g.disableScissor();
+		g.end();
 
 		rendering = false;
 
@@ -133,8 +135,6 @@ class Renderer {
 	}
 
 	function init() {
-
-		target = Clay.screen.buffer;
 
 		create_default_shaders();
 
@@ -179,17 +179,10 @@ class Renderer {
 
 	function set_target(v:Texture):Texture {
 
-		if(v == null) {
-			v = Clay.screen.buffer;
-		}
-
 		if(rendering) {
 			if(target != null) {
 				target.image.g4.end();
 			}
-
-			v.image.g4.begin();
-			v.image.g4.clear(clear_color.to_int()); //todo: move to camera?
 		}
 
 		target = v;
