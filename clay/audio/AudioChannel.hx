@@ -6,10 +6,12 @@ import clay.utils.Log.*;
 import kha.arrays.Float32Array;
 import clay.audio.AudioEffect;
 import clay.utils.ArrayTools;
+import haxe.ds.Vector;
 
 
 class AudioChannel {
 
+	static inline var max_effects:Int = 8;
 
 	public var mute: Bool = false;
 
@@ -17,7 +19,10 @@ class AudioChannel {
 	public var pan          (default, set): Float;
 	public var output       (default, set):AudioGroup;
 
-	public var effects      (default, null):Array<AudioEffect>;
+	public var effects      (default, null):Vector<AudioEffect>;
+
+	var _internal_effects:Vector<AudioEffect>;
+	var _effects_count:Int;
 
 	var l: Float;
 	var r: Float;
@@ -30,8 +35,10 @@ class AudioChannel {
 
 		volume = 1;
 		pan = 0;
+		_effects_count = 0;
 
-		effects = [];
+		effects = new Vector(max_effects);
+		_internal_effects = new Vector(max_effects);
 
 	}
 
@@ -42,7 +49,16 @@ class AudioChannel {
 		}
 
 		effect.parent = this;
-		effects.push(effect);
+
+		#if cpp
+		clay.system.Audio.mutex.acquire();
+		#end
+
+		effects[_effects_count++] = effect;
+
+		#if cpp
+		clay.system.Audio.mutex.release();
+		#end
 
 	}
 
@@ -50,7 +66,22 @@ class AudioChannel {
 		
 		if(effect.parent == this) {
 			effect.parent = null;
-			effects.remove(effect);
+
+			#if cpp
+			clay.system.Audio.mutex.acquire();
+			#end
+
+			for (i in 0..._effects_count) {
+				if(effects[i] == effect) { // todo: remove rest from _effects_count and effect
+					effects[i] = effects[--_effects_count];
+					break;
+				}
+			}
+
+			#if cpp
+			clay.system.Audio.mutex.release();
+			#end
+
 		} else {
 			trace('cant remove effect from channel');
 		}
@@ -59,11 +90,20 @@ class AudioChannel {
 
 	public function remove_all_effect() {
 		
-		for (e in effects) {
-			e.parent = null;
+		#if cpp
+		clay.system.Audio.mutex.acquire();
+		#end
+
+		for (i in 0..._effects_count) {
+			effects[i] = null;
+			_internal_effects[i] = null;
 		}
 
-		ArrayTools.clear(effects);
+		#if cpp
+		clay.system.Audio.mutex.release();
+		#end
+
+		_effects_count = 0;
 
 	}
 
@@ -72,7 +112,21 @@ class AudioChannel {
 
 	inline function process_effects(data: Float32Array, samples: Int) {
 
-		for (e in effects) {
+		#if cpp
+		clay.system.Audio.mutex.acquire();
+		#end
+
+		for (i in 0..._effects_count) {
+			_internal_effects[i] = effects[i];
+		}
+
+		#if cpp
+		clay.system.Audio.mutex.release();
+		#end
+
+		var e:AudioEffect;
+		for (i in 0..._effects_count) {
+			e = _internal_effects[i];
 			if(!e.mute) {
 				e.process(samples, data, Clay.audio.sample_rate);
 			}
@@ -91,7 +145,7 @@ class AudioChannel {
 	function set_output(v: AudioGroup): AudioGroup {
 
 		if(output != null) {
-			output.childs.remove(this);
+			output.remove(this);
 		}
 
 		output = v;

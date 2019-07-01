@@ -1,5 +1,9 @@
 package clay.system;
 
+#if cpp
+import cpp.vm.Mutex;
+#end
+
 // import kha.Sound;
 // import kha.audio2.Audio;
 import kha.audio2.Buffer;
@@ -15,6 +19,9 @@ import clay.utils.Log.*;
 
 class Audio extends AudioGroup {
 
+	#if cpp
+	public static var mutex:Mutex = new Mutex();
+	#end
 
 	public var sample_rate(default, null): Int = 44100;
 	public var gain: Float;
@@ -63,7 +70,6 @@ class Audio extends AudioGroup {
 		for (i in 0...samples) {
 			data[i] = 0;
 		}
-
 
 		process(data, samples);
 

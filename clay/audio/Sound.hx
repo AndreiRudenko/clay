@@ -56,8 +56,6 @@ class Sound extends AudioChannel {
 
 		added = false;
 
-		effects = [];
-
 		this.output = output != null ? output : Clay.audio;
 
 		_position = 0;
@@ -177,7 +175,7 @@ class Sound extends AudioChannel {
 		if(resource != null) {
 			if(output != null) {
 				if(!added) {
-					output.childs.remove(this);
+					output.remove(this);
 					added = false;
 				}
 			} else {
@@ -210,7 +208,7 @@ class Sound extends AudioChannel {
 	override function set_output(v:AudioGroup):AudioGroup {
 
 		if(output != null) {
-			output.childs.remove(this);
+			output.remove(this);
 		}
 
 		output = v;

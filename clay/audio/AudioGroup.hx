@@ -10,30 +10,52 @@ import kha.arrays.Float32Array;
 import clay.audio.AudioEffect;
 import clay.utils.ArrayTools;
 
+import haxe.ds.Vector;
+
 
 class AudioGroup extends AudioChannel {
 
 
+	static inline var channels_count:Int = 32;
+
+	@:noCompletion public var childs:Vector<AudioChannel>;
+
+	var _childs_count:Int;
 	var _cache: Float32Array;
 
-	@:noCompletion public var childs:Array<AudioChannel>;
+	var _internal_childs:Vector<AudioChannel>;
 	var _to_remove:Array<AudioChannel>;
 
 	public function new() {
 
 		super();
 
+		_childs_count = 0;
 		_cache = new Float32Array(512);
 		// output = Clay.audio;
 
-		childs = [];
+		childs = new Vector(channels_count);
+		_internal_childs = new Vector(channels_count);
 		_to_remove = [];
 
 	}
 
 	public inline function add(channel:AudioChannel) {
+
+		if(_childs_count >= channels_count) {
+			trace('cant add child, max childs: ${channels_count}');
+			return;
+		}
 		
-		childs.push(channel);
+		#if cpp
+		clay.system.Audio.mutex.acquire();
+		#end
+
+		childs[_childs_count++] = channel;
+
+		#if cpp
+		clay.system.Audio.mutex.release();
+		#end
 
 	}
 
@@ -57,14 +79,32 @@ class AudioGroup extends AudioChannel {
 			return;
 		}
 
-		for (ch in childs) {
-			ch.process(_cache, samples);
+		#if cpp clay.system.Audio.mutex.acquire(); #end
+
+		for (i in 0..._childs_count) {
+			_internal_childs[i] = childs[i];
 		}
 
+		#if cpp clay.system.Audio.mutex.release(); #end
+
+		for (i in 0..._childs_count) {
+			_internal_childs[i].process(_cache, samples);
+		}
+
+
 		if(_to_remove.length > 0) {
+
+			#if cpp clay.system.Audio.mutex.acquire(); #end
 			for (c in _to_remove) {
-				childs.remove(c);
+				for (i in 0..._childs_count) {
+					if(childs[i] == c) { // todo: remove rest from _internal_childs and childs
+						childs[i] = childs[--_childs_count];
+						break;
+					}
+				}
 			}
+			#if cpp clay.system.Audio.mutex.release(); #end
+
 			ArrayTools.clear(_to_remove);
 		}
 
