@@ -60,6 +60,12 @@ class Vector {
 
     }
 
+    public inline function distance(_other:Vector) {
+
+        return Math.sqrt((_other.y - y) * (_other.y - y) + (_other.x - x) * (_other.x - x));
+
+    }
+
     public inline function invert() {
 
         set(-x, -y);
