@@ -30,9 +30,9 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}
 
-	public macro function from(self:Expr, _props:Expr, duration:ExprOf<Float>) {
+	public macro function from(self:Expr, props:Expr, duration:ExprOf<Float>) {
 
-		return macro $self._pm(null, $_props, $duration, true);
+		return macro $self._pm(null, $props, $duration, true);
 
 	}
 
@@ -57,13 +57,13 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}	
 
-	public macro function set(self:Expr, _name:String, _value:ExprOf<Float>):ExprOf<TweenAction<T>> {
+	public macro function set(self:Expr, name:String, value:ExprOf<Float>):ExprOf<TweenAction<T>> {
 
 		return macro {
 
 			$self.call(
 				function(t){
-					t.$_name = $_value;
+					t.$name = $value;
 				}
 			);
 

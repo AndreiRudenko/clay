@@ -85,7 +85,6 @@ class Mesh extends DisplayObject {
 
 	override function render(r:RenderPath, c:Camera) {
 
-
 		if(locked) {
 			r.set_object_renderer(r.static_renderer);
 			r.static_renderer.render(this);

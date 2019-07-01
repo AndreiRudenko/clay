@@ -58,6 +58,9 @@ class Debug {
 	var engine:App;
 	#end
 
+	// var current_view_index = 0;
+	// var last_view_index = 0;
+
 	function new(_engine:App) {
 
 		#if !no_debug_console
@@ -74,6 +77,7 @@ class Debug {
 		_view.index = views.length;
 		inspector.add_tab(_view.debug_name);
 		views.push(_view);
+		// world.processors.add(_view, null, false);
 
 		#end
 	}
@@ -100,12 +104,17 @@ class Debug {
 
 		// log('switch_view');
 
+		// current_view_index = _next ? current_view_index + 1 : current_view_index - 1;
+
 		if(index < 0) {
 			index = views.length-1;
 		} else if(index > views.length-1) {
 			index = 0;
 		}
 
+		// last_view_index = index;
+
+		// views[last_view_index].disable();
 		if(current_view != null) {
 			current_view.active = false;
 		}
@@ -122,27 +131,35 @@ class Debug {
 
 		#if !no_debug_console
 
+
 		var c = Clay.cameras.create('debug', null, 999);
 		c.hide_layers();
 		c.show_layers(['debug_layer']);
 		Clay.camera.hide_layers(['debug_layer']);
 
+		Clay.cameras.oncameracreate.add(function(c) {
+			c.hide_layers(['debug_layer']);
+		});
+		
 		padding = new Vector(Clay.screen.width*0.05,Clay.screen.height*0.05);
 
 		haxe_trace = haxe.Log.trace;
 		haxe.Log.trace = internal_trace;
 
+		// world = engine.worlds.create('debug_world', {capacity: 4096}, true);
+
 		inspector = new Inspector(this);
 
 		add_view(new clay.system.debug.TraceDebugView(this));
+		// add_view(new clay.system.debug.EntitesDebugView(this));
+		// add_view(new clay.system.debug.FamiliesDebugView(this));
+		// add_view(new clay.system.debug.ProcessorsDebugView(this));
 		add_view(new clay.system.debug.StatsDebugView(this));
 		add_view(new clay.system.debug.AudioDebugView(this));
 		profiller = new clay.system.debug.ProfilerDebugView(this);
 		add_view(profiller);
 
 		current_view = views[0];
-		inspector.enable_tab(0);
-		switch_view(0);
 
 		#end
 	}

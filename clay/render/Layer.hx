@@ -117,7 +117,6 @@ class Layer {
 		
 		objects.push(geom);
 		geom._layer = this;
-		// geom.added = true;
 
 		if(_dirty_sort) {
 			dirty_sort = true;
@@ -131,7 +130,6 @@ class Layer {
 
 		_objects_toremove.push(geom);
 		geom._layer = null;
-		// geom.added = false;
 
 	}
 

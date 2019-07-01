@@ -25,7 +25,6 @@ import clay.resources.Texture;
 using clay.render.utils.FastMatrix3Extender;
 
 
-
 @:allow(clay.render.Renderer)
 class Camera {
 
