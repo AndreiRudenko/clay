@@ -230,7 +230,8 @@ class QuadPackRenderer extends ObjectRenderer {
 		if(buffer == null) {
 			buffer = new IndexBuffer(p2, Usage.StaticUsage);
 			var indices = buffer.lock();
-			for (i in 0...p2) {
+			var len = Math.floor(p2/6);
+			for (i in 0...len) {
 				indices[i * 3 * 2 + 0] = i * 4 + 0;
 				indices[i * 3 * 2 + 1] = i * 4 + 1;
 				indices[i * 3 * 2 + 2] = i * 4 + 2;
