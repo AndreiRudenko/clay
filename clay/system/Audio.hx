@@ -32,9 +32,7 @@ class Audio extends AudioGroup {
 	function new() {
 
 		super();
-		#if !kha_android_java
 		kha.audio2.Audio.audioCallback = mix;
-		#end
 		data = new Float32Array(512);
 		gain = 0;
 

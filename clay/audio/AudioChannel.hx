@@ -23,12 +23,13 @@ class AudioChannel {
 
 	var _internal_effects:Vector<AudioEffect>;
 	var _effects_count:Int;
+	var _max_effects:Int;
 
 	var l: Float;
 	var r: Float;
 
 
-	function new() {
+	public function new(max_effects:Int = 8) {
 		
 		l = 1;
 		r = 1;
@@ -36,16 +37,23 @@ class AudioChannel {
 		volume = 1;
 		pan = 0;
 		_effects_count = 0;
+		_max_effects = max_effects;
 
-		effects = new Vector(max_effects);
-		_internal_effects = new Vector(max_effects);
+		effects = new Vector(_max_effects);
+		_internal_effects = new Vector(_max_effects);
 
 	}
 
 	public function add_effect(effect:AudioEffect) {
 		
+		if(_effects_count >= _max_effects) {
+			trace('cant add effect, max effects: ${_max_effects}');
+			return;
+		}
+
 		if(effect.parent != null) {
-			throw('audio effect already in another channel');
+			trace('audio effect already in another channel');
+			return;
 		}
 
 		effect.parent = this;

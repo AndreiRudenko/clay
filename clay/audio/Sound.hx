@@ -40,9 +40,9 @@ class Sound extends AudioChannel {
 	var _cache:Float32Array;
 
 
-	public function new(?resource:AudioResource, output:AudioGroup = null) {
+	public function new(?resource:AudioResource, output:AudioGroup = null, max_effects:Int = 8) {
 
-		super();
+		super(max_effects);
 
 		this.resource = resource;
 

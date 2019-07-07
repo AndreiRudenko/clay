@@ -179,10 +179,10 @@ class AudioDebugView extends DebugView {
 			_result += 'Master ( ${audio_stats.groups} / ${audio_stats.sounds} / ${audio_stats.effects} )\n';
 
 			_result = list_effects(_result, Clay.audio);
-			for (c in Clay.audio.childs) {
+			for (c in Clay.audio.channels) {
 				_result = list_channel(_result, c);
 			}
-			for (c in Clay.audio.childs) {
+			for (c in Clay.audio.channels) {
 				_result = list_group(_result, c);
 			}
 
@@ -406,8 +406,8 @@ private class AudioStats {
 			groups++;
 			if(cc) {
 				var g:AudioGroup = cast c;
-				for (child in g.childs) {
-					get(child);
+				for (channel in g.channels) {
+					get(channel);
 				}
 			}
 		} else {
