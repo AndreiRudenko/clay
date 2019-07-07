@@ -49,6 +49,7 @@ class Camera {
 	public var rotation(get, set):Float;
 	public var size(default, null):VectorCallback;
 	public var size_mode (default, set):SizeMode;
+	// dont use colors with alpha
 	public var clear_color:Color;
 
 	public var antialiasing(get, set):Int;
@@ -68,7 +69,7 @@ class Camera {
 		this.name = name;
 		this.priority = priority;
 		_manager = manager;
-		clear_color = new Color(0,0,0,0);
+		clear_color = new Color(0,0,0,1);
 
 		size = new VectorCallback();
 		_size_factor = new Vector(1,1);
