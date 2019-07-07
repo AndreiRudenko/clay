@@ -43,10 +43,10 @@ class Text extends Mesh {
 	public var text_colors:Array<Color>;
 
 
-	var split_regex:EReg = new EReg('(?:\r\n|\r|\n)', 'g');
-	var tab_regex:EReg = new EReg('\t', 'gim');
+	// var split_regex:EReg;
+	// var tab_regex:EReg;
 
-	var tab_string:String = '';
+	// var tab_string:String;
 
 	var size_dirty:Bool = true;
 	var font_dirty:Bool = true;
@@ -60,6 +60,10 @@ class Text extends Mesh {
 		text_colors = [];
 
 		super();
+
+		// tab_string = '';
+		// split_regex = new EReg('(?:\r\n|\r|\n)', 'g');
+		// tab_regex = new EReg('\t', 'gim');
 
 		shader_default = Clay.renderer.shaders.get('text');
 		sort_key.geomtype = GeometryType.quadpack;
@@ -123,6 +127,8 @@ class Text extends Mesh {
 
 	}
 
+	// see heaps h2d.Text
+/*
 	function split_in_lines(_text:String, _font:KravurImage):Array<String> {
 
 		var txt = tab_regex.replace(_text, tab_string);
@@ -190,7 +196,7 @@ class Text extends Mesh {
         return parsed_lines.join("\n").split("\n");
 
 	}
-
+*/
 	@:noCompletion public function update_text() {
 
 		if(_setup) {
@@ -208,7 +214,8 @@ class Text extends Mesh {
 
 		if(text.length > 0) {
 
-			var lines = split_in_lines(text, _kravur);
+			// var lines = split_in_lines(text, _kravur);
+			var lines = [text];
 
 			var quad_cache = new AlignedQuad();
 
