@@ -62,14 +62,9 @@ class Inspector {
 		overlay.depth = 999;
 		overlay.layer = debug.layer;
 
-		fps_text = new Text({
-			// name: 'debug.fps_text',
-			font: Clay.resources.font('assets/Montserrat-Bold.ttf'),
-			text: '',
-			size: 15,
-			align: TextAlign.left
-		});
-
+		fps_text = new Text(Clay.resources.font('assets/Muli-Bold.ttf'));
+		fps_text.align = TextAlign.left;
+		fps_text.size = 15;
 		fps_text.visible = false;
 		fps_text.color = new Color().from_int(0xffa563);
 		fps_text.transform.pos.set(debug.padding.x, debug.padding.y-16);
@@ -219,21 +214,15 @@ private class InspectorTab {
 		this.inspector = inspector;
 		this.name = name;
 
-		title = new Text({
-			// name: '${name}_tab.title',
-			font: Clay.resources.font('assets/Montserrat-Bold.ttf'),
-			text: name,
-			size: size,
-			align: TextAlign.left
-		});
-
+		title = new Text(Clay.resources.font('assets/Muli-Bold.ttf'));
+		title.text = name;
+		title.size = size;
+		title.align = TextAlign.left;
 		title.visible = false;
 		title.color = new Color().from_int(0xffa563);
 		title.transform.pos.set(Clay.debug.padding.x+14, Clay.debug.padding.y+6);
 		title.layer = Clay.debug.layer;
 		title.depth = 999.2;
-
-
 
 		var	_kravur = title.font.font._get(size);
 		text_width = _kravur.stringWidth(name);

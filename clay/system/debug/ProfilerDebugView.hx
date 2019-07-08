@@ -371,14 +371,8 @@ private class ProfilerBar {
 		graph.create();
 		if(_max != null) max = graph.max = _max;
 
-		text_item = new Text({
-			// name: 'profiler.text.',
-			// font: Clay.resources.font('assets/Montserrat-Bold.ttf'),
-			text: '',
-			size: Std.int(height*1.8),
-			// align : TextAlign.right
-		});
-
+		text_item = new Text(Clay.renderer.font);
+		text_item.size = Std.int(height*1.8);
 		text_item.color = _color;
 		text_item.layer = Clay.debug.layer;
 		text_item.depth = 999.3;

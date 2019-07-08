@@ -53,13 +53,8 @@ class AudioDebugView extends DebugView {
 
 		var rect = debug.inspector.viewrect;
 
-		items_list = new Text({
-			// name: 'debug.audio.stats',
-			// font: Clay.resources.font('assets/Montserrat-Bold.ttf'),
-			text: '',
-			size: font_size
-		});
-
+		items_list = new Text(Clay.renderer.font);
+		items_list.size = font_size;
 		items_list.visible = false;
 		items_list.wrap = true;
 		items_list.color = new Color().from_int(0xffa563);
@@ -200,11 +195,11 @@ class AudioDebugView extends DebugView {
 
 			_list += tabs(_depth) + 'Group ( ${audio_stats.groups-1} / ${audio_stats.sounds} / ${audio_stats.effects} )\n';
 			_list = list_effects(_list, c, _depth+1);
-			for (child in g.childs) {
-				_list = list_channel(_list, child, _depth+1);
+			for (channel in g.channels) {
+				_list = list_channel(_list, channel, _depth+1);
 			} 			
-			for (child in g.childs) {
-				_list = list_group(_list, child, _depth+1);
+			for (channel in g.channels) {
+				_list = list_group(_list, channel, _depth+1);
 			} 
 		}
 
@@ -296,14 +291,8 @@ private class ProgressBar {
 		this.width = width;
 		this.height = height;
 
-		text_item = new Text({
-			// name: 'progressbar.text.',
-			// font: Clay.resources.font('assets/Montserrat-Bold.ttf'),
-			text: '',
-			size: font_size,
-			// align : TextAlign.right
-		});
-
+		text_item = new Text(Clay.renderer.font);
+		text_item.size = font_size;
 		text_item.color = new Color().from_int(0xffa563);
 		text_item.layer = Clay.debug.layer;
 		text_item.depth = 999.3;

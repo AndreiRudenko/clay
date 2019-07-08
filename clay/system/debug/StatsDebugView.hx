@@ -53,13 +53,8 @@ class StatsDebugView extends DebugView {
 		
 		var rect = debug.inspector.viewrect;
 
-		render_stats_text = new Text({
-			// name: 'debug.render.stats',
-			// font: Clay.resources.font('assets/Montserrat-Bold.ttf'),
-			text: '',
-			size: font_size
-		});
-
+		render_stats_text = new Text(Clay.renderer.font);
+		render_stats_text.size = font_size;
 		render_stats_text.visible = false;
 		render_stats_text.wrap = true;
 		render_stats_text.color = new Color().from_int(0xffa563);
@@ -70,14 +65,9 @@ class StatsDebugView extends DebugView {
 		render_stats_text.clip_rect = rect;
 		render_stats_text.depth = 999.3;
 
-		resource_list_text = new Text({
-			// name: 'debug.resource.stats',
-			// font: Clay.resources.font('assets/Montserrat-Bold.ttf'),
-			text: '',
-			size: font_size,
-			align : TextAlign.right
-		});
-
+		resource_list_text = new Text(Clay.renderer.font);
+		resource_list_text.size = font_size;
+		resource_list_text.align = TextAlign.right;
 		resource_list_text.visible = false;
 		resource_list_text.wrap = true;
 		resource_list_text.color = new Color().from_int(0xffa563);

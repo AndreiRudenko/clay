@@ -25,15 +25,10 @@ class TraceDebugView extends DebugView {
 
 		logged = [];
 
-		lines = new Text({
-			// name: 'debug.log.text',
-			// font: Clay.resources.font('assets/Montserrat-Bold.ttf'),
-			text: '',
-			size: 14,
-			align_vertical : TextAlign.bottom,
-			align: TextAlign.left
-		});
-
+		lines = new Text(Clay.renderer.font);
+		lines.size = 14;
+		lines.align = TextAlign.left;
+		lines.align_vertical = TextAlign.bottom;
 		lines.visible = false;
 		lines.wrap = true;
 		lines.color = new Color().from_int(0x888888);
