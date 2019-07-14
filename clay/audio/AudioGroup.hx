@@ -16,10 +16,11 @@ import haxe.ds.Vector;
 class AudioGroup extends AudioChannel {
 
 
-	@:noCompletion public var channels:Vector<AudioChannel>;
+	public var channels:Vector<AudioChannel>;
+
+	public var channels_count (default, null):Int;
 
 	var _max_channels:Int;
-	var _channels_count:Int;
 	var _cache: Float32Array;
 
 	var _internal_channels:Vector<AudioChannel>;
@@ -30,7 +31,7 @@ class AudioGroup extends AudioChannel {
 		super();
 
 		_max_channels = max_channels;
-		_channels_count = 0;
+		channels_count = 0;
 		_cache = new Float32Array(512);
 		// output = Clay.audio;
 
@@ -42,7 +43,7 @@ class AudioGroup extends AudioChannel {
 
 	public inline function add(channel:AudioChannel) {
 
-		if(_channels_count >= _max_channels) {
+		if(channels_count >= _max_channels) {
 			trace('cant add channel, max channels: ${_max_channels}');
 			return;
 		}
@@ -51,7 +52,7 @@ class AudioGroup extends AudioChannel {
 		clay.system.Audio.mutex.acquire();
 		#end
 
-		channels[_channels_count++] = channel;
+		channels[channels_count++] = channel;
 
 		#if cpp
 		clay.system.Audio.mutex.release();
@@ -81,23 +82,25 @@ class AudioGroup extends AudioChannel {
 
 		#if cpp clay.system.Audio.mutex.acquire(); #end
 
-		for (i in 0..._channels_count) {
+		for (i in 0...channels_count) {
 			_internal_channels[i] = channels[i];
 		}
 
 		#if cpp clay.system.Audio.mutex.release(); #end
 
-		for (i in 0..._channels_count) {
-			_internal_channels[i].process(_cache, samples);
+		for (i in 0...channels_count) {
+			if(!_internal_channels[i].mute) {
+				_internal_channels[i].process(_cache, samples);
+			}
 		}
 
 		if(_to_remove.length > 0) {
 
 			#if cpp clay.system.Audio.mutex.acquire(); #end
 			for (c in _to_remove) {
-				for (i in 0..._channels_count) {
+				for (i in 0...channels_count) {
 					if(channels[i] == c) { // todo: remove rest from _internal_channels and channels
-						channels[i] = channels[--_channels_count];
+						channels[i] = channels[--channels_count];
 						break;
 					}
 				}

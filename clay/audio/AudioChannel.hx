@@ -7,22 +7,23 @@ import kha.arrays.Float32Array;
 import clay.audio.AudioEffect;
 import clay.utils.ArrayTools;
 import haxe.ds.Vector;
+import clay.utils.Log.*;
 
 
 class AudioChannel {
 
 	static inline var max_effects:Int = 8;
 
-	public var mute: Bool = false;
+	public var mute:Bool = false;
 
-	public var volume       (default, set): Float;
-	public var pan          (default, set): Float;
-	public var output       (default, set):AudioGroup;
+	public var volume         (default, set):Float;
+	public var pan            (default, set):Float;
+	public var output         (default, set):AudioGroup;
 
-	public var effects      (default, null):Vector<AudioEffect>;
+	public var effects        (default, null):Vector<AudioEffect>;
+	public var effects_count  (default, null):Int;
 
 	var _internal_effects:Vector<AudioEffect>;
-	var _effects_count:Int;
 	var _max_effects:Int;
 
 	var l: Float;
@@ -36,7 +37,7 @@ class AudioChannel {
 
 		volume = 1;
 		pan = 0;
-		_effects_count = 0;
+		effects_count = 0;
 		_max_effects = max_effects;
 
 		effects = new Vector(_max_effects);
@@ -46,13 +47,13 @@ class AudioChannel {
 
 	public function add_effect(effect:AudioEffect) {
 		
-		if(_effects_count >= _max_effects) {
-			trace('cant add effect, max effects: ${_max_effects}');
+		if(effects_count >= _max_effects) {
+			log("cant add effect, max effects: " + _max_effects);
 			return;
 		}
 
 		if(effect.parent != null) {
-			trace('audio effect already in another channel');
+			log("audio effect already in another channel");
 			return;
 		}
 
@@ -62,7 +63,7 @@ class AudioChannel {
 		clay.system.Audio.mutex.acquire();
 		#end
 
-		effects[_effects_count++] = effect;
+		effects[effects_count++] = effect;
 
 		#if cpp
 		clay.system.Audio.mutex.release();
@@ -79,9 +80,9 @@ class AudioChannel {
 			clay.system.Audio.mutex.acquire();
 			#end
 
-			for (i in 0..._effects_count) {
-				if(effects[i] == effect) { // todo: remove rest from _effects_count and effect
-					effects[i] = effects[--_effects_count];
+			for (i in 0...effects_count) {
+				if(effects[i] == effect) { // todo: remove rest from effects_count and effect
+					effects[i] = effects[--effects_count];
 					break;
 				}
 			}
@@ -91,7 +92,7 @@ class AudioChannel {
 			#end
 
 		} else {
-			trace('cant remove effect from channel');
+			log("cant remove effect from channel");
 		}
 
 	}
@@ -102,7 +103,7 @@ class AudioChannel {
 		clay.system.Audio.mutex.acquire();
 		#end
 
-		for (i in 0..._effects_count) {
+		for (i in 0...effects_count) {
 			effects[i] = null;
 			_internal_effects[i] = null;
 		}
@@ -111,7 +112,7 @@ class AudioChannel {
 		clay.system.Audio.mutex.release();
 		#end
 
-		_effects_count = 0;
+		effects_count = 0;
 
 	}
 
@@ -124,7 +125,7 @@ class AudioChannel {
 		clay.system.Audio.mutex.acquire();
 		#end
 
-		for (i in 0..._effects_count) {
+		for (i in 0...effects_count) {
 			_internal_effects[i] = effects[i];
 		}
 
@@ -133,7 +134,7 @@ class AudioChannel {
 		#end
 
 		var e:AudioEffect;
-		for (i in 0..._effects_count) {
+		for (i in 0...effects_count) {
 			e = _internal_effects[i];
 			if(!e.mute) {
 				e.process(samples, data, Clay.audio.sample_rate);
