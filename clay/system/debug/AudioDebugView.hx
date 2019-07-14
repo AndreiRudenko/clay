@@ -42,12 +42,12 @@ class AudioDebugView extends DebugView {
 
 		super(_debug);
 
-		debug_name = 'Audio';
+		debug_name = "Audio";
 
 		bars = [];
 		bars_pool = new Pool<ProgressBar>(16, 0, 
 			function() {
-				return new ProgressBar('', 0, 0, 1, 64, 10, 15);
+				return new ProgressBar("", 0, 0, 1, 64, 10, 15);
 			}
 		);
 
@@ -56,7 +56,6 @@ class AudioDebugView extends DebugView {
 		items_list = new Text(Clay.renderer.font);
 		items_list.size = font_size;
 		items_list.visible = false;
-		items_list.wrap = true;
 		items_list.color = new Color().from_int(0xffa563);
 		items_list.transform.pos.set(rect.x, rect.y);
 		items_list.width = rect.w;
@@ -67,7 +66,7 @@ class AudioDebugView extends DebugView {
 
 		var kravur = items_list.font.font._get(font_size);
 		font_height = kravur.getHeight();
-		tab_width = kravur.stringWidth('    ');
+		tab_width = kravur.stringWidth("    ");
 		bars_y = rect.y + font_height * 3 - 10;
 
 		audio_stats = new AudioStats();
@@ -166,26 +165,27 @@ class AudioDebugView extends DebugView {
 		audio_stats.get(Clay.audio);
 
 		_obj_index = 0;
-		var _result = '';
-			_result += 'Output ( ${audio_stats.groups} / ${audio_stats.sounds} / ${audio_stats.effects} ) Volume: ${Mathf.fixed(Clay.audio.gain, 4)}\n\n';
+		var _result = new StringBuf();
+		// var _result = "";
+			_result.add("Output ( " + audio_stats.groups + " / " + audio_stats.sounds + " / " + audio_stats.effects + " ) Volume: " + Mathf.fixed(Clay.audio.gain, 4) + " \n \n ");
 
 			audio_stats.reset();
 			audio_stats.get(Clay.audio, false);
-			_result += 'Master ( ${audio_stats.groups} / ${audio_stats.sounds} / ${audio_stats.effects} )\n';
+			_result.add("Master ( " + audio_stats.groups + " / " + audio_stats.sounds + " / " + audio_stats.effects + " ) \n ");
 
-			_result = list_effects(_result, Clay.audio);
-			for (c in Clay.audio.channels) {
-				_result = list_channel(_result, c);
+			list_effects(_result, Clay.audio);
+/*			for (i in 0...Clay.audio.channels_count) {
+				_result = list_channel(_result, Clay.audio.channels[i]);
 			}
-			for (c in Clay.audio.channels) {
-				_result = list_group(_result, c);
-			}
+			for (i in 0...Clay.audio.channels_count) {
+				_result = list_group(_result, Clay.audio.channels[i]);
+			}*/
 
-		return _result;
+		return _result.toString();
 
 	}
 
-	inline function list_group(_list:String, c:AudioChannel, _depth:Int = 1) : String {
+	inline function list_group(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
 
 		if(Std.is(c, AudioGroup)) {
 			var g:AudioGroup = cast c;
@@ -193,57 +193,51 @@ class AudioDebugView extends DebugView {
 			audio_stats.reset();
 			audio_stats.get(g, false);
 
-			_list += tabs(_depth) + 'Group ( ${audio_stats.groups-1} / ${audio_stats.sounds} / ${audio_stats.effects} )\n';
-			_list = list_effects(_list, c, _depth+1);
-			for (channel in g.channels) {
-				_list = list_channel(_list, channel, _depth+1);
+			_list.add(tabs(_depth) + "Group ( " + (audio_stats.groups-1) + " / " + audio_stats.sounds + " / " + audio_stats.effects + " ) \n ");
+			list_effects(_list, c, _depth+1);
+			for (i in 0...g.channels_count) {
+				list_channel(_list, g.channels[i], _depth+1);
 			} 			
-			for (channel in g.channels) {
-				_list = list_group(_list, channel, _depth+1);
+			for (i in 0...g.channels_count) {
+				list_group(_list, g.channels[i], _depth+1);
 			} 
 		}
-
-		return _list;
 
 	}
 
 
-	inline function list_channel(_list:String, c:AudioChannel, _depth:Int = 1) : String {
+	inline function list_channel(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
 
 
 		if(Std.is(c, Sound)) {
 			var s:Sound = cast c;
 			_obj_index++;
-			var lp = s.loop ? '* loop' : '';
+			var lp = s.loop ? "* loop" : "";
 
 			var bar = bars_pool.get();
 			bar.visible = true;
-			bar.text = '${s.resource.id} ${Mathf.fixed(s.time, 2)} / ${Mathf.fixed(s.duration, 2)} ${lp}';
+			bar.text = s.resource.id + " " + Mathf.fixed(s.time, 2) + " / " + Mathf.fixed(s.duration, 2) + " " + lp;
 			bar.max = s.duration;
 			bar.value = s.time;
 			bar.pos.set(_depth * tab_width + debug.inspector.viewrect.x, _obj_index * font_height + bars_y);
 
 			bars.push(bar);
 
-			// _list += tabs(_depth) + '> ${s.resource.id} ${Mathf.fixed(s.time, 2)} / ${Mathf.fixed(s.duration, 2)} ${lp}\n';
-			_list += '\n';
-			_list = list_effects(_list, c, _depth+1);
+			// _list += tabs(_depth) + '> " + s.resource.id} " + Mathf.fixed(s.time, 2)} / " + Mathf.fixed(s.duration, 2)} " + lp}\n';
+			_list.add(" \n ");
+			list_effects(_list, c, _depth+1);
 		}
-
-		return _list;
 
 	}
 
 
-	inline function list_effects(_list:String, c:AudioChannel, _depth:Int = 1) : String {
+	inline function list_effects(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
 
-		for (e in c.effects) {
+		for (i in 0...c.effects_count) {
 			_obj_index++;
-			_list += tabs(_depth) + 'fx: ${Type.getClassName(Type.getClass(e))}\n';
-			
+			// _list.add(tabs(_depth) + "fx: " + Type.getClassName(Type.getClass(c.effects[i])) + " \n ");
+			_list.add(tabs(_depth) + "fx: " + Type.getClassName(Type.getClass(c.effects[i])) + " \n ");
 		}
-
-		return _list;
 
 	}
 
@@ -256,9 +250,9 @@ class AudioDebugView extends DebugView {
 
 	function tabs(_d:Int) {
 
-		var res = '';
-		for(i in 0 ... _d) res += '    ';
-		return res;
+		var res = new StringBuf();
+		for(i in 0 ... _d) res.add("    ");
+		return res.toString();
 
 	}
 
@@ -387,16 +381,14 @@ private class AudioStats {
 
 	public function get(c:AudioChannel, cc:Bool = true) {
 
-		for (e in c.effects) {
-			effects++;
-		}
+		effects += c.effects_count;
 
 		if(Std.is(c, AudioGroup)) {
 			groups++;
 			if(cc) {
 				var g:AudioGroup = cast c;
-				for (channel in g.channels) {
-					get(channel);
+				for (i in 0...g.channels_count) {
+					get(g.channels[i]);
 				}
 			}
 		} else {

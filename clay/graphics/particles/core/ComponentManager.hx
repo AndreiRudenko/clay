@@ -62,7 +62,7 @@ class ComponentManager {
 			_components.push(cp);
 		} else {
 			if(cp.length > 0) {
-				throw('type: $cname components is not empty');
+				throw("type: " + cname + " components is not empty");
 			}
 		}
 

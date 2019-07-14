@@ -42,7 +42,7 @@ class FontResource extends Resource {
 		if(t == null) {
 			var k = font._get(size);
 			t = new Texture(k.getTexture());
-			t.id = '${id}_$size';
+			t.id = id + "_" + size;
 			textures.set(size, t);
 			Clay.resources.add(t);
 		}

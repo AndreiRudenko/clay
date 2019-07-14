@@ -73,12 +73,12 @@ class AnimatedSprite extends Sprite {
 					}
 					f = 0;
 					if(events != null) {
-						current.emit_event('loop');
+						current.emit_event("loop");
 					}
 				} else {
 					stop();
 					if(events != null) {
-						current.emit_event('end');
+						current.emit_event("end");
 					}
 					f = frame;
 				}
@@ -173,7 +173,7 @@ class AnimatedSprite extends Sprite {
 
 		var adata = get_animation(_anim);
 		if(adata == null) {
-			log('can`t add event to $_anim Animation');
+			log("can`t add event to " + _anim + " Animation");
 			return;
 		}
 		adata.add_event(_frame, _event_name);
@@ -184,7 +184,7 @@ class AnimatedSprite extends Sprite {
 
 		var adata = get_animation(_anim);
 		if(adata == null) {
-			log('can`t remove event to $_anim Animation');
+			log("can`t remove event to " + _anim + " Animation");
 			return;
 		}
 		adata.remove_event(_frame, _event_name);
@@ -248,7 +248,7 @@ class AnimationDataGrid extends AnimationData {
 		texture = Clay.resources.texture(_p);
 
 		if(texture == null) {
-			log('failed to load texture: ${_p}');
+			log("failed to load texture: " + _p);
 		}
 
 		return this;
@@ -280,7 +280,7 @@ class AnimationDataGrid extends AnimationData {
 	override function update_geometry() {
 
 		if(texture == null) {
-			log('failed to update geometry, no texture');
+			log("failed to update geometry, no texture");
 			return;
 		}
 
@@ -320,7 +320,7 @@ class AnimationDataTextures extends AnimationData {
 		for (p in _tpath) {
 			t = Clay.resources.texture(p);
 			if(t == null) {
-				log('failed to load texture: ${p}');
+				log("failed to load texture: " + p);
 				return this;
 			}
 			textures.push(t);
@@ -349,7 +349,7 @@ class AnimationDataTextures extends AnimationData {
 			var t = textures[frame];
 
 			if(t == null) {
-				log('failed to update geometry, no texture from frame ${frame}');
+				log("failed to update geometry, no texture from frame " + frame);
 				return;
 			}
 

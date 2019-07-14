@@ -21,7 +21,7 @@ class InputEvent implements IEvent {
 
 	function new() {
 
-		name = '';
+		name = "";
 		type = InputType.none;
 
 	}

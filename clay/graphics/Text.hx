@@ -56,12 +56,12 @@ class Text extends Mesh {
 
 		super();
 
-		shader_default = Clay.renderer.shaders.get('text');
+		shader_default = Clay.renderer.shaders.get("text");
 		sort_key.geomtype = GeometryType.quadpack;
 
 		this.font = font;
 
-		text = '';
+		text = "";
 		size = 12;
 		align = TextAlign.left;
 		align_vertical = TextAlign.top;
@@ -117,8 +117,8 @@ class Text extends Mesh {
 
 		ArrayTools.clear(_lines); 
 
-		var space_code:Int = ' '.code;
-		var newline_code:Int = '\n'.code;
+		var space_code:Int = " ".code;
+		var newline_code:Int = "\n".code;
 		var char_code:Int;
 		var rest_pos:Int = 0;
 
@@ -163,6 +163,7 @@ class Text extends Mesh {
 						}
 						line_width = 0;
 						_lines.push(text.substr(rest_pos, i - rest_pos));
+
 						rest_pos = i + 1;
 					} else if((line_width + char_width - letter_spacing) > width) {
 						if(last_break_width > 0) {
@@ -185,6 +186,7 @@ class Text extends Mesh {
 								break;
 							}
 							_lines.push(text.substr(rest_pos, i + 1 - rest_pos));
+
 							line_width = 0;
 							last_break_width = 0;
 							rest_pos = i + 1;
@@ -249,7 +251,7 @@ class Text extends Mesh {
 
 		var n:Int = 0;
 
-		if(text.length > 0) {
+		if(!text_is_empty(text)) {
 
 			var lines = split_in_lines(text, _kravur);
 
@@ -282,8 +284,11 @@ class Text extends Mesh {
 				}
 			}
 
-			for (l in lines) {
-				
+			var l:String;
+			for (i in 0...lines.length) {
+
+				l = lines[i];
+
 				if(l != null && l.length > 0) {
 
 					_text_width = _kravur.stringWidth(l) + (l.length * letter_spacing);
@@ -374,7 +379,17 @@ class Text extends Mesh {
 
 	}
 
+	inline function text_is_empty(text:String) {
+		
+		return text == "" || text.length == 0;
+
+	}
+
 	function set_text(v:String):String {
+
+		if(v == null) {
+			v = "";
+		}
 
 		if(text != v) {
 			text = v;
@@ -442,7 +457,6 @@ class Text extends Mesh {
 
 	function set_width(v:Float):Float {
 
-
 		if(width != v) {
 			width = v;
 			update_text();
@@ -476,7 +490,7 @@ class Text extends Mesh {
 
 	override function set_color(v:Color):Color {
 
-		text_colors.splice(0, text_colors.length);
+		ArrayTools.clear(text_colors);
 
 		super.set_color(v);
 

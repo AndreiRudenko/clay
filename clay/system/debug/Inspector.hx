@@ -62,7 +62,7 @@ class Inspector {
 		overlay.depth = 999;
 		overlay.layer = debug.layer;
 
-		fps_text = new Text(Clay.resources.font('assets/Muli-Bold.ttf'));
+		fps_text = new Text(Clay.resources.font("assets/Muli-Regular.ttf"));
 		fps_text.align = TextAlign.left;
 		fps_text.size = 15;
 		fps_text.visible = false;
@@ -112,9 +112,9 @@ class Inspector {
 
 	public function destroy() {
 
-		// overlay.destroy();
+		overlay.drop();
 		// window.destroy();
-		// fps_text.destroy();
+		fps_text.drop();
 
 		overlay = null;
 		// window = null;
@@ -138,7 +138,7 @@ class Inspector {
         }
 
             //update the fps_text
-        fps_text.text = '${Math.round(1/dt_average)} / ${Mathf.fixed(dt_average,5)} / ${Mathf.fixed(Clay.app.frame_delta,5)}';
+        fps_text.text = Math.round(1/dt_average) + " / " + Mathf.fixed(dt_average,5) + " / " + Mathf.fixed(Clay.app.frame_delta,5);
 
 	}
 
@@ -214,7 +214,7 @@ private class InspectorTab {
 		this.inspector = inspector;
 		this.name = name;
 
-		title = new Text(Clay.resources.font('assets/Muli-Bold.ttf'));
+		title = new Text(Clay.resources.font("assets/Muli-Bold.ttf"));
 		title.text = name;
 		title.size = size;
 		title.align = TextAlign.left;

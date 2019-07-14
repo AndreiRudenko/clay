@@ -131,7 +131,6 @@ class Debug {
 
 		#if !no_debug_console
 
-
 		var c = Clay.cameras.create('debug', null, 999);
 		c.hide_layers();
 		c.show_layers(['debug_layer']);
@@ -146,14 +145,9 @@ class Debug {
 		haxe_trace = haxe.Log.trace;
 		haxe.Log.trace = internal_trace;
 
-		// world = engine.worlds.create('debug_world', {capacity: 4096}, true);
-
 		inspector = new Inspector(this);
 
 		add_view(new clay.system.debug.TraceDebugView(this));
-		// add_view(new clay.system.debug.EntitesDebugView(this));
-		// add_view(new clay.system.debug.FamiliesDebugView(this));
-		// add_view(new clay.system.debug.ProcessorsDebugView(this));
 		add_view(new clay.system.debug.StatsDebugView(this));
 		add_view(new clay.system.debug.AudioDebugView(this));
 		profiller = new clay.system.debug.ProfilerDebugView(this);

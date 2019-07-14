@@ -19,7 +19,7 @@ class TraceDebugView extends DebugView {
 
 		super(_debug);
 
-		debug_name = 'Log';
+		debug_name = "Log";
 
 		clay.system.Debug.trace_callbacks.push(on_trace);
 
@@ -30,7 +30,6 @@ class TraceDebugView extends DebugView {
 		lines.align = TextAlign.left;
 		lines.align_vertical = TextAlign.bottom;
 		lines.visible = false;
-		lines.wrap = true;
 		lines.color = new Color().from_int(0x888888);
 		lines.transform.pos.set(debug.padding.x+20, debug.padding.y+40);
 		lines.width = Clay.screen.width-(debug.padding.x*2)-20;
@@ -78,19 +77,19 @@ class TraceDebugView extends DebugView {
 
 	function on_trace( v : Dynamic, ?inf : haxe.PosInfos ) {
 
-		add_line( inf.fileName + ':' + inf.lineNumber + ' ' + v );
+		add_line( inf.fileName + ":" + inf.lineNumber + " " + v );
 
 	}
 
 	function refresh_lines() {
 
-		var _final = '';
+		var _final = new StringBuf();
 
 		for (l in logged) {
-			_final += l + '\n';
+			_final.add(l + " \n");
 		}
 
-		lines.text = _final;
+		lines.text = _final.toString();
 
 	}
 

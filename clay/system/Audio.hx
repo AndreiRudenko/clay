@@ -32,6 +32,7 @@ class Audio extends AudioGroup {
 	function new() {
 
 		super();
+		
 		kha.audio2.Audio.audioCallback = mix;
 		data = new Float32Array(512);
 		gain = 0;

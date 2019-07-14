@@ -25,7 +25,7 @@ import clay.input.Bindings;
 
 import clay.render.Renderer;
 import clay.render.Camera;
-// import clay.render.Draw;
+import clay.render.Draw;
 import clay.events.Emitter;
 import clay.events.Events;
 import clay.events.AppEvent;
@@ -41,7 +41,7 @@ class App {
 
 
 	public var renderer     (default, null):Renderer;
-	// public var draw         (default, null):Draw;
+	public var draw         (default, null):Draw;
 	public var audio        (default, null):Audio;
 	public var debug        (default, null):Debug;
 
@@ -89,7 +89,7 @@ class App {
 
 	public function new(_options:ClayOptions, _onready:Void->Void) {
 
-		_debug('creating app');
+		_debug("creating app");
 
 		var _kha_opt = parse_options(_options);
 
@@ -126,7 +126,7 @@ class App {
 
 	function ready(_onready:Void->Void) {
 		
-		_debug('ready');
+		_debug("ready");
 
 		clay.Clay.app = this;
 
@@ -141,7 +141,7 @@ class App {
 		timer = new TimerManager();
 
 		renderer = new Renderer(options.renderer);
-		// draw = new Draw();
+		draw = new Draw();
 		screen = new Screen(options.antialiasing);
 		audio = new Audio();
 		
@@ -155,13 +155,13 @@ class App {
 			
 			Clay.resources.load_all(
 				[
-				'assets/Montserrat-Regular.ttf',
-				'assets/Montserrat-Bold.ttf',
+				"assets/Muli-Regular.ttf",
+				"assets/Muli-Bold.ttf"
 				], 
 				function() {
 
 					init();
-					_debug('onready');
+					_debug("onready");
 					_onready();
 
 				}
@@ -170,7 +170,7 @@ class App {
 		} else {
 
 			init();
-			_debug('onready');
+			_debug("onready");
 			_onready();
 		}
 
@@ -178,7 +178,7 @@ class App {
 
 	function init() {
 
-		_debug('init');
+		_debug("init");
 
 		time = kha.System.time;
 		last_time = time;
@@ -232,10 +232,10 @@ class App {
 
 	function parse_options(_options:ClayOptions):SystemOptions {
 
-		_debug('parsing options:$_options');
+		_debug("parsing options: " + _options);
 
 		options = {};
-		options.title = def(_options.title, 'clay game');
+		options.title = def(_options.title, "clay game");
 		options.width = def(_options.width, 800);
 		options.height = def(_options.height, 600);
 		options.vsync = def(_options.vsync, false);
@@ -342,7 +342,7 @@ class App {
 
 	inline function tickstart() {
 
-		_verboser('ontickstart');
+		_verboser("ontickstart");
 		
 		cycle_next_queue();
 
@@ -352,18 +352,18 @@ class App {
 
 	inline function tick() {
 
-		_verboser('tick');
+		_verboser("tick");
 		
 		timer.update(dt);
 		events.process();
 		tween.step(dt);
-		// draw.update();
+		draw.update();
 
 	}
 
 	inline function tickend() {
 
-		_verboser('ontickend');
+		_verboser("ontickend");
 
 		emitter.emit(AppEvent.TICKEND, _app_event);
 		input.reset();
@@ -375,7 +375,7 @@ class App {
 	// render
 	function render(f:Array<Framebuffer>) {
 
-		_verboser('render');
+		_verboser("render");
 
 		debug.start(DebugTag.process);
 
@@ -473,17 +473,17 @@ class App {
 @:noCompletion
 @:allow(clay.system.App)
 class DebugTag {
-    static var process      = 'core.process';
-    static var update       = 'core.update';
-    static var tick         = 'core.tick';
-    static var render       = 'core.render';
-    static var debug        = 'core.debug';
-    static var updates      = 'core.updates';
-    static var events       = 'core.events';
-    static var audio        = 'core.audio';
-    static var input        = 'core.input';
-    static var timer        = 'core.timer';
-    static var scene        = 'core.scene';
+    static var process      = "core.process";
+    static var update       = "core.update";
+    static var tick         = "core.tick";
+    static var render       = "core.render";
+    static var debug        = "core.debug";
+    static var updates      = "core.updates";
+    static var events       = "core.events";
+    static var audio        = "core.audio";
+    static var input        = "core.input";
+    static var timer        = "core.timer";
+    static var scene        = "core.scene";
 }
 
 typedef ClayOptions = {

@@ -161,7 +161,7 @@ class ParticleVector {
 			_list.push(i.id);
 		}
 
-		return '[${_list.join(", ")}]';
+		return "[" + _list.join(", ") + "]";
 
 	}
 

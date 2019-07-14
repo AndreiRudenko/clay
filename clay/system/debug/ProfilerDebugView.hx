@@ -47,7 +47,7 @@ class ProfilerDebugView extends DebugView {
 
 		super(_debug);
 
-		debug_name = 'Profiler';
+		debug_name = "Profiler";
 		lists = new Map();
 
 	}
@@ -458,7 +458,7 @@ private class ProfilerBar {
 	}
 
 	function set_text(_t:String) {
-		text_item.text = '$name (${graph.max}ms) | ${_t}ms';
+		text_item.text = name + " (" + graph.max + "ms) | " + _t + "ms";
 		return text = _t;
 	}
 

@@ -160,10 +160,10 @@ class Sound extends AudioChannel {
 					added = true;
 				}
 			} else {
-				log('cant play: there is no output channel for sound');
+				log("cant play: there is no output channel for sound");
 			}
 		} else {
-			log('there is no audio resource to play');
+			log("there is no audio resource to play");
 		}
 		
 		return this;
@@ -179,10 +179,10 @@ class Sound extends AudioChannel {
 					added = false;
 				}
 			} else {
-				log('cant stop: there is no output channel for sound');
+				log("cant stop: there is no output channel for sound");
 			}
 		} else {
-			log('there is no audio resource, nothing to stop');
+			log("there is no audio resource, nothing to stop");
 		}
 
 		return this;

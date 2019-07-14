@@ -21,7 +21,7 @@ class ResourceManager {
 
 
 	public var cache(default, null):Map<String, Resource>;
-    public var stats : ResourceStats;
+    public var stats:ResourceStats;
 
 	var texture_ext:Array<String>;
 	var audio_ext:Array<String>;
@@ -33,8 +33,9 @@ class ResourceManager {
 		
 		texture_ext = kha.Assets.imageFormats;
 		audio_ext = kha.Assets.soundFormats;
+		video_ext = [];
+		// video_ext = kha.Assets.videoFormats; // bug on hl
 		font_ext = kha.Assets.fontFormats;
-		video_ext = kha.Assets.videoFormats;
 
 		cache = new Map();
 
@@ -100,7 +101,7 @@ class ResourceManager {
 
 		var res = get(id);
 		if(res != null) {
-			log('resource already exists: $id');
+			log("resource already exists: " + id);
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
@@ -140,7 +141,7 @@ class ResourceManager {
 		var res:BytesResource = bytes(id);
 
 		if(res != null) {
-			log('bytes resource already exists: $id');
+			log("bytes resource already exists: " + id);
 			// res.ref++;
 			if(oncomplete != null) {
 				oncomplete(res);
@@ -148,7 +149,7 @@ class ResourceManager {
 			return;
 		}
 
-		_debug('bytes / loading / $id');
+		_debug("bytes / loading / " + id);
 
 		kha.Assets.loadBlobFromPath(
 			id, 
@@ -170,14 +171,14 @@ class ResourceManager {
 		var res:TextResource = text(id);
 
 		if(res != null) {
-			log('text resource already exists: $id');
+			log("text resource already exists: " + id);
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
 			return;
 		}
 
-		_debug('text / loading / $id');
+		_debug("text / loading / " + id);
 
 		kha.Assets.loadBlobFromPath(
 			id, 
@@ -199,14 +200,14 @@ class ResourceManager {
 		var res:JsonResource = json(id);
 
 		if(res != null) {
-			log('json resource already exists: $id');
+			log("json resource already exists: " + id);
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
 			return;
 		}
 
-		_debug('json / loading / $id');
+		_debug("json / loading / " + id);
 
 		kha.Assets.loadBlobFromPath(
 			id, 
@@ -228,14 +229,14 @@ class ResourceManager {
 		var res:Texture = texture(id);
 
 		if(res != null) {
-			log('texture resource already exists: $id');
+			log("texture resource already exists: " + id);
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
 			return;
 		}
 
-		_debug('texture / loading / $id');
+		_debug("texture / loading / " + id);
 
 		kha.Assets.loadImageFromPath(
 			id, 
@@ -258,14 +259,14 @@ class ResourceManager {
 		var res:FontResource = font(id);
 
 		if(res != null) {
-			log('font resource already exists: $id');
+			log("font resource already exists: " + id);
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
 			return;
 		}
 
-		_debug('font / loading / $id');
+		_debug("font / loading / " + id);
 
 		kha.Assets.loadFontFromPath(
 			id, 
@@ -287,14 +288,14 @@ class ResourceManager {
 		var res:VideoResource = video(id);
 
 		if(res != null) {
-			log('video resource already exists: $id');
+			log("video resource already exists: " + id);
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
 			return;
 		}
 
-		_debug('video / loading / $id');
+		_debug("video / loading / " + id);
 
 		kha.Assets.loadVideoFromPath(
 			id, 
@@ -316,14 +317,14 @@ class ResourceManager {
 		var res:AudioResource = audio(id);
 
 		if(res != null) {
-			log('audio resource already exists: $id');
+			log("audio resource already exists: " + id);
 			if(oncomplete != null) {
 				oncomplete(res);
 			}
 			return;
 		}
 
-		_debug('audio / loading / $id');
+		_debug("audio / loading / " + id);
 
 		kha.Assets.loadSoundFromPath(
 			id, 
@@ -409,9 +410,10 @@ class ResourceManager {
         stats.total += _offset;
 
     }
+    
 	function onerror(err:kha.AssetError) {
 
-		log('failed to load resource: ${err.url}');
+		log("failed to load resource: " + err.url);
 
 	}
 
@@ -440,18 +442,18 @@ class ResourceStats {
     function toString() {
 
         return
-            'Resource Statistics\n' +
-            '\ttotal : ' + total + '\n' +
-            '\ttexture : ' + textures + ' \n' + '' +
-            '\trender texture : ' + rtt + ' \n' +
-            '\tfont : ' + fonts + '\n' +
-            // '\tshader : ' + shaders + '\n' +
-            '\ttext : ' + texts + '\n' +
-            '\tjson : ' + jsons + '\n' +
-            '\tbytes : ' + bytes + '\n' +
-            '\taudios : ' + audios + '\n' +
-            '\tvideos : ' + audios + '\n' +
-            '\tunknown : ' + unknown;
+            "Resource Statistics\n" +
+            "\ttotal : " + total + "\n" +
+            "\ttexture : " + textures + "\n" +
+            "\trender texture : " + rtt + "\n" +
+            "\tfont : " + fonts + "\n" +
+            // "\tshader : " + shaders + "\n" +
+            "\ttext : " + texts + "\n" +
+            "\tjson : " + jsons + "\n" +
+            "\tbytes : " + bytes + "\n" +
+            "\taudios : " + audios + "\n" +
+            "\tvideos : " + audios + "\n" +
+            "\tunknown : " + unknown;
 
     } 
 
