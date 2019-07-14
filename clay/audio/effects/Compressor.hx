@@ -42,6 +42,11 @@ class Compressor extends AudioEffect {
 		
 		var n = Std.int(_lookahead_time * _sample_rate);
 		_delay_buffer = new kha.arrays.Float32Array(n);
+
+		for (i in 0...n) { // this fix click on start in cpp build
+			_delay_buffer[i] = 0;
+		}
+
 		_envelope_buffer = new kha.arrays.Float32Array(512);
 
 		_delay_read_pointer = 0;
