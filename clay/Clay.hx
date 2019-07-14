@@ -17,7 +17,7 @@ class Clay {
 	public static var cameras 	    (get, never):clay.render.CameraManager;
 	public static var layer 	    (get, never):clay.render.Layer;
 	public static var layers 	    (get, never):clay.render.LayerManager;
-	// public static var draw     	    (get, never):clay.render.Draw;
+	public static var draw     	    (get, never):clay.render.Draw;
 
 	public static var input    	    (get, never):clay.system.InputManager;
 	public static var resources	    (get, never):clay.system.ResourceManager;
@@ -41,7 +41,7 @@ class Clay {
 
 	public static function init(_options:ClayOptions, _onready:Void->Void) {
 
-		assert(!inited, 'app already inited');
+		assert(!inited, "app already inited");
 
 		inited = true;
 
@@ -72,7 +72,7 @@ class Clay {
 	static inline function get_cameras() return app.renderer.cameras;
 	static inline function get_layer() return app.renderer.layer;
 	static inline function get_layers() return app.renderer.layers;
-	// static inline function get_draw() return app.draw;
+	static inline function get_draw() return app.draw;
 
 	static inline function get_input() return app.input;
 	static inline function get_resources() return app.resources;

@@ -45,6 +45,7 @@ class Renderer {
 	public var camera:Camera;
 	public var layer:Layer;
 	public var font:FontResource;
+	public var clear_color:Color;
 
 	#if !no_debug_console
 	public var stats:RenderStats;
@@ -65,6 +66,7 @@ class Renderer {
 		sort_options = new SortOptions(_options.shader_bits, _options.texture_bits, _options.geomtype_bits);
 		cameras = new CameraManager();
 		layers = new LayerManager(layers_max);
+		clear_color = new Color(0.1,0.1,0.1,1);
 		shaders = new Map();
 		_texture_ids = new IntRingBuffer(sort_options.texture_max+1);
 
@@ -84,21 +86,25 @@ class Renderer {
 		stats.reset();
 		#end
 
+		var buffer = Clay.screen.buffer.image.g4;
+	    buffer.begin();
+		buffer.clear(clear_color.to_int());
+
 		for (cam in cameras.active_cameras) {
 			cam.update();
-		    cam.prerender();
+			cam.prerender();
 			layers.render(cam);
-		    cam.postrender();
+			cam.postrender();
 		}
+
+		// buffer.disableScissor();
+	    buffer.end();
 
 		var g = f.g4;
 		g.begin();
-
-		for (cam in cameras.active_cameras) {
-			g.scissor(Std.int(cam.viewport.x), Std.int(cam.viewport.y), Std.int(cam.viewport.w), Std.int(cam.viewport.h));
-			frontbuffer.render(cam.buffer, f, shader_textured, kha.System.screenRotation);
-		}
-
+		// g.clear();
+		g.scissor(0, 0, Clay.screen.width, Clay.screen.height);
+		frontbuffer.render(Clay.screen.buffer, f, shader_textured, kha.ScreenRotation.RotationNone); // todo: kha.System.screenRotation
 		g.disableScissor();
 		g.end();
 
@@ -109,7 +115,7 @@ class Renderer {
 	public function register_shader(_name:String, _shader:Shader) {
 
 		if(shaders.exists(_name)) {
-			log('shader: $_name already exists, this will overwrite to new shader');
+			log("shader: " + _name + " already exists, this will overwrite to new shader");
 		}
 
 		shaders.set(_name, _shader);
@@ -119,7 +125,7 @@ class Renderer {
 	@:noCompletion public function pop_texture_id():Int {
 
 		if(_textures_used >= sort_options.texture_max) {
-			throw('Out of textures, max allowed ${sort_options.texture_max}');
+			throw("Out of textures, max allowed " + sort_options.texture_max);
 		}
 
 		++_textures_used;
@@ -138,14 +144,14 @@ class Renderer {
 
 		create_default_shaders();
 
-		layer = layers.create('default_layer');
-		camera = cameras.create('default_camera');
+		layer = layers.create("default_layer");
+		camera = cameras.create("default_camera");
 
 		frontbuffer = new FrontBuffer(this);
 		renderpath = new RenderPath(this);
 		
 		#if !no_default_font
-		font = Clay.resources.font('assets/Montserrat-Regular.ttf');
+		font = Clay.resources.font("assets/Muli-Regular.ttf");
 		#end
 
 		#if !no_debug_console
@@ -167,13 +173,13 @@ class Renderer {
 		shader_textured = new Shader([structure], Shaders.textured_vert, Shaders.textured_frag);
 		shader_textured.set_blendmode(BlendingFactor.BlendOne, BlendingFactor.InverseSourceAlpha, BlendingOperation.Add);
 		shader_textured.compile();
-		register_shader('textured', shader_textured);
+		register_shader("textured", shader_textured);
 
 	// text
 		shader_text = new Shader([structure], Shaders.textured_vert, Shaders.text_frag);
 		shader_text.set_blendmode(BlendingFactor.SourceAlpha, BlendingFactor.InverseSourceAlpha, BlendingOperation.Add);
 		shader_text.compile();
-		register_shader('text', shader_text);
+		register_shader("text", shader_text);
 
 	}
 
@@ -182,6 +188,13 @@ class Renderer {
 		if(rendering) {
 			if(target != null) {
 				target.image.g4.end();
+			}
+			if(v != null) {
+				v.image.g4.begin();
+				v.image.g4.clear(clear_color.to_int());
+			} else {
+				Clay.screen.buffer.image.g4.begin();
+				Clay.screen.buffer.image.g4.clear(clear_color.to_int());
 			}
 		}
 

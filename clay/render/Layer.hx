@@ -147,7 +147,7 @@ class Layer {
 
 		onprerender.emit();
 
-		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : cam.buffer.image.g4;
+		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
 
 		remove_objects();
 		sort_objects();
