@@ -203,10 +203,23 @@ class QuadPackRenderer extends ObjectRenderer {
 	function set_quad_vertices(data:Float32Array, m:Matrix, verts:Array<Vertex>, offset:Int) {
 
 		var v:Vertex;
+		var x:Float;
+		var y:Float;
+		var round_pixels:Bool = renderpath.camera.round_pixels;
+
 		for (i in offset...offset+4) {
 			v = verts[i];
-			data.set(_buffer_index++, m.a * v.pos.x + m.c * v.pos.y + m.tx);
-			data.set(_buffer_index++, m.b * v.pos.x + m.d * v.pos.y + m.ty);
+
+			x = m.a * v.pos.x + m.c * v.pos.y + m.tx;
+			y = m.b * v.pos.x + m.d * v.pos.y + m.ty;
+			
+			if(round_pixels) {
+				x = Math.round(x);
+				y = Math.round(y);
+			}
+
+			data.set(_buffer_index++, x);
+			data.set(_buffer_index++, y);
 
 			data.set(_buffer_index++, v.color.r);
 			data.set(_buffer_index++, v.color.g);

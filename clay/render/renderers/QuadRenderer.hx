@@ -173,13 +173,26 @@ class QuadRenderer extends ObjectRenderer {
 		var n:Int = 0;
 		var m:Matrix;
 		var v:Vertex;
+		var x:Float;
+		var y:Float;
+		var round_pixels:Bool = renderpath.camera.round_pixels;
+
 		for (geom in _geometry) {
 			set_region(geom.region, _texture);
 			m = geom.transform.world.matrix;
 			for (i in 0...4) {
 				v = geom.vertices[i];
-				vertices.set(n++, m.a * v.pos.x + m.c * v.pos.y + m.tx);
-				vertices.set(n++, m.b * v.pos.x + m.d * v.pos.y + m.ty);
+
+				x = m.a * v.pos.x + m.c * v.pos.y + m.tx;
+				y = m.b * v.pos.x + m.d * v.pos.y + m.ty;
+				
+				if(round_pixels) {
+					x = Math.round(x);
+					y = Math.round(y);
+				}
+
+				vertices.set(n++, x);
+				vertices.set(n++, y);
 
 				vertices.set(n++, v.color.r);
 				vertices.set(n++, v.color.g);

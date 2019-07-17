@@ -15,12 +15,8 @@ import clay.events.Signal;
 import clay.math.Transform;
 import clay.render.CameraManager;
 import clay.render.Layer;
-import clay.render.types.TextureFormat;
-import clay.render.types.Usage;
-import clay.render.types.TextureFilter;
-import clay.render.types.TextureAddressing;
-import clay.utils.Log.*;
 import clay.resources.Texture;
+import clay.utils.Log.*;
 
 using clay.render.utils.FastMatrix3Extender;
 
@@ -32,7 +28,9 @@ class Camera {
 	public var name (default, null):String;
 	public var active (get, set):Bool;
 	public var viewport:Rectangle;
+	public var round_pixels:Bool;
 
+	public var bounds:Rectangle;
 	public var priority(default, null):Int;
 
 	public var onprerender  (default, null):Signal<Camera->Void>;
@@ -40,14 +38,13 @@ class Camera {
 
 	@:noCompletion public var transform:Transform;
 
-	@:noCompletion public var view_matrix:Matrix;
-	@:noCompletion public var view_matrix_inverted:Matrix;
 	@:noCompletion public var projection_matrix:FastMatrix3;
 
 	public var zoom(default, set):Float;
-	public var pos(get, null):Vector;
+	public var pos(default, null):VectorCallback;
 	public var rotation(get, set):Float;
 	public var size(default, null):VectorCallback;
+	public var anchor(default, null):VectorCallback;
 	public var size_mode (default, set):SizeMode;
 	
 	@:noCompletion public var _size_factor:Vector;
@@ -56,16 +53,26 @@ class Camera {
 	var _visible_layers_mask:BitVector;
 	var _manager:CameraManager;
 
+	// var _view_matrix:Matrix;
+	var _view_matrix_inverted:Matrix;
+	
 
 	function new(manager:CameraManager, name:String, viewport:Rectangle, priority:Int) {
 
 		this.name = name;
 		this.priority = priority;
+		round_pixels = false;
 		_manager = manager;
 
+		pos = new VectorCallback();
+		anchor = new VectorCallback(0.5,0.5);
 		size = new VectorCallback();
-		_size_factor = new Vector(1,1);
+
+		pos.listen(update_pos);
+		anchor.listen(update_pos);
 		size.listen(set_size);
+
+		_size_factor = new Vector(1,1);
 
 		this.viewport = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
 
@@ -73,14 +80,14 @@ class Camera {
 			this.viewport.copy_from(viewport);
 		}
 
-		view_matrix = new Matrix();
-		view_matrix_inverted = new Matrix();
+		// _view_matrix = new Matrix();
+		_view_matrix_inverted = new Matrix();
 		projection_matrix = FastMatrix3.identity();
 
 		_visible_layers_mask = new BitVector(Clay.renderer.layers.capacity);
 		_visible_layers_mask.enable_all();
 
-		transform = new CameraTransform(this);
+		transform = new Transform();
 
 		zoom = 1;
 
@@ -89,57 +96,7 @@ class Camera {
 
 		size_mode = SizeMode.fit;
 
-	}
-
-	function destroy() {
-
-		name = null;
-		viewport = null;
-		onprerender = null;
-		onpostrender = null;
-		transform = null;
-		view_matrix = null;
-		view_matrix_inverted = null;
-		projection_matrix = null;
-		_visible_layers_mask = null;
-		_manager = null;
-
-	}
-
-	function set_size_mode( _m:SizeMode ) : SizeMode {
-
-		size_mode = _m;
-		set_size(0);
-
-		return _m;
-
-	}
-
-	function set_size(v:Float) {
-
-		if(size.x == 0 || size.y == 0) {
-			return;
-		}
-		
-		var _ratio_x = viewport.w / size.x;
-		var _ratio_y = viewport.h / size.y;
-		var _shortest = Math.max( _ratio_x, _ratio_y );
-		var _longest = Math.min( _ratio_x, _ratio_y );
-
-        switch(size_mode) {
-            case SizeMode.fit:{
-                _ratio_x = _ratio_y = _longest;
-            }
-            case SizeMode.cover: {
-                _ratio_x = _ratio_y = _shortest;
-            }
-            case SizeMode.contain: {
-                //use actual size
-            }
-        }
-
-		_size_factor.x = _ratio_x;
-		_size_factor.y = _ratio_y;
+		update_pos(0);
 
 	}
 
@@ -160,7 +117,7 @@ class Camera {
 		}
 
 		return this;
-		
+
 	}
 
 	public function show_layers(?layers:Array<String>):Camera {
@@ -191,9 +148,9 @@ class Camera {
 
 		into.copy_from(v);
 
-		update();
+		transform.update();
 
-		into.transform(view_matrix);
+		into.transform(transform.world.matrix);
 
 		return into;
 		
@@ -204,27 +161,128 @@ class Camera {
 		if(into == null) {
 			into = new Vector();
 		}
-		
+
 		into.copy_from(v);
 
-		update();
+		transform.update();
 
-		into.transform(view_matrix_inverted);
+		_view_matrix_inverted.copy(transform.world.matrix);
+		_view_matrix_inverted.invert();
+
+		into.transform(_view_matrix_inverted);
 
 		return into;
 		
 	}
 
-	public inline function update() {
+	function update_pos(_) {
 
-		transform.update();
+		var corx = 0.0;
+		var cory = 0.0;
+
+		var vw = viewport.w;
+		var vh = viewport.h;
+		
+		var ox = vw * anchor.x;
+		var oy = vh * anchor.y;
+
+		if(size.x > 0 && size.y > 0) {
+			vw = size.x;
+			vh = size.y;
+			corx = vw * anchor.x - ox;
+			cory = vh * anchor.y - oy;
+		}
+
+		if(bounds != null) {
+			pos.ignore_listeners = true;
+
+			if(pos.x < bounds.x) {
+				pos.x = bounds.x;
+			}
+
+			if(pos.y < bounds.y) {
+				pos.y = bounds.y;
+			}
+
+			if(pos.x + vw > bounds.x + bounds.w) {
+				pos.x = bounds.x + bounds.w - vw;
+			}
+
+			if(pos.y + vh > bounds.y + bounds.h) {
+				pos.y = bounds.y + bounds.h - vh;
+			}
+
+			pos.ignore_listeners = false;
+		}
+
+		var px = pos.x + ox + corx;
+		var py = pos.y + oy + cory;
+
+		transform.pos.set(px, py);
+		transform.origin.set(ox, oy);
+
+	}
+
+	function destroy() {
+
+		name = null;
+		viewport = null;
+		onprerender = null;
+		onpostrender = null;
+		transform = null;
+		// _view_matrix = null;
+		_view_matrix_inverted = null;
+		projection_matrix = null;
+		_visible_layers_mask = null;
+		_manager = null;
+
+	}
+
+	function set_size_mode(mode:SizeMode):SizeMode {
+
+		size_mode = mode;
+		set_size(0);
+
+		return mode;
+
+	}
+
+	function set_size(v:Float) {
+
+		if(size.x <= 0 || size.y <= 0) {
+			return;
+		}
+
+		var rx = viewport.w / size.x;
+		var ry = viewport.h / size.y;
+		var shortest = Math.max(rx, ry);
+		var longest = Math.min(rx, ry);
+
+		switch(size_mode) {
+			case SizeMode.fit:{
+				rx = ry = longest;
+			}
+			case SizeMode.cover: {
+				rx = ry = shortest;
+			}
+			case SizeMode.contain: {
+				//use actual size
+			}
+		}
+
+		_size_factor.x = rx;
+		_size_factor.y = ry;
+
+		zoom = zoom;
+		update_pos(0);
 
 	}
 
 	inline function update_matrices(g:Graphics) {
-		
-		view_matrix_inverted.copy(view_matrix);
-		view_matrix_inverted.invert();
+
+		_view_matrix_inverted.copy(transform.world.matrix);
+		_view_matrix_inverted.invert();
+
 		projection_matrix.identity();
 
 		if (g.renderTargetsInvertedY()) {
@@ -233,7 +291,7 @@ class Camera {
 			projection_matrix.orto(0, viewport.w, viewport.h, 0);
 		}
 
-		projection_matrix.append_matrix(view_matrix_inverted);
+		projection_matrix.append_matrix(_view_matrix_inverted);
 
 	}
 
@@ -246,8 +304,15 @@ class Camera {
 		if(v < 0.01) {
 			v = 0.01;
 		}
-		
-		return zoom = v;
+
+		zoom = v;
+
+		var sx = 1 / (_size_factor.x * zoom);
+		var sy = 1 / (_size_factor.y * zoom);
+
+		transform.scale.set(sx, sy);
+
+		return v;
 
 	}
 
@@ -257,7 +322,9 @@ class Camera {
 
 		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
 
+		transform.update();
 		update_matrices(g);
+
 		g.viewport(Std.int(viewport.x), Std.int(viewport.y), Std.int(viewport.w), Std.int(viewport.h));
 
 	}
@@ -291,74 +358,6 @@ class Camera {
 		}
 		
 		return _active;
-
-	}
-
-
-}
-
-
-class CameraTransform extends Transform {
-
-
-	var camera:Camera;
-
-
-	public function new(c:Camera) {
-
-		super();
-		camera = c;
-
-	}
-
-	override function update() { // todo: check dirty
-
-		if(parent != null) {
-			parent.update();
-		}
-
-		_cleaning = true;
-
-		var hw:Float = camera.viewport.w * 0.5;
-		var hh:Float = camera.viewport.h * 0.5;
-		var corx:Float = 0;
-		var cory:Float = 0;
-
-		var zx:Float = 1 / (camera._size_factor.x * camera.zoom);
-		var zy:Float = 1 / (camera._size_factor.y * camera.zoom);
-
-		if(camera.size.x != 0 && camera.size.y != 0) {
-			hw = camera.size.x * 0.5;
-			hh = camera.size.y * 0.5;
-			corx = hw - camera.viewport.w / 2;
-			cory = hh - camera.viewport.h / 2;
-		}
-
-		_local.matrix.identity()
-		.translate(pos.x, pos.y) // apply position
-		.translate(hw, hh) // translate to origin
-		.rotate(Mathf.radians(-rotation)) // rotate
-		.scale(zx, zy) // scale
-		.apply((-hw + corx), (-hh + cory)) // revert origin translation
-		;
-
-		if(parent != null) {
-			_world.matrix.copy(parent._world.matrix).append(_local.matrix);
-		} else {
-			_world.matrix.copy(_local.matrix);
-		}
-
-        _world.decompose(false);
-
-		camera.view_matrix.copy(_world.matrix);
-
-		_cleaning = false;
-
-		if(_clean_handlers != null && _clean_handlers.length > 0) {
-			for(handler in _clean_handlers) {
-				handler(this);
-			}
-		}
 
 	}
 

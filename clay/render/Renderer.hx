@@ -91,7 +91,6 @@ class Renderer {
 		buffer.clear(clear_color.to_int());
 
 		for (cam in cameras.active_cameras) {
-			cam.update();
 			cam.prerender();
 			layers.render(cam);
 			cam.postrender();
