@@ -57,13 +57,28 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}	
 
-	public macro function set(self:Expr, name:String, value:ExprOf<Float>):ExprOf<TweenAction<T>> {
+	public macro function set<T>(self:ExprOf<T>, expr:Expr):ExprOf<TweenObject<T>> {
+
+		var field_names:Array<String> = [];
+		var values:Array<Expr> = [];
+
+		clay.tween.tweens.Tween.get_props(expr, field_names, values);
+
+		var exprs:Array<Expr> = [];
+		var fname:String;
+		var fvalue:Expr;
+
+		for (j in 0...field_names.length) {
+			fname = field_names[j];
+			fvalue = values[j];
+			exprs.push(macro t.$fname = $fvalue);
+		}
 
 		return macro {
 
 			$self.call(
 				function(t){
-					t.$name = $value;
+					$a{exprs};
 				}
 			);
 
@@ -102,34 +117,16 @@ class TweenObject<T> extends Tween<T> implements ITween {
 		var from_values:Array<Expr> = [];
 		var to_values:Array<Expr> = [];
 
-        var is_target_array = switch (Context.typeof(self)) {
-            case TInst(_, p): 
-                switch (p[0]) {
-			        case TInst(_.get() => t, _): t.name == 'Array';
-			        case _: false;
-			    }
-            case _: throw 'Invalid object type';
-        }
+		var is_target_array = switch (Context.typeof(self)) {
+			case TInst(_, p): 
+				switch (p[0]) {
+					case TInst(_.get() => t, _): t.name == 'Array';
+					case _: false;
+				}
+			case _: throw 'Invalid object type';
+		}
 
-        function get_props(props:Expr, fields:Array<String>, values:Array<Expr>) {
-        	
-			switch (props.expr) {
-				case EObjectDecl(obj):
-					for (o in obj) {
-						if(fields.indexOf(o.field) != -1) {
-							throw('Property ${o.field} already exists');
-						}
-						fields.push(o.field);
-						values.push(o.expr);
-					}
-				case _:
-					trace(props);
-					throw('Invalid expression in props');
-			}
-
-        }
-
-        get_props(end, prop_fields, to_values);
+		clay.tween.tweens.Tween.get_props(end, prop_fields, to_values);
 
 		var has_start = switch (start.expr) {
 			case EConst(CIdent("null")): false;
@@ -138,7 +135,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 		if(has_start) {
 			var start_fields:Array<String> = [];
-        	get_props(start, start_fields, from_values);
+			clay.tween.tweens.Tween.get_props(start, start_fields, from_values);
 
 			for (ef in prop_fields) {
 				if(start_fields.indexOf(ef) == -1) {
