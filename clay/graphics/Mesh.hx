@@ -131,13 +131,18 @@ class Mesh extends DisplayObject {
 		var sh = shader != null ? shader : shader_default;
 
 		vertexbuffer = new VertexBuffer(
-			vertices.length * 8,
+			vertices.length,
 			sh.pipeline.inputLayout[0],
 			Usage.StaticUsage
 		);
 
+		var ilen = indices.length;
+		if(sort_key.geomtype == GeometryType.quad || sort_key.geomtype == GeometryType.quadpack) {
+			ilen = Math.floor(vertices.length/4*6);
+		}
+
 		indexbuffer = new IndexBuffer(
-			indices.length,
+			ilen,
 			Usage.StaticUsage
 		);
 
@@ -147,15 +152,17 @@ class Mesh extends DisplayObject {
 
 		var region_scaled_x:Float = 0;
 		var region_scaled_y:Float = 0;
-		var region_scaled_w:Float = 0;
-		var region_scaled_h:Float = 0;
+		var region_scaled_w:Float = 1;
+		var region_scaled_h:Float = 1;
 
-		if(region == null || texture == null) {
+		if(region != null && texture != null) {
 			region_scaled_x = region.x / texture.width_actual;
 			region_scaled_y = region.y / texture.height_actual;
 			region_scaled_w = region.w / texture.width_actual;
 			region_scaled_h = region.h / texture.height_actual;
 		}
+
+		transform.update();
 
 		var data = vertexbuffer.lock();
 		var m = transform.world.matrix;
@@ -173,6 +180,27 @@ class Mesh extends DisplayObject {
 			data.set(n++, v.tcoord.y * region_scaled_h + region_scaled_y);
 		}
 		vertexbuffer.unlock();
+
+		var idata = indexbuffer.lock();
+		switch (sort_key.geomtype) {
+			case GeometryType.mesh:
+				for (i in 0...indices.length) {
+					idata.set(i, indices[i]);
+				}
+			case GeometryType.quad, GeometryType.quadpack:
+				var len = Math.floor(vertices.length/4);
+				for (i in 0...len) {
+					idata[i * 3 * 2 + 0] = i * 4 + 0;
+					idata[i * 3 * 2 + 1] = i * 4 + 1;
+					idata[i * 3 * 2 + 2] = i * 4 + 2;
+					idata[i * 3 * 2 + 3] = i * 4 + 0;
+					idata[i * 3 * 2 + 4] = i * 4 + 2;
+					idata[i * 3 * 2 + 5] = i * 4 + 3;
+				}
+			case _:
+		}
+
+		indexbuffer.unlock();
 
 	}
 

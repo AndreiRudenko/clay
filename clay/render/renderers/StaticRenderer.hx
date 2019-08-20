@@ -22,55 +22,57 @@ import clay.math.Vector;
 class StaticRenderer extends ObjectRenderer {
 
 
-	var shader:Shader;
-	var projection_loc:ConstantLocation;
-	var texture_loc:TextureUnit;
 	var g:Graphics;
 
 
 	override function start() {
 		
-		shader = null;
 		g = renderpath.g;
 
 	}
 
 	public function render(geom:Mesh) {
 
-		if(geom.vertices.length == 0) {
+		if(geom.vertexbuffer.count() == 0) {
 			return;
 		}
 
-/*		if(geom.shader != shader) {
-			shader = geom.shader;
-			projection_loc = shader.getConstantLocation("mvpMatrix");
-			texture_loc = shader.getTextureUnit("tex");
-
-			renderpath.set_blendmode(shader);
-			g.setPipeline(shader);
-		}
-
 		#if !no_debug_console
-		renderpath.stats.vertices += geom.vertices.length;
-		renderpath.stats.indices += geom.indices.length;
+		renderpath.stats.vertices += geom.vertexbuffer.count();
+		renderpath.stats.indices += geom.indexbuffer.count();
 		renderpath.stats.locked++;
 		#end
+		
+		var shader = geom.shader != null ? geom.shader : geom.shader_default;
+		var texture = geom.texture;
 
 		renderpath.clip(geom.clip_rect);
-		renderpath.set_projection(projection_loc);
 
-		renderpath.set_texture(texture_loc, geom.texture);
+		if(texture == null) {
+			texture = renderpath.texture_blank;
+		}
+
+		var texture_loc = shader.set_texture('tex', texture).location;
+		shader.set_matrix3('mvpMatrix', renderpath.camera.projection_matrix);
+
+		shader.set_blendmode(
+			geom.blend_src, geom.blend_dst, geom.blend_op, 
+			geom.alpha_blend_src, geom.alpha_blend_dst, geom.alpha_blend_op
+		);
+
+		shader.use(g);
+		shader.apply(g);
 
 		g.setVertexBuffer(geom.vertexbuffer);
 		g.setIndexBuffer(geom.indexbuffer);
 
-		g.drawIndexedVertices(0, geom.indices.length);
+		g.drawIndexedVertices(0, geom.indexbuffer.count());
 
-		renderpath.remove_texture(texture_loc);
+		g.setTexture(texture_loc, null);
 
 		#if !no_debug_console
 		renderpath.stats.draw_calls++;
-		#end*/
+		#end
 
 	}
 
