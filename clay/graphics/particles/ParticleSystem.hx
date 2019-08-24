@@ -37,7 +37,7 @@ class ParticleSystem extends DisplayObject {
 
 		active = true;
 		pos = new Vector();
-		emitters = emitters != null ? emitters : [];
+		this.emitters = emitters != null ? emitters : [];
 
 		_init();
 
