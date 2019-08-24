@@ -58,6 +58,8 @@ class ParticleEmitter {
 	public var duration    	(default, set):Float;
 		/** emitter duration max*/
 	public var duration_max	(default, set):Float;
+		/** preprocess particles in seconds */
+	public var preprocess(default, null):Float;
 		/** emitter cache size */
 	public var cache_size   (default, null):Int;
 		/** emitter cache wrap */
@@ -92,7 +94,7 @@ class ParticleEmitter {
 	public var sort_func:Particle->Particle->Int;
 
 		/** emitter index in particle system */
-	public var index       (default, null):Int = 0;
+	public var index(default, null):Int = 0;
 
 	@:noCompletion public var options:ParticleEmitterOptions;
 
@@ -101,6 +103,7 @@ class ParticleEmitter {
 	var _inv_rate:Float;
 	var _inv_rate_max:Float;
 	var _duration:Float;
+	var _preprocess:Float;
 	var _need_reset:Bool = true;
 
 
@@ -115,6 +118,7 @@ class ParticleEmitter {
 
 		_time = 0;
 		_frame_time = 0;
+		_preprocess = 0;
 
 		cache_size = options.cache_size != null ? options.cache_size : 128;
 		if(cache_size <= 0) {
@@ -127,10 +131,11 @@ class ParticleEmitter {
 		pos = options.pos != null ? options.pos : new Vector();
 		
 		active = options.active != null ? options.active : true;
-		enabled = options.enabled != null ? options.enabled : true;
+		enabled = options.enabled != null ? options.enabled : false;
 
 		duration = options.duration != null ? options.duration : -1;
 		duration_max = options.duration_max != null ? options.duration_max : -1;
+		preprocess = options.preprocess != null ? options.preprocess : 0;
 
 		count = options.count != null ? options.count : 1;
 		count_max = options.count_max != null ? options.count_max : 0;
@@ -345,6 +350,12 @@ class ParticleEmitter {
 				m.update(dt);
 			}
 
+			if(_preprocess > 0) {
+				while((_preprocess -= dt) > 0) {
+					update(dt);
+				}
+			}
+
 		}
 		
 	}
@@ -360,6 +371,8 @@ class ParticleEmitter {
 		enabled = true;
 		_time = 0;
 		_frame_time = 0;
+
+		_preprocess = preprocess;
 
 		if(_dur == null) {
 			calc_duration();
@@ -723,6 +736,7 @@ typedef ParticleEmitterOptions = {
 	@:optional var rate_max:Float;
 	@:optional var duration:Float;
 	@:optional var duration_max:Float;
+	@:optional var preprocess:Float;
 
 	@:optional var image_path:String;
 	@:optional var texture:Texture;
@@ -745,11 +759,11 @@ typedef ParticleEmitterOptions = {
 }
 
 @:enum abstract ParticlesSortMode(UInt) from UInt to UInt {
-    
-    var none              = 0;
-    var lifetime          = 1;
-    var youngest          = 2;
-    var oldest            = 3;
-    var custom            = 4;
+	
+	var none              = 0;
+	var lifetime          = 1;
+	var youngest          = 2;
+	var oldest            = 3;
+	var custom            = 4;
 
 }
