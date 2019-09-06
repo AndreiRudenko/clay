@@ -29,36 +29,35 @@ class Transform {
 	var _clean_handlers:Array<Transform->Void>;
 	
 
-	public function new(?_options:TransformOptions) {
+	public function new(?options:TransformOptions) {
 
 		_local = new Spatial();
 		_world = new Spatial();
 
 		origin = new VectorCallback();
-		// rotation = 0;
 		
 		dirty = true;
 		manual_update = false;
 		_cleaning = false;
 
-		if(_options != null) {
-			if(_options.pos != null) {
-				pos.copy_from(_options.pos);
+		if(options != null) {
+			if(options.pos != null) {
+				pos.copy_from(options.pos);
 			}
-			if(_options.scale != null) {
-				scale.copy_from(_options.scale);
+			if(options.scale != null) {
+				scale.copy_from(options.scale);
 			}
-			if(_options.rotation != null) {
-				rotation = _options.rotation;
+			if(options.rotation != null) {
+				rotation = options.rotation;
 			}
-			if(_options.manual_update != null) {
-				manual_update = _options.manual_update;
+			if(options.manual_update != null) {
+				manual_update = options.manual_update;
 			}
-			if(_options.origin != null) {
-				origin.copy_from(_options.origin);
+			if(options.origin != null) {
+				origin.copy_from(options.origin);
 			}
-			if(_options.parent != null) {
-				parent = _options.parent;
+			if(options.parent != null) {
+				parent = options.parent;
 			}
 		}
 

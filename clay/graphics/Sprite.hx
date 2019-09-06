@@ -2,7 +2,6 @@ package clay.graphics;
 
 
 import clay.math.RectangleCallback;
-import clay.render.RenderPath;
 import clay.render.Camera;
 import clay.graphics.shapes.Quad;
 import clay.resources.Texture;
@@ -48,13 +47,6 @@ class Sprite extends Quad {
 		uv.ignore_listeners = lstate;
 
 		update_tcoord();
-
-	}
-
-	override function render_geometry(r:RenderPath, c:Camera) {
-
-		r.set_object_renderer(r.quad_renderer);
-		r.quad_renderer.render(this);
 
 	}
 

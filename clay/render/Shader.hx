@@ -32,13 +32,13 @@ class Shader {
 	public var uniforms (default,null):Uniforms;
 	public var pipeline (default,null):PipelineState;
 
-	var _blend_src_default:BlendMode;
-	var _blend_dst_default:BlendMode;
-	var _blend_op_default:BlendEquation;
+	@:noCompletion public var _blend_src_default:BlendMode;
+	@:noCompletion public var _blend_dst_default:BlendMode;
+	@:noCompletion public var _blend_op_default:BlendEquation;
 
-	var _alpha_blend_dst_default:BlendMode;
-	var _alpha_blend_src_default:BlendMode;
-	var _alpha_blend_op_default:BlendEquation;
+	@:noCompletion public var _alpha_blend_dst_default:BlendMode;
+	@:noCompletion public var _alpha_blend_src_default:BlendMode;
+	@:noCompletion public var _alpha_blend_op_default:BlendEquation;
 
 
 	public function new(input_layout:Array<VertexStructure>, vertex_shader:VertexShader, fragment_shader:FragmentShader) {
@@ -80,7 +80,7 @@ class Shader {
 		pipeline.alphaBlendSource = alpha_blend_src != null ? alpha_blend_src : blend_src;
 		pipeline.alphaBlendDestination = alpha_blend_dst != null ? alpha_blend_dst : blend_dst;
 		pipeline.alphaBlendOperation = alpha_blend_op != null ? alpha_blend_op : blend_op;	
-
+		
 	}
 
 	public function set_bool(name:String, value:Bool)               return uniforms.set_bool(name, value);

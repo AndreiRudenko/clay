@@ -56,7 +56,7 @@ class DisplayObject {
 
 	}
 	
-	public function render(r:RenderPath, c:Camera) {}
+	public function render(p:Painter) {}
 
 	inline function get_layer():Layer {
 

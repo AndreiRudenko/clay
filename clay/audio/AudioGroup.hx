@@ -48,15 +48,11 @@ class AudioGroup extends AudioChannel {
 			return;
 		}
 		
-		#if cpp
-		clay.system.Audio.mutex.acquire();
-		#end
+		clay.system.Audio.mutex_lock();
 
 		channels[channels_count++] = channel;
 
-		#if cpp
-		clay.system.Audio.mutex.release();
-		#end
+		clay.system.Audio.mutex_unlock();
 
 	}
 
@@ -69,6 +65,7 @@ class AudioGroup extends AudioChannel {
 	override function process(data:Float32Array, samples:Int) {
 	    
 		if (_cache.length < samples) {
+			trace('Allocation request in audio thread. cache: ${_cache.length}, samples: $samples');
 			_cache = new Float32Array(samples);
 		}
 
@@ -80,13 +77,12 @@ class AudioGroup extends AudioChannel {
 			return;
 		}
 
-		#if cpp clay.system.Audio.mutex.acquire(); #end
-
+		clay.system.Audio.mutex_lock();
 		for (i in 0...channels_count) {
 			_internal_channels[i] = channels[i];
 		}
+		clay.system.Audio.mutex_unlock();
 
-		#if cpp clay.system.Audio.mutex.release(); #end
 
 		for (i in 0...channels_count) {
 			if(!_internal_channels[i].mute) {
@@ -96,7 +92,7 @@ class AudioGroup extends AudioChannel {
 
 		if(_to_remove.length > 0) {
 
-			#if cpp clay.system.Audio.mutex.acquire(); #end
+			clay.system.Audio.mutex_lock();
 			for (c in _to_remove) {
 				for (i in 0...channels_count) {
 					if(channels[i] == c) { // todo: remove rest from _internal_channels and channels
@@ -105,7 +101,7 @@ class AudioGroup extends AudioChannel {
 					}
 				}
 			}
-			#if cpp clay.system.Audio.mutex.release(); #end
+			clay.system.Audio.mutex_unlock();
 
 			ArrayTools.clear(_to_remove);
 		}

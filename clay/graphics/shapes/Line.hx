@@ -5,9 +5,6 @@ import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.render.Color;
 import clay.render.Vertex;
-import clay.render.GeometryType;
-import clay.render.RenderPath;
-import clay.render.GeometryType;
 import clay.render.Camera;
 import clay.graphics.Mesh;
 import clay.utils.Log.*;
@@ -46,22 +43,15 @@ class Line extends Mesh {
 			new Vertex(new Vector(), new Vector(1, 1)),
 			new Vertex(new Vector(), new Vector(0, 1))
 		];
+		
+		var indices = [0, 1, 2, 0, 2, 3];
 
-		super(vertices, null, null);
+		super(vertices, indices, null);
 
 		color0 = new Color();
 		color1 = new Color();
 
 		strength = 1;
-
-		sort_key.geomtype = GeometryType.quad;
-
-	}
-
-	override function render_geometry(r:RenderPath, c:Camera) {
-
-		r.set_object_renderer(r.quad_renderer);
-		r.quad_renderer.render(this);
 
 	}
 

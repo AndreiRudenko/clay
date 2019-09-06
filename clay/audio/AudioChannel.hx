@@ -59,15 +59,11 @@ class AudioChannel {
 
 		effect.parent = this;
 
-		#if cpp
-		clay.system.Audio.mutex.acquire();
-		#end
+		clay.system.Audio.mutex_lock();
 
 		effects[effects_count++] = effect;
 
-		#if cpp
-		clay.system.Audio.mutex.release();
-		#end
+		clay.system.Audio.mutex_unlock();
 
 	}
 
@@ -76,9 +72,7 @@ class AudioChannel {
 		if(effect.parent == this) {
 			effect.parent = null;
 
-			#if cpp
-			clay.system.Audio.mutex.acquire();
-			#end
+			clay.system.Audio.mutex_lock();
 
 			for (i in 0...effects_count) {
 				if(effects[i] == effect) { // todo: remove rest from effects_count and effect
@@ -87,9 +81,7 @@ class AudioChannel {
 				}
 			}
 
-			#if cpp
-			clay.system.Audio.mutex.release();
-			#end
+			clay.system.Audio.mutex_unlock();
 
 		} else {
 			log("cant remove effect from channel");
@@ -99,18 +91,14 @@ class AudioChannel {
 
 	public function remove_all_effect() {
 		
-		#if cpp
-		clay.system.Audio.mutex.acquire();
-		#end
+		clay.system.Audio.mutex_lock();
 
 		for (i in 0...effects_count) {
 			effects[i] = null;
 			_internal_effects[i] = null;
 		}
 
-		#if cpp
-		clay.system.Audio.mutex.release();
-		#end
+		clay.system.Audio.mutex_unlock();
 
 		effects_count = 0;
 
@@ -121,17 +109,13 @@ class AudioChannel {
 
 	inline function process_effects(data: Float32Array, samples: Int) {
 
-		#if cpp
-		clay.system.Audio.mutex.acquire();
-		#end
+		clay.system.Audio.mutex_lock();
 
 		for (i in 0...effects_count) {
 			_internal_effects[i] = effects[i];
 		}
 
-		#if cpp
-		clay.system.Audio.mutex.release();
-		#end
+		clay.system.Audio.mutex_unlock();
 
 		var e:AudioEffect;
 		for (i in 0...effects_count) {

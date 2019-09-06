@@ -4,6 +4,7 @@ package clay.graphics.particles.core;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.ParticleVector;
 import clay.graphics.particles.ParticleEmitter;
+import clay.render.Painter;
 
 @:access(clay.graphics.particles.ParticleEmitter)
 class ParticleModule {
@@ -21,10 +22,6 @@ class ParticleModule {
 	@:noCompletion public var emitter:ParticleEmitter;
         /** reference to emitter particles */
 	var particles:ParticleVector;
-
-        /** linked list stuff */
-	@:noCompletion public var prev : ParticleModule;
-	@:noCompletion public var next : ParticleModule;
 
 
 	public function new(?_options:ParticleModuleOptions) {
@@ -65,6 +62,9 @@ class ParticleModule {
 
         /** called once per frame, passing the delta time */
 	public function update(dt:Float) {}
+
+        /** called once per frame */
+	public function render(p:Painter) {}
 
         /** called when the module is destroyed */
 	public function ondestroy() {}

@@ -14,7 +14,6 @@ import clay.resources.Texture;
 import clay.resources.FontResource;
 import clay.render.Layer;
 import clay.render.SortKey;
-import clay.render.renderers.ObjectRenderer;
 import clay.render.Color;
 import clay.utils.Bits;
 import clay.utils.Log.*;
@@ -32,7 +31,7 @@ class Renderer {
 
 	public var target           (default, set):Texture;
 
-	public var renderpath 	  	(default, null):RenderPath;
+	public var painter 	  	    (default, null):Painter;
 	public var frontbuffer	  	(default, null):FrontBuffer;
 
 	public var cameras	        (default, null):CameraManager;
@@ -63,7 +62,7 @@ class Renderer {
 
 		var layers_max = def(_options.layers_max, 64);
 
-		sort_options = new SortOptions(_options.shader_bits, _options.texture_bits, _options.geomtype_bits);
+		sort_options = new SortOptions(_options.shader_bits, _options.texture_bits);
 		cameras = new CameraManager();
 		layers = new LayerManager(layers_max);
 		clear_color = new Color(0.1,0.1,0.1,1);
@@ -147,7 +146,7 @@ class Renderer {
 		camera = cameras.create("default_camera");
 
 		frontbuffer = new FrontBuffer(this);
-		renderpath = new RenderPath(this);
+		painter = new Painter(this, batch_size);
 		
 		#if !no_default_font
 		font = Clay.resources.font("assets/Muli-Regular.ttf");
@@ -210,7 +209,6 @@ typedef RendererOptions = {
 
 	@:optional var shader_bits:Int;
 	@:optional var texture_bits:Int;
-	@:optional var geomtype_bits:Int;
 	@:optional var layers_max:Int;
 	@:optional var batch_size:Int;
 

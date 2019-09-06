@@ -4,8 +4,7 @@ package clay.graphics.shapes;
 import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.render.Vertex;
-import clay.render.GeometryType;
-import clay.render.RenderPath;
+import clay.render.Painter;
 import clay.render.Camera;
 import clay.graphics.Mesh;
 
@@ -28,16 +27,9 @@ class Quad extends Mesh {
 			new Vertex(new Vector(0, h), new Vector(0, 1))
 		];
 
-		super(vertices, null, null);
-		
-		sort_key.geomtype = GeometryType.quad;
+		var indices = [0, 1, 2, 0, 2, 3];
 
-	}
-	
-	override function render_geometry(r:RenderPath, c:Camera) {
-
-		r.set_object_renderer(r.quad_renderer);
-		r.quad_renderer.render(this);
+		super(vertices, indices, null);
 
 	}
 

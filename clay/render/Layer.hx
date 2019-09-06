@@ -145,6 +145,8 @@ class Layer {
 
 		_verboser('layer `$name` render');
 
+		Clay.debug.start('renderer.layer.$name');
+
 		onprerender.emit();
 
 		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
@@ -157,11 +159,24 @@ class Layer {
 		#end
 
 		if(objects.length > 0) {
-			var b = _renderer.renderpath;
-			b.init(this, g, cam);
-			b.start();
-			b.render(objects);
-			b.end();
+			var p = _renderer.painter;
+			p.begin(g, cam.viewport);
+			p.set_projection(cam.projection_matrix);
+			for (o in objects) {
+				#if !no_debug_console
+				stats.geometry++;
+				#end
+				if(o.visible) {
+					#if !no_debug_console
+					stats.visible_geometry++;
+					#end
+					o.render(p);
+				}
+			}
+			p.end();
+			#if !no_debug_console
+			stats.add(p.stats);
+			#end
 		}
 
 		#if !no_debug_console
@@ -169,6 +184,8 @@ class Layer {
 		#end
 
 		onpostrender.emit();
+
+		Clay.debug.end('renderer.layer.$name');
 
 	}
 

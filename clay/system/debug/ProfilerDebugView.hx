@@ -29,7 +29,6 @@ import clay.utils.Log.*;
 
 @:access(
 	clay.render.Renderer, 
-	clay.render.RenderPath, 
 	clay.render.Camera
 )
 class ProfilerDebugView extends DebugView {

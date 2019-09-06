@@ -5,7 +5,7 @@ import clay.graphics.particles.ParticleEmitter;
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.render.DisplayObject;
-import clay.render.RenderPath;
+import clay.render.Painter;
 import clay.render.Camera;
 import clay.math.Vector;
 
@@ -43,10 +43,14 @@ class ParticleSystem extends DisplayObject {
 
 	}
 
-	override function render(r:RenderPath, c:Camera) {
+	override function render(p:Painter) {
 
-		r.set_object_renderer(r.particles_renderer);
-		r.particles_renderer.render(this);
+		p.set_shader(shader != null ? shader : shader_default);
+		p.clip(clip_rect);
+
+		for (e in emitters) {
+			e.render(p);
+		}
 		
 	}
 	

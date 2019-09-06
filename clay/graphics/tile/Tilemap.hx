@@ -6,9 +6,7 @@ import clay.math.Rectangle;
 import clay.math.Vector;
 import clay.render.Color;
 import clay.render.Vertex;
-import clay.render.RenderPath;
 import clay.render.Camera;
-import clay.render.GeometryType;
 import clay.utils.Log.*;
 import clay.utils.ArrayTools;
 
@@ -28,6 +26,8 @@ class Tilemap extends Mesh {
 	public var map(default, null):Array<Tile>;
 	public var tileset(default, null):Tileset;
 
+	public var tiles_count(default, null):Int;
+
 
 	public function new(width:Int, height:Int, tile_width:Int, tile_height:Int) {
 
@@ -40,17 +40,20 @@ class Tilemap extends Mesh {
 
 		super();
 
-		sort_key.geomtype = GeometryType.quadpack;
+		tiles_count = 0;
 
 	}
 
-	override function render_geometry(r:RenderPath, c:Camera) {
+	public function empty() {
+		
+		ArrayTools.clear(map);
+		ArrayTools.clear(vertices);
+		ArrayTools.clear(indices);
 
-		r.set_object_renderer(r.quadpack_renderer);
-		r.quadpack_renderer.render(this);
+		tiles_count = 0;
 
 	}
-
+	
 	public function set_tileset(texture:Texture, tile_width:Int, tile_height:Int, tile_margin:Int = 0, tile_spacing:Int = 0) {
 
 		tileset = new Tileset('tileset', texture, tile_width, tile_height, tile_margin, tile_spacing);
@@ -203,16 +206,37 @@ class Tilemap extends Mesh {
 
 	inline function add_tile_geometry(tile:Tile) {
 
+		var offset = vertices.length;
+
+		indices.push(offset);
+		indices.push(offset + 1);
+		indices.push(offset + 2);
+		indices.push(offset + 0);
+		indices.push(offset + 2);
+		indices.push(offset + 3);
+
 		for (v in tile.vertices) {
 			add(v);
 		}
-		
+
+		tiles_count++;
+
 	}
 
 	inline function remove_tile_geometry(tile:Tile) {
 
+		var found = false;
 		for (v in tile.vertices) {
-			remove(v);
+			if(remove(v)) {
+				found = true;
+			}
+		}
+
+		if(found) {
+			for (i in 0...6) {
+				indices.pop();
+			}
+			tiles_count--;
 		}
 		
 	}

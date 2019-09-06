@@ -4,7 +4,6 @@ package clay.render;
 class RenderStats {
 
 
-	public var batched:Int = 0;
 	public var geometry:Int = 0;
 	public var visible_geometry:Int = 0;
 	public var vertices:Int = 0;
@@ -17,7 +16,6 @@ class RenderStats {
 
 	public function reset() {
 
-		batched = 0;
 		geometry = 0;
 		visible_geometry = 0;
 		vertices = 0;
@@ -29,7 +27,6 @@ class RenderStats {
 
 	public function add(_stats:RenderStats) {
 		
-		batched += _stats.batched;
 		geometry += _stats.geometry;
 		visible_geometry += _stats.visible_geometry;
 		vertices += _stats.vertices;

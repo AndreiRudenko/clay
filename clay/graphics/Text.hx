@@ -10,11 +10,10 @@ import clay.math.Matrix;
 import clay.render.Color;
 import clay.render.Shader;
 import clay.render.Vertex;
-import clay.render.RenderPath;
-import clay.render.GeometryType;
 import clay.render.Camera;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
+import clay.render.Painter;
 import clay.resources.FontResource;
 import clay.resources.Texture;
 import clay.graphics.Mesh;
@@ -57,7 +56,6 @@ class Text extends Mesh {
 		super();
 
 		shader_default = Clay.renderer.shaders.get("text");
-		sort_key.geomtype = GeometryType.quadpack;
 
 		this.font = font;
 
@@ -88,14 +86,87 @@ class Text extends Mesh {
 		
 	}
 
-	override function render_geometry(r:RenderPath, c:Camera) {
+	override function render(p:Painter) {
 
-		r.set_object_renderer(r.quadpack_renderer);
-		r.quadpack_renderer.render(this);
+		if(!text_is_empty(text)) {
+			p.set_shader(shader != null ? shader : shader_default);
+			p.clip(clip_rect);
+			p.set_texture(texture);
+
+			if(blend_disabled) {
+				var sh = shader != null ? shader : shader_default;
+				p.set_blendmode(
+					sh._blend_src_default, sh._blend_dst_default, sh._blend_op_default, 
+					sh._alpha_blend_src_default, sh._alpha_blend_dst_default, sh._alpha_blend_op_default
+				);
+			} else {
+				p.set_blendmode(blend_src, blend_dst, blend_op, alpha_blend_src, alpha_blend_dst, alpha_blend_op);
+			}
+
+			if(locked) {
+				#if !no_debug_console
+				p.stats.locked++;
+				#end
+				p.draw_from_buffers(_vertexbuffer, _indexbuffer); // render to texture instead
+			} else {
+
+				var v:Vertex;
+				var quads = Math.floor(vertices.length / 4);
+				var m = transform.world.matrix;
+
+				for (i in 0...quads) {
+					p.ensure(4, 6);
+					p.add_index(0);
+					p.add_index(1);
+					p.add_index(2);
+					p.add_index(0);
+					p.add_index(2);
+					p.add_index(3);
+
+					v = vertices[i*4];
+					p.add_vertex(
+						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
+						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
+						v.tcoord.x,
+						v.tcoord.y,
+						v.color
+					);
+					
+					v = vertices[i*4+1];
+					p.add_vertex(
+						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
+						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
+						v.tcoord.x,
+						v.tcoord.y,
+						v.color
+					);
+					
+					v = vertices[i*4+2];
+					p.add_vertex(
+						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
+						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
+						v.tcoord.x,
+						v.tcoord.y,
+						v.color
+					);
+
+					v = vertices[i*4+3];
+					p.add_vertex(
+						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
+						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
+						v.tcoord.x,
+						v.tcoord.y,
+						v.color
+					);
+
+				}
+
+			}
+		}
 
 	}
 
-	function find_index(charCode: Int):Int {
+	function find_index(charCode:Int):Int {
 
 		var glyphs = kha.graphics2.Graphics.fontGlyphs;
 		var blocks = KravurImage.charBlocks;
@@ -334,6 +405,16 @@ class Text extends Mesh {
 									vertices[n*4+3] = new Vertex();
 								}
 
+								// if(indices.length <= n*6) {
+								// 	var offset = n*4;
+								// 	indices[n*6] = offset;
+								// 	indices[n*6+1] = offset + 1;
+								// 	indices[n*6+2] = offset + 2;
+								// 	indices[n*6+3] = offset + 0;
+								// 	indices[n*6+4] = offset + 2;
+								// 	indices[n*6+5] = offset + 3;
+								// }
+
 								var t0x = q.s0 * w_ratio;
 								var t0y = q.t0 * h_ratio;
 								var t1x = q.s1 * w_ratio;
@@ -375,6 +456,10 @@ class Text extends Mesh {
 
 		if(vertices.length > n*4) {
 			vertices.splice(n*4, vertices.length);
+		}
+
+		if(indices.length > n*6) {
+			indices.splice(n*6, indices.length);
 		}
 
 	}

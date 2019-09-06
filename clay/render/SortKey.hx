@@ -43,7 +43,6 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 	public var depth(get, set):Float;
 	public var texture(get, set):UInt;
 	public var shader(get, set):UInt;
-	public var geomtype(get, set):UInt;
 	public var clip(get, set):Bool;
 
 	@:noCompletion public var other(get, set):UInt;
@@ -109,21 +108,6 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 
 	}
 
-	inline function get_geomtype():UInt {
-
-		return get_sort_key(Clay.renderer.sort_options.geomtype_bits, Clay.renderer.sort_options.geomtype_offset);
-
-	}
-
-	inline function set_geomtype(id:UInt):UInt {
-
-		id = Mathf.clampi(id, 0, Clay.renderer.sort_options.geomtype_max);
-		set_sort_key(id, Clay.renderer.sort_options.geomtype_bits, Clay.renderer.sort_options.geomtype_offset);
-
-		return id;
-
-	}
-
 	inline function get_clip():Bool {
 
 		return get_sort_key(Clay.renderer.sort_options.clip_bits, Clay.renderer.sort_options.clip_offset) == 1;
@@ -153,7 +137,7 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 
 	public function toString() : String {
 
-		return '{depth: ${depth}, shader: ${shader}, texture: ${texture}, geomtype: ${geomtype}, clip: ${clip}}';
+		return '{depth: ${depth}, shader: ${shader}, texture: ${texture}, clip: ${clip}}';
 
 	}
 	
@@ -183,34 +167,27 @@ class SortOptions {
 
 
 	public var clip_bits      	(default, null):Int;
-	public var quad_bits      	(default, null):Int;
-	public var geomtype_bits  	(default, null):Int;
 	public var texture_bits   	(default, null):Int;
 	public var shader_bits    	(default, null):Int;
 
 	public var clip_offset    	(default, null):Int;
-	public var geomtype_offset	(default, null):Int;
 	public var texture_offset 	(default, null):Int;
 	public var shader_offset  	(default, null):Int;
 
-	public var geomtype_max   	(default, null):Int;
 	public var texture_max    	(default, null):Int;
 	public var shader_max     	(default, null):Int;
 
 
-	public function new(_shader_bits:Int = 8, _texture_bits:Int = 16, _geomtype_bits:Int = 5) {
+	public function new(_shader_bits:Int = 10, _texture_bits:Int = 19) {
 		
 		shader_bits = _shader_bits;
 		texture_bits = _texture_bits;
-		geomtype_bits = _geomtype_bits;
 		clip_bits = 1;
 
 		clip_offset = 0;
-		geomtype_offset = clip_bits;
-		texture_offset = clip_bits + geomtype_bits;
-		shader_offset = clip_bits + geomtype_bits + texture_bits;
+		texture_offset = clip_bits;
+		shader_offset = clip_bits + texture_bits;
 
-		geomtype_max = Bits.count_singed(geomtype_bits);
 		texture_max = Bits.count_singed(texture_bits);
 		shader_max = Bits.count_singed(shader_bits);
 

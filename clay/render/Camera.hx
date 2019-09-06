@@ -37,8 +37,7 @@ class Camera {
 	public var onpostrender	(default, null):Signal<Camera->Void>;
 
 	@:noCompletion public var transform:Transform;
-
-	@:noCompletion public var projection_matrix:FastMatrix3;
+	@:noCompletion public var projection_matrix:Matrix;
 
 	public var zoom(default, set):Float;
 	public var pos(default, null):VectorCallback;
@@ -82,7 +81,7 @@ class Camera {
 
 		// _view_matrix = new Matrix();
 		_view_matrix_inverted = new Matrix();
-		projection_matrix = FastMatrix3.identity();
+		projection_matrix = new Matrix();
 
 		_visible_layers_mask = new BitVector(Clay.renderer.layers.capacity);
 		_visible_layers_mask.enable_all();
@@ -285,13 +284,13 @@ class Camera {
 
 		projection_matrix.identity();
 
-		if (g.renderTargetsInvertedY()) {
+		if (kha.Image.renderTargetsInvertedY()) {
 			projection_matrix.orto(0, viewport.w, 0, viewport.h);
 		} else {
 			projection_matrix.orto(0, viewport.w, viewport.h, 0);
 		}
 
-		projection_matrix.append_matrix(_view_matrix_inverted);
+		projection_matrix.append(_view_matrix_inverted);
 
 	}
 

@@ -3,7 +3,6 @@ package clay.audio.effects;
 
 import clay.utils.Mathf;
 import clay.utils.Log.*;
-import clay.Sound;
 import kha.arrays.Float32Array;
 import kha.arrays.Uint32Array;
 

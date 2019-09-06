@@ -10,9 +10,8 @@ import clay.render.Color;
 import clay.math.Vector;
 import clay.math.Rectangle;
 import clay.render.Vertex;
-import clay.render.GeometryType;
 import clay.render.DisplayObject;
-import clay.render.RenderPath;
+import clay.render.Painter;
 import clay.render.Camera;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
@@ -24,17 +23,14 @@ import clay.utils.Log.*;
 class Mesh extends DisplayObject {
 
 
-	public var locked           (default, set):Bool;
+	public var locked(default, set):Bool;
 
-	public var color   	    	(default, set):Color;
-	public var texture      	(get, set):Texture;
+	public var color(default, set):Color;
+	public var texture(get, set):Texture;
 	public var region:Rectangle;
 
 	public var vertices:Array<Vertex>;
 	public var indices:Array<Int>;
-
-	@:noCompletion public var vertexbuffer:VertexBuffer;
-	@:noCompletion public var indexbuffer:IndexBuffer;
 
 	public var blend_disabled:Bool = false;
 
@@ -47,6 +43,9 @@ class Mesh extends DisplayObject {
 	public var alpha_blend_op:BlendEquation;
 
 	var _texture:Texture;
+	var _vertexbuffer:VertexBuffer;
+	var _indexbuffer:IndexBuffer;
+	var _region_scaled:Rectangle;
 
 
 	public function new(?vertices:Array<Vertex>, ?indices:Array<Int>, ?texture:Texture) {
@@ -55,49 +54,82 @@ class Mesh extends DisplayObject {
 
 		locked = false;
 
-		this.vertices = vertices != null ? vertices : [];
+    	this.vertices = vertices != null ? vertices : [];
 		this.indices = indices != null ? indices : [];
 		this.texture = texture;
-		
+		_region_scaled = new Rectangle();
+
 		color = new Color();
 
 		set_blendmode(BlendMode.BlendOne, BlendMode.InverseSourceAlpha, BlendEquation.Add);
 
-		sort_key.geomtype = GeometryType.mesh;
-
 	}
 
-	public function add(v:Vertex):Mesh {
+	public function add(v:Vertex) {
 
 		vertices.push(v);
 
-		return this;
+	}
+
+	public function remove(v:Vertex):Bool {
+
+		return vertices.remove(v);
 
 	}
 
-	public function remove(v:Vertex):Mesh {
+	override function render(p:Painter) {
 
-		vertices.remove(v);
+		if(locked || p.can_batch(vertices.length, indices.length)) {
+			p.ensure(vertices.length, indices.length);
+			
+			p.set_shader(shader != null ? shader : shader_default);
+			p.clip(clip_rect);
+			p.set_texture(texture);
 
-		return this;
+			if(blend_disabled) {
+				var sh = shader != null ? shader : shader_default;
+				p.set_blendmode(
+					sh._blend_src_default, sh._blend_dst_default, sh._blend_op_default, 
+					sh._alpha_blend_src_default, sh._alpha_blend_dst_default, sh._alpha_blend_op_default
+				);
+			} else {
+				p.set_blendmode(blend_src, blend_dst, blend_op, alpha_blend_src, alpha_blend_dst, alpha_blend_op);
+			}
 
-	}
+			if(locked) {
+				#if !no_debug_console
+				p.stats.locked++;
+				#end
+				p.draw_from_buffers(_vertexbuffer, _indexbuffer);
+			} else {
+				update_region_scaled();
 
-	override function render(r:RenderPath, c:Camera) {
+				for (index in indices) {
+					p.add_index(index);
+				}
 
-		if(locked) {
-			r.set_object_renderer(r.static_renderer);
-			r.static_renderer.render(this);
+				var m = transform.world.matrix;
+				for (v in vertices) {
+					p.add_vertex(
+						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
+						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
+						v.tcoord.x * _region_scaled.w + _region_scaled.x,
+						v.tcoord.y * _region_scaled.h + _region_scaled.y,
+						v.color
+					);
+				}
+			}
+
 		} else {
-			render_geometry(r, c);
+			log('WARNING: can`t batch a geometry, vertices: ${vertices.length} vs max ${p.vertices_max}, indices: ${indices.length} vs max ${p.indices_max}');
 		}
-		
+
 	}
 
 	public function update_locked() {
 
 		if(locked) {
-			if(vertexbuffer.count() != vertices.length * 8) {
+			if(_vertexbuffer.count() != vertices.length * 8) {
 				clear_buffers();
 				setup_locked_buffers();
 			}
@@ -119,30 +151,18 @@ class Mesh extends DisplayObject {
 
 	}
 
-	function render_geometry(r:RenderPath, c:Camera) {
-
-		r.set_object_renderer(r.mesh_renderer);
-		r.mesh_renderer.render(this);
-
-	}
-
 	function setup_locked_buffers() {
 
 		var sh = shader != null ? shader : shader_default;
 
-		vertexbuffer = new VertexBuffer(
+		_vertexbuffer = new VertexBuffer(
 			vertices.length,
 			sh.pipeline.inputLayout[0],
 			Usage.StaticUsage
 		);
 
-		var ilen = indices.length;
-		if(sort_key.geomtype == GeometryType.quad || sort_key.geomtype == GeometryType.quadpack) {
-			ilen = Math.floor(vertices.length/4*6);
-		}
-
-		indexbuffer = new IndexBuffer(
-			ilen,
+		_indexbuffer = new IndexBuffer(
+			indices.length,
 			Usage.StaticUsage
 		);
 
@@ -150,21 +170,11 @@ class Mesh extends DisplayObject {
 
 	function update_locked_buffer() {
 
-		var region_scaled_x:Float = 0;
-		var region_scaled_y:Float = 0;
-		var region_scaled_w:Float = 1;
-		var region_scaled_h:Float = 1;
-
-		if(region != null && texture != null) {
-			region_scaled_x = region.x / texture.width_actual;
-			region_scaled_y = region.y / texture.height_actual;
-			region_scaled_w = region.w / texture.width_actual;
-			region_scaled_h = region.h / texture.height_actual;
-		}
+		update_region_scaled();
 
 		transform.update();
 
-		var data = vertexbuffer.lock();
+		var data = _vertexbuffer.lock();
 		var m = transform.world.matrix;
 		var n:Int = 0;
 		for (v in vertices) {
@@ -176,44 +186,45 @@ class Mesh extends DisplayObject {
 			data.set(n++, v.color.b);
 			data.set(n++, v.color.a);
 
-			data.set(n++, v.tcoord.x * region_scaled_w + region_scaled_x);
-			data.set(n++, v.tcoord.y * region_scaled_h + region_scaled_y);
+			data.set(n++, v.tcoord.x * _region_scaled.w + _region_scaled.x);
+			data.set(n++, v.tcoord.y * _region_scaled.h + _region_scaled.y);
 		}
-		vertexbuffer.unlock();
+		_vertexbuffer.unlock();
 
-		var idata = indexbuffer.lock();
-		switch (sort_key.geomtype) {
-			case GeometryType.mesh:
-				for (i in 0...indices.length) {
-					idata.set(i, indices[i]);
-				}
-			case GeometryType.quad, GeometryType.quadpack:
-				var len = Math.floor(vertices.length/4);
-				for (i in 0...len) {
-					idata[i * 3 * 2 + 0] = i * 4 + 0;
-					idata[i * 3 * 2 + 1] = i * 4 + 1;
-					idata[i * 3 * 2 + 2] = i * 4 + 2;
-					idata[i * 3 * 2 + 3] = i * 4 + 0;
-					idata[i * 3 * 2 + 4] = i * 4 + 2;
-					idata[i * 3 * 2 + 5] = i * 4 + 3;
-				}
-			case _:
+		var idata = _indexbuffer.lock();
+		for (i in 0...indices.length) {
+			idata.set(i, indices[i]);
 		}
 
-		indexbuffer.unlock();
+		_indexbuffer.unlock();
 
 	}
 
 	function clear_buffers() {
 
-		if(vertexbuffer != null) {
-			vertexbuffer.delete();
-			vertexbuffer = null;
+		if(_vertexbuffer != null) {
+			_vertexbuffer.delete();
+			_vertexbuffer = null;
 		}
 
-		if(indexbuffer != null) {
-			indexbuffer.delete();
-			indexbuffer = null;
+		if(_indexbuffer != null) {
+			_indexbuffer.delete();
+			_indexbuffer = null;
+		}
+
+	}
+
+	inline function update_region_scaled() {
+		
+		if(region == null || _texture == null) {
+			_region_scaled.set(0, 0, 1, 1);
+		} else {
+			_region_scaled.set(
+				_region_scaled.x = region.x / _texture.width_actual,
+				_region_scaled.y = region.y / _texture.height_actual,
+				_region_scaled.w = region.w / _texture.width_actual,
+				_region_scaled.h = region.h / _texture.height_actual
+			);
 		}
 
 	}

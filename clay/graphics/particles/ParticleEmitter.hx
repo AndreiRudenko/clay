@@ -11,6 +11,8 @@ import clay.math.Vector;
 import clay.math.Rectangle;
 import clay.render.types.BlendMode;
 import clay.render.types.BlendEquation;
+import clay.render.Painter;
+import clay.render.types.BlendEquation;
 import clay.resources.Texture;
 
 
@@ -67,13 +69,6 @@ class ParticleEmitter {
 
 		/** emitter random function */
 	public var random:Void->Float;
-
-		/** emitter particles image path (helper) */
-	public var image_path(get, set):String;
-		/** emitter particles texture */
-	public var texture:Texture;
-		/** emitter particles texture region */
-	public var region:Rectangle;
 
 		/** blending src */
 	public var blend_src:BlendMode;
@@ -148,13 +143,13 @@ class ParticleEmitter {
 
 		random = options.random != null ? options.random : Math.random;
 
-		if(options.texture != null) {
-			texture = options.texture;
-		} else if(options.image_path != null) {
-			image_path = options.image_path;
-		}
+		// if(options.texture != null) {
+		// 	texture = options.texture;
+		// } else if(options.image_path != null) {
+		// 	image_path = options.image_path;
+		// }
 
-		region = options.region;
+		// region = options.region;
 		sort_func = options.sort_func;
 		
 		cache_wrap = options.cache_wrap != null ? options.cache_wrap : false;
@@ -356,6 +351,16 @@ class ParticleEmitter {
 				}
 			}
 
+		}
+		
+	}
+
+	public function render(p:Painter) {
+
+		p.set_blendmode(blend_src, blend_dst, blend_eq, alpha_blend_src, alpha_blend_dst, alpha_blend_eq);
+
+		for (m in active_modules) {
+			m.render(p);
 		}
 		
 	}
@@ -671,20 +676,6 @@ class ParticleEmitter {
 
 	}
 
-	function get_image_path():String {
-
-		return texture == null ? null : texture.id;
-
-	}
-
-	function set_image_path(path:String):String {
-
-		texture = Clay.resources.texture(path);
-
-		return texture == null ? null : texture.id;
-
-	}
-
 	@:access(clay.graphics.particles.core.ComponentManager)
 	@:noCompletion public function to_json():ParticleEmitterOptions {
 
@@ -707,7 +698,7 @@ class ParticleEmitter {
 			rate_max : rate_max, 
 			duration : duration, 
 			duration_max : duration_max, 
-			image_path : image_path, 
+			// image_path : image_path, 
 			blend_src : blend_src, 
 			blend_dst : blend_dst, 
 			modules_data : _modules,
@@ -738,9 +729,9 @@ typedef ParticleEmitterOptions = {
 	@:optional var duration_max:Float;
 	@:optional var preprocess:Float;
 
-	@:optional var image_path:String;
-	@:optional var texture:Texture;
-	@:optional var region:Rectangle;
+	// @:optional var image_path:String;
+	// @:optional var texture:Texture;
+	// @:optional var region:Rectangle;
 
 	@:optional var blend_src:BlendMode;
 	@:optional var blend_dst:BlendMode;

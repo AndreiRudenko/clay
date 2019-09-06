@@ -30,7 +30,6 @@ import clay.events.KeyEvent;
 
 @:access(
 	clay.render.Renderer, 
-	clay.render.RenderPath, 
 	clay.render.Camera
 )
 class StatsDebugView extends DebugView {
@@ -359,7 +358,6 @@ class StatsDebugView extends DebugView {
 	}
 
 	function get_camera_info(c:Camera):String {
-
 
 		var _layers = [];
 		for (l in Clay.renderer.layers) {

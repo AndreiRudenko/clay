@@ -4,8 +4,6 @@ package clay.graphics.shapes;
 import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.render.Vertex;
-import clay.render.GeometryType;
-import clay.render.RenderPath;
 import clay.render.Camera;
 import clay.graphics.Mesh;
 

@@ -5,8 +5,6 @@ import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.render.Vertex;
 import clay.render.Color;
-import clay.render.GeometryType;
-import clay.render.RenderPath;
 import clay.render.Camera;
 import clay.graphics.Mesh;
 
@@ -90,7 +88,7 @@ class PolyLine extends Mesh {
 			var normal = _line.set(-_line.y, tmp).normalize();
 			tmp = _tangent.x;
 			var miter = _tangent.set(-_tangent.y, tmp);
-			var length = weight / normal.dot(miter);
+			var length = _weight / normal.dot(miter);
 
 			vertices[i*2].pos.set(
 				p1.x + miter.x * length,
