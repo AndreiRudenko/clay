@@ -2,7 +2,7 @@ package clay.render;
 
 
 import clay.math.Vector;
-import clay.data.Color;
+import clay.render.Color;
 
 
 class Vertex {

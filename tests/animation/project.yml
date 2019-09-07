@@ -2,7 +2,7 @@ project:
   title: clay_animation
   authors: []
   description : ''
-  version: '1.0.0'
+  version: '0.0.1'
   sources: ['src']
   assets: ['assets']
   defines: []
@@ -12,24 +12,21 @@ project:
 input:
   mouse: true
   keyboard: true
-  gamepad: true
-  touch: true
+  gamepad: false
+  touch: false
   pen: false
 
-android:
-  package: com.clayengine.clay_animation
-  orientation: 'landscape'
-
 app:
-  name: app_name
+  name: clay_animation
+  package: com.package.name
   icon: ''
   
 html5:
   webgl: true
   canvas: 'kanvas'
   script: 'game'
-  width: 800
-  height: 600
+  width: 960
+  height: 640
   server_port: 8080
   html_file: ''
   favicon: ''

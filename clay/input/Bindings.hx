@@ -8,10 +8,10 @@ import clay.input.Gamepad;
 import clay.input.Touch;
 import clay.input.Pen;
 import clay.utils.Log.*;
+import clay.events.*;
 
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine)
+@:allow(clay.system.InputManager)
 class Bindings extends Input {
 
 
@@ -170,7 +170,7 @@ class Bindings extends Input {
 		add_pressed(input_event.name);
 		add_down(input_event.name);
 
-		engine.inputdown(input_event);
+		_app.emitter.emit(InputEvent.INPUT_DOWN, input_event);
 
 	}
 
@@ -184,95 +184,9 @@ class Bindings extends Input {
 		remove_pressed(input_event.name);
 		remove_down(input_event.name);
 
-		engine.inputup(input_event);
+		_app.emitter.emit(InputEvent.INPUT_UP, input_event);
 
 	}
 
 
 }
-
-@:allow(clay.input.Bindings)
-class InputEvent {
-
-
-	public var name (default, null):String;
-	public var type (default, null):InputType;
-
-	public var mouse (default, null):MouseEvent;
-	public var keyboard (default, null):KeyEvent;
-	public var gamepad (default, null):GamepadEvent;
-	public var touch (default, null):TouchEvent;
-	public var pen (default, null):PenEvent;
-
-
-	function new() {
-
-		name = '';
-		type = InputType.none;
-
-	}
-
-	inline function set(_mouse:MouseEvent, _keyboard:KeyEvent, _gamepad:GamepadEvent, _touch:TouchEvent, _pen:PenEvent) {
-
-		mouse = _mouse;
-		keyboard = _keyboard;
-		gamepad = _gamepad;
-		touch = _touch;
-		pen = _pen;
-		
-	}
-
-	@:noCompletion public function set_mouse(_name:String, _mouse:MouseEvent) {
-
-		name = _name;
-		type = InputType.mouse;
-		set(_mouse, null, null, null, null);
-
-	}
-
-	@:noCompletion public function set_key(_name:String, _keyboard:KeyEvent) {
-
-		name = _name;
-		type = InputType.keyboard;
-		set(null, keyboard, null, null, null);
-
-	}
-
-	@:noCompletion public function set_gamepad(_name:String, _gamepad:GamepadEvent) {
-
-		name = _name;
-		type = InputType.gamepad;
-		set(null, null, _gamepad, null, null);
-
-	}
-
-	@:noCompletion public function set_touch(_name:String, _touch:TouchEvent) {
-
-		name = _name;
-		type = InputType.touch;
-		set(null, null, null, _touch, null);
-
-	}
-
-	@:noCompletion public function set_pen(_name:String, _pen:PenEvent) {
-
-		name = _name;
-		type = InputType.pen;
-		set(null, null, null, null, _pen);
-
-	}
-
-
-}
-
-@:enum abstract InputType(Int) from Int to Int {
-
-    var none          = 0;
-    var mouse         = 1;
-    var keyboard      = 2;
-    var gamepad       = 3;
-    var touch         = 4;
-    var pen           = 5;
-
-}
-

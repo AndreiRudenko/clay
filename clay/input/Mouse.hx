@@ -1,34 +1,36 @@
 package clay.input;
 
 
-import clay.Engine;
+import clay.system.App;
 import clay.utils.Log.*;
 import clay.utils.Bits;
 
+import clay.events.MouseEvent;
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine)
+
+@:allow(clay.system.InputManager)
+@:access(clay.system.App)
 class Mouse extends Input {
 
-	// todo: Vector?
+
 	public var x(default, null):Int = 0;
 	public var y(default, null):Int = 0;
 
-	var buttons_pressed:UInt = 0;
-	var buttons_released:UInt = 0;
-	var buttons_down:UInt = 0;
-	var mouse_event:MouseEvent;
+	var _buttons_pressed:UInt = 0;
+	var _buttons_released:UInt = 0;
+	var _buttons_down:UInt = 0;
+	var _mouse_event:MouseEvent;
 
-	var mouse_bindings:Map<String, UInt>;
-	var binding:Bindings;
+	var _mouse_bindings:Map<String, UInt>;
+	var _binding:Bindings;
 
 
-	function new(_engine:Engine) {
+	function new(_app:App) {
 		
-		super(_engine);
+		super(_app);
 
-		mouse_bindings = new Map();
-		binding = Clay.input.binding;
+		_mouse_bindings = new Map();
+		_binding = Clay.input.binding;
 
 	}
 
@@ -38,13 +40,13 @@ class Mouse extends Input {
 			return;
 		}
 
-		mouse_event = new MouseEvent();
+		_mouse_event = new MouseEvent();
 
 		#if use_mouse_input
 
 		var m = kha.input.Mouse.get();
 		if(m != null) {
-			m.notify(onpressed, onreleased, onmove, onwheel);
+			m.notify(_onpressed, _onreleased, _onmove, _onwheel);
 		}
 
 		#end
@@ -63,67 +65,67 @@ class Mouse extends Input {
 
 		var m = kha.input.Mouse.get();
 		if(m != null) {
-			m.remove(onpressed, onreleased, onmove, onwheel);
+			m.remove(_onpressed, _onreleased, _onmove, _onwheel);
 		}
 		
 		#end
 		
-		mouse_event = null;
+		_mouse_event = null;
 
 		super.disable();
 
 	}
 
-    public inline function pressed(_button:Int):Bool {
+    public inline function pressed(button:Int):Bool {
 
-    	return Bits.check(buttons_pressed, _button);
-
-    }
-
-    public inline function released(_button:Int):Bool {
-
-    	return Bits.check(buttons_released, _button);
+    	return Bits.check(_buttons_pressed, button);
 
     }
 
-    public inline function down(_button:Int):Bool {
+    public inline function released(button:Int):Bool {
 
-    	return Bits.check(buttons_down, _button);
+    	return Bits.check(_buttons_released, button);
 
     }
 
-    public function bind(_name:String, _key:UInt) {
+    public inline function down(button:Int):Bool {
+
+    	return Bits.check(_buttons_down, button);
+
+    }
+
+    public function bind(name:String, key:UInt) {
 
     	var n:Int = 0;
     	
-    	if(mouse_bindings.exists(_name)) {
-    		n = mouse_bindings.get(_name);
+    	if(_mouse_bindings.exists(name)) {
+    		n = _mouse_bindings.get(name);
     	}
 
-    	mouse_bindings.set(_name, Bits.set(n, _key));
+    	_mouse_bindings.set(name, Bits.set(n, key));
 
     }
 
-    public function unbind(_name:String) {
+    public function unbind(name:String) {
     	
-    	if(mouse_bindings.exists(_name)) {
-    		mouse_bindings.remove(_name);
-    		binding.remove_all(_name);
+    	if(_mouse_bindings.exists(name)) {
+    		_mouse_bindings.remove(name);
+    		_binding.remove_all(name);
     	}
 
     }
 
-    function check_binding(_key:Int, _pressed:Bool) {
+    function check_binding(key:Int, pressed:Bool) {
 
-    	for (k in mouse_bindings.keys()) { // todo: using this is broke hashlink build, ftw?
-    		if(mouse_bindings.exists(k)) {
-    			var n = mouse_bindings.get(k);
-	    		if(Bits.check(n, _key)) {
-		    		binding.input_event.set_mouse(k, mouse_event);
-			    	if(_pressed) {
-			    		binding.inputpressed();
+    	for (k in _mouse_bindings.keys()) { // todo: using this is broke hashlink build, ftw?
+    		if(_mouse_bindings.exists(k)) {
+    			var n = _mouse_bindings.get(k);
+	    		if(Bits.check(n, key)) {
+		    		_binding.input_event.set_mouse(k, _mouse_event);
+			    	if(pressed) {
+			    		_binding.inputpressed();
 			    	} else {
-						binding.inputreleased();
+						_binding.inputreleased();
 			    	}
 			    	return;
 	    		}
@@ -134,125 +136,75 @@ class Mouse extends Input {
 
 	function reset() {
 
-		buttons_pressed = 0;
-		buttons_released = 0;
-
-	}
-
-	function onpressed(_button:Int, _x:Int, _y:Int) {
-
-		_debug('onpressed x:$_x, y$_y, button:$_button');
-
-		x = _x;
-		y = _y;
-
-		buttons_pressed = Bits.set(buttons_pressed, _button);
-		buttons_down = Bits.set(buttons_down, _button);
-
-		mouse_event.set(x, y, 0, 0, 0, MouseEventState.down, _button);
-
-		check_binding(_button, true);
-
-		engine.mousedown(mouse_event);
-
-	}
-
-	function onreleased(_button:Int, _x:Int, _y:Int) {
-
-		_debug('onpressed x:$_x, y$_y, button:$_button');
-
-		x = _x;
-		y = _y;
-
-		buttons_pressed = Bits.clear(buttons_pressed, _button);
-		buttons_down = Bits.clear(buttons_down, _button);
-		buttons_released = Bits.set(buttons_released, _button);
-
-		mouse_event.set(x, y, 0, 0, 0, MouseEventState.up, _button);
-
-		check_binding(_button, false);
-
-		engine.mouseup(mouse_event);
-
-	}
-
-	function onwheel(d:Int) {
+		#if use_mouse_input
 		
-		_debug('onwheel delta:$d');
+		_buttons_pressed = 0;
+		_buttons_released = 0;
 
-		mouse_event.set(x, y, 0, 0, d, MouseEventState.wheel, MouseButton.none);
+		#end
+	}
+
+	function _onpressed(button:Int, x:Int, y:Int) {
+
+		_debug('_onpressed x:$x, y$y, button:$button');
+
+		this.x = x;
+		this.y = y;
+
+		_buttons_pressed = Bits.set(_buttons_pressed, button);
+		_buttons_down = Bits.set(_buttons_down, button);
+
+		_mouse_event.set(x, y, 0, 0, 0, MouseEvent.MOUSE_DOWN, button);
+
+		check_binding(button, true);
+
+		_app.emitter.emit(MouseEvent.MOUSE_DOWN, _mouse_event);
+
+	}
+
+	function _onreleased(button:Int, x:Int, y:Int) {
+
+		_debug('_onpressed x:$x, y$y, button:$button');
+
+		this.x = x;
+		this.y = y;
+
+		_buttons_pressed = Bits.clear(_buttons_pressed, button);
+		_buttons_down = Bits.clear(_buttons_down, button);
+		_buttons_released = Bits.set(_buttons_released, button);
+
+		_mouse_event.set(x, y, 0, 0, 0, MouseEvent.MOUSE_UP, button);
+
+		check_binding(button, false);
+
+		_app.emitter.emit(MouseEvent.MOUSE_UP, _mouse_event);
+
+	}
+
+	function _onwheel(d:Int) {
+		
+		_debug('_onwheel delta:$d');
+
+		_mouse_event.set(x, y, 0, 0, d, MouseEvent.MOUSE_WHEEL, MouseButton.none);
 
 		check_binding(MouseButton.none, false); // todo: check this
 
-		engine.mousewheel(mouse_event);
+		_app.emitter.emit(MouseEvent.MOUSE_WHEEL, _mouse_event);
 
 	}
 
-	function onmove(_x:Int, _y:Int, _x_rel:Int, _y_rel:Int) {
+	function _onmove(x:Int, y:Int, x_rel:Int, y_rel:Int) {
 
-		_verboser('onmove x:$_x, y$_y, xrel:$_x_rel, yrel:$_y_rel');
+		_verboser('_onmove x:$x, y$y, xrel:$x_rel, yrel:$y_rel');
 
-		x = _x;
-		y = _y;
+		this.x = x;
+		this.y = y;
 
-		mouse_event.set(x, y, _x_rel, _y_rel, 0, MouseEventState.up, MouseButton.none);
+		_mouse_event.set(x, y, x_rel, y_rel, 0, MouseEvent.MOUSE_MOVE, MouseButton.none);
 
-		engine.mousemove(mouse_event);
-
-	}
-
-
-}
-
-@:allow(clay.input.Mouse)
-class MouseEvent {
-
-
-	public var x(default, null):Int = 0;
-	public var y(default, null):Int = 0;
-	public var x_rel(default, null):Int = 0;
-	public var y_rel(default, null):Int = 0;
-	public var wheel(default, null):Int = 0;
-
-	public var button(default, null):MouseButton = MouseButton.none;
-	public var state(default, null):MouseEventState = MouseEventState.none;
-
-	
-	function new() {}
-
-	inline function set(_x:Int, _y:Int, _x_rel:Int, _y_rel:Int, _wheel:Int, _state:MouseEventState, _button:MouseButton) {
-		
-		x = _x;
-		y = _y;
-		x_rel = _x_rel;
-		y_rel = _y_rel;
-		wheel = _wheel;
-		state = _state;
-		button = _button;
+		_app.emitter.emit(MouseEvent.MOUSE_MOVE, _mouse_event);
 
 	}
 
-}
-
-@:enum abstract MouseEventState(Int) from Int to Int {
-
-    var none  = 0;
-    var down  = 1;
-    var up    = 2;
-    var move  = 3;
-    var wheel = 4;
-
-}
-
-@:enum abstract MouseButton(Int) from Int to Int {
-
-    var none   	= -1;
-    var left   	= 0;
-    var right  	= 1;
-    var middle 	= 2;
-    var extra1 	= 3;
-    var extra2 	= 4;
-    var extra3 	= 5;
-    var extra4 	= 6;
 
 }

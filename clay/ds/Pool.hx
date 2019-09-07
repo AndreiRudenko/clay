@@ -1,4 +1,4 @@
-package ds;
+package clay.ds;
 
 
 import haxe.ds.Vector;
@@ -16,7 +16,7 @@ class Pool<T> {
 
 	public function new(_init_size:Int, _size_limit:Int = 0, create_callback:Void->T){
 
-		size_limit = Math.max(_init_size, _size_limit);
+		size_limit = _init_size > _size_limit ? _init_size : _size_limit;
 		size = _init_size;
 
 		items = new Vector(size_limit);

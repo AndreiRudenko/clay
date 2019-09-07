@@ -1,55 +1,68 @@
 package clay.render;
 
 
-// import kha.graphics4.Graphics;
 import clay.resources.Texture;
-import clay.components.graphics.Geometry;
-import clay.components.graphics.QuadGeometry;
-import clay.components.graphics.LineGeometry;
-import clay.components.graphics.Text;
+
+import clay.graphics.Mesh;
+import clay.graphics.Sprite;
+import clay.graphics.Text;
+import clay.graphics.shapes.Line;
+import clay.graphics.shapes.PolyLine;
+import clay.graphics.shapes.Quad;
+import clay.graphics.shapes.QuadOutline;
+import clay.graphics.shapes.Circle;
+import clay.graphics.shapes.CircleOutline;
+import clay.graphics.shapes.PolygonOutline;
+import clay.graphics.shapes.StrokeAlign;
+
 import clay.resources.FontResource;
 import clay.render.Layer;
 import clay.render.Vertex;
 import clay.math.Vector;
 import clay.math.Matrix;
-import clay.math.Mathf;
-import clay.data.Color;
+import clay.utils.Mathf;
+import clay.utils.ArrayTools;
 import clay.utils.Log.*;
-import clay.types.TextAlign;
+import clay.render.Color;
 
 
 class Draw {
 
-	// image, text, geom cache
-	var geometry:Array<Geometry>;
+
+	var geometry:Array<Mesh>;
 
 
-	@:allow(clay.Engine)
+	@:allow(clay.system.App)
 	inline function new() {
 
 		geometry = [];
 		
 	}
 
-	public function line(options:DrawLineOptions):LineGeometry {
+	public function line(options:DrawLineOptions):Line {
+
+		var strength = def(options.strength, 4);
+		var color0 = def(options.color0, new Color());
+		var color1 = def(options.color1, color0);
 
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_add = def(options.no_add, false);
+		var no_layer = def(options.no_layer, false);
 		
-		var geom = new LineGeometry({
-			p0: options.p0,
-			p1: options.p1,
-			color0: options.color0,
-			color1: options.color1,
-			strength: options.strength,
-			depth: options.depth,
-			layer: layer
-		});
+		var geom = new Line(options.p0.x, options.p0.y, options.p1.x, options.p1.y);
+		geom.color0 = color0;
+		geom.color1 = color1;
+		geom.strength = strength;
 
-		if(!no_add) {
-			add_to_layer(geom, options.depth);
+		if(options.depth != null) {
+			geom.depth = options.depth;
+		}
 
+		// update martix
+		geom.update(0);
+
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -59,7 +72,7 @@ class Draw {
 
 	}
 
-	public function rectangle(options:DrawRectangleOptions):QuadGeometry {
+	public function quad(options:DrawQuadOptions):Quad {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
@@ -69,83 +82,26 @@ class Draw {
 		var h = def(options.h, 32);
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
+
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_add = def(options.no_add, false);
+		var no_layer = def(options.no_layer, false);
 
-		var rect = new QuadGeometry({
-			size: new Vector(w, h),
-			color: color,
-			depth: options.depth,
-			layer: layer
-		});
+		var geom = new Quad(w, h);
+		geom.transform.pos.set(x,y);
+		geom.transform.origin.set(ox,oy);
+		geom.transform.rotation = angle;
+		geom.color = color;
 
-		update_matrix(rect.transform_matrix, x, y, ox, oy, angle);
-
-		if(!no_add) {
-			add_to_layer(rect, options.depth);
-
-			if(immediate) {
-				geometry.push(rect);
-			}
+		if(options.depth != null) {
+			geom.depth = options.depth;
 		}
 
-		return rect;
+		// update martix
+		geom.update(0);
 
-	}
-
-	public function circle(options:DrawCircleOptions):Geometry {
-		
-		var cx = def(options.x, 0);
-		var cy = def(options.y, 0);
-		var ox = def(options.ox, 0);
-		var oy = def(options.oy, 0);
-		var r = def(options.r, 64);
-		var segments = def(options.segments, Math.floor(10 * Math.sqrt(r)));
-		var color = def(options.color, new Color());
-		var layer = def(options.layer, null);
-		var immediate = def(options.immediate, true);
-		var no_add = def(options.no_add, false);
-
-		var indices = [];
-		var vertices = [];
-
-		var theta = 2 * Math.PI / segments;
-		var c = Math.cos(theta);
-		var s = Math.sin(theta);
-
-		var x = r;
-		var y = 0.0;
-
-		for (i in 0...segments) {
-			var px = x;
-			var py = y;
-
-			var t = x;
-			x = c * x - s * y;
-			y = c * y + s * t;
-
-			indices[i * 3 + 0] = i * 3 + 0;
-			indices[i * 3 + 1] = i * 3 + 1;
-			indices[i * 3 + 2] = i * 3 + 2;
-
-			vertices.push(new Vertex(new Vector(px, py)));
-			vertices.push(new Vertex(new Vector(x, y)));
-			vertices.push(new Vertex(new Vector()));
-		}
-
-		var geom = new Geometry({
-			vertices: vertices,
-			indices: indices,
-			layer: layer,
-			depth: options.depth,
-			color: color
-		});
-
-		update_matrix(geom.transform_matrix, cx, cy, ox, oy, 0);
-
-		if(!no_add) {
-			add_to_layer(geom, options.depth);
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -155,7 +111,122 @@ class Draw {
 
 	}
 
-	public function polygon(options:DrawPolyOptions):Geometry {
+	public function quad_outline(options:DrawQuadOutlineOptions):QuadOutline {
+		
+		var x = def(options.x, 0);
+		var y = def(options.y, 0);
+		var ox = def(options.ox, 0);
+		var oy = def(options.oy, 0);
+		var w = def(options.w, 32);
+		var h = def(options.h, 32);
+		var angle = def(options.angle, 0);
+		var color = def(options.color, new Color());
+
+		var immediate = def(options.immediate, true);
+		var layer = def(options.layer, null);
+		var no_layer = def(options.no_layer, false);
+
+		var geom = new QuadOutline(w, h, options.weight);
+		geom.transform.pos.set(x,y);
+		geom.transform.origin.set(ox,oy);
+		geom.transform.rotation = angle;
+		geom.color = color;
+
+		if(options.align != null) {
+			geom.align = options.align;
+		}
+
+		if(options.depth != null) {
+			geom.depth = options.depth;
+		}
+
+		// update martix
+		geom.update(0);
+
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
+			if(immediate) {
+				geometry.push(geom);
+			}
+		}
+
+		return geom;
+
+	}
+
+	public function circle(options:DrawCircleOptions):Circle {
+		
+		var x = def(options.x, 0);
+		var y = def(options.y, 0);
+		var ox = def(options.ox, 0);
+		var oy = def(options.oy, 0);
+		var r = def(options.r, 32);
+		var color = def(options.color, new Color());
+		var layer = def(options.layer, null);
+		var immediate = def(options.immediate, true);
+		var no_layer = def(options.no_layer, false);
+
+		var geom = new Circle(r, options.segments);
+		geom.transform.pos.set(x,y);
+		geom.transform.origin.set(ox,oy);
+		geom.color = color;
+
+		if(options.depth != null) {
+			geom.depth = options.depth;
+		}
+
+		// update martix
+		geom.update(0);
+
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
+			if(immediate) {
+				geometry.push(geom);
+			}
+		}
+
+		return geom;
+	}
+	
+	public function circle_outline(options:DrawCircleOutlineOptions):CircleOutline {
+		
+		var x = def(options.x, 0);
+		var y = def(options.y, 0);
+		var ox = def(options.ox, 0);
+		var oy = def(options.oy, 0);
+		var r = def(options.r, 32);
+		var color = def(options.color, new Color());
+		var layer = def(options.layer, null);
+		var immediate = def(options.immediate, true);
+		var no_layer = def(options.no_layer, false);
+
+		var geom = new CircleOutline(r, options.weight, options.segments);
+		geom.transform.pos.set(x,y);
+		geom.transform.origin.set(ox,oy);
+		geom.color = color;
+
+		if(options.align != null) {
+			geom.align = options.align;
+		}
+
+		if(options.depth != null) {
+			geom.depth = options.depth;
+		}
+
+		// update martix
+		geom.update(0);
+
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
+			if(immediate) {
+				geometry.push(geom);
+			}
+		}
+
+		return geom;
+	}
+
+	public function polygon(options:DrawMeshOptions):Mesh {
 
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
@@ -163,9 +234,10 @@ class Draw {
 		var oy = def(options.oy, 0);
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
+
 		var layer = def(options.layer, null);
 		var immediate = def(options.immediate, true);
-		var no_add = def(options.no_add, false);
+		var no_layer = def(options.no_layer, false);
 
 		var iterator = options.vertices.iterator();
 
@@ -205,19 +277,21 @@ class Draw {
 			}
 		}
 
-		var geom = new Geometry({
-			vertices: vertices,
-			indices: indices,
-			layer: layer,
-			depth: options.depth,
-			color: color
-		});
+		var geom = new Mesh(vertices, indices);
+		geom.transform.pos.set(x,y);
+		geom.transform.origin.set(ox,oy);
+		geom.transform.rotation = angle;
+		geom.color = color;
 
-		update_matrix(geom.transform_matrix, x, y, ox, oy, angle);
+		if(options.depth != null) {
+			geom.depth = options.depth;
+		}
 
-		if(!no_add) {
-			add_to_layer(geom, options.depth);
+		// update martix
+		geom.update(0);
 
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -227,7 +301,63 @@ class Draw {
 
 	}
 
-	public function image(options:DrawImageOptions):QuadGeometry {
+	public function polygon_outline(options:DrawPolyLineOptions):PolygonOutline {
+
+		var color = def(options.color, new Color());
+		var layer = def(options.layer, null);
+		var immediate = def(options.immediate, true);
+		var no_layer = def(options.no_layer, false);
+
+		var geom = new PolygonOutline(options.points, options.weight);
+		geom.color = color;
+
+		if(options.depth != null) {
+			geom.depth = options.depth;
+		}
+
+		// update martix
+		geom.update(0);
+
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
+			if(immediate) {
+				geometry.push(geom);
+			}
+		}
+
+		return geom;
+
+	}
+
+	public function polyline(options:DrawPolyLineOptions):PolyLine {
+
+		var color = def(options.color, new Color());
+		var layer = def(options.layer, null);
+		var immediate = def(options.immediate, true);
+		var no_layer = def(options.no_layer, false);
+
+		var geom = new PolyLine(options.points, options.weight);
+		geom.color = color;
+
+		if(options.depth != null) {
+			geom.depth = options.depth;
+		}
+
+		// update martix
+		geom.update(0);
+
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
+			if(immediate) {
+				geometry.push(geom);
+			}
+		}
+
+		return geom;
+
+	}
+
+	public function sprite(options:DrawSpriteOptions):Sprite {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
@@ -237,31 +367,32 @@ class Draw {
 		var h = def(options.h, 32);
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
+
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_add = def(options.no_add, false);
+		var no_layer = def(options.no_layer, false);
 
-		var texture = options.texture;
+		var geom = new Sprite(options.texture);
+		geom.transform.pos.set(x,y);
+		geom.transform.origin.set(ox,oy);
+		geom.transform.rotation = angle;
+		geom.color = color;
 
-		var rect = new QuadGeometry({
-			size: new Vector(w, h),
-			color: color,
-			layer: layer,
-			depth: options.depth,
-			texture: texture
-		});
+		if(options.depth != null) {
+			geom.depth = options.depth;
+		}
 
-		update_matrix(rect.transform_matrix, x, y, ox, oy, angle);
+		// update martix
+		geom.update(0);
 
-		if(!no_add) {
-			add_to_layer(rect, options.depth);
-
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
 			if(immediate) {
-				geometry.push(rect);
+				geometry.push(geom);
 			}
 		}
 
-		return rect;
+		return geom;
 
 	}
 
@@ -274,67 +405,64 @@ class Draw {
 		var size = def(options.size, 16);
 		var angle = def(options.angle, 0);
 		var color = def(options.color, new Color());
+
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_add = def(options.no_add, false);
-		
-		var text = options.text;
-		var font = options.font;
+		var no_layer = def(options.no_layer, false);
 
-		var text = new Text({
-			size: size,
-			color: color,
-			layer: layer,
-			font: font,
-			text: text,
-			depth: options.depth,
-			align: options.align,
-			align_vertical: options.align_vertical
-		});
+		var geom = new Text(options.font);
+		geom.transform.pos.set(x,y);
+		geom.transform.origin.set(ox,oy);
+		geom.transform.rotation = angle;
+		geom.color = color;
+		geom.text = options.text;
 
-		update_matrix(text.transform_matrix, x, y, ox, oy, angle);
-
-		if(!no_add) {
-			add_to_layer(text, options.depth);
-
-			if(immediate) {
-				geometry.push(text);
-			}
+		if(options.depth != null) {
+			geom.depth = options.depth;
 		}
 
-		return text;
+		if(options.align != null) {
+			geom.align = options.align;
+		}
+
+		if(options.align_vertical != null) {
+			geom.align_vertical = options.align_vertical;
+		}
+
+		// update martix
+		geom.update(0);
+
+		if(!no_layer) {
+			add_to_layer(geom, layer, options.depth);
+			if(immediate) {
+				geometry.push(geom);
+			}
+		}
+		
+		return geom;
 
 	}
 
-	@:allow(clay.Engine)
+	@:allow(clay.system.App)
 	function update() {
 
 		if(geometry.length > 0) {
 			for (g in geometry) {
 				g.drop();
 			}
-			geometry.splice(0, geometry.length);
+			ArrayTools.clear(geometry);
 		}
 		
 	}
 	
-	inline function add_to_layer(geom:Geometry, ?depth:Null<Float>) {
+	inline function add_to_layer(geom:Mesh, layer:Layer, ?depth:Null<Float>) {
 
 		if(geom.layer == null) {
-			if(Clay.renderer.layer != null) {
-				Clay.renderer.layer._add_unsafe(geom, depth != null);
-			} else {
-				log('Error adding geometry `${geom.name}` to Clay.renderer.layer');
+			if(layer == null) {
+				layer = Clay.renderer.layer;
 			}
-		} else {
-			geom.layer._add_unsafe(geom, depth != null);
+			layer._add_unsafe(geom, depth != null);
 		}
-
-	}
-
-	inline function update_matrix(matrix:Matrix, x:Float, y:Float, ox:Float, oy:Float, angle:Float) {
-		
-		matrix.identity().translate(x, y).rotate(Mathf.radians(-angle)).apply(-ox, -oy);
 
 	}
 
@@ -347,7 +475,7 @@ typedef DrawGeometryOptions = {
 	@:optional var layer:Layer;
 	@:optional var immediate:Bool;
 	@:optional var depth:Float;
-	@:optional var no_add:Bool;
+	@:optional var no_layer:Bool;
 
 }
 
@@ -383,7 +511,16 @@ typedef DrawCircleOptions = {
 
 }
 
-typedef DrawRectangleOptions = {
+typedef DrawCircleOutlineOptions = {
+
+	> DrawCircleOptions,
+
+	@:optional var weight:Float;
+	@:optional var align:StrokeAlign;
+
+}
+
+typedef DrawQuadOptions = {
 
 	> DrawGeometryOptions,
 
@@ -402,9 +539,18 @@ typedef DrawRectangleOptions = {
 
 }
 
-typedef DrawImageOptions = {
+typedef DrawQuadOutlineOptions = {
 
-	> DrawRectangleOptions,
+	> DrawQuadOptions,
+
+	@:optional var weight:Float;
+	@:optional var align:StrokeAlign;
+
+}
+
+typedef DrawSpriteOptions = {
+
+	> DrawQuadOptions,
 
 	var texture:Texture;
 
@@ -412,7 +558,7 @@ typedef DrawImageOptions = {
 
 }
 
-typedef DrawPolyOptions = {
+typedef DrawMeshOptions = {
 
 	> DrawGeometryOptions,
 
@@ -428,6 +574,17 @@ typedef DrawPolyOptions = {
 	@:optional var angle:Float;
 
 	@:optional var color:Color;
+
+}
+
+typedef DrawPolyLineOptions = {
+
+	> DrawGeometryOptions,
+
+	var points:Array<Vector>;
+
+	@:optional var color:Color;
+	@:optional var weight:Float;
 
 }
 
@@ -454,3 +611,4 @@ typedef DrawTextOptions = {
 	@:optional var align_vertical:TextAlign;
 
 }
+

@@ -1,56 +1,25 @@
-/**
- * @author Joshua Granick
- * @author Andreas Rønning
- * @author Philippe / http://philippe.elsass.me
- * @author Robert Penner / http://www.robertpenner.com/easing_terms_of_use.html
- */
-
-
 package clay.tween.easing;
-
-import clay.tween.TweenNode;
 	
 	
 class Quint {
 	
-	
-    public static var easeIn (get, never):EaseFunc;
-    public static var easeInOut (get, never):EaseFunc;
-    public static var easeOut (get, never):EaseFunc;
-    
 
-	static function get_easeIn():EaseFunc {
-		
-		return function(start:Float, delta:Float, t:Float) {
+	public static inline function easeIn(t:Float):Float {
 
-			return delta * t * t * t * t * t + start;
+		return t * t * t * t * t;
 
-		};
-		
 	}
 	
-	static function get_easeOut():EaseFunc {
-		
-		return function(start:Float, delta:Float, t:Float) {
+	public static inline function easeOut(t:Float):Float {
 
-			return delta * ((t -= 1) * t * t * t * t + 1) + start;
+		return (t = t - 1) * t * t * t * t + 1;
 
-		};
-		
 	}
 
-	static function get_easeInOut():EaseFunc {
-		
-		return function(start:Float, delta:Float, t:Float) {
+	public static inline function easeInOut(t:Float):Float {
 
-			t *= 2;
-			if (t < 1) {
-				return delta / 2 * t * t * t * t * t + start;
-			}
-			return delta / 2 * ((t -= 2) * t * t * t * t + 2) + start;
+		return ((t *= 2) < 1) ? (t * t * t * t * t) / 2 : ((t -= 2) * t * t * t * t + 2) / 2;
 
-		};
-		
 	}
 	
 

@@ -4,10 +4,12 @@ package clay.input;
 import clay.ds.BitVector;
 import clay.input.Key;
 import clay.utils.Log.*;
+import clay.events.KeyEvent;
+import clay.system.App;
 
 
-@:allow(clay.core.Inputs)
-@:access(clay.Engine)
+@:allow(clay.system.InputManager)
+@:access(clay.system.App)
 class Keyboard extends Input {
 
 
@@ -22,9 +24,9 @@ class Keyboard extends Input {
 	var binding:Bindings;
 
 
-	function new(_engine:Engine) {
+	function new(app:App) {
 		
-		super(_engine);
+		super(app);
 
 		key_bindings = new Map();
 		binding = Clay.input.binding;
@@ -137,6 +139,8 @@ class Keyboard extends Input {
 
 	function reset() {
 
+		#if use_keyboard_input
+		
 		_verboser("reset");
 
 		if(dirty) {
@@ -145,6 +149,7 @@ class Keyboard extends Input {
 			dirty = false;
 		}
 
+		#end
 	}
 
 	function onkeypressed(_key:Int) {
@@ -156,11 +161,11 @@ class Keyboard extends Input {
 		key_code_pressed.enable(_key);
 		key_code_down.enable(_key);
 
-		key_event.set(_key, KeyEventState.down);
+		key_event.set(_key, KeyEvent.KEY_DOWN);
 
 		check_binding(_key, true);
 
-		engine.keydown(key_event);
+		_app.emitter.emit(KeyEvent.KEY_DOWN, key_event);
 
 	}
 
@@ -174,11 +179,11 @@ class Keyboard extends Input {
 		key_code_pressed.disable(_key);
 		key_code_down.disable(_key);
 
-		key_event.set(_key, KeyEventState.up);
+		key_event.set(_key, KeyEvent.KEY_UP);
 
 		check_binding(_key, false);
 
-		engine.keyup(key_event);
+		_app.emitter.emit(KeyEvent.KEY_UP, key_event);
 
 	}
 	
@@ -186,38 +191,9 @@ class Keyboard extends Input {
 
 		_verboser('ontextinput: $_char');
 
-		engine.textinput(_char);
+		_app.emitter.emit(KeyEvent.TEXT_INPUT, _char);
 
 	}
 
 
 }
-
-@:allow(clay.input.Keyboard)
-class KeyEvent {
-
-
-    public var key (default, null):Int;
-	public var state (default, null):KeyEventState;
-
-
-	function new() {}
-
-	inline function set(_key:Int, _state:KeyEventState) {
-		
-		key = _key;
-		state = _state;
-
-	}
-
-
-}
-
-@:enum abstract KeyEventState(Int) from Int to Int {
-
-    var none         = 0;
-    var down         = 1;
-    var up           = 2;
-
-}
-

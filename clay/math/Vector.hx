@@ -36,6 +36,12 @@ class Vector {
         
     }
 
+    public inline function equals(_other:Vector):Bool {
+
+        return x == _other.x && y == _other.y;
+        
+    }
+
     public inline function clone() {
 
         return new Vector(x, y);
@@ -51,6 +57,12 @@ class Vector {
     public inline function dot(_other:Vector) {
 
         return x * _other.x + y * _other.y;
+
+    }
+
+    public inline function distance(_other:Vector) {
+
+        return Math.sqrt((_other.y - y) * (_other.y - y) + (_other.x - x) * (_other.x - x));
 
     }
 
@@ -158,7 +170,7 @@ class Vector {
         
     }
 
-    public function transform(_m:Matrix) {
+    public inline function transform(_m:Matrix) {
 
         set(_m.a * x + _m.c * y + _m.tx, _m.b * x + _m.d * y + _m.ty);
 

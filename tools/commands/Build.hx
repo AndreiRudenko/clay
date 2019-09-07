@@ -50,6 +50,9 @@ class Build extends Command {
 				case '--onlydata' : {
 					config.onlydata = true;
 				}
+				case '--noshaders' : {
+					config.noshaders = true;
+				}
 				case '--compile' : {
 					config.compile = true;
 				}
@@ -107,7 +110,7 @@ class Build extends Command {
 		}
 
 		switch (config.target) {
-			case 'windows' | 'windows-hl': {
+			case 'windows', 'windows-hl': {
 				if(config.windows != null) {
 					if(config.windows.graphics != null) {
 						if(windows_graphics.indexOf(config.windows.graphics) == -1) {
@@ -125,6 +128,15 @@ class Build extends Command {
 					}
 
 				}
+			}
+			case 'android-native', 'android-native-hl': {
+				var arch = 'arm7';
+				if(config.android != null) {
+					if(config.android.arch != null) {
+						arch = config.android.arch;
+					}
+				}
+				args.push('--arch ${arch}');
 			}
 			case 'linux': {
 				if(config.linux != null) {
@@ -168,18 +180,16 @@ class Build extends Command {
 			}
 		}
 
-		// args.push('--from');
-		// args.push('build');
-		if(config.onlydata) {
-			args.push('--onlydata');
-		}
-
 		if(config.compile) {
 			args.push('--compile');
 		}
 
 		if(config.onlydata) {
 			args.push('--onlydata');
+		}
+
+		if(config.noshaders) {
+			args.push('--noshaders');
 		}
 
 		CLI.print('Run build command: ${args.join(" ")}');

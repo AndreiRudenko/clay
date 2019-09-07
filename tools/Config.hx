@@ -22,12 +22,16 @@ class Config {
 
 		kfile += 'p.addLibrary("${CLI.engine_name}");\n';
 
-		for (s in project.libraries) {
-			kfile += 'p.addLibrary("${s}");\n';
+		if(project.libraries != null) {
+			for (s in project.libraries) {
+				kfile += 'p.addLibrary("${s}");\n';
+			}
 		}
 
-		for (s in project.shaders) {
-			kfile += 'p.addShaders("${s}");\n';
+		if(project.shaders != null) {
+			for (s in project.shaders) {
+				kfile += 'p.addShaders("${s}");\n';
+			}
 		}
 
 		kfile += 'p.addShaders("${Path.join([CLI.engine_dir, 'assets/shaders'])}");\n';
@@ -59,24 +63,30 @@ class Config {
 
 		var no_default_font = false;
 
-		for (s in project.defines) {
-			kfile += 'p.addDefine("${s}");\n';
-			if(s == 'no_default_font') {
-				no_default_font = true;
+		if(project.defines != null) {
+			for (s in project.defines) {
+				kfile += 'p.addDefine("${s}");\n';
+				if(s == 'no_default_font') {
+					no_default_font = true;
+				}
 			}
 		}
 
-		for (s in compiler.parameters) {
-			kfile += 'p.addParameter("${s}");\n';
+		if(compiler.parameters != null) {
+			for (s in compiler.parameters) {
+				kfile += 'p.addParameter("${s}");\n';
+			}
 		}
 
 		if(!no_default_font) {
 			var fp = Path.join([CLI.engine_dir, 'assets/fonts']);
 			kfile += 'p.addAssets("${fp}", {destination: "assets/{name}", noprocessing: true, notinlist: true});\n';
 		}
-		
-		for (s in project.assets) {
-			kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
+
+		if(project.assets != null) {
+			for (s in project.assets) {
+				kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
+			}
 		}
 
 		if(config.html5 != null){
@@ -92,23 +102,46 @@ class Config {
 		}
 
 		if(config.android != null){
+			if(project.version != null) {
+				kfile += 'p.targetOptions.android_native.versionName = "${project.version}";\n';
+			}
 			if(config.android.orientation != null) {
-				kfile += 'p.targetOptions.android.screenOrientation = "${config.android.orientation}";\n';
+				kfile += 'p.targetOptions.android_native.screenOrientation = "${config.android.orientation}";\n';
+			}
+			if(config.android.version_code != null) {
+				kfile += 'p.targetOptions.android_native.versionCode = ${config.android.version_code};\n';
 			}
 			if(config.android.permissions != null) {
-				kfile += 'p.targetOptions.android.permissions = "${config.android.permissions}";\n';
+				kfile += 'p.targetOptions.android_native.permissions = [${config.android.permissions.join(',')}];\n';
+			}
+			if(config.android.installLocation != null) {
+				kfile += 'p.targetOptions.android_native.installLocation = "${config.android.installLocation}";\n';
 			}
 			if(untyped __js__('config.android.package')) {
-				kfile += 'p.targetOptions.android.package = "${untyped __js__('config.android.package')}";\n';
+				kfile += 'p.targetOptions.android_native.package = "${untyped __js__('config.android.package')}";\n';
 			}
 		}
 
 		if(config.ios != null){
+			if(project.version != null) {
+				kfile += 'p.targetOptions.ios.version = "${project.version}";\n';
+			}
 			if(config.ios.orientation != null) {
 				kfile += 'p.targetOptions.ios.screenOrientation = "${config.ios.orientation}";\n';
 			}
+			if(config.ios.bundle != null) {
+				kfile += 'p.targetOptions.ios.bundle = "${config.ios.bundle}";\n';
+			}
+			if(config.ios.build != null) {
+				kfile += 'p.targetOptions.ios.build = "${config.ios.build}";\n';
+			}
+			if(config.ios.organizationName != null) {
+				kfile += 'p.targetOptions.ios.organizationName = "${config.ios.organizationName}";\n';
+			}
+			if(config.ios.developmentTeam != null) {
+				kfile += 'p.targetOptions.ios.developmentTeam = "${config.ios.developmentTeam}";\n';
+			}
 		}
-
 
 		kfile += "resolve(p);";
 
@@ -151,6 +184,7 @@ typedef ConfigData = {
 	var debug:Bool;
 	var onlydata:Bool;
 	var compile:Bool;
+	var noshaders:Bool;
 }
 
 typedef InputConfig = {
@@ -204,11 +238,18 @@ typedef UWPConfig = {
 
 typedef AndroidConfig = {
 	// var package:String;
+	var arch:String;
 	var orientation:String;
+	var installLocation:String;
+	var version_code:Int;
 	var permissions:Array<String>;
 }
 typedef IOSConfig = {
 	var orientation:String;
+	var bundle:String;
+	var build:String;
+	var organizationName:String;
+	var developmentTeam:String;
 }
 
 typedef HtmlConfig = {

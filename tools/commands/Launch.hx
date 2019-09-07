@@ -54,11 +54,29 @@ class Launch extends Command {
 				}
 			}
 			case 'windows' : {
-				var path = Path.join([CLI.user_dir, 'build/windows/${config.project.title}']);
+				var path = Path.join([CLI.user_dir, 'build/windows/${config.project.title}.exe']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
 				js.node.ChildProcess.execSync('start cmd /c $path'); // todo: remove cmd ?
+			}
+			case 'windows-hl' : {
+				var path = Path.join([CLI.user_dir, 'build/windows-hl/${config.project.title}.exe']);
+				if(!FileSystem.exists(path)) {
+					CLI.error('Can`t find app at: $path');
+				}
+				js.node.ChildProcess.execSync('start cmd /c $path'); // todo: remove cmd ?
+			}
+			case 'android-native-hl' : {
+				var path = Path.join([CLI.user_dir, 'build/android-native-hl-build/${config.project.title}/app/build/outputs/apk/debug/app-debug.apk']);
+				if(!FileSystem.exists(path)) {
+					CLI.error('Can`t find app at: $path');
+				}
+				var pkg = untyped __js__('config.android.package');
+				// js.node.ChildProcess.execSync('start cmd /c adb uninstall $pkg');
+				js.node.ChildProcess.execSync('start cmd /c adb install -r $path');
+				js.node.ChildProcess.execSync('start cmd /c adb shell am start -n $pkg/tech.kode.kore.KoreActivity');
+				js.node.ChildProcess.execSync('start cmd /c adb logcat -s kore DEBUG AndroidRuntime');
 			}
 			case 'linux': {
 				var path = Path.join([CLI.user_dir, 'build/linux/${config.project.title}']);

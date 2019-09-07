@@ -3,10 +3,9 @@ package clay.render;
 
 import kha.graphics4.Graphics;
 
-import clay.Entity;
 import clay.math.Rectangle;
 import clay.render.Camera;
-import clay.core.Signal;
+import clay.events.Signal;
 import clay.utils.Log.*;
 
 @:access(clay.render.Camera)
@@ -33,41 +32,37 @@ class CameraManager {
 
 	}
 
-	public function create(_name:String, ?_viewport:Rectangle, _priority:Int = 0, _enabled:Bool = true):Camera {
+	public function create(name:String, ?viewport:Rectangle, priority:Int = 0, enabled:Bool = true):Camera {
 
-		var _camera = new Camera(this, _name, _viewport, _priority);
+		var camera = new Camera(this, name, viewport, priority);
 
-		handle_duplicate_warning(_name);
-		cameras.set(_name, _camera);
+		handle_duplicate_warning(name);
+		cameras.set(name, camera);
 		length++;
 
-		if(_enabled) {
-			enable(_camera);
+		if(enabled) {
+			enable(camera);
 		}
 
-		oncameracreate.emit(_camera);
+		oncameracreate.emit(camera);
 
-		#if !no_debug_console
-		_camera.hide_layers(['debug_layer']);
-		#end
-
-		return _camera;
+		return camera;
 
 	}
 
-	public function destroy(_camera:Camera) {
+	public function destroy(camera:Camera) {
 		
-		if(cameras.exists(_camera.name)) {
-			cameras.remove(_camera.name);
+		if(cameras.exists(camera.name)) {
+			cameras.remove(camera.name);
 			length--;
-			disable(_camera);
+			disable(camera);
 		} else {
-			log('can`t remove camera: "${_camera.name}" , already removed?');
+			log('can`t remove camera: "${camera.name}" , already removed?');
 		}
 
-		oncameradestroy.emit(_camera);
+		oncameradestroy.emit(camera);
 
-		_camera.destroy();
+		camera.destroy();
 
 	}
 
@@ -77,9 +72,9 @@ class CameraManager {
 
 	}
 
-	public function enable(_camera:Camera) {
+	public function enable(camera:Camera) {
 
-		if(_camera._active) {
+		if(camera._active) {
 			return;
 		}
 		
@@ -87,29 +82,29 @@ class CameraManager {
 		var c:Camera = null;
 		for (i in 0...active_cameras.length) {
 			c = active_cameras[i];
-			if (_camera.priority < c.priority) {
-				active_cameras.insert(i, _camera);
+			if (camera.priority < c.priority) {
+				active_cameras.insert(i, camera);
 				added = true;
 				break;
 			}
 		}
 
-		_camera._active = true;
+		camera._active = true;
 
 		if(!added) {
-			active_cameras.push(_camera);
+			active_cameras.push(camera);
 		}
 
 	}
 
-	public function disable(_camera:Camera) {
+	public function disable(camera:Camera) {
 
-		if(!_camera._active) {
+		if(!camera._active) {
 			return;
 		}
 
-		active_cameras.remove(_camera);
-		_camera._active = false;
+		active_cameras.remove(camera);
+		camera._active = false;
 		
 	}
 

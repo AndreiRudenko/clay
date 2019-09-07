@@ -23,7 +23,7 @@ class VectorCallback extends Vector {
         
     }
 
-    override inline function set_x(v:Float):Float {
+    override function set_x(v:Float):Float {
 
         super.set_x(v);
 
@@ -35,7 +35,7 @@ class VectorCallback extends Vector {
 
     }
 
-    override inline function set_y(v:Float):Float {
+    override function set_y(v:Float):Float {
 
         super.set_y(v);
 

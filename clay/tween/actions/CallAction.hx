@@ -1,25 +1,28 @@
 package clay.tween.actions;
 
 
-class CallAction extends TweenAction {
+import clay.tween.tweens.Tween;
 
 
-	var call_fn:Void->Void;
+@:access(clay.tween.tweens.Tween)
+class CallAction<T> extends TweenAction<T> {
 
 
-	public function new(_node:TweenNode, _fn:Void->Void) {
+	var call_fn:T->Void;
 
-		super(_node);
 
-		call_fn = _fn;
+	public function new(tween:Tween<T>, fn:T->Void) {
+
+		super(tween, 0);
+
+		call_fn = fn;
 
 	}
 
 	override function start(t:Float) {
 
-		call_fn();
-		
-		super.start(t);
+		call_fn(_tween.target);
+		complete = true;
 
 	}
 

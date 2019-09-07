@@ -5,7 +5,7 @@ import kha.graphics4.Graphics;
 
 import clay.render.Layer;
 import clay.render.Camera;
-import clay.ds.Int32RingBuffer;
+import clay.ds.IntRingBuffer;
 import clay.utils.Log.*;
 
 
@@ -21,31 +21,32 @@ class LayerManager {
 	public var capacity(default, null):Int;
 	public var used(default, null):Int;
 
-	var _ids:Int32RingBuffer;
+	var _active_layers:Array<Layer>;
+	var _layers:Map<String, Layer>;
 
-	var active_layers:Array<Layer>;
-	var layers:Map<String, Layer>;
+	var _layer_ids:IntRingBuffer;
 
 
 	public function new(_capacity:Int) {
 
 		capacity = _capacity;
 		used = 0;
-		_ids = new Int32RingBuffer(capacity);
 		
-		active_layers = [];
-		layers = new Map();
+		_active_layers = [];
+		_layers = new Map();
+		
+		_layer_ids = new IntRingBuffer(capacity);
 
 	}
 
-	public function create(_name:String, _priority:Int = 0, _depth_sort:Bool = true, _enabled:Bool = true):Layer {
+	public function create(name:String, priority:Int = 0, depth_sort:Bool = true, enabled:Bool = true):Layer {
 
-		var _layer = new Layer(this, _name, pop_layer_id(), _priority, _depth_sort);
+		var _layer = new Layer(this, name, pop_layer_id(), priority, depth_sort);
 
-		handle_duplicate_warning(_name);
-		layers.set(_name, _layer);
+		handle_duplicate_warning(name);
+		_layers.set(name, _layer);
 
-		if(_enabled) {
+		if(enabled) {
 			enable(_layer);
 		}
 
@@ -53,90 +54,98 @@ class LayerManager {
 
 	}
 
-	public function destroy(_layer:Layer) {
+	public function destroy(layer:Layer) {
 		
-		if(layers.exists(_layer.name)) {
-			layers.remove(_layer.name);
-			disable(_layer);
+		if(_layers.exists(layer.name)) {
+			_layers.remove(layer.name);
+			disable(layer);
 		} else {
-			log('can`t remove layer: "${_layer.name}" , already removed?');
+			log('can`t remove layer: "${layer.name}" , already removed?');
 		}
 
 		for (c in Clay.renderer.cameras.cameras) {
-			c.visible_layers_mask.enable(_layer.id);
+			c._visible_layers_mask.enable(layer.id);
 		}
 
-		_layer.destroy();
+		layer.destroy();
 
 	}
 
-	public inline function get(_name:String):Layer {
+	public inline function get(name:String):Layer {
 
-		return layers.get(_name);
+		return _layers.get(name);
 
 	}
 
-	public function enable(_layer:Layer) {
+	public function enable(layer:Layer) {
 
-		if(_layer._active) {
+		if(layer._active) {
 			return;
 		}
 		
 		var added:Bool = false;
 		var l:Layer = null;
-		for (i in 0...active_layers.length) {
-			l = active_layers[i];
-			if (_layer.priority < l.priority) {
-				active_layers.insert(i, _layer);
+		for (i in 0..._active_layers.length) {
+			l = _active_layers[i];
+			if (layer.priority < l.priority) {
+				_active_layers.insert(i, layer);
 				added = true;
 				break;
 			}
 		}
 
-		_layer._active = true;
+		layer._active = true;
 
 		if(!added) {
-			active_layers.push(_layer);
+			_active_layers.push(layer);
 		}
 
 	}
 
-	public function disable(_layer:Layer) {
+	public function disable(layer:Layer) {
 
-		if(!_layer._active) {
+		if(!layer._active) {
 			return;
 		}
 
-		active_layers.remove(_layer);
-		_layer._active = false;
+		_active_layers.remove(layer);
+		layer._active = false;
 		
 	}
 
 	public function clear() {
 
-		for (l in layers) {
+		for (l in _layers) {
 			destroy(l);
 		}
 		
 	}
 
-	public inline function render(_:Graphics, cam:Camera) {
+	public inline function update(dt:Float) {
+		
+		for (l in _active_layers) {
+			l.update(dt);
+		}
 
-		for (l in active_layers) {
-			if(cam.visible_layers_mask[l.id]) {
-				l.render(Clay.renderer.target.image.g4, cam);
+	}
+
+	public inline function render(cam:Camera) {
+
+		for (l in _active_layers) {
+			if(cam._visible_layers_mask[l.id]) {
+				l.render(cam);
 			}
 		}
 		
 	}
 
-	inline function handle_duplicate_warning(_name:String) {
+	inline function handle_duplicate_warning(name:String) {
 
-		var l:Layer = layers.get(_name);
+		var l:Layer = _layers.get(name);
 		if(l != null) {
-			log('adding a second layer named: "${_name}"!
+			log('adding a second layer named: "${name}"!
 				This will replace the existing one, possibly leaving the previous one in limbo.');
-			layers.remove(_name);
+			_layers.remove(name);
 			disable(l);
 		}
 
@@ -144,7 +153,7 @@ class LayerManager {
 
 	inline function get_active_count():Int {
 		
-		return active_layers.length;
+		return _active_layers.length;
 
 	}
 
@@ -155,20 +164,20 @@ class LayerManager {
 		}
 
 		++used;
-		return _ids.pop();
+		return _layer_ids.pop();
 
 	}
 
-	function push_layer_id(_id:Int) {
+	function push_layer_id(id:Int) {
 
 		--used;
-		_ids.push(_id);
+		_layer_ids.push(id);
 
 	}
 
 	@:noCompletion public inline function iterator():Iterator<Layer> {
 
-		return active_layers.iterator();
+		return _active_layers.iterator();
 
 	}
 

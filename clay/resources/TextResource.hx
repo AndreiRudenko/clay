@@ -1,6 +1,9 @@
 package clay.resources;
 
 
+import clay.system.ResourceManager;
+
+
 class TextResource extends Resource {
 
 
@@ -11,6 +14,14 @@ class TextResource extends Resource {
 
 		text = _text;
 		
+		resource_type = ResourceType.text;
+		
+	}
+
+	override function memory_use() {
+		
+        return text != null ? text.length : 0;
+        
 	}
 
 
