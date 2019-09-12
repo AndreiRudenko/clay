@@ -9,8 +9,8 @@ import particles.ParticleEmitter;
 class CallbackModule extends ParticleModule {
 
 
-	public var onspawn_callback:Particle->ParticleEmitter->Void;
-	public var onunspawn_callback:Particle->ParticleEmitter->Void;
+	public var onspawn_callback:(p:Particle, pe:ParticleEmitter)->Void;
+	public var onunspawn_callback:(p:Particle, pe:ParticleEmitter)->Void;
 
 
 	public function new(_options:ForceModuleOptions) {
@@ -44,8 +44,8 @@ class CallbackModule extends ParticleModule {
 
 typedef ForceModuleOptions = {
 
-	@:optional var onspawn_callback : Particle->ParticleEmitter->Void;
-	@:optional var onunspawn_callback : Particle->ParticleEmitter->Void;
+	@:optional var onspawn_callback:(p:Particle, pe:ParticleEmitter)->Void;
+	@:optional var onunspawn_callback:(p:Particle, pe:ParticleEmitter)->Void;
 
 }
 

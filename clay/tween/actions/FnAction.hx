@@ -11,10 +11,10 @@ class FnAction<T> extends TweenAction<T> {
 	var from:Array<Float>;
 	var current:Array<Float>;
 	var difference:Array<Float>;
-	var fn:T->Array<Float>->Void;
+	var fn:(t:T, p:Array<Float>)->Void;
 
 
-	public function new(tween:Tween<T>, fn:T->Array<Float>->Void, duration:Float, from:Array<Float> = null, to:Array<Float> = null) {
+	public function new(tween:Tween<T>, fn:(t:T, p:Array<Float>)->Void, duration:Float, from:Array<Float> = null, to:Array<Float> = null) {
 
 		super(tween, duration);
 

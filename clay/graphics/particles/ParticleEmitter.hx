@@ -68,7 +68,7 @@ class ParticleEmitter {
 	public var cache_wrap:Bool;
 
 		/** emitter random function */
-	public var random:Void->Float;
+	public var random:()->Float;
 
 		/** blending src */
 	public var blend_src:BlendMode;
@@ -86,7 +86,7 @@ class ParticleEmitter {
 		/** emitter particles sort mode */
 	public var sortmode:ParticlesSortMode;
 		/** custom particles sort function */
-	public var sort_func:Particle->Particle->Int;
+	public var sort_func:(p1:Particle, p2:Particle)->Int;
 
 		/** emitter index in particle system */
 	public var index(default, null):Int = 0;
@@ -742,10 +742,10 @@ typedef ParticleEmitterOptions = {
 	@:optional var modules:Array<ParticleModule>;
 
 	@:optional var modules_data:Array<Dynamic>; // used for json import
-	@:optional var random:Void -> Float;
+	@:optional var random:()->Float;
 	@:optional var options:Dynamic;
 	@:optional var sortmode:ParticlesSortMode;
-	@:optional var sort_func:Particle->Particle->Int;
+	@:optional var sort_func:(p1:Particle, p2:Particle)->Int;
 
 }
 

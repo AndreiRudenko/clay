@@ -6,8 +6,8 @@ class VectorCallback extends Vector {
 
     public var ignore_listeners:Bool = false;
     
-    @:isVar public var listen_x(default,default):Float -> Void;
-    @:isVar public var listen_y(default,default):Float -> Void;
+    @:isVar public var listen_x(default,default):(v:Float)->Void;
+    @:isVar public var listen_y(default,default):(v:Float)->Void;
 
 
     public function new(_x:Float = 0, _y:Float = 0) {
@@ -16,7 +16,7 @@ class VectorCallback extends Vector {
         
     }
 
-    public function listen(f:Float->Void) {
+    public function listen(f:(v:Float)->Void) {
 
         listen_x = f;
         listen_y = f;

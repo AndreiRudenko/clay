@@ -28,7 +28,18 @@ class ArrayTools {
 
 	}
 
-	public static function insert_sorted_key<T>(list:Array<T>, key:T, compare:T->T->Int):Void {
+	// public static function fast_remove<T>(array:Array<T>, ) {
+
+	// 	var i:Int = a.length, j:Int, t:T;
+	// 	while (--i > 0) {
+	// 		t = a[i];
+	// 		a[i] = a[j = Clay.random.int(i + 1)];
+	// 		a[j] = t;
+	// 	}
+
+	// }
+
+	public static function insert_sorted_key<T>(list:Array<T>, key:T, compare:(a:T, b:T)->Int):Void {
 
 		var result:Int = 0;
 		var mid:Int = 0;

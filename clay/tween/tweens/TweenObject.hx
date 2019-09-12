@@ -94,7 +94,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function call(fn:T->Void):TweenObject<T> {
+	public function call(fn:(t:T)->Void):TweenObject<T> {
 
 		add_action(new CallAction(this, fn));
 
@@ -242,7 +242,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 	}
 
 	@:noCompletion 
-	public function _prop(get_prop:T->Float, set_prop:T->Float->Void, value:Float, duration:Float, backwards:Bool):TweenObject<T> {
+	public function _prop(get_prop:(t:T)->Float, set_prop:(t:T, p:Float)->Void, value:Float, duration:Float, backwards:Bool):TweenObject<T> {
 
 		add_action(new NumAction<T>(this, get_prop, set_prop, value, duration, backwards));
 
@@ -251,7 +251,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 	}
 
 	@:noCompletion 
-	public function _prop_mult(get_prop:T->Array<Float>->Void, set_prop:T->Array<Float>->Void, values:Array<Float>, duration:Float, backwards:Bool):TweenObject<T> {
+	public function _prop_mult(get_prop:(t:T, p:Array<Float>)->Void, set_prop:(t:T, p:Array<Float>)->Void, values:Array<Float>, duration:Float, backwards:Bool):TweenObject<T> {
 
 		add_action(new MultiNumAction<T>(this, get_prop, set_prop, values, duration, backwards));
 
@@ -260,7 +260,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 	}
 
 	@:noCompletion 
-	public function _mt(fn:T->Array<Float>->Void, duration:Float, start:Array<Float> = null, end:Array<Float> = null):TweenObject<T> {
+	public function _mt(fn:(t:T, p:Array<Float>)->Void, duration:Float, start:Array<Float> = null, end:Array<Float> = null):TweenObject<T> {
 
 		add_action(new FnAction(this, fn, duration, start, end));
 
@@ -268,7 +268,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function onstart(f:Void->Void):TweenObject<T> {
+	public function onstart(f:()->Void):TweenObject<T> {
 
 		_onstart = f;
 
@@ -276,7 +276,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function onstop(f:Void->Void):TweenObject<T> {
+	public function onstop(f:()->Void):TweenObject<T> {
 
 		_onstop = f;
 
@@ -284,7 +284,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function onupdate(f:Void->Void):TweenObject<T> {
+	public function onupdate(f:()->Void):TweenObject<T> {
 
 		_onupdate = f;
 
@@ -292,7 +292,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function onrepeat(f:Void->Void):TweenObject<T> {
+	public function onrepeat(f:()->Void):TweenObject<T> {
 
 		_onrepeat = f;
 
@@ -300,7 +300,7 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function oncomplete(f:Void->Void):TweenObject<T> {
+	public function oncomplete(f:()->Void):TweenObject<T> {
 
 		_oncomplete = f;
 

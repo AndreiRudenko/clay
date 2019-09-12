@@ -31,9 +31,9 @@ class Timer {
 	public var progress(get, never):Float;
 
 
-	var _oncomplete:Void->Void;
-	var _onrepeat:Void->Void;
-	var _onupdate:Void->Void;
+	var _oncomplete:()->Void;
+	var _onrepeat:()->Void;
+	var _onupdate:()->Void;
 
 	var _loops_counter:Int = 0;
 
@@ -58,13 +58,13 @@ class Timer {
 
 	}
 
-	public inline function start(_timelimit:Float, _oncompletefunc:Void->Void = null):Timer {
+	public inline function start(_timelimit:Float, _oncompletefunc:()->Void = null):Timer {
 
 		return start_from(0, _timelimit, _oncompletefunc);
 
 	}
 
-	public function start_from(_current_time:Float, _timelimit:Float, _oncompletefunc:Void->Void = null):Timer {
+	public function start_from(_current_time:Float, _timelimit:Float, _oncompletefunc:()->Void = null):Timer {
 
 		stop(false); // here we remove from timers array
 
@@ -145,7 +145,7 @@ class Timer {
 	}
 
 
-	public function oncomplete(?_oncompletefunc:Void->Void):Timer {
+	public function oncomplete(?_oncompletefunc:()->Void):Timer {
 
 		_oncomplete = _oncompletefunc;
 
@@ -153,7 +153,7 @@ class Timer {
 
 	}
 
-	public function onrepeat(?_onrepeatfunc:Void->Void):Timer {
+	public function onrepeat(?_onrepeatfunc:()->Void):Timer {
 
 		_onrepeat = _onrepeatfunc;
 
@@ -161,7 +161,7 @@ class Timer {
 
 	}
 
-	public function onupdate(?_onupdatefunc:Void->Void):Timer {
+	public function onupdate(?_onupdatefunc:()->Void):Timer {
 
 		_onupdate = _onupdatefunc;
 

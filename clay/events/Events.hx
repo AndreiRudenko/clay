@@ -13,11 +13,11 @@ import clay.utils.Log.*;
 	will recieve the event notifications. Don't forget to disconnect events. */
 class Events {
 
-	@:noCompletion public var event_queue : Array<EventObject>;
-	@:noCompletion public var event_connections : Map<String, EventConnection>; //event id, connect
-	@:noCompletion public var event_slots : Map<String, Array<EventConnection> >; //event name, array of connections
-	@:noCompletion public var event_filters : Map<String, Array<EventConnection> >; //event name, array of connections
-	@:noCompletion public var event_schedules : Map<String, clay.utils.Timer>; //event id, timer
+	@:noCompletion public var event_queue:Array<EventObject>;
+	@:noCompletion public var event_connections:Map<String, EventConnection>; //event id, connect
+	@:noCompletion public var event_slots:Map<String, Array<EventConnection> >; //event name, array of connections
+	@:noCompletion public var event_filters:Map<String, Array<EventConnection> >; //event name, array of connections
+	@:noCompletion public var event_schedules:Map<String, clay.utils.Timer>; //event id, timer
 
 	var event_queue_count = 0;
 
@@ -81,9 +81,9 @@ class Events {
 
 
 		/** Bind a signal (listener) to a slot (event_name)
-			event_name : The event id
-			listener : A function handler that should get called on event firing */
-	public function listen<T>( _event_name : String, _listener : T -> Void ):String {
+			event_name:The event id
+			listener:A function handler that should get called on event firing */
+	public function listen<T>( _event_name:String, _listener:(e:T)->Void ):String {
 
 			//we need an ID and a connection to store
 		var _id = clay.utils.UUID.get();
@@ -128,7 +128,7 @@ class Events {
 		/**Disconnect a bound signal
 			The event connection id is returned from listen()
 			and returns true if the event existed and was removed. */
-	public function unlisten( event_id : String ) : Bool {
+	public function unlisten( event_id:String ):Bool {
 
 		if(event_connections.exists(event_id)) {
 
@@ -157,10 +157,10 @@ class Events {
 	} //unlisten
 
 		/*Queue an event in the next update loop
-			event_name : The event (register listeners with listen())
-			properties : A dynamic pass-through value to hand off data
-			returns : a String, the unique ID of the event */
-	public function queue<T>( event_name : String, ?properties : T ) : String {
+			event_name:The event (register listeners with listen())
+			properties:A dynamic pass-through value to hand off data
+			returns:a String, the unique ID of the event */
+	public function queue<T>( event_name:String, ?properties:T ):String {
 
 		var _id = clay.utils.UUID.get();
 
@@ -206,11 +206,11 @@ class Events {
 	} //update
 
 		/** Fire an event immediately, calling all listeners.
-			properties : An optional pass-through value to hand to the listener.
+			properties:An optional pass-through value to hand to the listener.
 			Returns true if event existed, false otherwise.
 			If the optional tag flag is set (default:false), the properties object will be modified
 			with some debug information, like _event_name_ and _event_connection_count_ */
-	public function fire<T>( _event_name : String, ?_properties : T, ?_tag:Bool=false ) : Bool {
+	public function fire<T>( _event_name:String, ?_properties:T, ?_tag:Bool=false ):Bool {
 
 		var _fired = false;
 
@@ -260,12 +260,12 @@ class Events {
 	} //fire
 
 		/** Schedule and event in the future
-			event_name : The event (register listeners with listen())
-			properties : An optional pass-through value to hand to the listeners
+			event_name:The event (register listeners with listen())
+			properties:An optional pass-through value to hand to the listeners
 			Returns the ID of the schedule (for unschedule) */
-	public function schedule<T>( time:Float, event_name : String, ?properties : T ) : String {
+	public function schedule<T>( time:Float, event_name:String, ?properties:T ):String {
 
-		var _id : String = clay.utils.UUID.get();
+		var _id:String = clay.utils.UUID.get();
 
 			var _timer = Clay.timer.schedule(time, fire.bind(event_name, properties));
 
@@ -276,9 +276,9 @@ class Events {
 	} //schedule
 
 		/** Unschedule a previously scheduled event
-			schedule_id : The id of the schedule (returned from schedule)
+			schedule_id:The id of the schedule (returned from schedule)
 			Returns false if fails, or event doesn't exist */
-	public function unschedule( schedule_id : String ) : Bool {
+	public function unschedule( schedule_id:String ):Bool {
 
 		if(event_schedules.exists(schedule_id)) {
 				//find the timer
@@ -315,12 +315,12 @@ class Events {
 private class EventConnection {
 
 
-	public var listener : Dynamic -> Void;
-	public var id : String;
-	public var event_name : String;
+	public var listener:(e:Dynamic)->Void;
+	public var id:String;
+	public var event_name:String;
 
 
-	public function new( _id:String, _event_name:String, _listener : Dynamic -> Void ) {
+	public function new( _id:String, _event_name:String, _listener:(e:Dynamic)->Void ) {
 
 		id = _id;
 		listener = _listener;
@@ -334,9 +334,9 @@ private class EventConnection {
 private class EventObject {
 
 
-	public var id : String;
+	public var id:String;
 	public var name:String;
-	public var properties : Dynamic;
+	public var properties:Dynamic;
 
 
 	public function new(_id:String, _event_name:String, _event_properties:Dynamic ) {

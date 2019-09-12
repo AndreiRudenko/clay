@@ -8,10 +8,10 @@ import clay.tween.tweens.Tween;
 class CallAction<T> extends TweenAction<T> {
 
 
-	var call_fn:T->Void;
+	var call_fn:(t:T)->Void;
 
 
-	public function new(tween:Tween<T>, fn:T->Void) {
+	public function new(tween:Tween<T>, fn:(t:T)->Void) {
 
 		super(tween, 0);
 

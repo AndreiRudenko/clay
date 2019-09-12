@@ -40,7 +40,7 @@ class TweenFn<T> extends Tween<T> implements ITween {
 	}
 
 	@:noCompletion 
-	public function _update(fn:T->Array<Float>->Void, duration:Float, start:Array<Float> = null, end:Array<Float> = null):TweenFn<T> {
+	public function _update(fn:(t:T, a:Array<Float>)->Void, duration:Float, start:Array<Float> = null, end:Array<Float> = null):TweenFn<T> {
 
 		add_action(new FnAction(this, fn, duration, start, end));
 
@@ -70,7 +70,7 @@ class TweenFn<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function call(fn:T->Void):TweenFn<T> {
+	public function call(fn:(t:T)->Void):TweenFn<T> {
 
 		add_action(new CallAction(this, fn));
 
@@ -86,7 +86,7 @@ class TweenFn<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function onstart(f:Void->Void):TweenFn<T> {
+	public function onstart(f:()->Void):TweenFn<T> {
 
 		_onstart = f;
 
@@ -94,7 +94,7 @@ class TweenFn<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function onstop(f:Void->Void):TweenFn<T> {
+	public function onstop(f:()->Void):TweenFn<T> {
 
 		_onstop = f;
 
@@ -102,7 +102,7 @@ class TweenFn<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function onupdate(f:Void->Void):TweenFn<T> {
+	public function onupdate(f:()->Void):TweenFn<T> {
 
 		_onupdate = f;
 
@@ -110,7 +110,7 @@ class TweenFn<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function onrepeat(f:Void->Void):TweenFn<T> {
+	public function onrepeat(f:()->Void):TweenFn<T> {
 
 		_onrepeat = f;
 
@@ -118,7 +118,7 @@ class TweenFn<T> extends Tween<T> implements ITween {
 
 	}
 
-	public function oncomplete(f:Void->Void):TweenFn<T> {
+	public function oncomplete(f:()->Void):TweenFn<T> {
 
 		_oncomplete = f;
 

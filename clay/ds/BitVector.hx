@@ -5,7 +5,7 @@ package clay.ds;
 
 
 #if js
-private typedef IntArray = js.html.Int32Array;
+private typedef IntArray = js.lib.Int32Array;
 #else
 private typedef IntArray = haxe.ds.Vector<Int>;
 #end
@@ -91,7 +91,7 @@ abstract BitVector(IntArray) from IntArray {
 		
 	}
 
-	public function for_each(cb:Int->Void) {
+	public function for_each(cb:(b:Int)->Void) {
 
 		var p:Int = 0;
 		var bitset:Int = 0;
@@ -123,7 +123,7 @@ abstract BitVector(IntArray) from IntArray {
 			_list.push(get(i));
 		}
 
-		return '[${_list.join(", ")}]';
+		return "[" + _list.join(", ") + "]";
 
 	}
 

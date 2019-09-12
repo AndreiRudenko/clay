@@ -17,11 +17,11 @@ import clay.render.Layer;
 class Debug {
 
 	#if !no_debug_console
-	public static var trace_callbacks : Array<Dynamic->?haxe.PosInfos->Void> = [];
+	public static var trace_callbacks:Array<Dynamic->?haxe.PosInfos->Void> = [];
 
 	static var shut_down:Bool = false;
 	static var tracing:Bool = false;
-	static var haxe_trace:Dynamic->?haxe.PosInfos->Void;
+	static var haxe_trace:(v:Dynamic, ?p:haxe.PosInfos)->Void;
 
 	static function internal_trace(_value:Dynamic, ?_info:haxe.PosInfos) {
 

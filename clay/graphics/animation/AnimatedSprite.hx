@@ -353,8 +353,8 @@ class AnimationDataTextures extends AnimationData {
 				return;
 			}
 
-			if(anim._texture != t) { 
-				anim._texture = t; // this will not sort geometry in layer 
+			if(anim.texture != t) { 
+				anim.geometry.texture = t; // this will not sort geometry in layer 
 			}
 		}
 
@@ -381,7 +381,7 @@ class AnimationData {
 	public var frames_count 	(get, never):Int;
 
 	@:noCompletion public var _loop:Int;
-	@:noCompletion public var _oncomplete:Void->Void;
+	@:noCompletion public var _oncomplete:()->Void;
 
 	var _last_frame:Int;
 
@@ -479,7 +479,7 @@ class AnimationData {
 		
 	}
 
-	public function oncomplete(_fn:Void->Void):AnimationData {
+	public function oncomplete(_fn:()->Void):AnimationData {
 
 		_oncomplete = _fn;
 

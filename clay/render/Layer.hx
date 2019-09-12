@@ -32,8 +32,8 @@ class Layer {
 	public var depth_sort:Bool = true;
 	public var dirty_sort:Bool = true;
 
-	public var onprerender  (default, null):Signal<Void->Void>;
-	public var onpostrender	(default, null):Signal<Void->Void>;
+	public var onprerender  (default, null):Signal<()->Void>;
+	public var onpostrender	(default, null):Signal<()->Void>;
 
 	public var blend_src:BlendMode;
 	public var blend_dst:BlendMode;

@@ -26,7 +26,7 @@ class Transform {
 	var _local:Spatial;
 	var _world:Spatial;
 	var _cleaning:Bool;
-	var _clean_handlers:Array<Transform->Void>;
+	var _clean_handlers:Array<(t:Transform)->Void>;
 	
 
 	public function new(?options:TransformOptions) {
@@ -116,7 +116,7 @@ class Transform {
 
 	}
 
-	public function listen(handler:Transform->Void) {
+	public function listen(handler:(t:Transform)->Void) {
 
 		if(_clean_handlers == null) {
 			_clean_handlers = [];
@@ -126,7 +126,7 @@ class Transform {
 
 	}
 
-	public function unlisten(handler:Transform->Void) {
+	public function unlisten(handler:(t:Transform)->Void) {
 
 		if(_clean_handlers == null) {
 			_clean_handlers.remove(handler);

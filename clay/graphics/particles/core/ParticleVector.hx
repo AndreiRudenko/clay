@@ -94,7 +94,7 @@ class ParticleVector {
 	}
 
 	@:access(clay.graphics.particles.ParticleVector)
-	public function for_each(f:Particle->Void) {
+	public function for_each(f:(p:Particle)->Void) {
 		
 		for (p in buffer) {
 			f(p);
@@ -102,7 +102,7 @@ class ParticleVector {
 
 	}
 
-	public function sort(compare:Particle->Particle->Int):Vector<Particle> {
+	public function sort(compare:(p1:Particle, p2:Particle)->Int):Vector<Particle> {
 
 		if(_need_sort) {
 			for (i in 0...length) {
@@ -118,7 +118,7 @@ class ParticleVector {
 	}
 	
 	// merge sort
-	function _sort(a:Vector<Particle>, aux:Vector<Particle>, l:Int, r:Int, compare:Particle->Particle->Int) { 
+	function _sort(a:Vector<Particle>, aux:Vector<Particle>, l:Int, r:Int, compare:(p1:Particle, p2:Particle)->Int) { 
 		
 		if (l < r) {
 			var m = Std.int(l + (r - l) / 2);
@@ -129,7 +129,7 @@ class ParticleVector {
 
 	}
 
-	inline function _merge(a:Vector<Particle>, aux:Vector<Particle>, l:Int, m:Int, r:Int, compare:Particle->Particle->Int) { 
+	inline function _merge(a:Vector<Particle>, aux:Vector<Particle>, l:Int, m:Int, r:Int, compare:(p1:Particle, p2:Particle)->Int) { 
 
 		var k = l;
 		while (k <= r) {

@@ -58,7 +58,7 @@ class Bits {
 
 	}
 
-	public static function for_each(v:Int, cb:Int->Void) {
+	public static function for_each(v:Int, cb:(b:Int)->Void) {
 
 		var i:Int = 0;
 		while (v != 0) {

@@ -8,8 +8,8 @@ import clay.tween.tweens.Tween;
 class NumAction<T> extends TweenAction<T> {
 
 
-	var _get_prop:T->Float;
-	var _set_prop:T->Float->Void;
+	var _get_prop:(t:T)->Float;
+	var _set_prop:(t:T, v:Float)->Void;
 
 	var _from:Float;
 	var _difference:Float;
@@ -18,7 +18,7 @@ class NumAction<T> extends TweenAction<T> {
 	var _reverse:Bool;
 
 
-	public function new(tween:Tween<T>, get_prop:T->Float, set_prop:T->Float->Void, value:Float, duration:Float, reverse:Bool) {
+	public function new(tween:Tween<T>, get_prop:(t:T)->Float, set_prop:(t:T, v:Float)->Void, value:Float, duration:Float, reverse:Bool) {
 
 		super(tween, duration);
 

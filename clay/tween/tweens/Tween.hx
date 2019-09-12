@@ -22,13 +22,13 @@ class Tween<T> {
 	var _manager:TweenManager;
 	var _next_tween:Tween<Dynamic>;
 
-	var _onstart:Void->Void;
-	var _onstop:Void->Void;
-	var _onpause:Void->Void;
-	var _onresume:Void->Void;
-	var _onupdate:Void->Void;
-	var _onrepeat:Void->Void;
-	var _oncomplete:Void->Void;
+	var _onstart:()->Void;
+	var _onstop:()->Void;
+	var _onpause:()->Void;
+	var _onresume:()->Void;
+	var _onupdate:()->Void;
+	var _onrepeat:()->Void;
+	var _oncomplete:()->Void;
 
 	var _added:Bool;
 	var _reflect:Bool;

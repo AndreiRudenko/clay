@@ -33,8 +33,8 @@ class Camera {
 	public var bounds:Rectangle;
 	public var priority(default, null):Int;
 
-	public var onprerender  (default, null):Signal<Camera->Void>;
-	public var onpostrender	(default, null):Signal<Camera->Void>;
+	public var onprerender  (default, null):Signal<(c:Camera)->Void>;
+	public var onpostrender	(default, null):Signal<(c:Camera)->Void>;
 
 	@:noCompletion public var transform:Transform;
 	@:noCompletion public var projection_matrix:Matrix;
@@ -174,7 +174,7 @@ class Camera {
 		
 	}
 
-	function update_pos(_) {
+	function update_pos(_:Float) {
 
 		var corx = 0.0;
 		var cory = 0.0;

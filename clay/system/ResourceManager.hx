@@ -49,7 +49,7 @@ class ResourceManager {
 
 	}
 
-	public function load_all(arr:Array<String>, oncomplete:Void->Void, ?onprogress:Float->Void) {
+	public function load_all(arr:Array<String>, oncomplete:()->Void, ?onprogress:(p:Float)->Void) {
 
 		if(arr.length == 0) {
 			if(onprogress != null) {
@@ -65,7 +65,7 @@ class ResourceManager {
 
 		var i:Int = 0;
 
-		var cb:Resource->Void = null;
+		var cb:(r:Resource)->Void = null;
 
 		cb = function(r) {
 			i++;
@@ -97,7 +97,7 @@ class ResourceManager {
 
 	}
 
-	public function load(id:String, ?oncomplete:Resource->Void) {
+	public function load(id:String, ?oncomplete:(r:Resource)->Void) {
 
 		var res = get(id);
 		if(res != null) {
@@ -136,7 +136,7 @@ class ResourceManager {
 		
 	}
 
-	public function load_bytes(id:String, ?oncomplete:BytesResource->Void) {
+	public function load_bytes(id:String, ?oncomplete:(r:BytesResource)->Void) {
 
 		var res:BytesResource = bytes(id);
 
@@ -166,7 +166,7 @@ class ResourceManager {
 
 	}
 
-	public function load_text(id:String, ?oncomplete:TextResource->Void) {
+	public function load_text(id:String, ?oncomplete:(r:TextResource)->Void) {
 
 		var res:TextResource = text(id);
 
@@ -195,7 +195,7 @@ class ResourceManager {
 
 	}
 
-	public function load_json(id:String, ?oncomplete:JsonResource->Void) {
+	public function load_json(id:String, ?oncomplete:(r:JsonResource)->Void) {
 
 		var res:JsonResource = json(id);
 
@@ -224,7 +224,7 @@ class ResourceManager {
 
 	}
 
-	public function load_texture(id:String, ?oncomplete:Texture->Void) {
+	public function load_texture(id:String, ?oncomplete:(r:Texture)->Void) {
 
 		var res:Texture = texture(id);
 
@@ -254,7 +254,7 @@ class ResourceManager {
 
 	}
 
-	public function load_font(id:String, ?oncomplete:FontResource->Void) {
+	public function load_font(id:String, ?oncomplete:(r:FontResource)->Void) {
 
 		var res:FontResource = font(id);
 
@@ -283,7 +283,7 @@ class ResourceManager {
 
 	}
 
-	public function load_video(id:String, ?oncomplete:VideoResource->Void) {
+	public function load_video(id:String, ?oncomplete:(r:VideoResource)->Void) {
 
 		var res:VideoResource = video(id);
 
@@ -312,7 +312,7 @@ class ResourceManager {
 
 	}
 
-	public function load_audio(id:String, ?oncomplete:AudioResource->Void) {
+	public function load_audio(id:String, ?oncomplete:(r:AudioResource)->Void) {
 
 		var res:AudioResource = audio(id);
 

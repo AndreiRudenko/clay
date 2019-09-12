@@ -45,7 +45,7 @@ class TimerManager {
 
 	}
 	
-	public function schedule(_timelimit:Float = 1, _oncompletefunc:Void->Void = null):Timer {
+	public function schedule(_timelimit:Float = 1, _oncompletefunc:()->Void = null):Timer {
 
 		var t:Timer = new Timer();
 		t.start(_timelimit, _oncompletefunc);
@@ -54,7 +54,7 @@ class TimerManager {
 
 	}
 
-	public function schedule_from(_current_time:Float = 0, _timelimit:Float = 1, _oncompletefunc:Void->Void = null):Timer {
+	public function schedule_from(_current_time:Float = 0, _timelimit:Float = 1, _oncompletefunc:()->Void = null):Timer {
 
 		var t:Timer = new Timer();
 		t.start_from(_current_time, _timelimit, _oncompletefunc);

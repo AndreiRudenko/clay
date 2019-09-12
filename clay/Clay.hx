@@ -39,7 +39,7 @@ class Clay {
 	static var inited:Bool = false;
 
 
-	public static function init(_options:ClayOptions, _onready:Void->Void) {
+	public static function init(_options:ClayOptions, _onready:()->Void) {
 
 		assert(!inited, "app already inited");
 
@@ -61,8 +61,8 @@ class Clay {
 
 	}
 
-	public static inline function next(func:Void->Void) app.next(func);
-	public static inline function defer(func:Void->Void) app.defer(func);
+	public static inline function next(func:()->Void) app.next(func);
+	public static inline function defer(func:()->Void) app.defer(func);
 
 	static inline function get_debug() return app.debug;
 	

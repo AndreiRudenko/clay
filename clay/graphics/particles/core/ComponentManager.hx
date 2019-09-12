@@ -52,7 +52,7 @@ class ComponentManager {
 
 	}
 
-	@:noCompletion public function _set<T>(_particles:ParticleVector, _component_class:Class<T>, _f:Void->T):Components<T> {
+	@:noCompletion public function _set<T>(_particles:ParticleVector, _component_class:Class<T>, _f:()->T):Components<T> {
 
 		var cname:String = Type.getClassName(_component_class);
 		var cp:Components<T> = cast get_components(cname);

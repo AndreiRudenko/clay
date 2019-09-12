@@ -80,14 +80,14 @@ class App {
 
 	var inited:Bool = false;
 
-	var next_queue:Array<Void->Void> = [];
-	var defer_queue:Array<Void->Void> = [];
+	var next_queue:Array<()->Void> = [];
+	var defer_queue:Array<()->Void> = [];
 
 	var _app_event:AppEvent;
 	var _render_event:RenderEvent;
 
 
-	public function new(_options:ClayOptions, _onready:Void->Void) {
+	public function new(_options:ClayOptions, _onready:()->Void) {
 
 		_debug("creating app");
 
@@ -111,20 +111,20 @@ class App {
 
 		/** Call a function at the start of the next frame,
 		useful for async calls in a sync context, allowing the sync function to return safely before the onload is fired. */
-	public inline function next(func:Void->Void) {
+	public inline function next(func:()->Void) {
 
 		if(func != null) next_queue.push(func);
 
 	}
 
 		/** Call a function at the end of the current frame */
-	public inline function defer(func:Void->Void) {
+	public inline function defer(func:()->Void) {
 
 		if(func != null) defer_queue.push(func);
 
 	}
 
-	function ready(_onready:Void->Void) {
+	function ready(_onready:()->Void) {
 		
 		_debug("ready");
 

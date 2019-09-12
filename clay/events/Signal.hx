@@ -82,35 +82,35 @@ abstract Signal<T>(SignalBase<T>){
 	}
 
 	@:to 
-	static inline function toSignal0(signal:SignalBase<Void->Void>):Signal0 {
+	static inline function toSignal0(signal:SignalBase<()->Void>):Signal0 {
 
 		return new Signal0();
 
 	}
 	
 	@:to 
-	static inline function toSignal1<T1>(signal:SignalBase<T1->Void>):Signal1<T1> {
+	static inline function toSignal1<T1>(signal:SignalBase<(t1:T1)->Void>):Signal1<T1> {
 
 		return new Signal1();
 
 	}
 	
 	@:to 
-	static inline function toSignal2<T1, T2>(signal:SignalBase<T1->T2->Void>):Signal2<T1, T2> {
+	static inline function toSignal2<T1, T2>(signal:SignalBase<(t1:T1, t2:T2)->Void>):Signal2<T1, T2> {
 
 		return new Signal2();
 
 	}
 	
 	@:to 
-	static inline function toSignal3<T1, T2, T3>(signal:SignalBase<T1->T2->T3->Void>):Signal3<T1, T2, T3> {
+	static inline function toSignal3<T1, T2, T3>(signal:SignalBase<(t1:T1, t2:T2, t3:T3)->Void>):Signal3<T1, T2, T3> {
 
 		return new Signal3();
 
 	}
 	
 	@:to 
-	static inline function toSignal4<T1, T2, T3, T4>(signal:SignalBase<T1->T2->T3->T4->Void>):Signal4<T1, T2, T3, T4> {
+	static inline function toSignal4<T1, T2, T3, T4>(signal:SignalBase<(t1:T1, t2:T2, t3:T3, t4:T4)->Void>):Signal4<T1, T2, T3, T4> {
 
 		return new Signal4();
 
@@ -119,7 +119,7 @@ abstract Signal<T>(SignalBase<T>){
 }
 
 
-class Signal0 extends SignalBase<Void->Void> {
+class Signal0 extends SignalBase<()->Void> {
 	
 
 	public function new(){
@@ -139,7 +139,7 @@ class Signal0 extends SignalBase<Void->Void> {
 }
 
 
-class Signal1<T1> extends SignalBase<T1->Void> {
+class Signal1<T1> extends SignalBase<(t1:T1)->Void> {
 	
 
 	public function new(){
@@ -158,7 +158,7 @@ class Signal1<T1> extends SignalBase<T1->Void> {
 
 }
 
-class Signal2<T1, T2> extends SignalBase<T1->T2->Void> {
+class Signal2<T1, T2> extends SignalBase<(t1:T1, t2:T2)->Void> {
 	
 
 	public function new(){
@@ -177,7 +177,7 @@ class Signal2<T1, T2> extends SignalBase<T1->T2->Void> {
 
 }
 
-class Signal3<T1, T2, T3> extends SignalBase<T1->T2->T3->Void> {
+class Signal3<T1, T2, T3> extends SignalBase<(t1:T1, t2:T2, t3:T3)->Void> {
 	
 
 	public function new(){
@@ -196,7 +196,7 @@ class Signal3<T1, T2, T3> extends SignalBase<T1->T2->T3->Void> {
 
 }
 
-class Signal4<T1, T2, T3, T4> extends SignalBase<T1->T2->T3->T4->Void> {
+class Signal4<T1, T2, T3, T4> extends SignalBase<(t1:T1, t2:T2, t3:T3, t4:T4)->Void> {
 	
 
 	public function new(){

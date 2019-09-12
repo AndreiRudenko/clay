@@ -8,7 +8,7 @@ import clay.graphics.particles.modules.*;
 class ModulesFactory {
 
 
-	public static var modules(default, null):Map<String, Dynamic->ParticleModule> = new Map();
+	public static var modules(default, null):Map<String, (o:Dynamic)->ParticleModule> = new Map();
 	
 
 	public static function init() {

@@ -9,12 +9,12 @@ class Pool<T> {
 
 
 	public var items:Vector<T>;
-	public var create_func:Void->T;
+	public var create_func:()->T;
 	public var size_limit:Int;
 	public var size:Int;
 
 
-	public function new(_init_size:Int, _size_limit:Int = 0, create_callback:Void->T){
+	public function new(_init_size:Int, _size_limit:Int = 0, create_callback:()->T){
 
 		size_limit = _init_size > _size_limit ? _init_size : _size_limit;
 		size = _init_size;

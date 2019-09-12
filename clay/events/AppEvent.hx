@@ -22,5 +22,4 @@ class AppEvent implements IEvent {
 	function new() {}
 
 
-
 }

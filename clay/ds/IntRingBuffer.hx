@@ -5,7 +5,7 @@ package clay.ds;
 // https://github.com/zeliard/Dispatcher/blob/master/JobDispatcher/ObjectPool.h
 
 #if js
-private typedef IntArray = js.html.Int32Array;
+private typedef IntArray = js.lib.Int32Array;
 #else
 private typedef IntArray = haxe.ds.Vector<Int>;
 #end
@@ -26,8 +26,8 @@ class IntRingBuffer {
 
 		_mask = capacity - 1;
 
-		if(capacity == 0) throw 'non-zero capacity is required';
-		if((_mask & capacity) != 0) throw 'capacity $capacity must be power of two';
+		if(capacity == 0) throw "non-zero capacity is required";
+		if((_mask & capacity) != 0) throw "capacity " + capacity + " must be power of two";
 
 		_buffer = new IntArray(capacity);
 		

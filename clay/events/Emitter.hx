@@ -48,7 +48,7 @@ class Emitter {
 		
 	}
 
-	public function on<T>(event:EventType<T>, handler:T->Void, priority:Int = 0) {
+	public function on<T>(event:EventType<T>, handler:(e:T)->Void, priority:Int = 0) {
 
 		if(_has(event, handler)) {
 			return;
@@ -67,7 +67,7 @@ class Emitter {
 
 	}
 
-	public function off<T>(event:EventType<T>, handler:T->Void):Bool {
+	public function off<T>(event:EventType<T>, handler:(e:T)->Void):Bool {
 
 		if(!_has(event, handler)) {
 			return false;
@@ -88,7 +88,7 @@ class Emitter {
 
 	}
 
-	function _has<T>(event:EventType<T>, handler:T->Void):Bool {
+	function _has<T>(event:EventType<T>, handler:(e:T)->Void):Bool {
 
 		var list = bindings.get(event);
 
@@ -124,7 +124,7 @@ class Emitter {
 
 	}
 
-	function _remove<T>(event:EventType<T>, handler:T->Void) {
+	function _remove<T>(event:EventType<T>, handler:(e:T)->Void) {
 		
 		var list = bindings.get(event);
 		for (i in 0...list.length) {
@@ -142,17 +142,17 @@ class Emitter {
 	
 }
 
-private typedef EmitDef<T> = {event:T, handler:T->Void}
+private typedef EmitDef<T> = {event:T, handler:(e:T)->Void}
 
 private class EmitHandler<T> {
 
 
 	public var event:EventType<T>;
-	public var callback:T->Void;
+	public var callback:(e:T)->Void;
 	public var priority:Int;
 
 
-	public function new(event:EventType<T>, callback:T->Void, priority:Int) {
+	public function new(event:EventType<T>, callback:(e:T)->Void, priority:Int) {
 
 		this.event = event;
 		this.callback = callback;

@@ -6,10 +6,10 @@ class RectangleCallback extends Rectangle {
 
 	public var ignore_listeners:Bool = false;
 
-	@:isVar public var listen_x(default,default):Float -> Void;
-	@:isVar public var listen_y(default,default):Float -> Void;
-	@:isVar public var listen_w(default,default):Float -> Void;
-	@:isVar public var listen_h(default,default):Float -> Void;
+	@:isVar public var listen_x(default,default):(v:Float)->Void;
+	@:isVar public var listen_y(default,default):(v:Float)->Void;
+	@:isVar public var listen_w(default,default):(v:Float)->Void;
+	@:isVar public var listen_h(default,default):(v:Float)->Void;
 
 
 	public function new(_x:Float = 0, _y:Float = 0, _w:Float = 0, _h:Float = 0) {
@@ -18,7 +18,7 @@ class RectangleCallback extends Rectangle {
 
 	}
 
-	public function listen(f:Float->Void):RectangleCallback {
+	public function listen(f:(v:Float)->Void):RectangleCallback {
 
 		listen_x = f;
 		listen_y = f;
