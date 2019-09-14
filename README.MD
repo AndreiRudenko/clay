@@ -4,7 +4,8 @@ Clay is a cross-platform, 2d game framework.
 
 ## Installation
 ```bash
-haxelib install clay2d
+git clone --recursive https://github.com/RudenkoArts/clay2d.git
+haxelib dev clay2d path/to/clay2d
 ```
 
 ## Features
