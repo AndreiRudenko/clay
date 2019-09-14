@@ -1,7 +1,6 @@
 package commands;
 
 
-import Yaml;
 import Config;
 import sys.FileSystem;
 import sys.io.File;
@@ -47,9 +46,9 @@ class Launch extends Command {
 				}
 				var url = 'http://localhost:$port/';
 				switch (Sys.systemName()) {
-					case "Linux", "BSD": js.node.ChildProcess.execSync('xdg-open $url');
-					case "Mac": js.node.ChildProcess.execSync('open $url');
-					case "Windows": js.node.ChildProcess.execSync('start $url');
+					case "Linux", "BSD": CLI.execute('xdg-open', ['$url']);
+					case "Mac": CLI.execute('open', ['$url']);
+					case "Windows": CLI.execute('start', ['$url']);
 					default:
 				}
 			}
@@ -58,14 +57,14 @@ class Launch extends Command {
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
-				js.node.ChildProcess.execSync('start cmd /c $path'); // todo: remove cmd ?
+				CLI.execute('start', ['cmd', "/c", '$path']); // todo: remove cmd ?
 			}
 			case 'windows-hl' : {
 				var path = Path.join([CLI.user_dir, 'build/windows-hl/${config.project.title}.exe']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
-				js.node.ChildProcess.execSync('start cmd /c $path'); // todo: remove cmd ?
+				CLI.execute('start', ['cmd', "/c", '$path']); // todo: remove cmd ?
 			}
 			case 'android-native-hl' : {
 				var path = Path.join([CLI.user_dir, 'build/android-native-hl-build/${config.project.title}/app/build/outputs/apk/debug/app-debug.apk']);
@@ -73,24 +72,24 @@ class Launch extends Command {
 					CLI.error('Can`t find app at: $path');
 				}
 				var pkg = untyped __js__('config.android.package');
-				// js.node.ChildProcess.execSync('start cmd /c adb uninstall $pkg');
-				js.node.ChildProcess.execSync('start cmd /c adb install -r $path');
-				js.node.ChildProcess.execSync('start cmd /c adb shell am start -n $pkg/tech.kode.kore.KoreActivity');
-				js.node.ChildProcess.execSync('start cmd /c adb logcat -s kore DEBUG AndroidRuntime');
+				// CLI.execute('start', ['cmd', "/c", 'adb', 'uninstall', '$pkg']);
+				CLI.execute('start', ['cmd', "/c", 'adb', 'install', '-r', '$path']);
+				CLI.execute('start', ['cmd', "/c", 'adb', 'shell', 'am', 'start', '-n', '$pkg/tech.kode.kore.KoreActivity']);
+				CLI.execute('start', ['cmd', "/c", 'adb', 'logcat', '-s', 'kore', 'DEBUG', 'AndroidRuntime']);
 			}
 			case 'linux': {
 				var path = Path.join([CLI.user_dir, 'build/linux/${config.project.title}']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
-				js.node.ChildProcess.execSync('xdg-open $path');
+				CLI.execute('xdg-open', ['$path']);
 			}
 			case 'osx' : {
 				var path = Path.join([CLI.user_dir, 'build/osx/${config.project.title}']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
-				js.node.ChildProcess.execSync('open $path');
+				CLI.execute('open', ['$path']);
 			}
 		}
 

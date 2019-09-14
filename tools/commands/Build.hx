@@ -95,10 +95,7 @@ class Build extends Command {
 
 	function build_project(config:ConfigData) {
 
-		var khamake_path = Path.join([CLI.engine_dir, CLI.backend_path, CLI.kha_path, 'Tools/khamake/khamake.js']);
-
 		var args:Array<String> = [];
-		args.push(khamake_path);
 		args.push('--target');
 		args.push(config.target);
 		if(config.debug) {
@@ -193,7 +190,7 @@ class Build extends Command {
 		}
 
 		CLI.print('Run build command: ${args.join(" ")}');
-		var res = Sys.command('node', args);
+		var res = CLI.execute(CLI.khamake_path, args);
 		if(res != 0) {
 			CLI.error('Build failed'); 
 		}
@@ -260,14 +257,6 @@ class Build extends Command {
 				CLI.print('Can`t find html at: $html_path');
 			}
 
-			if(!config.debug) {
-				var script:String;
-				if(config.html5.minify) {
-					CLI.print('Minifying javascript...');
-					var min = js.node.ChildProcess.execSync('node ${CLI.engine_dir}/tools/node_modules/uglify-js/bin/uglifyjs ${CLI.user_dir}/build/html5/${config.html5.script}.js --compress --mangle', {encoding: "UTF-8"});
-		    		File.saveContent('${CLI.user_dir}/build/html5/${config.html5.script}.js', min);
-				}
-			}
 		}
 			
 	}

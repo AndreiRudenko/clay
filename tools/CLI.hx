@@ -1,9 +1,8 @@
 package;
 
 
-import js.Node.process;
-import js.node.Path;
-
+import haxe.io.Path;
+import sys.FileSystem;
 
 class CLI {
 
@@ -12,6 +11,7 @@ class CLI {
 	public static var templates_path:String = 'templates';
 	public static var backend_path:String = 'backend';
 	public static var kha_path:String = 'Kha';
+	public static var khamake_path:String;
 
 	public static var command_map:Map<String, Command>;
 	public static var user_dir:String;
@@ -22,10 +22,11 @@ class CLI {
 
 	static function main() {
 
-		var args = process.argv.slice(2);
+		var args = Sys.args();
 
-		user_dir = process.cwd();
-		engine_dir = Path.resolve(js.Node.__dirname, "../../");
+		user_dir = args.pop();
+		engine_dir = FileSystem.absolutePath(Path.directory(neko.vm.Module.local().name));
+		khamake_path = Path.join([engine_dir, backend_path, kha_path, 'make']);
 
 		init();
 
@@ -39,17 +40,29 @@ class CLI {
 
 	}
 
-	public static function print(msg:String) {
+	public static inline function print(msg:String) {
 
-		js.Node.console.log(msg);
+		Sys.println(msg);
 		
 	}
 
-	public static function error(msg:String) {
+	public static inline function error(msg:String) {
 
-		js.Node.console.log(msg);
-		process.exit(1);
+		Sys.println("error: " + msg);
 		
+	}
+
+	public static inline function execute(cmd:String, args:Array<String>):Int {
+
+		var cwd = Sys.getCwd();
+		Sys.setCwd(user_dir);
+
+		var ret = Sys.command(cmd, args);
+
+		Sys.setCwd(cwd);
+
+		return ret;
+	    
 	}
 
 	static function process_args(args:Array<String>) {
@@ -83,6 +96,6 @@ class CLI {
 		command_map.set('clear', new commands.Clear());
 		
 	}
-
+	
 
 }

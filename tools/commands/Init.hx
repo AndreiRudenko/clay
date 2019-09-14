@@ -2,8 +2,6 @@ package commands;
 
 
 import sys.FileSystem;
-// import js.node.Fs;
-// import js.node.Path;
 import haxe.io.Path;
 
 

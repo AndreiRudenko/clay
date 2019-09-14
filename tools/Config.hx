@@ -1,10 +1,11 @@
 package;
 
-
-import Yaml;
 import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
+
+import yaml.Yaml;
+import yaml.Parser;
 
 
 class Config {
@@ -117,8 +118,9 @@ class Config {
 			if(config.android.installLocation != null) {
 				kfile += 'p.targetOptions.android_native.installLocation = "${config.android.installLocation}";\n';
 			}
-			if(untyped __js__('config.android.package')) {
-				kfile += 'p.targetOptions.android_native.package = "${untyped __js__('config.android.package')}";\n';
+			
+			if(Reflect.field(config.android, 'package') != null) {
+				kfile += 'p.targetOptions.android_native.package = "${Reflect.field(config.android, 'package')}";\n';
 			}
 		}
 
@@ -156,7 +158,7 @@ class Config {
 			CLI.error('Cant find project.yml in: ${CLI.user_dir}');
 		}
 		var data = File.getContent(config_path);
-		var config:ConfigData = Yaml.safeLoad(data);
+		var config:ConfigData = Yaml.parse(data, Parser.options().useObjects());
 
 		return config;
 	}
@@ -261,5 +263,4 @@ typedef HtmlConfig = {
 	var height:Int;
 	var html_file:String;
 	var server_port:Int;
-	var minify:Bool;
 }
