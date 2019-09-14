@@ -4,10 +4,10 @@ package clay.math;
 class VectorCallback extends Vector {
 
 
-    public var ignore_listeners:Bool = false;
+    public var ignoreListeners:Bool = false;
     
-    @:isVar public var listen_x(default,default):(v:Float)->Void;
-    @:isVar public var listen_y(default,default):(v:Float)->Void;
+    @:isVar public var listenX(default,default):(v:Float)->Void;
+    @:isVar public var listenY(default,default):(v:Float)->Void;
 
 
     public function new(_x:Float = 0, _y:Float = 0) {
@@ -18,8 +18,8 @@ class VectorCallback extends Vector {
 
     public function listen(f:(v:Float)->Void) {
 
-        listen_x = f;
-        listen_y = f;
+        listenX = f;
+        listenY = f;
         
     }
 
@@ -27,8 +27,8 @@ class VectorCallback extends Vector {
 
         super.set_x(v);
 
-        if(listen_x != null && !ignore_listeners) {
-            listen_x(v);
+        if(listenX != null && !ignoreListeners) {
+            listenX(v);
         }
 
         return v;
@@ -39,8 +39,8 @@ class VectorCallback extends Vector {
 
         super.set_y(v);
 
-        if(listen_y != null && !ignore_listeners) {
-            listen_y(v);
+        if(listenY != null && !ignoreListeners) {
+            listenY(v);
         }
 
         return v;

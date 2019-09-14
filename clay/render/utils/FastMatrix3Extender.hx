@@ -47,7 +47,7 @@ class FastMatrix3Extender {
 
 	}
 
-	public static function append_matrix(m:FastMatrix3, other:clay.math.Matrix):FastMatrix3 {
+	public static function appendMatrix(m:FastMatrix3, other:clay.math.Matrix):FastMatrix3 {
 
         var _00 = m._00;
         var _01 = m._01;
@@ -152,7 +152,7 @@ class FastMatrix3Extender {
 
 	}
 
-	public static function from_matrix(m3:FastMatrix3, m:clay.math.Matrix):FastMatrix3 {
+	public static function fromMatrix(m3:FastMatrix3, m:clay.math.Matrix):FastMatrix3 {
 
 		m3._00 = m.a;
 		m3._10 = m.c;

@@ -15,9 +15,9 @@ class Tilemap extends Mesh {
 
 
 		/* The width of the tile */
-	public var tile_width(default, null):Int;
+	public var tileWidth(default, null):Int;
 		/* The height of the tile */
-	public var tile_height(default, null):Int;
+	public var tileHeight(default, null):Int;
 		/* The width of the map (in tiles) */
 	public var width(default, null):Int;
 		/* The height of the map (in tiles) */
@@ -26,13 +26,13 @@ class Tilemap extends Mesh {
 	public var map(default, null):Array<Tile>;
 	public var tileset(default, null):Tileset;
 
-	public var tiles_count(default, null):Int;
+	public var tilesCount(default, null):Int;
 
 
-	public function new(width:Int, height:Int, tile_width:Int, tile_height:Int) {
+	public function new(width:Int, height:Int, tileWidth:Int, tileHeight:Int) {
 
-		this.tile_width = tile_width;
-		this.tile_height = tile_height;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
 		this.width = width;
 		this.height = height;
 
@@ -40,7 +40,7 @@ class Tilemap extends Mesh {
 
 		super();
 
-		tiles_count = 0;
+		tilesCount = 0;
 
 	}
 
@@ -50,44 +50,44 @@ class Tilemap extends Mesh {
 		ArrayTools.clear(vertices);
 		ArrayTools.clear(indices);
 
-		tiles_count = 0;
+		tilesCount = 0;
 
 	}
 	
-	public function set_tileset(texture:Texture, tile_width:Int, tile_height:Int, tile_margin:Int = 0, tile_spacing:Int = 0) {
+	public function setTileset(texture:Texture, tileWidth:Int, tileHeight:Int, tileMargin:Int = 0, tileSpacing:Int = 0) {
 
-		tileset = new Tileset('tileset', texture, tile_width, tile_height, tile_margin, tile_spacing);
+		tileset = new Tileset('tileset', texture, tileWidth, tileHeight, tileMargin, tileSpacing);
 		this.texture = texture; 
 		
 	}
 
-	public function get_tile(x:Int, y:Int):Tile {
+	public function getTile(x:Int, y:Int):Tile {
 		
-		return map[get_index(x, y)];
+		return map[getIndex(x, y)];
 
 	}
 
-	public function set_tile(x:Int, y:Int, index:Int):Tile {
+	public function setTile(x:Int, y:Int, index:Int):Tile {
 		
-		var idx = get_index(x, y);
+		var idx = getIndex(x, y);
 
 		if(map[idx] != null) {
-			remove_tile_geometry(map[idx]);
+			removeTileGeometry(map[idx]);
 		}
 
-		var tile = new Tile(index, x * tile_width, y * tile_height, tile_width, tile_height, color);
+		var tile = new Tile(index, x * tileWidth, y * tileHeight, tileWidth, tileHeight, color);
 		map[idx] = tile;
 
-		add_tile_geometry(tile);
-		update_tile_tcoords(tile);
+		addTileGeometry(tile);
+		updateTileTcoords(tile);
 
 		return tile;
 		
 	}
 
-	public function set_tile_color(x:Int, y:Int, color:Color):Tile {
+	public function setTileColor(x:Int, y:Int, color:Color):Tile {
 
-		var idx = get_index(x, y);
+		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
 		if(tile != null) {
@@ -100,14 +100,14 @@ class Tilemap extends Mesh {
 
 	}
 
-	public function set_tile_flipx(x:Int, y:Int, flip:Bool):Tile {
+	public function setTileFlipX(x:Int, y:Int, flip:Bool):Tile {
 
-		var idx = get_index(x, y);
+		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
 		if(tile != null) {
-			tile.flipx = flip;
-			update_tile_tcoords(tile);
+			tile.flipX = flip;
+			updateTileTcoords(tile);
 		} else {
 			log('can`t get tile at pos {$x, $y}');
 		}
@@ -116,14 +116,14 @@ class Tilemap extends Mesh {
 
 	}
 
-	public function set_tile_flipy(x:Int, y:Int, flip:Bool):Tile {
+	public function setTileFlipY(x:Int, y:Int, flip:Bool):Tile {
 
-		var idx = get_index(x, y);
+		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
 		if(tile != null) {
-			tile.flipy = flip;
-			update_tile_tcoords(tile);
+			tile.flipY = flip;
+			updateTileTcoords(tile);
 		} else {
 			log('can`t get tile at pos {$x, $y}');
 		}
@@ -132,14 +132,14 @@ class Tilemap extends Mesh {
 
 	}
 
-	public function set_tile_rotate(x:Int, y:Int, rotate:Int):Tile {
+	public function setTileRotate(x:Int, y:Int, rotate:Int):Tile {
 
-		var idx = get_index(x, y);
+		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
 		if(tile != null) {
 			tile.rotate = rotate;
-			update_tile_tcoords(tile);
+			updateTileTcoords(tile);
 		} else {
 			log('can`t get tile at pos {$x, $y}');
 		}
@@ -148,18 +148,18 @@ class Tilemap extends Mesh {
 
 	}
 
-	public function set_tile_visible(x:Int, y:Int, visible:Bool):Tile {
+	public function setTileVisible(x:Int, y:Int, visible:Bool):Tile {
 		
-		var idx = get_index(x, y);
+		var idx = getIndex(x, y);
 		var tile = map[idx];
 
 		if(tile != null) {
 			if(tile.visible != visible) {
 				tile.visible = visible;
 				if(visible) {
-					add_tile_geometry(tile);
+					addTileGeometry(tile);
 				} else {
-					remove_tile_geometry(tile);
+					removeTileGeometry(tile);
 				}
 			}
 		} else {
@@ -170,13 +170,13 @@ class Tilemap extends Mesh {
 		
 	}
 
-	public function remove_tile(x:Int, y:Int):Tile {
+	public function removeTile(x:Int, y:Int):Tile {
 		
-		var idx = get_index(x, y);
+		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
 		if(tile != null) {
-			remove_tile_geometry(tile);
+			removeTileGeometry(tile);
 			map[idx] = null;
 		} else {
 			log('can`t remove tile at pos {$x, $y}');
@@ -186,25 +186,25 @@ class Tilemap extends Mesh {
 
 	}
 
-	public function to_map_x(x:Float):Int {
+	public function toMapX(x:Float):Int {
 
-		return Math.floor(x / tile_width);
+		return Math.floor(x / tileWidth);
 		
 	}
 
-	public function to_map_y(y:Float):Int {
+	public function toMapY(y:Float):Int {
 
-		return Math.floor(y / tile_height);
+		return Math.floor(y / tileHeight);
 		
 	}
 
-	inline function get_index(x:Int, y:Int):Int { // i = x + w * y;  x = i % w; y = i / w;
+	inline function getIndex(x:Int, y:Int):Int { // i = x + w * y;  x = i % w; y = i / w;
 
 		return Std.int(x + width * y);
 
 	}
 
-	inline function add_tile_geometry(tile:Tile) {
+	inline function addTileGeometry(tile:Tile) {
 
 		var offset = vertices.length;
 
@@ -219,11 +219,11 @@ class Tilemap extends Mesh {
 			add(v);
 		}
 
-		tiles_count++;
+		tilesCount++;
 
 	}
 
-	inline function remove_tile_geometry(tile:Tile) {
+	inline function removeTileGeometry(tile:Tile) {
 
 		var found = false;
 		for (v in tile.vertices) {
@@ -236,82 +236,82 @@ class Tilemap extends Mesh {
 			for (i in 0...6) {
 				indices.pop();
 			}
-			tiles_count--;
+			tilesCount--;
 		}
 		
 	}
 
-	function update_tile_tcoords(tile:Tile) {
+	function updateTileTcoords(tile:Tile) {
 
-		var tc = tileset.get_tile_coords(tile.index);
+		var tc = tileset.getTileCoords(tile.index);
 
 		if(tc == null) {
 			log('can`t get tile texture coords for ${tile.index} index');
 			return;
 		}
 
-		var flipx = tile.flipx;
-		var flipy = tile.flipy;
+		var flipX = tile.flipX;
+		var flipY = tile.flipY;
 
-		var sz_x = tileset.tile_width / tileset.texture.width_actual;
-		var sz_y = tileset.tile_height / tileset.texture.height_actual;
+		var szX = tileset.tileWidth / tileset.texture.widthActual;
+		var szY = tileset.tileHeight / tileset.texture.heightActual;
 
-		var tl_x = tc.x / tileset.texture.width_actual;
-		var tl_y = tc.y / tileset.texture.height_actual;
+		var tlX = tc.x / tileset.texture.widthActual;
+		var tlY = tc.y / tileset.texture.heightActual;
 		
-		var tr_x = tl_x + sz_x;
-		var tr_y = tl_y;
+		var trX = tlX + szX;
+		var trY = tlY;
 
-		var br_x = tl_x + sz_x;
-		var br_y = tl_y + sz_y;
+		var brX = tlX + szX;
+		var brY = tlY + szY;
 
-		var bl_x = tl_x;
-		var bl_y = tl_y + sz_y;
+		var blX = tlX;
+		var blY = tlY + szY;
 
-		var tmp_x = 0.0;
-		var tmp_y = 0.0;
+		var tmpX = 0.0;
+		var tmpY = 0.0;
 
-		if(flipy) {
-			tmp_y = bl_y;
-			bl_y = tl_y;
-			tl_y = tmp_y;
+		if(flipY) {
+			tmpY = blY;
+			blY = tlY;
+			tlY = tmpY;
 
-			tmp_y = br_y;
-			br_y = tr_y;
-			tr_y = tmp_y;
+			tmpY = brY;
+			brY = trY;
+			trY = tmpY;
 		}
 
-		if(flipx) {
-			tmp_x = tr_x;
-			tr_x = tl_x;
-			tl_x = tmp_x;
+		if(flipX) {
+			tmpX = trX;
+			trX = tlX;
+			tlX = tmpX;
 
-			tmp_x = br_x;
-			br_x = bl_x;
-			bl_x = tmp_x;
+			tmpX = brX;
+			brX = blX;
+			blX = tmpX;
 		}
 
 		switch (tile.rotate) {
 			case 1:
-				tile.vertices[0].tcoord.set(bl_x, bl_y);
-				tile.vertices[1].tcoord.set(tl_x, tl_y);
-				tile.vertices[2].tcoord.set(tr_x, tr_y);
-				tile.vertices[3].tcoord.set(br_x, br_y);
+				tile.vertices[0].tcoord.set(blX, blY);
+				tile.vertices[1].tcoord.set(tlX, tlY);
+				tile.vertices[2].tcoord.set(trX, trY);
+				tile.vertices[3].tcoord.set(brX, brY);
 			case 2:
-				tile.vertices[0].tcoord.set(br_x, br_y);
-				tile.vertices[1].tcoord.set(bl_x, bl_y);
-				tile.vertices[2].tcoord.set(tl_x, tl_y);
-				tile.vertices[3].tcoord.set(tr_x, tr_y);
+				tile.vertices[0].tcoord.set(brX, brY);
+				tile.vertices[1].tcoord.set(blX, blY);
+				tile.vertices[2].tcoord.set(tlX, tlY);
+				tile.vertices[3].tcoord.set(trX, trY);
 			case 3:
-				tile.vertices[0].tcoord.set(tr_x, tr_y);
-				tile.vertices[1].tcoord.set(br_x, br_y);
-				tile.vertices[2].tcoord.set(bl_x, bl_y);
-				tile.vertices[3].tcoord.set(tl_x, tl_y);
+				tile.vertices[0].tcoord.set(trX, trY);
+				tile.vertices[1].tcoord.set(brX, brY);
+				tile.vertices[2].tcoord.set(blX, blY);
+				tile.vertices[3].tcoord.set(tlX, tlY);
 			case _:
-				tile.vertices[0].tcoord.set(tl_x, tl_y);
-				tile.vertices[1].tcoord.set(tr_x, tr_y);
-				tile.vertices[2].tcoord.set(br_x, br_y);
-				tile.vertices[3].tcoord.set(bl_x, bl_y);
+				tile.vertices[0].tcoord.set(tlX, tlY);
+				tile.vertices[1].tcoord.set(trX, trY);
+				tile.vertices[2].tcoord.set(brX, brY);
+				tile.vertices[3].tcoord.set(blX, blY);
 		}
 
 	}
@@ -330,8 +330,8 @@ class Tile {
 	public var y:Int;
 
 	public var visible:Bool;
-	public var flipx:Bool;
-	public var flipy:Bool;
+	public var flipX:Bool;
+	public var flipY:Bool;
 	public var rotate:Int;
 	public var color(default, set):Color;
 

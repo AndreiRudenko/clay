@@ -21,52 +21,52 @@ import haxe.ds.ArraySort;
 class Layer {
 
 
-	public var name         (default, null):String;
-	public var id           (default, null):Int;
-	public var active     	(get, set):Bool;
+	public var name(default, null):String;
+	public var id(default, null):Int;
+	public var active(get, set):Bool;
 
-	public var objects      (default, null):Array<DisplayObject>;
+	public var objects(default, null):Array<DisplayObject>;
 
-	public var priority     (default, null):Int;
+	public var priority(default, null):Int;
 
-	public var depth_sort:Bool = true;
-	public var dirty_sort:Bool = true;
+	public var depthSort:Bool = true;
+	public var dirtySort:Bool = true;
 
-	public var onprerender  (default, null):Signal<()->Void>;
-	public var onpostrender	(default, null):Signal<()->Void>;
+	public var onpreRender(default, null):Signal<()->Void>;
+	public var onpostRender(default, null):Signal<()->Void>;
 
-	public var blend_src:BlendMode;
-	public var blend_dst:BlendMode;
-	public var blend_eq:BlendEquation;
+	public var blendSrc:BlendMode;
+	public var blendDst:BlendMode;
+	public var blendEq:BlendEquation;
 
 	#if !no_debug_console
-	public var stats        (default, null):RenderStats;
+	public var stats(default, null):RenderStats;
 	#end
 
 	var _active:Bool;
-	var _objects_toremove:Array<DisplayObject>;
+	var _objectsToRemove:Array<DisplayObject>;
 	var _renderer:Renderer;
 	var _manager:LayerManager;
 
 
-	function new(manager:LayerManager, name:String, id:Int, priority:Int, depth_sort:Bool) {
+	function new(manager:LayerManager, name:String, id:Int, priority:Int, depthSort:Bool) {
 
 		this.name = name;
 		this.id = id;
 		this.priority = priority;
-		this.depth_sort = depth_sort;
+		this.depthSort = depthSort;
 		_renderer = Clay.renderer;
 		_manager = manager;
 		objects = [];
-		_objects_toremove = [];
+		_objectsToRemove = [];
 		_active = false;
 
-		onprerender = new Signal();
-		onpostrender = new Signal();
+		onpreRender = new Signal();
+		onpostRender = new Signal();
 
-		blend_src = BlendMode.Undefined;
-		blend_dst = BlendMode.Undefined;
-		blend_eq = BlendEquation.Add;
+		blendSrc = BlendMode.Undefined;
+		blendDst = BlendMode.Undefined;
+		blendEq = BlendEquation.Add;
 
 		#if !no_debug_console
 		stats = new RenderStats();
@@ -81,8 +81,8 @@ class Layer {
 		}
 
 		name = null;
-		onprerender = null;
-		onpostrender = null;
+		onpreRender = null;
+		onpostRender = null;
 		objects = null;
 
 	}
@@ -92,10 +92,10 @@ class Layer {
 		_debug('layer `$name` add geometry: ${geom.name}');
 
 		if(geom._layer != null) {
-			geom._layer._remove_unsafe(geom);
+			geom._layer._removeUnsafe(geom);
 		}
 
-		_add_unsafe(geom);
+		_addUnsafe(geom);
 
 	}
 
@@ -106,29 +106,29 @@ class Layer {
 		if(geom._layer != this) {
 			log('can`t remove geometry `${geom.name}` from layer `$name`');
 		} else {
-			_remove_unsafe(geom);
+			_removeUnsafe(geom);
 		}
 
 	}
 
-	@:noCompletion public function _add_unsafe(geom:DisplayObject, _dirty_sort:Bool = true) {
+	@:noCompletion public function _addUnsafe(geom:DisplayObject, _dirtySort:Bool = true) {
 
-		_debug('layer `$name` _add_unsafe geometry: ${geom.name}');
+		_debug('layer `$name` _addUnsafe geometry: ${geom.name}');
 		
 		objects.push(geom);
 		geom._layer = this;
 
-		if(_dirty_sort) {
-			dirty_sort = true;
+		if(_dirtySort) {
+			dirtySort = true;
 		}
 
 	}
 
-	@:noCompletion public function _remove_unsafe(geom:DisplayObject) {
+	@:noCompletion public function _removeUnsafe(geom:DisplayObject) {
 
-		_debug('layer `$name` _remove_unsafe geometry: ${geom.name}');
+		_debug('layer `$name` _removeUnsafe geometry: ${geom.name}');
 
-		_objects_toremove.push(geom);
+		_objectsToRemove.push(geom);
 		geom._layer = null;
 
 	}
@@ -147,12 +147,12 @@ class Layer {
 
 		Clay.debug.start('renderer.layer.$name');
 
-		onprerender.emit();
+		onpreRender.emit();
 
 		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
 
-		remove_objects();
-		sort_objects();
+		removeObjects();
+		sortObjects();
 
 		#if !no_debug_console
 		stats.reset();
@@ -161,14 +161,14 @@ class Layer {
 		if(objects.length > 0) {
 			var p = _renderer.painter;
 			p.begin(g, cam.viewport);
-			p.set_projection(cam.projection_matrix);
+			p.setProjection(cam.projectionMatrix);
 			for (o in objects) {
 				#if !no_debug_console
 				stats.geometry++;
 				#end
 				if(o.visible) {
 					#if !no_debug_console
-					stats.visible_geometry++;
+					stats.visibleGeometry++;
 					#end
 					o.render(p);
 				}
@@ -183,43 +183,43 @@ class Layer {
 		_renderer.stats.add(stats);
 		#end
 
-		onpostrender.emit();
+		onpostRender.emit();
 
 		Clay.debug.end('renderer.layer.$name');
 
 	}
 
-	inline function sort_objects() {
+	inline function sortObjects() {
 
-		if(depth_sort && dirty_sort) {
-			ArraySort.sort(objects, sort_displayobjects);
-			dirty_sort = false;
+		if(depthSort && dirtySort) {
+			ArraySort.sort(objects, sortDisplayObjects);
+			dirtySort = false;
 		}
 
 	}
 
-	inline function remove_objects() {
+	inline function removeObjects() {
 		
-		if(_objects_toremove.length > 0) {
-			for (o in _objects_toremove) {
+		if(_objectsToRemove.length > 0) {
+			for (o in _objectsToRemove) {
 				objects.remove(o);
 			}
-			_objects_toremove.splice(0, _objects_toremove.length);
+			_objectsToRemove.splice(0, _objectsToRemove.length);
 		}
 
 	}
 
-    inline function sort_displayobjects(a:DisplayObject, b:DisplayObject):Int {
+	inline function sortDisplayObjects(a:DisplayObject, b:DisplayObject):Int {
 
-    	if(a.sort_key < b.sort_key) {
-    		return -1;
-    	} else if(a.sort_key > b.sort_key) {
-    		return 1;
-    	}
+		if(a.sortKey < b.sortKey) {
+			return -1;
+		} else if(a.sortKey > b.sortKey) {
+			return 1;
+		}
 
-    	return 0;
+		return 0;
 
-    }
+	}
 
 	inline function get_active():Bool {
 

@@ -16,74 +16,74 @@ import clay.system.ResourceManager;
 class Texture extends clay.resources.Resource {
 
 
-	public static function create(width:Int, height:Int, ?format:TextureFormat, ?usage:Usage, ?no_id:Bool) {
+	public static function create(width:Int, height:Int, ?format:TextureFormat, ?usage:Usage, ?noID:Bool) {
 		
 		var img = kha.Image.create(width, height, format, usage);
-		return new Texture(img, no_id);
+		return new Texture(img, noID);
 
 	}
 
-	public static function create_from_bytes(bytes:Bytes, width:Int, height:Int, ?format:TextureFormat, ?usage:Usage, ?no_id:Bool) {
+	public static function createFromBytes(bytes:Bytes, width:Int, height:Int, ?format:TextureFormat, ?usage:Usage, ?noID:Bool) {
 		
 		var img = kha.Image.fromBytes(bytes, width, height, format, usage);
-		return new Texture(img, no_id);
+		return new Texture(img, noID);
 
 	}
 
-	public static function create_rendertarget(width:Int, height:Int, ?format:TextureFormat, ?depth_stencil:DepthStencilFormat, ?antialiasing:Int, ?context_id:Int, ?no_id:Bool) {
+	public static function createRenderTarget(width:Int, height:Int, ?format:TextureFormat, ?depthStencil:DepthStencilFormat, ?antialiasing:Int, ?contextID:Int, ?noID:Bool) {
 		
-		var img = kha.Image.createRenderTarget(width, height, format, depth_stencil, antialiasing, context_id);
-		var t = new Texture(img, no_id);
-		t.resource_type = ResourceType.render_texture;
+		var img = kha.Image.createRenderTarget(width, height, format, depthStencil, antialiasing, contextID);
+		var t = new Texture(img, noID);
+		t.resourceType = ResourceType.renderTexture;
 		return t;
 
 	}
 
 
-	public var tid              (default, null):Int;
+	public var tid(default, null):Int;
 
-	public var width_actual 	(get, never):Int;
-	public var height_actual	(get, never):Int;
+	public var widthActual(get, never):Int;
+	public var heightActual(get, never):Int;
 
-	public var width        	(get, never):Int;
-	public var height           (get, never):Int;
+	public var width(get, never):Int;
+	public var height(get, never):Int;
 
-	public var filter_min:TextureFilter;
-	public var filter_mag:TextureFilter;
-	public var mipmap_filter:MipMapFilter;
-	public var u_addressing:TextureAddressing;
-	public var v_addressing:TextureAddressing;
+	public var filterMin:TextureFilter;
+	public var filterMag:TextureFilter;
+	public var mipmapFilter:MipMapFilter;
+	public var uAddressing:TextureAddressing;
+	public var vAddressing:TextureAddressing;
 
 	// public var format       	(get, never):TextureFormat;
 	// public var usage        	(get, never):Usage;
 
 	@:noCompletion public var image:kha.Image;
 
-	var _no_id:Bool;
+	var _noID:Bool;
 
 
-	public function new(image:kha.Image, no_id:Bool = false) {
+	public function new(image:kha.Image, noID:Bool = false) {
 
 		tid = 0;
 
 		this.image = image;
-		_no_id = no_id;
+		_noID = noID;
 
-		if(!_no_id) {
-			tid = Clay.renderer.pop_texture_id();
+		if(!_noID) {
+			tid = Clay.renderer.popTextureID();
 		}
 
-		filter_min = TextureFilter.LinearFilter;
-		filter_mag = TextureFilter.LinearFilter;
-		mipmap_filter = MipMapFilter.NoMipFilter;
-		u_addressing = TextureAddressing.Clamp;
-		v_addressing = TextureAddressing.Clamp;
+		filterMin = TextureFilter.LinearFilter;
+		filterMag = TextureFilter.LinearFilter;
+		mipmapFilter = MipMapFilter.NoMipFilter;
+		uAddressing = TextureAddressing.Clamp;
+		vAddressing = TextureAddressing.Clamp;
 
-		resource_type = ResourceType.texture;
+		resourceType = ResourceType.texture;
 
 	}
 
-	public inline function generate_mipmaps(levels:Int) {
+	public inline function generateMipmaps(levels:Int) {
 
 		image.generateMipmaps(levels);
 
@@ -109,8 +109,8 @@ class Texture extends clay.resources.Resource {
 
 	override function unload() {
 
-        if(!_no_id) {
-			Clay.renderer.push_texture_id(tid);
+		if(!_noID) {
+			Clay.renderer.pushTextureID(tid);
 		}
 
 		image.unload();
@@ -118,14 +118,14 @@ class Texture extends clay.resources.Resource {
 		
 	}
 
-	override function memory_use() {
+	override function memoryUse() {
 		
-        return (width_actual * height_actual * image.depth);
+		return (widthActual * heightActual * image.depth);
 
 	}
 
-	inline function get_width_actual() return image.realWidth;
-	inline function get_height_actual() return image.realHeight;
+	inline function get_widthActual() return image.realWidth;
+	inline function get_heightActual() return image.realHeight;
 	inline function get_width() return image.width;
 	inline function get_height() return image.height;
 	// inline function get_format() return image.format;

@@ -19,48 +19,48 @@ class Init extends Command {
 
 	override function execute(args:Array<String>) {
 
-		var template_name = 'empty';
+		var templateName = 'empty';
 		if(args.length > 0) {
 			if(args[0] == '-t' && args[1] != null) {
-				template_name = args[1];
+				templateName = args[1];
 			}
 		}
-		create_project(template_name);
+		createProject(templateName);
 
 	}
 
-	function create_project(template:String) {
+	function createProject(template:String) {
 
-		var template_path = Path.join([CLI.engine_dir, CLI.templates_path, template]);
-		if (!FileSystem.exists(template_path)) {
+		var templatePath = Path.join([CLI.engineDir, CLI.templatesPath, template]);
+		if (!FileSystem.exists(templatePath)) {
 			CLI.error('Cant find ${template} template');
 		}
 
-		var dir = FileSystem.readDirectory(CLI.user_dir);
+		var dir = FileSystem.readDirectory(CLI.userDir);
 		if(dir.length > 0) {
-			CLI.error('${CLI.user_dir} folder is not empty');
+			CLI.error('${CLI.userDir} folder is not empty');
 		}
 
-		copy_dir(template_path, CLI.user_dir);
-		CLI.print('New ${CLI.engine_name} project is created in ${CLI.user_dir}');
+		copyDir(templatePath, CLI.userDir);
+		CLI.print('New ${CLI.engineName} project is created in ${CLI.userDir}');
 		
 	}
 
-	function copy_dir(src_dir:String, dst_dir:String) {
+	function copyDir(srcDir:String, dstDir:String) {
 
-		if (!FileSystem.exists(dst_dir)) {
-			FileSystem.createDirectory(dst_dir);
+		if (!FileSystem.exists(dstDir)) {
+			FileSystem.createDirectory(dstDir);
 		}
 
-		for (name in FileSystem.readDirectory(src_dir)) {
+		for (name in FileSystem.readDirectory(srcDir)) {
 
-			var src_path = Path.join([src_dir, name]);
-			var dst_path = Path.join([dst_dir, name]);
+			var srcPath = Path.join([srcDir, name]);
+			var dstPath = Path.join([dstDir, name]);
 
-			if (FileSystem.isDirectory(src_path)) {
-				copy_dir(src_path, dst_path);
+			if (FileSystem.isDirectory(srcPath)) {
+				copyDir(srcPath, dstPath);
 			} else {
-				sys.io.File.copy(src_path, dst_path);
+				sys.io.File.copy(srcPath, dstPath);
 			}
 			
 		}

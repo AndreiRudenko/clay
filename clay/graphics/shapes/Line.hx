@@ -13,13 +13,13 @@ import clay.utils.Log.*;
 class Line extends Mesh {
 
 
-	public var p0    	(get, set):VectorCallback;
-	public var p1    	(get, set):VectorCallback;
+	public var p0(get, set):VectorCallback;
+	public var p1(get, set):VectorCallback;
 
-	public var color0	(default, set):Color;
-	public var color1	(default, set):Color;
+	public var color0(default, set):Color;
+	public var color1(default, set):Color;
 
-	public var strength (get, set):Float;
+	public var strength(get, set):Float;
 
 	var _strength:Float;
 	var _tmp:Vector;
@@ -34,8 +34,8 @@ class Line extends Mesh {
 		_p1 = new VectorCallback(p1x, p1y);
 		_tmp = new Vector();
 
-		_p0.listen(update_line_geom);
-		_p1.listen(update_line_geom);
+		_p0.listen(updateLineGeom);
+		_p1.listen(updateLineGeom);
 
 		var vertices = [
 			new Vertex(new Vector(), new Vector(0, 0)),
@@ -55,7 +55,7 @@ class Line extends Mesh {
 
 	}
 
-	function update_line_geom(v:Float) {
+	function updateLineGeom(v:Float) {
 
 		if (p0.y == p1.y) {
 			_tmp.set(0, -1);
@@ -63,7 +63,7 @@ class Line extends Mesh {
 			_tmp.set(1, -(p1.x - p0.x) / (p1.y - p0.y));
 		}
 		_tmp.length = _strength;
-		_tmp.multiply_scalar(0.5);
+		_tmp.multiplyScalar(0.5);
 
 		vertices[0].pos.set(p0.x + _tmp.x, p0.y + _tmp.y);
 		vertices[1].pos.set(p1.x + _tmp.x, p1.y + _tmp.y);
@@ -84,8 +84,8 @@ class Line extends Mesh {
 
 		_p0 = v;
 
-		_p0.listen(update_line_geom);
-		update_line_geom(0);
+		_p0.listen(updateLineGeom);
+		updateLineGeom(0);
 
 		return _p0;
 
@@ -103,8 +103,8 @@ class Line extends Mesh {
 
 		_p1 = v;
 
-		_p1.listen(update_line_geom);
-		update_line_geom(0);
+		_p1.listen(updateLineGeom);
+		updateLineGeom(0);
 
 		return _p1;
 
@@ -120,7 +120,7 @@ class Line extends Mesh {
 
 		_strength = v;
 
-		update_line_geom(0);
+		updateLineGeom(0);
 
 		return _strength;
 

@@ -28,20 +28,20 @@ class Text extends Mesh {
 	public var font          	(default, set):FontResource;
 	public var size          	(default, set):Int; // expensive
 	public var align         	(default, set):TextAlign;
-	public var align_vertical	(default, set):TextAlign;
+	public var alignVertical	(default, set):TextAlign;
 
 	public var width         	(default, set):Float;
 	public var height        	(default, set):Float;
-	public var line_spacing  	(default, set):Float;
-	public var letter_spacing	(default, set):Float;
+	public var lineSpacing  	(default, set):Float;
+	public var letterSpacing	(default, set):Float;
 
-	public var text_width 		(default, null):Float = 0;
-	public var text_height		(default, null):Float = 0;
+	public var textWidth 		(default, null):Float = 0;
+	public var textHeight		(default, null):Float = 0;
 
-	public var text_colors:Array<Color>;
+	public var textColors:Array<Color>;
 
-	var _size_dirty:Bool = true;
-	var _font_dirty:Bool = true;
+	var _sizeDirty:Bool = true;
+	var _fontDirty:Bool = true;
 
 	var _setup:Bool = true;
 	var _kravur:KravurImage;
@@ -51,36 +51,36 @@ class Text extends Mesh {
 	public function new(font:FontResource) {
 
 		_lines = [];
-		text_colors = [];
+		textColors = [];
 
 		super();
 
-		shader_default = Clay.renderer.shaders.get("text");
+		shaderDefault = Clay.renderer.shaders.get("text");
 
 		this.font = font;
 
 		text = "";
 		size = 12;
 		align = TextAlign.left;
-		align_vertical = TextAlign.top;
+		alignVertical = TextAlign.top;
 		width = 0;
 		height = 0;
-		line_spacing = 0;
-		letter_spacing = 0;
+		lineSpacing = 0;
+		letterSpacing = 0;
 
 		_setup = false;
 
-		set_blendmode(BlendMode.SourceAlpha, BlendMode.InverseSourceAlpha, BlendEquation.Add);
-		update_text();
+		setBlendMode(BlendMode.SourceAlpha, BlendMode.InverseSourceAlpha, BlendEquation.Add);
+		updateText();
 
 	}
 
-	public function add_text(_text:String, ?_color:Color) {
+	public function addText(_text:String, ?_color:Color) {
 
 		var start = text.length;
 
 		for (i in 0..._text.length) {
-			text_colors[start + i] = _color;
+			textColors[start + i] = _color;
 		}
 		text += _text;
 		
@@ -88,26 +88,26 @@ class Text extends Mesh {
 
 	override function render(p:Painter) {
 
-		if(!text_is_empty(text)) {
-			p.set_shader(shader != null ? shader : shader_default);
-			p.clip(clip_rect);
-			p.set_texture(texture);
+		if(!textIsEmpty(text)) {
+			p.setShader(shader != null ? shader : shaderDefault);
+			p.clip(clipRect);
+			p.setTexture(texture);
 
-			if(blend_disabled) {
-				var sh = shader != null ? shader : shader_default;
-				p.set_blendmode(
-					sh._blend_src_default, sh._blend_dst_default, sh._blend_op_default, 
-					sh._alpha_blend_src_default, sh._alpha_blend_dst_default, sh._alpha_blend_op_default
+			if(blendDisabled) {
+				var sh = shader != null ? shader : shaderDefault;
+				p.setBlendMode(
+					sh._blendSrcDefault, sh._blendDstDefault, sh._blendOpDefault, 
+					sh._alphaBlendSrcDefault, sh._alphaBlendDstDefault, sh._alphaBlendOpDefault
 				);
 			} else {
-				p.set_blendmode(blend_src, blend_dst, blend_op, alpha_blend_src, alpha_blend_dst, alpha_blend_op);
+				p.setBlendMode(blendSrc, blendDst, blendOp, alphaBlendSrc, alphaBlendDst, alphaBlendOp);
 			}
 
 			if(locked) {
-				#if !no_debug_console
+				#if !noDebugConsole
 				p.stats.locked++;
 				#end
-				p.draw_from_buffers(_vertexbuffer, _indexbuffer); // render to texture instead
+				p.drawFromBuffers(_vertexbuffer, _indexbuffer); // render to texture instead
 			} else {
 
 				var v:Vertex;
@@ -116,15 +116,15 @@ class Text extends Mesh {
 
 				for (i in 0...quads) {
 					p.ensure(4, 6);
-					p.add_index(0);
-					p.add_index(1);
-					p.add_index(2);
-					p.add_index(0);
-					p.add_index(2);
-					p.add_index(3);
+					p.addIndex(0);
+					p.addIndex(1);
+					p.addIndex(2);
+					p.addIndex(0);
+					p.addIndex(2);
+					p.addIndex(3);
 
 					v = vertices[i*4];
-					p.add_vertex(
+					p.addVertex(
 						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
 						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
 						v.tcoord.x,
@@ -133,7 +133,7 @@ class Text extends Mesh {
 					);
 					
 					v = vertices[i*4+1];
-					p.add_vertex(
+					p.addVertex(
 						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
 						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
 						v.tcoord.x,
@@ -142,7 +142,7 @@ class Text extends Mesh {
 					);
 					
 					v = vertices[i*4+2];
-					p.add_vertex(
+					p.addVertex(
 						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
 						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
 						v.tcoord.x,
@@ -151,7 +151,7 @@ class Text extends Mesh {
 					);
 
 					v = vertices[i*4+3];
-					p.add_vertex(
+					p.addVertex(
 						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
 						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
 						v.tcoord.x,
@@ -166,7 +166,7 @@ class Text extends Mesh {
 
 	}
 
-	function find_index(charCode:Int):Int {
+	function findIndex(charCode:Int):Int {
 
 		var glyphs = kha.graphics2.Graphics.fontGlyphs;
 		var blocks = KravurImage.charBlocks;
@@ -184,86 +184,86 @@ class Text extends Mesh {
 
 	}
 
-	function split_in_lines(text:String, kravur:KravurImage):Array<String> {
+	function splitInLines(text:String, kravur:KravurImage):Array<String> {
 
 		ArrayTools.clear(_lines); 
 
-		var space_code:Int = " ".code;
-		var newline_code:Int = "\n".code;
-		var char_code:Int;
-		var rest_pos:Int = 0;
+		var spaceCode:Int = " ".code;
+		var newlineCode:Int = "\n".code;
+		var charCode:Int;
+		var restPos:Int = 0;
 
 		if(width > 0 || height > 0) {
 
-			var line_height:Float = kravur.getHeight() + line_spacing;
-			var text_height:Float = 0;
+			var lineHeight:Float = kravur.getHeight() + lineSpacing;
+			var textHeight:Float = 0;
 			var stop:Bool = false;
 
-			inline function check_height():Bool {
+			inline function checkHeight():Bool {
 
-				text_height += line_height;
-				return height > 0 && text_height > (height - line_spacing);
+				textHeight += lineHeight;
+				return height > 0 && textHeight > (height - lineSpacing);
 
 			}
 
 			if(width > 0) {
 			
-				var char_width:Float;
-				var line_width:Float = 0;
-				var word_idx:Int = 0;
-				var last_break_width:Float = 0;
-				var space_char:Bool = false;
-				var newline_char:Bool = false;
+				var charWidth:Float;
+				var lineWidth:Float = 0;
+				var wordIdx:Int = 0;
+				var lastBreakWidth:Float = 0;
+				var spaceChar:Bool = false;
+				var newlineChar:Bool = false;
 
 				var i:Int = 0;
 				while(i < text.length) {
-					char_code = text.charCodeAt(i);
+					charCode = text.charCodeAt(i);
 
-					char_width = @:privateAccess kravur.getCharWidth(char_code) + letter_spacing;
-					space_char = char_code == space_code;
-					newline_char = char_code == newline_code;
+					charWidth = @:privateAccess kravur.getCharWidth(charCode) + letterSpacing;
+					spaceChar = charCode == spaceCode;
+					newlineChar = charCode == newlineCode;
 
-					if(space_char) {
-						line_width += char_width;
-						last_break_width = line_width;
-						word_idx = i;
-					} else if(newline_char) {
-						if(check_height()) {
+					if(spaceChar) {
+						lineWidth += charWidth;
+						lastBreakWidth = lineWidth;
+						wordIdx = i;
+					} else if(newlineChar) {
+						if(checkHeight()) {
 							stop = true;
 							break;
 						}
-						line_width = 0;
-						_lines.push(text.substr(rest_pos, i - rest_pos));
+						lineWidth = 0;
+						_lines.push(text.substr(restPos, i - restPos));
 
-						rest_pos = i + 1;
-					} else if((line_width + char_width - letter_spacing) > width) {
-						if(last_break_width > 0) {
-							if(check_height()) {
+						restPos = i + 1;
+					} else if((lineWidth + charWidth - letterSpacing) > width) {
+						if(lastBreakWidth > 0) {
+							if(checkHeight()) {
 								stop = true;
 								break;
 							}
-							line_width += char_width;
-							_lines.push(text.substr(rest_pos, word_idx - rest_pos));
-							line_width = line_width - last_break_width;
-							last_break_width = 0;
-							rest_pos = word_idx + 1;
+							lineWidth += charWidth;
+							_lines.push(text.substr(restPos, wordIdx - restPos));
+							lineWidth = lineWidth - lastBreakWidth;
+							lastBreakWidth = 0;
+							restPos = wordIdx + 1;
 						} else {
 							if(i == 0) {
 								break;
 							}
 							i--;
-							if(check_height()) {
+							if(checkHeight()) {
 								stop = true;
 								break;
 							}
-							_lines.push(text.substr(rest_pos, i + 1 - rest_pos));
+							_lines.push(text.substr(restPos, i + 1 - restPos));
 
-							line_width = 0;
-							last_break_width = 0;
-							rest_pos = i + 1;
+							lineWidth = 0;
+							lastBreakWidth = 0;
+							restPos = i + 1;
 						}
 					} else {
-						line_width += char_width;
+						lineWidth += charWidth;
 					}
 					
 					i++;
@@ -272,34 +272,34 @@ class Text extends Mesh {
 
 			} else {
 				for (i in 0...text.length) {
-					char_code = text.charCodeAt(i);
-					if(char_code == newline_code) {
-						if(check_height()) {
+					charCode = text.charCodeAt(i);
+					if(charCode == newlineCode) {
+						if(checkHeight()) {
 							stop = true;
 							break;
 						}
-						_lines.push(text.substr(rest_pos, i - rest_pos));
-						rest_pos = i + 1;
+						_lines.push(text.substr(restPos, i - restPos));
+						restPos = i + 1;
 					}
 				}
 			}
 
-			if(!stop && rest_pos < text.length) {
-				if(!check_height()) {
-					_lines.push(text.substr(rest_pos, text.length - rest_pos));
+			if(!stop && restPos < text.length) {
+				if(!checkHeight()) {
+					_lines.push(text.substr(restPos, text.length - restPos));
 				}
 			}
 
 		} else {
 			for (i in 0...text.length) {
-				char_code = text.charCodeAt(i);
-				if(char_code == newline_code) {
-					_lines.push(text.substr(rest_pos, i - rest_pos));
-					rest_pos = i + 1;
+				charCode = text.charCodeAt(i);
+				if(charCode == newlineCode) {
+					_lines.push(text.substr(restPos, i - restPos));
+					restPos = i + 1;
 				}
 			}
-			if(rest_pos < text.length) {
-				_lines.push(text.substr(rest_pos, text.length - rest_pos));
+			if(restPos < text.length) {
+				_lines.push(text.substr(restPos, text.length - restPos));
 			}
 		}
 
@@ -307,48 +307,48 @@ class Text extends Mesh {
 
 	}
 
-	@:noCompletion public function update_text() {
+	@:noCompletion public function updateText() {
 
 		if(_setup) {
 			return;
 		}
 
-		if(_font_dirty || _size_dirty) {
+		if(_fontDirty || _sizeDirty) {
 			_kravur = font.font._get(size); // note: this is expensive if creating new font or font size
 			texture = font.get(size);
-			_font_dirty = false;
-			_size_dirty = false;
+			_fontDirty = false;
+			_sizeDirty = false;
 		}
 
 		var n:Int = 0;
 
-		if(!text_is_empty(text)) {
+		if(!textIsEmpty(text)) {
 
-			var lines = split_in_lines(text, _kravur);
+			var lines = splitInLines(text, _kravur);
 
-			var quad_cache = new AlignedQuad();
+			var quadCache = new AlignedQuad();
 
-			var _text_width:Float = 0;
-			var font_heght:Float = _kravur.getHeight();
-			text_width = 0;
-			text_height = (font_heght + line_spacing) * lines.length;
+			var _textWidth:Float = 0;
+			var fontHeght:Float = _kravur.getHeight();
+			textWidth = 0;
+			textHeight = (fontHeght + lineSpacing) * lines.length;
 
 			var xoffset:Float = 0;
 			var yoffset:Float = 0;
 
 			var img = texture.image;
-			var custom_colors = text_colors.length != 0;
+			var customColors = textColors.length != 0;
 			var _color = color;
 
-			var w_ratio:Float = img.width / img.realWidth;
-			var h_ratio:Float = img.height / img.realHeight;
+			var wRatio:Float = img.width / img.realWidth;
+			var hRatio:Float = img.height / img.realHeight;
 
-			switch (align_vertical) {
+			switch (alignVertical) {
 				case TextAlign.bottom:{
-					yoffset = height - text_height;
+					yoffset = height - textHeight;
 				}
 				case TextAlign.center:{
-					yoffset = height*0.5 - text_height/2;
+					yoffset = height*0.5 - textHeight/2;
 				}
 				default:{
 					yoffset = 0;
@@ -362,20 +362,20 @@ class Text extends Mesh {
 
 				if(l != null && l.length > 0) {
 
-					_text_width = _kravur.stringWidth(l) + (l.length * letter_spacing);
+					_textWidth = _kravur.stringWidth(l) + (l.length * letterSpacing);
 
-					if(_text_width > text_width) {
-						text_width = _text_width;
+					if(_textWidth > textWidth) {
+						textWidth = _textWidth;
 					}
 
 					var xpos:Float = 0;
 
 					switch (align) {
 						case TextAlign.right:{
-							xoffset = width-_text_width;
+							xoffset = width-_textWidth;
 						}
 						case TextAlign.center:{
-							xoffset = width*0.5-_text_width/2;
+							xoffset = width*0.5-_textWidth/2;
 						}
 						default:{
 							xoffset = 0;
@@ -385,16 +385,16 @@ class Text extends Mesh {
 					var lw:Float = 0;
 
 					for (i in 0...l.length) {
-						if(custom_colors) {
-							_color = text_colors[n];
+						if(customColors) {
+							_color = textColors[n];
 							if(_color == null) {
 								_color = color;
 							}
 						}
-						var cidx = find_index(l.charCodeAt(i));
-						var q:AlignedQuad = _kravur.getBakedQuad(quad_cache, cidx, xpos, 0);
+						var cidx = findIndex(l.charCodeAt(i));
+						var q:AlignedQuad = _kravur.getBakedQuad(quadCache, cidx, xpos, 0);
 						if (q != null) {
-							lw = q.xadvance + letter_spacing;
+							lw = q.xadvance + letterSpacing;
 
 							if(cidx > 0) { // skip space
 
@@ -415,10 +415,10 @@ class Text extends Mesh {
 								// 	indices[n*6+5] = offset + 3;
 								// }
 
-								var t0x = q.s0 * w_ratio;
-								var t0y = q.t0 * h_ratio;
-								var t1x = q.s1 * w_ratio;
-								var t1y = q.t1 * h_ratio;
+								var t0x = q.s0 * wRatio;
+								var t0y = q.t0 * hRatio;
+								var t1x = q.s1 * wRatio;
+								var t1y = q.t1 * hRatio;
 
 								var v0 = vertices[n*4];
 								var v1 = vertices[n*4+1];
@@ -449,7 +449,7 @@ class Text extends Mesh {
 					}
 				}
 
-				yoffset += font_heght + line_spacing;
+				yoffset += fontHeght + lineSpacing;
 
 			}
 		}
@@ -464,7 +464,7 @@ class Text extends Mesh {
 
 	}
 
-	inline function text_is_empty(text:String) {
+	inline function textIsEmpty(text:String) {
 		
 		return text == "" || text.length == 0;
 
@@ -479,11 +479,11 @@ class Text extends Mesh {
 		if(text != v) {
 			text = v;
 
-			if(text_colors.length > text.length) {
-				text_colors.splice(text.length, text_colors.length - text.length);
+			if(textColors.length > text.length) {
+				textColors.splice(text.length, textColors.length - text.length);
 			}
 
-			update_text();
+			updateText();
 		}
 
 		return text;
@@ -493,9 +493,9 @@ class Text extends Mesh {
 	function set_font(v:FontResource):FontResource {
 
 		font = v;
-		_font_dirty = true;
+		_fontDirty = true;
 
-		update_text();
+		updateText();
 
 		return font;
 		
@@ -504,9 +504,9 @@ class Text extends Mesh {
 	function set_size(v:Int):Int {
 
 		size = v;
-		_size_dirty = true;
+		_sizeDirty = true;
 
-		update_text();
+		updateText();
 
 		return size;
 		
@@ -515,28 +515,28 @@ class Text extends Mesh {
 	function set_align(v:TextAlign):TextAlign {
 
 		align = v;
-		update_text();
+		updateText();
 
 		return align;
 		
 	}
 
-	function set_align_vertical(v:TextAlign):TextAlign {
+	function set_alignVertical(v:TextAlign):TextAlign {
 
-		align_vertical = v;
-		update_text();
+		alignVertical = v;
+		updateText();
 
-		return align_vertical;
+		return alignVertical;
 		
 	}
 
-	function set_line_spacing(v:Float):Float {
+	function set_lineSpacing(v:Float):Float {
 
-		line_spacing = v;
+		lineSpacing = v;
 
-		update_text();
+		updateText();
 
-		return line_spacing;
+		return lineSpacing;
 		
 	}
 
@@ -544,7 +544,7 @@ class Text extends Mesh {
 
 		if(width != v) {
 			width = v;
-			update_text();
+			updateText();
 		}
 
 		return width;
@@ -555,27 +555,27 @@ class Text extends Mesh {
 
 		if(height != v) {
 			height = v;
-			update_text();
+			updateText();
 		}
 
 		return height;
 		
 	}
 
-	function set_letter_spacing(v:Float):Float {
+	function set_letterSpacing(v:Float):Float {
 
-		letter_spacing = v;
+		letterSpacing = v;
 
-		update_text();
+		updateText();
 
-		return letter_spacing;
+		return letterSpacing;
 		
 
 	}
 
 	override function set_color(v:Color):Color {
 
-		ArrayTools.clear(text_colors);
+		ArrayTools.clear(textColors);
 
 		super.set_color(v);
 

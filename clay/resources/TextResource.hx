@@ -14,11 +14,11 @@ class TextResource extends Resource {
 
 		text = _text;
 		
-		resource_type = ResourceType.text;
+		resourceType = ResourceType.text;
 		
 	}
 
-	override function memory_use() {
+	override function memoryUse() {
 		
         return text != null ? text.length : 0;
         

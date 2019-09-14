@@ -14,7 +14,7 @@ class VelocityUpdateModule extends ParticleModule {
 
 	public var damping:Float = 0;
 
-	var vel_comps:Components<Velocity>;
+	var _velComps:Components<Velocity>;
 
 
 	public function new(options:VelocityUpdateModuleOptions) {
@@ -27,7 +27,7 @@ class VelocityUpdateModule extends ParticleModule {
 
 	override function init() {
 		
-		vel_comps = emitter.components.get(Velocity);
+		_velComps = emitter.components.get(Velocity);
 		
 	}
 
@@ -36,8 +36,8 @@ class VelocityUpdateModule extends ParticleModule {
 		var v:Velocity;
 		var pd:Particle;
 		for (p in particles) {
-			v = vel_comps.get(p.id);
-			v.multiply_scalar(Mathf.clamp(1 - dt * damping, 0, 1));
+			v = _velComps.get(p.id);
+			v.multiplyScalar(Mathf.clamp(1 - dt * damping, 0, 1));
 			p.x += v.x * dt;
 			p.y += v.y * dt;
 		}

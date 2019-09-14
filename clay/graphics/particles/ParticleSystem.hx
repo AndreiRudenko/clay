@@ -17,18 +17,18 @@ class ParticleSystem extends DisplayObject {
 		/** if the system is active, it will update */
 	public var active:Bool;
 		/** whether or not this system has been inited yet */
-	public var inited  (default, null):Bool = false;
+	public var inited(default, null):Bool = false;
 		/** whether or not this system is enabled */
-	public var enabled (get, never):Bool;
+	public var enabled(get, never):Bool;
 		/** whether or not this system is paused */
-	public var paused  (default, null):Bool = false;
+	public var paused(default, null):Bool = false;
 		/** the system position */
 	public var pos(default, null):Vector;
 		/** the system emitters */
 	public var emitters(default, null):Array<ParticleEmitter>;
 
 		/** the system active emitters */
-	var active_emitters:Int = 0;
+	var _activeEmitters:Int = 0;
 
 
 	public function new(?emitters:Array<ParticleEmitter>) {
@@ -45,8 +45,8 @@ class ParticleSystem extends DisplayObject {
 
 	override function render(p:Painter) {
 
-		p.set_shader(shader != null ? shader : shader_default);
-		p.clip(clip_rect);
+		p.setShader(shader != null ? shader : shaderDefault);
+		p.clip(clipRect);
 
 		for (e in emitters) {
 			e.render(p);
@@ -59,13 +59,13 @@ class ParticleSystem extends DisplayObject {
 
 		emitters.push(_emitter);
 
-		_emitter.index = active_emitters;
+		_emitter.index = _activeEmitters;
 
 		if(inited) {
 			_emitter.init(this);
 		}
 
-		active_emitters++;
+		_activeEmitters++;
 
 		return this;
 
@@ -75,10 +75,10 @@ class ParticleSystem extends DisplayObject {
 	public function remove(_emitter:ParticleEmitter) {
 		
 		var i:Int = 0;
-		while(active_emitters > i) {
+		while(_activeEmitters > i) {
 			if(emitters[i] == _emitter) {
 				emitters.splice(i, 1);
-				active_emitters--;
+				_activeEmitters--;
 			}
 			emitters[i].index = i;
 			i++;
@@ -89,7 +89,7 @@ class ParticleSystem extends DisplayObject {
 		/** emit particles */
 	public function emit() {
 
-		for (i in 0...active_emitters) {
+		for (i in 0..._activeEmitters) {
 			emitters[i].emit();
 		}
 		
@@ -98,7 +98,7 @@ class ParticleSystem extends DisplayObject {
 		/** start update emitters */
 	public function start() {
 		
-		for (i in 0...active_emitters) {
+		for (i in 0..._activeEmitters) {
 			emitters[i].start();
 		}
 
@@ -107,7 +107,7 @@ class ParticleSystem extends DisplayObject {
 		/** stop update emitters */
 	public function stop(_kill:Bool = false) {
 		
-		for (i in 0...active_emitters) {
+		for (i in 0..._activeEmitters) {
 			emitters[i].stop(_kill);
 		}
 
@@ -135,7 +135,7 @@ class ParticleSystem extends DisplayObject {
 		}
 
 		emitters.splice(0, emitters.length);
-		active_emitters = 0;
+		_activeEmitters = 0;
 		
 	}
 

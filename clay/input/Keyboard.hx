@@ -13,14 +13,14 @@ import clay.system.App;
 class Keyboard extends Input {
 
 
-	var key_code_pressed:BitVector;
-	var key_code_released:BitVector;
-	var key_code_down:BitVector;
+	var keyCodePressed:BitVector;
+	var keyCodeReleased:BitVector;
+	var keyCodeDown:BitVector;
 
-	var key_event:KeyEvent;
+	var keyEvent:KeyEvent;
 	var dirty:Bool = false;
 
-	var key_bindings:Map<String, Map<Int, Bool>>;
+	var keyBindings:Map<String, Map<Int, Bool>>;
 	var binding:Bindings;
 
 
@@ -28,7 +28,7 @@ class Keyboard extends Input {
 		
 		super(app);
 
-		key_bindings = new Map();
+		keyBindings = new Map();
 		binding = Clay.input.binding;
 
 	}
@@ -43,16 +43,16 @@ class Keyboard extends Input {
 
 		var k = kha.input.Keyboard.get();
 		if(k != null) {
-			k.notify(onkeypressed, onkeyreleased, ontextinput);
+			k.notify(onKeyPressed, onKeyReleased, onTextInput);
 		}
 
 		#end
 		
-		key_code_pressed = new BitVector(256);
-		key_code_released = new BitVector(256);
-		key_code_down = new BitVector(256);
+		keyCodePressed = new BitVector(256);
+		keyCodeReleased = new BitVector(256);
+		keyCodeDown = new BitVector(256);
 
-		key_event = new KeyEvent();
+		keyEvent = new KeyEvent();
 
 		super.enable();
 
@@ -68,16 +68,16 @@ class Keyboard extends Input {
 
 		var k = kha.input.Keyboard.get();
 		if(k != null) {
-			k.remove(onkeypressed, onkeyreleased, ontextinput);
+			k.remove(onKeyPressed, onKeyReleased, onTextInput);
 		}
 
 		#end
 
-		key_code_pressed = null;
-		key_code_released = null;
-		key_code_down = null;
+		keyCodePressed = null;
+		keyCodeReleased = null;
+		keyCodeDown = null;
 
-		key_event = null;
+		keyEvent = null;
 
 		super.disable();
 
@@ -85,57 +85,57 @@ class Keyboard extends Input {
 
 	public function pressed(_key:Key):Bool {
 
-		return key_code_pressed.get(_key);
+		return keyCodePressed.get(_key);
 
 	}
 
 	public function released(_key:Key):Bool {
 
-		return key_code_released.get(_key);
+		return keyCodeReleased.get(_key);
 
 	}
 
 	public function down(_key:Key):Bool {
 
-		return key_code_down.get(_key);
+		return keyCodeDown.get(_key);
 
 	}
 
-    public function bind(_name:String, _key:Key) {
+	public function bind(_name:String, _key:Key) {
 
-    	var b = key_bindings.get(_name);
-    	if(b == null) {
-    		b = new Map<Int, Bool>();
-    		key_bindings.set(_name, b);
-    	}
-    	b.set(_key, true);
+		var b = keyBindings.get(_name);
+		if(b == null) {
+			b = new Map<Int, Bool>();
+			keyBindings.set(_name, b);
+		}
+		b.set(_key, true);
 
-    }
+	}
 
-    public function unbind(_name:String) {
-    	
-    	if(key_bindings.exists(_name)) {
-    		key_bindings.remove(_name);
-    		binding.remove_all(_name);
-    	}
+	public function unbind(_name:String) {
+		
+		if(keyBindings.exists(_name)) {
+			keyBindings.remove(_name);
+			binding.removeAll(_name);
+		}
 
-    }
+	}
 
-    function check_binding(_key:Int, _pressed:Bool) {
+	function checkBinding(_key:Int, _pressed:Bool) {
 
-    	for (k in key_bindings.keys()) { // todo: using this is broke hashlink build, ftw?
-    		if(key_bindings.get(k).exists(_key)) {
-		    	binding.input_event.set_key(k, key_event);
-			    if(_pressed) {
-			    	binding.inputpressed();
-			    } else {
-					binding.inputreleased();
-			    }
-			    return;
-    		}
-    	}
+		for (k in keyBindings.keys()) {
+			if(keyBindings.get(k).exists(_key)) {
+				binding.inputEvent.setKey(k, keyEvent);
+				if(_pressed) {
+					binding.inputPressed();
+				} else {
+					binding.inputReleased();
+				}
+				return;
+			}
+		}
 
-    }
+	}
 
 	function reset() {
 
@@ -144,52 +144,52 @@ class Keyboard extends Input {
 		_verboser("reset");
 
 		if(dirty) {
-			key_code_pressed.disable_all();
-			key_code_released.disable_all();
+			keyCodePressed.disableAll();
+			keyCodeReleased.disableAll();
 			dirty = false;
 		}
 
 		#end
 	}
 
-	function onkeypressed(_key:Int) {
+	function onKeyPressed(_key:Int) {
 
-		_verboser('onkeypressed: $_key');
+		_verboser('onKeyPressed: $_key');
 
 		dirty = true;
 
-		key_code_pressed.enable(_key);
-		key_code_down.enable(_key);
+		keyCodePressed.enable(_key);
+		keyCodeDown.enable(_key);
 
-		key_event.set(_key, KeyEvent.KEY_DOWN);
+		keyEvent.set(_key, KeyEvent.KEY_DOWN);
 
-		check_binding(_key, true);
+		checkBinding(_key, true);
 
-		_app.emitter.emit(KeyEvent.KEY_DOWN, key_event);
+		_app.emitter.emit(KeyEvent.KEY_DOWN, keyEvent);
 
 	}
 
-	function onkeyreleased(_key:Int) {
+	function onKeyReleased(_key:Int) {
 
-		_verboser('onkeyreleased: $_key');
+		_verboser('onKeyReleased: $_key');
 
 		dirty = true;
 
-		key_code_released.enable(_key);
-		key_code_pressed.disable(_key);
-		key_code_down.disable(_key);
+		keyCodeReleased.enable(_key);
+		keyCodePressed.disable(_key);
+		keyCodeDown.disable(_key);
 
-		key_event.set(_key, KeyEvent.KEY_UP);
+		keyEvent.set(_key, KeyEvent.KEY_UP);
 
-		check_binding(_key, false);
+		checkBinding(_key, false);
 
-		_app.emitter.emit(KeyEvent.KEY_UP, key_event);
+		_app.emitter.emit(KeyEvent.KEY_UP, keyEvent);
 
 	}
 	
-	function ontextinput(_char:String) {
+	function onTextInput(_char:String) {
 
-		_verboser('ontextinput: $_char');
+		_verboser('onTextInput: $_char');
 
 		_app.emitter.emit(KeyEvent.TEXT_INPUT, _char);
 

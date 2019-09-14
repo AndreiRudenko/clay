@@ -15,7 +15,7 @@ class BytesResource extends Resource {
 
 	}
 
-	public static function create_from_bytes(_bytes:Bytes):BytesResource {
+	public static function createFromBytes(_bytes:Bytes):BytesResource {
 		
 		var b = kha.Blob.fromBytes(_bytes);
 		return new BytesResource(b);
@@ -30,7 +30,7 @@ class BytesResource extends Resource {
 
 		blob = _blob;
 
-		resource_type = ResourceType.bytes;
+		resourceType = ResourceType.bytes;
 		
 	}
 
@@ -40,7 +40,7 @@ class BytesResource extends Resource {
 		
 	}
 
-	override function memory_use() {
+	override function memoryUse() {
 		
 		return blob.length;
 		

@@ -16,7 +16,7 @@ class FontResource extends Resource {
 		font = _font;
 		textures = new Map();
 		
-		resource_type = ResourceType.font;
+		resourceType = ResourceType.font;
 		
 	}
 
@@ -29,7 +29,7 @@ class FontResource extends Resource {
 		
 	}
 	
-	override function memory_use() {
+	override function memoryUse() {
 		
         return font.blob.length;
         
@@ -63,7 +63,7 @@ class FontResource extends Resource {
 		
 	}
 
-	public function characters_width(size:Int, characters:Array<Int>, start:Int, length:Int):Float {
+	public function charactersWidth(size:Int, characters:Array<Int>, start:Int, length:Int):Float {
 
 		return font._get(size).charactersWidth(characters, start, length);
 

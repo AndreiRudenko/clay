@@ -40,61 +40,61 @@ import clay.utils.Log.*;
 class App {
 
 
-	public var renderer     (default, null):Renderer;
-	public var draw         (default, null):Draw;
-	public var audio        (default, null):Audio;
-	public var debug        (default, null):Debug;
+	public var renderer(default, null):Renderer;
+	public var draw(default, null):Draw;
+	public var audio(default, null):Audio;
+	public var debug(default, null):Debug;
 
-	public var emitter	    (default, null):Emitter;
-	public var events	    (default, null):Events;
+	public var emitter(default, null):Emitter;
+	public var events(default, null):Events;
 
-	public var screen	    (default, null):Screen;
-	public var input	    (default, null):InputManager;
-	public var resources	(default, null):ResourceManager;
+	public var screen(default, null):Screen;
+	public var input(default, null):InputManager;
+	public var resources(default, null):ResourceManager;
 
-	public var timer 	    (default, null):TimerManager;
-	public var random 	    (default, null):Random;
-	public var tween 	    (default, null):TweenManager;
+	public var timer(default, null):TimerManager;
+	public var random(default, null):Random;
+	public var tween(default, null):TweenManager;
 
-	public var in_focus     (default, null):Bool = true;
+	public var inFocus(default, null):Bool = true;
 
 	// average delta time
-	public var dt 	        (default, null):Float = 0;
+	public var dt(default, null):Float = 0;
 	// frame time
-	public var frame_delta  (default, null):Float = 0;
+	public var frameDelta(default, null):Float = 0;
 
-	public var time 	    (default, null):Float = 0;
-	public var timescale 	(default, set):Float = 1;
+	public var time(default, null):Float = 0;
+	public var timescale(default, set):Float = 1;
 
-	public var fixed_frame_time	(default, set):Float = 1/60;
+	public var fixedFrameTime(default, set):Float = 1/60;
 
-	var frame_max_delta:Float = 0.25;
-	var delta_smoothing:Int = 10;
-	var delta_index:Int = 0;
+	var frameMaxDelta:Float = 0.25;
+	var deltaSmoothing:Int = 10;
+	var deltaIndex:Int = 0;
 	var deltas:Array<Float>;
 
-	var fixed_overflow:Float = 0;
-	var last_time:Float = 0;
+	var fixedOverflow:Float = 0;
+	var lastTime:Float = 0;
 
 	var options:ClayOptions;
 
 	var inited:Bool = false;
 
-	var next_queue:Array<()->Void> = [];
-	var defer_queue:Array<()->Void> = [];
+	var nextQueue:Array<()->Void> = [];
+	var deferQueue:Array<()->Void> = [];
 
-	var _app_event:AppEvent;
-	var _render_event:RenderEvent;
+	var _appEvent:AppEvent;
+	var _renderEvent:RenderEvent;
 
 
 	public function new(_options:ClayOptions, _onready:()->Void) {
 
 		_debug("creating app");
 
-		var _kha_opt = parse_options(_options);
+		var _khaOpt = parseOptions(_options);
 
 		System.start(
-			_kha_opt, 
+			_khaOpt, 
 			function(_) {
 				ready(_onready);
 			}
@@ -113,14 +113,14 @@ class App {
 		useful for async calls in a sync context, allowing the sync function to return safely before the onload is fired. */
 	public inline function next(func:()->Void) {
 
-		if(func != null) next_queue.push(func);
+		if(func != null) nextQueue.push(func);
 
 	}
 
 		/** Call a function at the end of the current frame */
 	public inline function defer(func:()->Void) {
 
-		if(func != null) defer_queue.push(func);
+		if(func != null) deferQueue.push(func);
 
 	}
 
@@ -130,14 +130,14 @@ class App {
 
 		clay.Clay.app = this;
 
-		_app_event = new AppEvent();
-		_render_event = new RenderEvent();
+		_appEvent = new AppEvent();
+		_renderEvent = new RenderEvent();
 
 		emitter = new Emitter();
 		events = new Events();
 		
 		tween = new TweenManager();
-		random = new Random(options.random_seed);
+		random = new Random(options.randomSeed);
 		timer = new TimerManager();
 
 		renderer = new Renderer(options.renderer);
@@ -151,9 +151,9 @@ class App {
 		debug = new Debug(this);
 
 
-		if(options.no_default_font != true) {
+		if(options.noDefaultFont != true) {
 			
-			Clay.resources.load_all(
+			Clay.resources.loadAll(
 				[
 				"assets/Muli-Regular.ttf",
 				"assets/Muli-Bold.ttf"
@@ -181,16 +181,16 @@ class App {
 		_debug("init");
 
 		time = kha.System.time;
-		last_time = time;
+		lastTime = time;
 
 		deltas = [];
-		for (i in 0...delta_smoothing) {
+		for (i in 0...deltaSmoothing) {
 			deltas.push(1/60);
 		}
 
 		input.init();
 		
-		connect_events();
+		connectEvents();
 
 		screen.init();
 		renderer.init();
@@ -206,7 +206,7 @@ class App {
 
 	function destroy() {
 
-		disconnect_events();
+		disconnectEvents();
 		
 		debug.destroy();
 		events.destroy();
@@ -225,12 +225,12 @@ class App {
 		timer = null;
 		tween = null;
 		// signals = null;
-		next_queue = null;
-		defer_queue = null;
+		nextQueue = null;
+		deferQueue = null;
 
 	}
 
-	function parse_options(_options:ClayOptions):SystemOptions {
+	function parseOptions(_options:ClayOptions):SystemOptions {
 
 		_debug("parsing options: " + _options);
 
@@ -250,7 +250,7 @@ class App {
 		if (options.window.borderless) features |= WindowFeatures.FeatureBorderless;
 		if (options.window.ontop) features |= WindowFeatures.FeatureOnTop;
 
-		var _kha_opt: SystemOptions = {
+		var _khaOpt: SystemOptions = {
 			title: options.title,
 			width: options.width,
 			height: options.height,
@@ -266,11 +266,11 @@ class App {
 			}
 		};
 
-		return _kha_opt;
+		return _khaOpt;
 
 	}
 
-	function connect_events() {
+	function connectEvents() {
 
 		System.notifyOnFrames(render);
 		System.notifyOnApplicationState(foreground, resume, pause, background, null);
@@ -279,7 +279,7 @@ class App {
 
 	}
 
-	function disconnect_events() {
+	function disconnectEvents() {
 
 		System.removeFramesListener(render);
 
@@ -287,54 +287,54 @@ class App {
 		
 	}
 
-	var render_counter:Int = 0;
-	var step_counter:Int = 0;
+	var renderCounter:Int = 0;
+	var stepCounter:Int = 0;
 
 	function step() {
 
-		if(!in_focus) {
+		if(!inFocus) {
 			return;
 		}
 
 		tickstart();
 
 		time = kha.System.time;
-		frame_delta = time - last_time;
+		frameDelta = time - lastTime;
 
-		if(frame_delta > frame_max_delta) {
-			frame_delta = 1/60;
+		if(frameDelta > frameMaxDelta) {
+			frameDelta = 1/60;
 		}
 
 		// Smooth out the delta over the previous X frames
-		deltas[delta_index] = frame_delta;
+		deltas[deltaIndex] = frameDelta;
 		
-		delta_index++;
+		deltaIndex++;
 
-		if(delta_index > delta_smoothing) {
-			delta_index = 0;
+		if(deltaIndex > deltaSmoothing) {
+			deltaIndex = 0;
 		}
 
 		dt = 0;
 
-		for (i in 0...delta_smoothing) {
+		for (i in 0...deltaSmoothing) {
 			dt += deltas[i];
 		}
 
-		dt /= delta_smoothing;
+		dt /= deltaSmoothing;
 
 		tick();
 
-		fixed_overflow += frame_delta;
-		while(fixed_overflow >= fixed_frame_time) {
-			emitter.emit(AppEvent.FIXEDUPDATE, fixed_frame_time);
-			fixed_overflow -= fixed_frame_time;
+		fixedOverflow += frameDelta;
+		while(fixedOverflow >= fixedFrameTime) {
+			emitter.emit(AppEvent.FIXEDUPDATE, fixedFrameTime);
+			fixedOverflow -= fixedFrameTime;
 		}
 
 		emitter.emit(AppEvent.UPDATE, dt);
 		
 		renderer.update(dt);
 
-		last_time = time;
+		lastTime = time;
 
 		tickend();
 
@@ -344,9 +344,9 @@ class App {
 
 		_verboser("ontickstart");
 		
-		cycle_next_queue();
+		cycleNextQueue();
 
-		emitter.emit(AppEvent.TICKSTART, _app_event);
+		emitter.emit(AppEvent.TICKSTART, _appEvent);
 		
 	}
 
@@ -365,10 +365,10 @@ class App {
 
 		_verboser("ontickend");
 
-		emitter.emit(AppEvent.TICKEND, _app_event);
+		emitter.emit(AppEvent.TICKEND, _appEvent);
 		input.reset();
 
-		cycle_defer_queue();
+		cycleDeferQueue();
 
 	}
 
@@ -385,14 +385,14 @@ class App {
 
 		debug.start(DebugTag.render);
 
-		_render_event.set(f[0]);
+		_renderEvent.set(f[0]);
 
-		emitter.emit(RenderEvent.PRERENDER, _render_event);
+		emitter.emit(RenderEvent.PRERENDER, _renderEvent);
 
-		emitter.emit(RenderEvent.RENDER, _render_event);
+		emitter.emit(RenderEvent.RENDER, _renderEvent);
 		renderer.process(f[0]);
 		
-		emitter.emit(RenderEvent.POSTRENDER, _render_event);
+		emitter.emit(RenderEvent.POSTRENDER, _renderEvent);
 
 		debug.end(DebugTag.render);
 
@@ -402,49 +402,49 @@ class App {
 
 	function foreground() {
 
-		emitter.emit(AppEvent.FOREGROUND, _app_event);
+		emitter.emit(AppEvent.FOREGROUND, _appEvent);
 
-		in_focus = true;
+		inFocus = true;
 
 	}
 
 	function background() {
 
-		emitter.emit(AppEvent.BACKGROUND, _app_event);
+		emitter.emit(AppEvent.BACKGROUND, _appEvent);
 
-		in_focus = false;
+		inFocus = false;
 
 	}
 
 	function pause() {
 
-		emitter.emit(AppEvent.PAUSE, _app_event);
+		emitter.emit(AppEvent.PAUSE, _appEvent);
 
 	}
 
 	function resume() {
 
-		emitter.emit(AppEvent.RESUME, _app_event);
+		emitter.emit(AppEvent.RESUME, _appEvent);
 
 	}
 
-	inline function cycle_next_queue() {
+	inline function cycleNextQueue() {
 
-		var count = next_queue.length;
+		var count = nextQueue.length;
 		var i = 0;
 		while(i < count) {
-			(next_queue.shift())();
+			(nextQueue.shift())();
 			++i;
 		}
 
 	}
 
-	inline function cycle_defer_queue() {
+	inline function cycleDeferQueue() {
 
-		var count = defer_queue.length;
+		var count = deferQueue.length;
 		var i = 0;
 		while(i < count) {
-			(defer_queue.shift())();
+			(deferQueue.shift())();
 			++i;
 		}
 
@@ -452,7 +452,7 @@ class App {
 
 	function set_timescale(v:Float):Float {
 
-		v = Mathf.clamp_bottom(v, 0);
+		v = Mathf.clampBottom(v, 0);
 
 		timescale = v;
 
@@ -462,9 +462,9 @@ class App {
 		
 	}
 
-	function set_fixed_frame_time(v:Float):Float {
+	function set_fixedFrameTime(v:Float):Float {
 
-		return fixed_frame_time = Mathf.clamp_bottom(v, 0);
+		return fixedFrameTime = Mathf.clampBottom(v, 0);
 		
 	}
 
@@ -473,40 +473,40 @@ class App {
 @:noCompletion
 @:allow(clay.system.App)
 class DebugTag {
-    static var process      = "core.process";
-    static var update       = "core.update";
-    static var tick         = "core.tick";
-    static var render       = "core.render";
-    static var debug        = "core.debug";
-    static var updates      = "core.updates";
-    static var events       = "core.events";
-    static var audio        = "core.audio";
-    static var input        = "core.input";
-    static var timer        = "core.timer";
-    static var scene        = "core.scene";
+	static var process      = "core.process";
+	static var update       = "core.update";
+	static var tick         = "core.tick";
+	static var render       = "core.render";
+	static var debug        = "core.debug";
+	static var updates      = "core.updates";
+	static var events       = "core.events";
+	static var audio        = "core.audio";
+	static var input        = "core.input";
+	static var timer        = "core.timer";
+	static var scene        = "core.scene";
 }
 
 typedef ClayOptions = {
-    ?title:String,
-    ?width:Int,
-    ?height:Int,
-    ?antialiasing:Int,
-    ?vsync:Bool,
-    ?random_seed:Int,
-    ?renderer:RendererOptions,
-    ?window:WindowOptions,
-    ?no_default_font:Bool,
-    ?no_default_world:Bool,
+	?title:String,
+	?width:Int,
+	?height:Int,
+	?antialiasing:Int,
+	?vsync:Bool,
+	?randomSeed:Int,
+	?renderer:RendererOptions,
+	?window:WindowOptions,
+	?noDefaultFont:Bool,
+	?noDefaultWorld:Bool,
 
 };
 
 typedef WindowOptions = {
-    ?x:Int,
-    ?y:Int,
-    ?resizable:Bool,
-    ?minimizable:Bool,
-    ?maximizable:Bool,
-    ?borderless:Bool,
-    ?ontop:Bool,
-    ?mode:WindowMode,
+	?x:Int,
+	?y:Int,
+	?resizable:Bool,
+	?minimizable:Bool,
+	?maximizable:Bool,
+	?borderless:Bool,
+	?ontop:Bool,
+	?mode:WindowMode,
 };

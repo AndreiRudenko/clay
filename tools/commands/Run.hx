@@ -30,10 +30,10 @@ class Run extends Command {
 			CLI.error('Unknown target, use: [${CLI.targets.join(",")}]');
 		}
 
-		var build_command = CLI.command_map.get('build');
-		var launch_command = CLI.command_map.get('launch');
-		build_command.execute(args);
-		launch_command.execute(args);
+		var buildCommand = CLI.commandMap.get('build');
+		var launchCommand = CLI.commandMap.get('launch');
+		buildCommand.execute(args);
+		launchCommand.execute(args);
 
 	}
 

@@ -12,7 +12,7 @@ class Game {
 
 	public function new() {
 
-		Clay.resources.load_all(
+		Clay.resources.loadAll(
 			[
 				'assets/threeslice.png',
 				'assets/nineslice.png'
@@ -33,7 +33,7 @@ class Game {
 		nineslice.width = 256;
 		nineslice.height = 256;
 		nineslice.texture = Clay.resources.texture('assets/nineslice.png');
-		// nineslice.draw_cender = false;
+		// nineslice.drawCender = false;
 
 		Clay.layer.add(nineslice);
 

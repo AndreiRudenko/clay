@@ -40,9 +40,9 @@ class Sound extends AudioChannel {
 	var _cache:Float32Array;
 
 
-	public function new(?resource:AudioResource, output:AudioGroup = null, max_effects:Int = 8) {
+	public function new(?resource:AudioResource, output:AudioGroup = null, maxEffects:Int = 8) {
 
-		super(max_effects);
+		super(maxEffects);
 
 		this.resource = resource;
 
@@ -88,41 +88,41 @@ class Sound extends AudioChannel {
 		}
 
 		if(!stream) {
-			var sound_data = resource.uncompressed_data;
-			var w_ptr = 0;
-			var chk_ptr = 0;
-			while (w_ptr < samples) {
+			var soundData = resource.uncompressedData;
+			var wPtr = 0;
+			var chkPtr = 0;
+			while (wPtr < samples) {
 				// compute one chunk to render
-				var addressable_data = sound_data.length - position;
-				var next_chunk = addressable_data < (samples - w_ptr) ? addressable_data : (samples - w_ptr);
-				while (chk_ptr < next_chunk) {
-					_cache[w_ptr] = sound_data[position];
+				var addressableData = soundData.length - position;
+				var nextChunk = addressableData < (samples - wPtr) ? addressableData : (samples - wPtr);
+				while (chkPtr < nextChunk) {
+					_cache[wPtr] = soundData[position];
 					_position += pitch;
 					position = Math.floor(_position);
 					// ++position;
-					++chk_ptr;
-					++w_ptr;
+					++chkPtr;
+					++wPtr;
 				}
 				// loop to next chunk if applicable
 				if (!loop) {
 					break;
 				} else { 
-					chk_ptr = 0;
-					if (position >= sound_data.length) {
+					chkPtr = 0;
+					if (position >= soundData.length) {
 						position = 0;
 						_position = 0;
 					}
 				}
 			}
 			// fill empty
-			while (w_ptr < samples) {
-				_cache[w_ptr] = 0;
-				++w_ptr;
+			while (wPtr < samples) {
+				_cache[wPtr] = 0;
+				++wPtr;
 			}
 
 		} else {
 			#if (!kha_no_ogg)
-			var count = reader.read(_cache, Std.int(samples / 2), 2, Clay.audio.sample_rate, true) * 2; // todo: check channels
+			var count = reader.read(_cache, Std.int(samples / 2), 2, Clay.audio.sampleRate, true) * 2; // todo: check channels
 			if (count < samples) {
 				if (loop) {
 					position = 0;
@@ -135,7 +135,7 @@ class Sound extends AudioChannel {
 			#end
 		}
 
-		process_effects(_cache, samples);
+		processEffects(_cache, samples);
 
 		for (i in 0...Std.int(samples/2)) {
 			data[i*2] += _cache[i*2] * volume * l;
@@ -223,7 +223,7 @@ class Sound extends AudioChannel {
 
 		if(stream) {
 			#if (!kha_no_ogg)
-			reader = Reader.openFromBytes(resource.compressed_data);
+			reader = Reader.openFromBytes(resource.compressedData);
 			#end
 		}
 
@@ -233,7 +233,7 @@ class Sound extends AudioChannel {
 
 	function set_pitch(v:Float):Float {
 
-		pitch = Mathf.clamp_bottom(v, 0.01); // todo: 0?
+		pitch = Mathf.clampBottom(v, 0.01); // todo: 0?
 
 		return pitch;
 
@@ -241,13 +241,13 @@ class Sound extends AudioChannel {
 
 	function get_time():Float { // todo: check for stream
 
-		return position / Clay.audio.sample_rate / channels;
+		return position / Clay.audio.sampleRate / channels;
 
 	}
 
 	function set_time(v:Float):Float { // todo: check for stream
 
-		return position = Std.int(v * Clay.audio.sample_rate * channels);
+		return position = Std.int(v * Clay.audio.sampleRate * channels);
 
 	}
 
@@ -283,7 +283,7 @@ class Sound extends AudioChannel {
 
 		if(stream && resource != null) {
 			#if (!kha_no_ogg)
-			reader = Reader.openFromBytes(resource.compressed_data);
+			reader = Reader.openFromBytes(resource.compressedData);
 			#end
 		}
 
@@ -301,7 +301,7 @@ class Sound extends AudioChannel {
 				return reader.totalSample; 
 				#end
 			}
-			return resource.uncompressed_data.length;
+			return resource.uncompressedData.length;
 		}
 
 		return 0;
@@ -336,7 +336,7 @@ class Sound extends AudioChannel {
 				return reader.totalMillisecond / 1000; 
 				#end
 			}
-			return resource.uncompressed_data.length / Clay.audio.sample_rate / channels;
+			return resource.uncompressedData.length / Clay.audio.sampleRate / channels;
 		}
 
 		return 0;

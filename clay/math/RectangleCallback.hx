@@ -4,12 +4,12 @@ package clay.math;
 class RectangleCallback extends Rectangle {
 
 
-	public var ignore_listeners:Bool = false;
+	public var ignoreListeners:Bool = false;
 
-	@:isVar public var listen_x(default,default):(v:Float)->Void;
-	@:isVar public var listen_y(default,default):(v:Float)->Void;
-	@:isVar public var listen_w(default,default):(v:Float)->Void;
-	@:isVar public var listen_h(default,default):(v:Float)->Void;
+	@:isVar public var listenX:(v:Float)->Void;
+	@:isVar public var listenY:(v:Float)->Void;
+	@:isVar public var listenW:(v:Float)->Void;
+	@:isVar public var listenH:(v:Float)->Void;
 
 
 	public function new(_x:Float = 0, _y:Float = 0, _w:Float = 0, _h:Float = 0) {
@@ -20,10 +20,10 @@ class RectangleCallback extends Rectangle {
 
 	public function listen(f:(v:Float)->Void):RectangleCallback {
 
-		listen_x = f;
-		listen_y = f;
-		listen_w = f;
-		listen_h = f;
+		listenX = f;
+		listenY = f;
+		listenW = f;
+		listenH = f;
 
 		return this;
 		
@@ -33,8 +33,8 @@ class RectangleCallback extends Rectangle {
 
 		super.set_x(v);
 
-		if(listen_x != null && !ignore_listeners) {
-			listen_x(v);
+		if(listenX != null && !ignoreListeners) {
+			listenX(v);
 		}
 
 		return v;
@@ -45,8 +45,8 @@ class RectangleCallback extends Rectangle {
 
 		super.set_y(v);
 
-		if(listen_y != null && !ignore_listeners) {
-			listen_y(v);
+		if(listenY != null && !ignoreListeners) {
+			listenY(v);
 		}
 
 		return v;
@@ -57,8 +57,8 @@ class RectangleCallback extends Rectangle {
 
 		super.set_w(v);
 
-		if(listen_w != null && !ignore_listeners) {
-			listen_w(v);
+		if(listenW != null && !ignoreListeners) {
+			listenW(v);
 		}
 
 		return v;
@@ -69,8 +69,8 @@ class RectangleCallback extends Rectangle {
 
 		super.set_h(v);
 
-		if(listen_h != null && !ignore_listeners) {
-			listen_h(v);
+		if(listenH != null && !ignoreListeners) {
+			listenH(v);
 		}
 
 		return v;

@@ -10,10 +10,9 @@ class Main {
 				title: 'empty',
 				width: 800,
 				height: 600,
-				antialiasing: 0,
-				vsync: false,
-				window_mode: clay.types.WindowMode.Window,
-				resizable: false
+				window: {
+					resizable: false
+				}
 			}, 
 			onready
 		);

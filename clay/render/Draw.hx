@@ -47,7 +47,7 @@ class Draw {
 
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 		
 		var geom = new Line(options.p0.x, options.p0.y, options.p1.x, options.p1.y);
 		geom.color0 = color0;
@@ -61,8 +61,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -85,7 +85,7 @@ class Draw {
 
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var geom = new Quad(w, h);
 		geom.transform.pos.set(x,y);
@@ -100,8 +100,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -111,7 +111,7 @@ class Draw {
 
 	}
 
-	public function quad_outline(options:DrawQuadOutlineOptions):QuadOutline {
+	public function quadOutline(options:DrawQuadOutlineOptions):QuadOutline {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
@@ -124,7 +124,7 @@ class Draw {
 
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var geom = new QuadOutline(w, h, options.weight);
 		geom.transform.pos.set(x,y);
@@ -143,8 +143,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -164,7 +164,7 @@ class Draw {
 		var color = def(options.color, new Color());
 		var layer = def(options.layer, null);
 		var immediate = def(options.immediate, true);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var geom = new Circle(r, options.segments);
 		geom.transform.pos.set(x,y);
@@ -178,8 +178,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -188,7 +188,7 @@ class Draw {
 		return geom;
 	}
 	
-	public function circle_outline(options:DrawCircleOutlineOptions):CircleOutline {
+	public function circleOutline(options:DrawCircleOutlineOptions):CircleOutline {
 		
 		var x = def(options.x, 0);
 		var y = def(options.y, 0);
@@ -198,7 +198,7 @@ class Draw {
 		var color = def(options.color, new Color());
 		var layer = def(options.layer, null);
 		var immediate = def(options.immediate, true);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var geom = new CircleOutline(r, options.weight, options.segments);
 		geom.transform.pos.set(x,y);
@@ -216,8 +216,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -237,7 +237,7 @@ class Draw {
 
 		var layer = def(options.layer, null);
 		var immediate = def(options.immediate, true);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var iterator = options.vertices.iterator();
 
@@ -290,8 +290,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -301,12 +301,12 @@ class Draw {
 
 	}
 
-	public function polygon_outline(options:DrawPolyLineOptions):PolygonOutline {
+	public function polygonOutline(options:DrawPolyLineOptions):PolygonOutline {
 
 		var color = def(options.color, new Color());
 		var layer = def(options.layer, null);
 		var immediate = def(options.immediate, true);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var geom = new PolygonOutline(options.points, options.weight);
 		geom.color = color;
@@ -318,8 +318,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -334,7 +334,7 @@ class Draw {
 		var color = def(options.color, new Color());
 		var layer = def(options.layer, null);
 		var immediate = def(options.immediate, true);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var geom = new PolyLine(options.points, options.weight);
 		geom.color = color;
@@ -346,8 +346,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -370,7 +370,7 @@ class Draw {
 
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var geom = new Sprite(options.texture);
 		geom.transform.pos.set(x,y);
@@ -385,8 +385,8 @@ class Draw {
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -408,7 +408,7 @@ class Draw {
 
 		var immediate = def(options.immediate, true);
 		var layer = def(options.layer, null);
-		var no_layer = def(options.no_layer, false);
+		var noLayer = def(options.noLayer, false);
 
 		var geom = new Text(options.font);
 		geom.transform.pos.set(x,y);
@@ -425,15 +425,15 @@ class Draw {
 			geom.align = options.align;
 		}
 
-		if(options.align_vertical != null) {
-			geom.align_vertical = options.align_vertical;
+		if(options.alignVertical != null) {
+			geom.alignVertical = options.alignVertical;
 		}
 
 		// update martix
 		geom.update(0);
 
-		if(!no_layer) {
-			add_to_layer(geom, layer, options.depth);
+		if(!noLayer) {
+			addToLayer(geom, layer, options.depth);
 			if(immediate) {
 				geometry.push(geom);
 			}
@@ -455,13 +455,13 @@ class Draw {
 		
 	}
 	
-	inline function add_to_layer(geom:Mesh, layer:Layer, ?depth:Null<Float>) {
+	inline function addToLayer(geom:Mesh, layer:Layer, ?depth:Null<Float>) {
 
 		if(geom.layer == null) {
 			if(layer == null) {
 				layer = Clay.renderer.layer;
 			}
-			layer._add_unsafe(geom, depth != null);
+			layer._addUnsafe(geom, depth != null);
 		}
 
 	}
@@ -475,7 +475,7 @@ typedef DrawGeometryOptions = {
 	@:optional var layer:Layer;
 	@:optional var immediate:Bool;
 	@:optional var depth:Float;
-	@:optional var no_layer:Bool;
+	@:optional var noLayer:Bool;
 
 }
 
@@ -608,7 +608,7 @@ typedef DrawTextOptions = {
 	@:optional var color:Color;
 
 	@:optional var align:TextAlign;
-	@:optional var align_vertical:TextAlign;
+	@:optional var alignVertical:TextAlign;
 
 }
 

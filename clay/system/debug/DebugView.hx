@@ -10,7 +10,7 @@ class DebugView {
 
 
     public var active (get, set):Bool;
-    public var debug_name:String;
+    public var debugName:String;
     public var index:Int;
     var debug:Debug;
     var _active:Bool;
@@ -18,7 +18,7 @@ class DebugView {
 
 	public function new(debug:Debug) {
 
-		debug_name = '';
+		debugName = '';
 		this.debug = debug;
 		_active = false;
 
@@ -29,9 +29,9 @@ class DebugView {
 		_active = v;
 
 		if(_active) {
-			onenabled();
+			onEnabled();
 		} else {
-			ondisabled();
+			onDisabled();
 		}
 
 		return v;
@@ -44,7 +44,7 @@ class DebugView {
 		
 	}
 
-	function onenabled() {}
-	function ondisabled() {}
+	function onEnabled() {}
+	function onDisabled() {}
 
 }

@@ -15,13 +15,13 @@ import clay.events.*;
 class Bindings extends Input {
 
 
-	@:noCompletion public var input_event:InputEvent;
+	@:noCompletion public var inputEvent:InputEvent;
 
-	var input_pressed:Map<String, Int>;
-	var input_released:Map<String, Int>;
-	var input_down:Map<String, Int>;
+	var _inputPressed:Map<String, Int>;
+	var _inputReleased:Map<String, Int>;
+	var _inputDown:Map<String, Int>;
 
-	var dirty:Bool = false;
+	var _dirty:Bool = false;
 
 
 	override function enable() {
@@ -30,11 +30,11 @@ class Bindings extends Input {
 			return;
 		}
 		
-		input_pressed = new Map();
-		input_released = new Map();
-		input_down = new Map();
+		_inputPressed = new Map();
+		_inputReleased = new Map();
+		_inputDown = new Map();
 
-		input_event = new InputEvent();
+		inputEvent = new InputEvent();
 
 		super.enable();
 
@@ -46,11 +46,11 @@ class Bindings extends Input {
 			return;
 		}
 
-		input_pressed = null;
-		input_released = null;
-		input_down = null;
+		_inputPressed = null;
+		_inputReleased = null;
+		_inputDown = null;
 
-		input_event = null;
+		inputEvent = null;
 
 		super.disable();
 
@@ -58,19 +58,19 @@ class Bindings extends Input {
 
 	public function pressed(_key:String):Bool {
 
-		return input_pressed.exists(_key);
+		return _inputPressed.exists(_key);
 
 	}
 
 	public function released(_key:String):Bool {
 
-		return input_released.exists(_key);
+		return _inputReleased.exists(_key);
 
 	}
 
 	public function down(_key:String):Bool {
 
-		return input_down.exists(_key);
+		return _inputDown.exists(_key);
 
 	}
 
@@ -78,113 +78,113 @@ class Bindings extends Input {
 
 		_verboser("reset");
 
-		if(dirty) {
-			for (k in input_pressed.keys()) {
-				input_pressed.remove(k);
+		if(_dirty) {
+			for (k in _inputPressed.keys()) {
+				_inputPressed.remove(k);
 			}
-			for (k in input_released.keys()) {
-				input_released.remove(k);
+			for (k in _inputReleased.keys()) {
+				_inputReleased.remove(k);
 			}
-			dirty = false;
+			_dirty = false;
 		}
 
 	}
 
-	inline function add_pressed(_name:String) {
+	inline function addPressed(_name:String) {
 		
 		var n:Int = 0;
-		if(input_pressed.exists(_name)) {
-			n = input_pressed.get(_name);
+		if(_inputPressed.exists(_name)) {
+			n = _inputPressed.get(_name);
 		}
-		input_pressed.set(_name, ++n);
+		_inputPressed.set(_name, ++n);
 
 	}
 
-	inline function add_down(_name:String) {
+	inline function addDown(_name:String) {
 		
 		var n:Int = 0;
-		if(input_down.exists(_name)) {
-			n = input_down.get(_name);
+		if(_inputDown.exists(_name)) {
+			n = _inputDown.get(_name);
 		}
-		input_down.set(_name, ++n);
+		_inputDown.set(_name, ++n);
 
 	}
 
-	inline function add_released(_name:String) {
+	inline function addReleased(_name:String) {
 		
 		var n:Int = 0;
-		if(input_released.exists(_name)) {
-			n = input_released.get(_name);
+		if(_inputReleased.exists(_name)) {
+			n = _inputReleased.get(_name);
 		}
-		input_released.set(_name, ++n);
+		_inputReleased.set(_name, ++n);
 		
 	}
 
-	inline function remove_pressed(_name:String) {
+	inline function removePressed(_name:String) {
 		
-		if(input_pressed.exists(_name)) {
-			var n = input_pressed.get(_name);
+		if(_inputPressed.exists(_name)) {
+			var n = _inputPressed.get(_name);
 			if(--n <= 0) {
-				input_pressed.remove(_name);
+				_inputPressed.remove(_name);
 			}
 		}
 		
 	}
 
-	inline function remove_down(_name:String) {
+	inline function removeDown(_name:String) {
 		
-		if(input_down.exists(_name)) {
-			var n = input_down.get(_name);
+		if(_inputDown.exists(_name)) {
+			var n = _inputDown.get(_name);
 			if(--n <= 0) {
-				input_down.remove(_name);
+				_inputDown.remove(_name);
 			}
 		}
 		
 	}
 
-	inline function remove_released(_name:String) {
+	inline function removeReleased(_name:String) {
 		
-		if(input_released.exists(_name)) {
-			var n = input_released.get(_name);
+		if(_inputReleased.exists(_name)) {
+			var n = _inputReleased.get(_name);
 			if(--n <= 0) {
-				input_released.remove(_name);
+				_inputReleased.remove(_name);
 			}
 		}
 		
 	}
 
-	@:noCompletion public function remove_all(_name:String) {
+	@:noCompletion public function removeAll(_name:String) {
 
-		remove_pressed(_name);
-		remove_down(_name);
-		remove_released(_name);
-
-	}
-
-	@:noCompletion public function inputpressed() {
-
-		_verboser('inputpressed');
-
-		dirty = true;
-
-		add_pressed(input_event.name);
-		add_down(input_event.name);
-
-		_app.emitter.emit(InputEvent.INPUT_DOWN, input_event);
+		removePressed(_name);
+		removeDown(_name);
+		removeReleased(_name);
 
 	}
 
-	@:noCompletion public function inputreleased() {
+	@:noCompletion public function inputPressed() {
 
-		_verboser('inputreleased');
+		_verboser('inputPressed');
 
-		dirty = true;
+		_dirty = true;
 
-		add_released(input_event.name);
-		remove_pressed(input_event.name);
-		remove_down(input_event.name);
+		addPressed(inputEvent.name);
+		addDown(inputEvent.name);
 
-		_app.emitter.emit(InputEvent.INPUT_UP, input_event);
+		_app.emitter.emit(InputEvent.INPUT_DOWN, inputEvent);
+
+	}
+
+	@:noCompletion public function inputReleased() {
+
+		_verboser('inputReleased');
+
+		_dirty = true;
+
+		addReleased(inputEvent.name);
+		removePressed(inputEvent.name);
+		removeDown(inputEvent.name);
+
+		_app.emitter.emit(InputEvent.INPUT_UP, inputEvent);
 
 	}
 

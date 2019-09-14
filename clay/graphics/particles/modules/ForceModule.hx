@@ -13,9 +13,9 @@ class ForceModule extends ParticleModule {
 
 
 	public var force(default, null):Vector;
-	public var force_random:Vector;
+	public var forceRandom:Vector;
 
-	var vel_comps:Components<Velocity>;
+	var _velComps:Components<Velocity>;
 
 
 	public function new(_options:ForceModuleOptions) {
@@ -23,36 +23,36 @@ class ForceModule extends ParticleModule {
 		super(_options);
 
 		force = _options.force != null ? _options.force : new Vector();
-		force_random = _options.force_random;
+		forceRandom = _options.forceRandom;
 
 	}
 
 	override function init() {
 
-		vel_comps = emitter.components.get(Velocity);
+		_velComps = emitter.components.get(Velocity);
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 		
-		particles.for_each(
+		particles.forEach(
 			function(p) {
-				vel_comps.get(p.id).set(0,0);
+				_velComps.get(p.id).set(0,0);
 			}
 		);
 		
 	}
 	
-	override function onremoved() {
+	override function onRemoved() {
 
-		emitter.remove_module(VelocityUpdateModule);
-		vel_comps = null;
+		emitter.removeModule(VelocityUpdateModule);
+		_velComps = null;
 		
 	}
 
-	override function onunspawn(p:Particle) {
+	override function onUnSpawn(p:Particle) {
 
-		vel_comps.get(p.id).set(0,0);
+		_velComps.get(p.id).set(0,0);
 		
 	}
 
@@ -60,12 +60,12 @@ class ForceModule extends ParticleModule {
 
 		var vel:Vector;
 		for (p in particles) {
-			vel = vel_comps.get(p.id);
+			vel = _velComps.get(p.id);
 			vel.x += force.x * dt;
 			vel.y += force.y * dt;
-			if(force_random != null) {
-				vel.x += force_random.x * emitter.random_1_to_1() * dt;
-				vel.y += force_random.y * emitter.random_1_to_1() * dt;
+			if(forceRandom != null) {
+				vel.x += forceRandom.x * emitter.random1To1() * dt;
+				vel.y += forceRandom.y * emitter.random1To1() * dt;
 			}
 		}
 
@@ -74,31 +74,31 @@ class ForceModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		force.from_json(d.force);
+		force.fromJson(d.force);
 
-		if(d.force_random != null) {
-			if(force_random == null) {
-				force_random = new Vector();
+		if(d.forceRandom != null) {
+			if(forceRandom == null) {
+				forceRandom = new Vector();
 			}
-			force_random.from_json(d.force_random);
+			forceRandom.fromJson(d.forceRandom);
 		}
 
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.force = force.to_json();
+		d.force = force.toJson();
 
-		if(force_random != null) {
-			d.force_random = force_random.to_json();
+		if(forceRandom != null) {
+			d.forceRandom = forceRandom.toJson();
 		}
 
 		return d;
@@ -114,7 +114,7 @@ typedef ForceModuleOptions = {
 	>ParticleModuleOptions,
 	
 	@:optional var force : Vector;
-	@:optional var force_random : Vector;
+	@:optional var forceRandom : Vector;
 
 }
 

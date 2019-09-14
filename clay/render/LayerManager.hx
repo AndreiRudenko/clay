@@ -16,15 +16,15 @@ import clay.utils.Log.*;
 class LayerManager {
 
 
-	public var active_count(get, never):Int;
+	public var activeCount(get, never):Int;
 
 	public var capacity(default, null):Int;
 	public var used(default, null):Int;
 
-	var _active_layers:Array<Layer>;
+	var _activeLayers:Array<Layer>;
 	var _layers:Map<String, Layer>;
 
-	var _layer_ids:IntRingBuffer;
+	var _layerIds:IntRingBuffer;
 
 
 	public function new(_capacity:Int) {
@@ -32,18 +32,18 @@ class LayerManager {
 		capacity = _capacity;
 		used = 0;
 		
-		_active_layers = [];
+		_activeLayers = [];
 		_layers = new Map();
 		
-		_layer_ids = new IntRingBuffer(capacity);
+		_layerIds = new IntRingBuffer(capacity);
 
 	}
 
-	public function create(name:String, priority:Int = 0, depth_sort:Bool = true, enabled:Bool = true):Layer {
+	public function create(name:String, priority:Int = 0, depthSort:Bool = true, enabled:Bool = true):Layer {
 
-		var _layer = new Layer(this, name, pop_layer_id(), priority, depth_sort);
+		var _layer = new Layer(this, name, popLayerID(), priority, depthSort);
 
-		handle_duplicate_warning(name);
+		handleDuplicateWarning(name);
 		_layers.set(name, _layer);
 
 		if(enabled) {
@@ -64,7 +64,7 @@ class LayerManager {
 		}
 
 		for (c in Clay.renderer.cameras.cameras) {
-			c._visible_layers_mask.enable(layer.id);
+			c._visibleLayersMask.enable(layer.id);
 		}
 
 		layer.destroy();
@@ -85,10 +85,10 @@ class LayerManager {
 		
 		var added:Bool = false;
 		var l:Layer = null;
-		for (i in 0..._active_layers.length) {
-			l = _active_layers[i];
+		for (i in 0..._activeLayers.length) {
+			l = _activeLayers[i];
 			if (layer.priority < l.priority) {
-				_active_layers.insert(i, layer);
+				_activeLayers.insert(i, layer);
 				added = true;
 				break;
 			}
@@ -97,7 +97,7 @@ class LayerManager {
 		layer._active = true;
 
 		if(!added) {
-			_active_layers.push(layer);
+			_activeLayers.push(layer);
 		}
 
 	}
@@ -108,7 +108,7 @@ class LayerManager {
 			return;
 		}
 
-		_active_layers.remove(layer);
+		_activeLayers.remove(layer);
 		layer._active = false;
 		
 	}
@@ -123,7 +123,7 @@ class LayerManager {
 
 	public inline function update(dt:Float) {
 		
-		for (l in _active_layers) {
+		for (l in _activeLayers) {
 			l.update(dt);
 		}
 
@@ -131,15 +131,15 @@ class LayerManager {
 
 	public inline function render(cam:Camera) {
 
-		for (l in _active_layers) {
-			if(cam._visible_layers_mask[l.id]) {
+		for (l in _activeLayers) {
+			if(cam._visibleLayersMask[l.id]) {
 				l.render(cam);
 			}
 		}
 		
 	}
 
-	inline function handle_duplicate_warning(name:String) {
+	inline function handleDuplicateWarning(name:String) {
 
 		var l:Layer = _layers.get(name);
 		if(l != null) {
@@ -151,33 +151,33 @@ class LayerManager {
 
 	}
 
-	inline function get_active_count():Int {
+	inline function get_activeCount():Int {
 		
-		return _active_layers.length;
+		return _activeLayers.length;
 
 	}
 
-	function pop_layer_id():Int {
+	function popLayerID():Int {
 
 		if(used >= capacity) {
 			throw('Out of layers, max allowed ${capacity}');
 		}
 
 		++used;
-		return _layer_ids.pop();
+		return _layerIds.pop();
 
 	}
 
-	function push_layer_id(id:Int) {
+	function pushLayerID(id:Int) {
 
 		--used;
-		_layer_ids.push(id);
+		_layerIds.push(id);
 
 	}
 
 	@:noCompletion public inline function iterator():Iterator<Layer> {
 
-		return _active_layers.iterator();
+		return _activeLayers.iterator();
 
 	}
 

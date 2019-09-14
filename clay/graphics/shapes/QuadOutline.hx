@@ -25,7 +25,7 @@ class QuadOutline extends Mesh {
 		_align = StrokeAlign.center;
 
 		size = new VectorCallback(w, h);
-		size.listen(size_changed);
+		size.listen(sizeChanged);
 
 		var vertices = [];
 		var indices = [];
@@ -46,11 +46,11 @@ class QuadOutline extends Mesh {
 
 		super(vertices, indices, null);
 
-		size_changed(0);
+		sizeChanged(0);
 
 	}
 
-	function size_changed(v:Float) {
+	function sizeChanged(v:Float) {
 		
 		var sw:Float = 0;
 		var sw2:Float = 0;
@@ -94,7 +94,7 @@ class QuadOutline extends Mesh {
 
 		_align = v;
 
-		size_changed(0);
+		sizeChanged(0);
 
 		return v;
 
@@ -110,7 +110,7 @@ class QuadOutline extends Mesh {
 
 		_weight = v;
 
-		size_changed(0);
+		sizeChanged(0);
 
 		return v;
 

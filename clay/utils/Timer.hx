@@ -7,7 +7,7 @@ class Timer {
 	
 
 		/** How much time the timer was set for. */
-	public var time_limit	(default, set):Float = 0;
+	public var timeLimit	(default, set):Float = 0;
 		/** How many loops the timer was set for. 0 means "looping forever". */
 	public var loops:Int = 0;
 		/** Pauses or checks the pause state of the timer. */
@@ -17,33 +17,33 @@ class Timer {
 		/** Use timescale for timer. */
 	public var timescaled:Bool = false;
 		/** Manual update */
-	public var manual_update(default, null):Bool = false;
+	public var manualUpdate(default, null):Bool = false;
 
 		/** The amount of milliseconds that have elapsed since the timer was started */
 	public var time(default, null):Float = 0;
 		/** Read-only: how many loops that have elapsed since the timer was started. */
-	public var elapsed_loops(get, never):Int;
+	public var elapsedLoops(get, never):Int;
 		/** Read-only: check how much time is left on the timer. */
-	public var time_left(get, never):Float;
+	public var timeLeft(get, never):Float;
 		/** Read-only: check how many loops are left on the timer. */
-	public var loops_left(get, never):Int;
+	public var loopsLeft(get, never):Int;
 		/** Read-only: how far along the timer is, on a scale of 0.0 to 1.0. */
 	public var progress(get, never):Float;
 
 
-	var _oncomplete:()->Void;
-	var _onrepeat:()->Void;
-	var _onupdate:()->Void;
+	var _onComplete:()->Void;
+	var _onRepeat:()->Void;
+	var _onUpdate:()->Void;
 
-	var _loops_counter:Int = 0;
+	var _loopsCounter:Int = 0;
 
 	@:noCompletion 
 	public var _added:Bool = false;
 
 
-	@:noCompletion public function new(_manual_update:Bool = false) {
+	@:noCompletion public function new(_manualUpdate:Bool = false) {
 
-		manual_update = _manual_update;
+		manualUpdate = _manualUpdate;
 
 	}
 
@@ -52,19 +52,19 @@ class Timer {
 		Clay.timer.remove(this);
 		active = false;
 		finished = true;
-		_oncomplete = null;
-		_onrepeat = null;
-		_onupdate = null;
+		_onComplete = null;
+		_onRepeat = null;
+		_onUpdate = null;
 
 	}
 
-	public inline function start(_timelimit:Float, _oncompletefunc:()->Void = null):Timer {
+	public inline function start(_timelimit:Float, _onCompletefunc:()->Void = null):Timer {
 
-		return start_from(0, _timelimit, _oncompletefunc);
+		return startFrom(0, _timelimit, _onCompletefunc);
 
 	}
 
-	public function start_from(_current_time:Float, _timelimit:Float, _oncompletefunc:()->Void = null):Timer {
+	public function startFrom(_currentTime:Float, _timelimit:Float, _onCompletefunc:()->Void = null):Timer {
 
 		stop(false); // here we remove from timers array
 
@@ -73,16 +73,16 @@ class Timer {
 		active = true;
 		finished = false;
 
-		if(_oncompletefunc != null){
-			_oncomplete = _oncompletefunc;
+		if(_onCompletefunc != null){
+			_onComplete = _onCompletefunc;
 		}
 
-		time = _current_time;
+		time = _currentTime;
 
-		time_limit = _timelimit;
+		timeLimit = _timelimit;
 		
 		loops = 1;
-		_loops_counter = 0;
+		_loopsCounter = 0;
 
 		return this;
 
@@ -91,7 +91,7 @@ class Timer {
 	public function reset(_newtime:Float = -1):Timer {
 
 		if (_newtime >= 0) {
-			time_limit = _newtime;
+			timeLimit = _newtime;
 		}
 
 		if(!_added) {
@@ -102,7 +102,7 @@ class Timer {
 		time = 0;
 		
 		// loops = 1;
-		_loops_counter = 0;
+		_loopsCounter = 0;
 
 		return this;
 
@@ -130,8 +130,8 @@ class Timer {
 				Clay.timer.remove(this);
 			}
 			
-			if (_finish && _oncomplete != null) {
-				_oncomplete();
+			if (_finish && _onComplete != null) {
+				_onComplete();
 			}
 
 		}
@@ -145,25 +145,25 @@ class Timer {
 	}
 
 
-	public function oncomplete(?_oncompletefunc:()->Void):Timer {
+	public function onComplete(?_onCompletefunc:()->Void):Timer {
 
-		_oncomplete = _oncompletefunc;
-
-		return this;
-
-	}
-
-	public function onrepeat(?_onrepeatfunc:()->Void):Timer {
-
-		_onrepeat = _onrepeatfunc;
+		_onComplete = _onCompletefunc;
 
 		return this;
 
 	}
 
-	public function onupdate(?_onupdatefunc:()->Void):Timer {
+	public function onRepeat(?_onRepeatfunc:()->Void):Timer {
 
-		_onupdate = _onupdatefunc;
+		_onRepeat = _onRepeatfunc;
+
+		return this;
+
+	}
+
+	public function onUpdate(?_onUpdatefunc:()->Void):Timer {
+
+		_onUpdate = _onUpdatefunc;
 
 		return this;
 
@@ -179,22 +179,22 @@ class Timer {
 
 			time += dt;
 			
-			if (_onupdate != null) {
-				_onupdate();
+			if (_onUpdate != null) {
+				_onUpdate();
 			}
 			
-			while (!finished && time > time_limit) {
-				_loops_counter++;
+			while (!finished && time > timeLimit) {
+				_loopsCounter++;
 				
-				if (loops > 0 && (_loops_counter >= loops)) {
+				if (loops > 0 && (_loopsCounter >= loops)) {
 					stop();
 					break;
 				}
 
-				time -= time_limit;
+				time -= timeLimit;
 
-				if (_onrepeat != null) {
-					_onrepeat();
+				if (_onRepeat != null) {
+					_onRepeat();
 				}
 				
 			}
@@ -203,11 +203,11 @@ class Timer {
 
 	}
 
-	function set_time_limit(value:Float):Float {
+	function set_timeLimit(value:Float):Float {
 
-		time_limit = value > 0 ? value : 0;
+		timeLimit = value > 0 ? value : 0;
 
-		return time_limit;
+		return timeLimit;
 
 	}
 
@@ -219,31 +219,31 @@ class Timer {
 
 	}
 
-	inline function get_time_left():Float {
+	inline function get_timeLeft():Float {
 
-		return time_limit - time;
-
-	}
-	
-	inline function get_loops_left():Int {
-
-		return loops - _loops_counter;
+		return timeLimit - time;
 
 	}
 	
-	inline function get_elapsed_loops():Int {
+	inline function get_loopsLeft():Int {
 
-		return _loops_counter;
+		return loops - _loopsCounter;
+
+	}
+	
+	inline function get_elapsedLoops():Int {
+
+		return _loopsCounter;
 
 	}
 	
 	inline function get_progress():Float {
 
-		return (time_limit > 0) ? (time / time_limit) : 0;
+		return (timeLimit > 0) ? (time / timeLimit) : 0;
 
 	}
 
-	inline function get_elapsed_time():Float {
+	inline function get_elapsedTime():Float {
 
 		return time;
 

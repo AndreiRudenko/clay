@@ -12,25 +12,25 @@ class TraceDebugView extends DebugView {
 
 	var logged:Array<String>;
 	var lines:Text;
-	var max_lines:Int = 35;
+	var maxLines:Int = 35;
 
 
 	public function new(_debug:Debug) {
 
 		super(_debug);
 
-		debug_name = "Log";
+		debugName = "Log";
 
-		clay.system.Debug.trace_callbacks.push(on_trace);
+		clay.system.Debug.traceCallbacks.push(onTrace);
 
 		logged = [];
 
 		lines = new Text(Clay.renderer.font);
 		lines.size = 14;
 		lines.align = TextAlign.left;
-		lines.align_vertical = TextAlign.bottom;
+		lines.alignVertical = TextAlign.bottom;
 		lines.visible = false;
-		lines.color = new Color().from_int(0x888888);
+		lines.color = new Color().fromInt(0x888888);
 		lines.transform.pos.set(debug.padding.x+20, debug.padding.y+40);
 		lines.width = Clay.screen.width-(debug.padding.x*2)-20;
 		lines.height = Clay.screen.height-(debug.padding.y*2)-40;
@@ -39,29 +39,29 @@ class TraceDebugView extends DebugView {
 
 	}
 
-	// override function onremoved() {
+	// override function onRemoved() {
 
 	// 	lines.destroy();
 	// 	lines = null;
 
 	// }
 
-	override function onenabled() {
+	override function onEnabled() {
 
 		lines.visible = true;
-		refresh_lines();
+		refreshLines();
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
 		lines.visible = false;
 
 	}
 
-	public function add_line(_t:String) {
+	public function addLine(_t:String) {
 
-		if(logged.length >= max_lines) {
+		if(logged.length >= maxLines) {
 			logged.shift();
 		}
 
@@ -71,17 +71,17 @@ class TraceDebugView extends DebugView {
 			return;
 		}
 
-		refresh_lines();
+		refreshLines();
 
 	}
 
-	function on_trace( v : Dynamic, ?inf : haxe.PosInfos ) {
+	function onTrace( v : Dynamic, ?inf : haxe.PosInfos ) {
 
-		add_line( inf.fileName + ":" + inf.lineNumber + " " + v );
+		addLine( inf.fileName + ":" + inf.lineNumber + " " + v );
 
 	}
 
-	function refresh_lines() {
+	function refreshLines() {
 
 		var _final = new StringBuf();
 

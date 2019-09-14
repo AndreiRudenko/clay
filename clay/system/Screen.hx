@@ -46,7 +46,7 @@ class Screen {
 	@:allow(clay.system.App)
 	function init() {
 
-		update_buffer();
+		updateBuffer();
 		
 	}
 
@@ -57,18 +57,18 @@ class Screen {
 		}
 
 		window.resize(_w, _h);
-		update_buffer();
+		updateBuffer();
 
 	}
 
-	function update_buffer() {
+	function updateBuffer() {
 		
 		if(buffer != null) {
 			buffer.unload();
 			Clay.resources.remove(buffer);
 		}
 
-		buffer = Texture.create_rendertarget(
+		buffer = Texture.createRenderTarget(
 			width, 
 			height, 
 			TextureFormat.RGBA32, 
@@ -143,7 +143,7 @@ class Screen {
 
 		_antialiasing = v;
 
-		update_buffer();
+		updateBuffer();
 
 		return v;
 		
@@ -165,7 +165,7 @@ class Cursor {
 		
 		var m = kha.input.Mouse.get();
 		if(m != null) {
-			m.notify(null, null, onmove, null);
+			m.notify(null, null, onMove, null);
 		}
 
 	}
@@ -194,7 +194,7 @@ class Cursor {
 		
 	}
 
-	function onmove(x:Int, y:Int, x_rel:Int, y_rel:Int) {
+	function onMove(x:Int, y:Int, xrel:Int, yrel:Int) {
 
 		pos.set(x, y);
 

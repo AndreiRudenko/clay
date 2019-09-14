@@ -12,43 +12,43 @@ import clay.utils.Log.*;
 
 class AudioChannel {
 
-	static inline var max_effects:Int = 8;
+	static inline var maxEffects:Int = 8;
 
 	public var mute:Bool = false;
 
-	public var volume         (default, set):Float;
-	public var pan            (default, set):Float;
-	public var output         (default, set):AudioGroup;
+	public var volume(default, set):Float;
+	public var pan(default, set):Float;
+	public var output(default, set):AudioGroup;
 
-	public var effects        (default, null):Vector<AudioEffect>;
-	public var effects_count  (default, null):Int;
+	public var effects(default, null):Vector<AudioEffect>;
+	public var effectsCount(default, null):Int;
 
-	var _internal_effects:Vector<AudioEffect>;
-	var _max_effects:Int;
+	var _internalEffects:Vector<AudioEffect>;
+	var _maxEffects:Int;
 
-	var l: Float;
-	var r: Float;
+	var l:Float;
+	var r:Float;
 
 
-	public function new(max_effects:Int = 8) {
+	public function new(maxEffects:Int = 8) {
 		
 		l = 1;
 		r = 1;
 
 		volume = 1;
 		pan = 0;
-		effects_count = 0;
-		_max_effects = max_effects;
+		effectsCount = 0;
+		_maxEffects = maxEffects;
 
-		effects = new Vector(_max_effects);
-		_internal_effects = new Vector(_max_effects);
+		effects = new Vector(_maxEffects);
+		_internalEffects = new Vector(_maxEffects);
 
 	}
 
-	public function add_effect(effect:AudioEffect) {
+	public function addEffect(effect:AudioEffect) {
 		
-		if(effects_count >= _max_effects) {
-			log("cant add effect, max effects: " + _max_effects);
+		if(effectsCount >= _maxEffects) {
+			log("cant add effect, max effects: " + _maxEffects);
 			return;
 		}
 
@@ -59,29 +59,29 @@ class AudioChannel {
 
 		effect.parent = this;
 
-		clay.system.Audio.mutex_lock();
+		clay.system.Audio.mutexLock();
 
-		effects[effects_count++] = effect;
+		effects[effectsCount++] = effect;
 
-		clay.system.Audio.mutex_unlock();
+		clay.system.Audio.mutexUnlock();
 
 	}
 
-	public function remove_effect(effect:AudioEffect) {
+	public function removeEffect(effect:AudioEffect) {
 		
 		if(effect.parent == this) {
 			effect.parent = null;
 
-			clay.system.Audio.mutex_lock();
+			clay.system.Audio.mutexLock();
 
-			for (i in 0...effects_count) {
-				if(effects[i] == effect) { // todo: remove rest from effects_count and effect
-					effects[i] = effects[--effects_count];
+			for (i in 0...effectsCount) {
+				if(effects[i] == effect) { // todo: remove rest from effectsCount and effect
+					effects[i] = effects[--effectsCount];
 					break;
 				}
 			}
 
-			clay.system.Audio.mutex_unlock();
+			clay.system.Audio.mutexUnlock();
 
 		} else {
 			log("cant remove effect from channel");
@@ -89,45 +89,45 @@ class AudioChannel {
 
 	}
 
-	public function remove_all_effect() {
+	public function removeAllEffects() {
 		
-		clay.system.Audio.mutex_lock();
+		clay.system.Audio.mutexLock();
 
-		for (i in 0...effects_count) {
+		for (i in 0...effectsCount) {
 			effects[i] = null;
-			_internal_effects[i] = null;
+			_internalEffects[i] = null;
 		}
 
-		clay.system.Audio.mutex_unlock();
+		clay.system.Audio.mutexUnlock();
 
-		effects_count = 0;
+		effectsCount = 0;
 
 	}
 
-	@:noCompletion public function process(data: Float32Array, samples: Int) {}
+	@:noCompletion public function process(data:Float32Array, samples:Int) {}
 
 
-	inline function process_effects(data: Float32Array, samples: Int) {
+	inline function processEffects(data:Float32Array, samples:Int) {
 
-		clay.system.Audio.mutex_lock();
+		clay.system.Audio.mutexLock();
 
-		for (i in 0...effects_count) {
-			_internal_effects[i] = effects[i];
+		for (i in 0...effectsCount) {
+			_internalEffects[i] = effects[i];
 		}
 
-		clay.system.Audio.mutex_unlock();
+		clay.system.Audio.mutexUnlock();
 
 		var e:AudioEffect;
-		for (i in 0...effects_count) {
-			e = _internal_effects[i];
+		for (i in 0...effectsCount) {
+			e = _internalEffects[i];
 			if(!e.mute) {
-				e.process(samples, data, Clay.audio.sample_rate);
+				e.process(samples, data, Clay.audio.sampleRate);
 			}
 		}
 		
 	}
 
-	function set_volume(v: Float): Float {
+	function set_volume(v:Float):Float {
 
 		volume = Mathf.clamp(v, 0, 1);
 
@@ -135,7 +135,7 @@ class AudioChannel {
 
 	}
 
-	function set_output(v: AudioGroup): AudioGroup {
+	function set_output(v:AudioGroup):AudioGroup {
 
 		if(output != null) {
 			output.remove(this);
@@ -151,7 +151,7 @@ class AudioChannel {
 
 	}
 
-	function set_pan(v: Float): Float {
+	function set_pan(v:Float):Float {
 
 		pan = Mathf.clamp(v, -1, 1);
 		var angle = pan * (Math.PI/4);

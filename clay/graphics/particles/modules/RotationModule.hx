@@ -9,34 +9,34 @@ import clay.graphics.particles.components.RotationDelta;
 class RotationModule extends ParticleModule {
 
 
-	public var initial_rotation:Float;
-	public var initial_rotation_max:Float;
-	public var angular_velocity:Float;
-	public var angular_velocity_max:Float;
-	public var rotation_random:Float;
+	public var initialRotation:Float;
+	public var initialRotationMax:Float;
+	public var angularVelocity:Float;
+	public var angularVelocityMax:Float;
+	public var rotationRandom:Float;
 
-	var rotation_delta:Components<RotationDelta>;
+	var _rotationDelta:Components<RotationDelta>;
 
 
 	public function new(_options:RotationModuleOptions) {
 
 		super(_options);
 
-		initial_rotation = _options.initial_rotation != null ? _options.initial_rotation : 0;
-		initial_rotation_max = _options.initial_rotation_max != null ? _options.initial_rotation_max : 0;
-		angular_velocity = _options.angular_velocity != null ? _options.angular_velocity : 1;
-		angular_velocity_max = _options.angular_velocity_max != null ? _options.angular_velocity_max : 0;
-		rotation_random = _options.rotation_random != null ? _options.rotation_random : 0;
+		initialRotation = _options.initialRotation != null ? _options.initialRotation : 0;
+		initialRotationMax = _options.initialRotationMax != null ? _options.initialRotationMax : 0;
+		angularVelocity = _options.angularVelocity != null ? _options.angularVelocity : 1;
+		angularVelocityMax = _options.angularVelocityMax != null ? _options.angularVelocityMax : 0;
+		rotationRandom = _options.rotationRandom != null ? _options.rotationRandom : 0;
 
 	}
 
 	override function init() {
 
-		rotation_delta = emitter.components.get(RotationDelta);
+		_rotationDelta = emitter.components.get(RotationDelta);
 	    
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 		
 		for (p in particles) {
 			p.r = 0;
@@ -44,35 +44,35 @@ class RotationModule extends ParticleModule {
 
 	}
 
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
-		if(initial_rotation_max != 0) {
-			p.r = emitter.random_float(initial_rotation, initial_rotation_max);
+		if(initialRotationMax != 0) {
+			p.r = emitter.randomFloat(initialRotation, initialRotationMax);
 		} else {
-			p.r = initial_rotation;
+			p.r = initialRotation;
 		}
 
-		if(angular_velocity_max != 0) {
-			rotation_delta.get(p.id).value = emitter.random_float(angular_velocity, angular_velocity_max) * 360;
+		if(angularVelocityMax != 0) {
+			_rotationDelta.get(p.id).value = emitter.randomFloat(angularVelocity, angularVelocityMax) * 360;
 		} else {
-			rotation_delta.get(p.id).value = angular_velocity * 360;
+			_rotationDelta.get(p.id).value = angularVelocity * 360;
 		}
 
 	}
 	
 	override function update(dt:Float) {
 
-		if(rotation_random > 0) {
+		if(rotationRandom > 0) {
 			for (p in particles) {
-				if(rotation_delta.get(p.id).value != 0) {
-					p.r += rotation_delta.get(p.id).value * dt;
+				if(_rotationDelta.get(p.id).value != 0) {
+					p.r += _rotationDelta.get(p.id).value * dt;
 				}
-				p.r += rotation_random * 360 * emitter.random_1_to_1() * dt;
+				p.r += rotationRandom * 360 * emitter.random1To1() * dt;
 			}
 		} else {
 			for (p in particles) {
-				if(rotation_delta.get(p.id).value != 0) {
-					p.r += rotation_delta.get(p.id).value * dt;
+				if(_rotationDelta.get(p.id).value != 0) {
+					p.r += _rotationDelta.get(p.id).value * dt;
 				}
 			}
 		}
@@ -82,29 +82,29 @@ class RotationModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		initial_rotation = d.initial_rotation;
-		initial_rotation_max = d.initial_rotation_max;
-		angular_velocity = d.angular_velocity;
-		angular_velocity_max = d.angular_velocity_max;
-		rotation_random = d.rotation_random;
+		initialRotation = d.initialRotation;
+		initialRotationMax = d.initialRotationMax;
+		angularVelocity = d.angularVelocity;
+		angularVelocityMax = d.angularVelocityMax;
+		rotationRandom = d.rotationRandom;
 		
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.initial_rotation = initial_rotation;
-		d.initial_rotation_max = initial_rotation_max;
-		d.angular_velocity = angular_velocity;
-		d.angular_velocity_max = angular_velocity_max;
-		d.rotation_random = rotation_random;
+		d.initialRotation = initialRotation;
+		d.initialRotationMax = initialRotationMax;
+		d.angularVelocity = angularVelocity;
+		d.angularVelocityMax = angularVelocityMax;
+		d.rotationRandom = rotationRandom;
 
 		return d;
 	    
@@ -118,11 +118,11 @@ typedef RotationModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initial_rotation : Float;
-	@:optional var initial_rotation_max : Float;
-	@:optional var angular_velocity : Float;
-	@:optional var angular_velocity_max : Float;
-	@:optional var rotation_random : Float;
+	@:optional var initialRotation : Float;
+	@:optional var initialRotationMax : Float;
+	@:optional var angularVelocity : Float;
+	@:optional var angularVelocityMax : Float;
+	@:optional var rotationRandom : Float;
 
 }
 

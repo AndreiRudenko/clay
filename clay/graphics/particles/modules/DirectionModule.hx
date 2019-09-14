@@ -11,11 +11,11 @@ class DirectionModule extends ParticleModule {
 
 
 	public var direction:Float;
-	public var direction_variance:Float;
+	public var directionVariance:Float;
 	public var speed:Float;
-	public var speed_variance:Float;
+	public var speedVariance:Float;
 
-	var vel_comps:Components<Velocity>;
+	var _velComps:Components<Velocity>;
 
 
 	public function new(_options:DirectionModuleOptions) {
@@ -23,46 +23,46 @@ class DirectionModule extends ParticleModule {
 		super(_options);
 
 		direction = _options.direction != null ? _options.direction : 0;
-		direction_variance = _options.direction_variance != null ? _options.direction_variance : 0;
+		directionVariance = _options.directionVariance != null ? _options.directionVariance : 0;
 		speed = _options.speed != null ? _options.speed : 60;
-		speed_variance = _options.speed_variance != null ? _options.speed_variance : 0;
+		speedVariance = _options.speedVariance != null ? _options.speedVariance : 0;
 
 	}
 
 	override function init() {
 		
-		vel_comps = emitter.components.get(Velocity);
+		_velComps = emitter.components.get(Velocity);
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
-		particles.for_each(
+		particles.forEach(
 			function(p) {
-				vel_comps.get(p.id).set(0,0);
+				_velComps.get(p.id).set(0,0);
 			}
 		);
 		
 	}
 	
-	override function onremoved() {
+	override function onRemoved() {
 
-		emitter.remove_module(VelocityUpdateModule);
-		vel_comps = null;
+		emitter.removeModule(VelocityUpdateModule);
+		_velComps = null;
 		
 	}
 
-	override function onspawn(pd:Particle) {
+	override function onSpawn(pd:Particle) {
 
-		var angle:Float = (direction + direction_variance * emitter.random_1_to_1()) * 0.017453292519943295; // Math.PI / 180
+		var angle:Float = (direction + directionVariance * emitter.random1To1()) * 0.017453292519943295; // Math.PI / 180
 
 		var spd:Float = speed;
 
-		if(speed_variance != 0) {
-			spd += speed_variance * emitter.random_1_to_1();
+		if(speedVariance != 0) {
+			spd += speedVariance * emitter.random1To1();
 		}
 
-		var v:Velocity = vel_comps.get(pd.id);
+		var v:Velocity = _velComps.get(pd.id);
 		v.x = spd * Math.cos(angle);
 		v.y = spd * Math.sin(angle);
 
@@ -71,27 +71,27 @@ class DirectionModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
 		direction = d.direction;
-		direction_variance = d.direction_variance;
+		directionVariance = d.directionVariance;
 		speed = d.speed;
-		speed_variance = d.speed_variance;
+		speedVariance = d.speedVariance;
 
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
 		d.direction = direction;
-		d.direction_variance = direction_variance;
+		d.directionVariance = directionVariance;
 		d.speed = speed;
-		d.speed_variance = speed_variance;
+		d.speedVariance = speedVariance;
 
 		return d;
 	    
@@ -106,9 +106,9 @@ typedef DirectionModuleOptions = {
 	>ParticleModuleOptions,
 	
 	@:optional var direction : Float;
-	@:optional var direction_variance : Float;
+	@:optional var directionVariance : Float;
 	@:optional var speed : Float;
-	@:optional var speed_variance : Float;
+	@:optional var speedVariance : Float;
 
 }
 

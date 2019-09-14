@@ -14,7 +14,7 @@ class Distortion extends AudioEffect {
 
 	}
 
-	override function process(samples: Int, buffer: kha.arrays.Float32Array, sample_rate: Int) {
+	override function process(samples:Int, buffer:kha.arrays.Float32Array, sampleRate:Int) {
 
 		var x: Float = 0;
 

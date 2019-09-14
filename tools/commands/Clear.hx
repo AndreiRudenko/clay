@@ -9,8 +9,8 @@ import haxe.io.Path;
 
 class Clear extends Command {
 
-	var files_removed:Int = 0;
-	var dirs_removed:Int = 0;
+	var filesRemoved:Int = 0;
+	var dirsRemoved:Int = 0;
 
 	public function new() {
 
@@ -33,57 +33,57 @@ class Clear extends Command {
 		}
 
 		var config:ConfigData = Config.get();
-		var to_remove:Array<String> = [];
-		var project_title:String = config.project.title;
+		var toRemove:Array<String> = [];
+		var projectTitle:String = config.project.title;
 
 		if(target == 'all') {
-			to_remove.push(Path.join([CLI.user_dir, 'build']));
+			toRemove.push(Path.join([CLI.userDir, 'build']));
 		} else {
-			to_remove.push(Path.join([CLI.user_dir, 'build/$target']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/$target-resources']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/$target-build']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/$project_title-$target-intellij']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/$project_title-$target.hxproj']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/$project_title-$target.hxml']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/project-$target.hxml']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/temp']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/khafile.js']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/korefile.js']));
-			to_remove.push(Path.join([CLI.user_dir, 'build/icon.png']));
+			toRemove.push(Path.join([CLI.userDir, 'build/$target']));
+			toRemove.push(Path.join([CLI.userDir, 'build/$target-resources']));
+			toRemove.push(Path.join([CLI.userDir, 'build/$target-build']));
+			toRemove.push(Path.join([CLI.userDir, 'build/$projectTitle-$target-intellij']));
+			toRemove.push(Path.join([CLI.userDir, 'build/$projectTitle-$target.hxproj']));
+			toRemove.push(Path.join([CLI.userDir, 'build/$projectTitle-$target.hxml']));
+			toRemove.push(Path.join([CLI.userDir, 'build/project-$target.hxml']));
+			toRemove.push(Path.join([CLI.userDir, 'build/temp']));
+			toRemove.push(Path.join([CLI.userDir, 'build/khafile.js']));
+			toRemove.push(Path.join([CLI.userDir, 'build/korefile.js']));
+			toRemove.push(Path.join([CLI.userDir, 'build/icon.png']));
 		}
 
-		dirs_removed = 0;
-		files_removed = 0;
+		dirsRemoved = 0;
+		filesRemoved = 0;
 
-		for (s in to_remove) {
+		for (s in toRemove) {
 			if (FileSystem.exists(s)) {
 				if(FileSystem.isDirectory(s)) {
-					delete_dir(s);
+					deleteDir(s);
 					FileSystem.deleteDirectory(s);
-					dirs_removed++;
+					dirsRemoved++;
 				} else {
 					FileSystem.deleteFile(s);
-					files_removed++;
+					filesRemoved++;
 				}
 			}
 		}
 
-		CLI.print('Done: $dirs_removed directories with $files_removed files was removed');
+		CLI.print('Done: $dirsRemoved directories with $filesRemoved files was removed');
 
 	}
 
-	function delete_dir(path:String) {
+	function deleteDir(path:String) {
 
 		if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
 			var entries = FileSystem.readDirectory(path);
 			for (entry in entries) {
 				if (FileSystem.isDirectory(path + '/' + entry)) {
-					delete_dir(path + '/' + entry);
+					deleteDir(path + '/' + entry);
 					FileSystem.deleteDirectory(path + '/' + entry);
-					dirs_removed++;
+					dirsRemoved++;
 				} else {
 					FileSystem.deleteFile(path + '/' + entry);
-					files_removed++;
+					filesRemoved++;
 				}
 			}
 		}

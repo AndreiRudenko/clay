@@ -10,7 +10,7 @@ class RadialEdgeSpawnModule  extends ParticleModule {
 
 
 	public var radius:Float;
-	public var radius_max:Float;
+	public var radiusMax:Float;
 
 
 	public function new(_options:RadialEdgeSpawnModuleModuleOptions) {
@@ -18,16 +18,16 @@ class RadialEdgeSpawnModule  extends ParticleModule {
 		super(_options);
 
 		radius = _options.radius != null ? _options.radius : 64;
-		radius_max = _options.radius_max != null ? _options.radius_max : 128;
+		radiusMax = _options.radiusMax != null ? _options.radiusMax : 128;
 
 		_priority = -999;
 		
 	}
 
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
 		var a = emitter.random() * Math.PI * 2;
-		var r = emitter.random_float(radius, radius_max);
+		var r = emitter.randomFloat(radius, radiusMax);
 
 		p.x = emitter.system.pos.x + emitter.pos.x + Math.cos(a) * r;
 		p.y = emitter.system.pos.y + emitter.pos.y + Math.sin(a) * r;
@@ -37,23 +37,23 @@ class RadialEdgeSpawnModule  extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
 		radius = d.radius;
-		radius_max = d.radius_max;
+		radiusMax = d.radiusMax;
 		
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
 		d.radius = radius;
-		d.radius_max = radius_max;
+		d.radiusMax = radiusMax;
 
 		return d;
 	    
@@ -68,7 +68,7 @@ typedef RadialEdgeSpawnModuleModuleOptions = {
 	>ParticleModuleOptions,
 
 	@:optional var radius:Float;
-	@:optional var radius_max:Float;
+	@:optional var radiusMax:Float;
 
 }
 

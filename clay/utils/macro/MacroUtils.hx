@@ -9,33 +9,33 @@ import haxe.macro.Type;
 class MacroUtils {
 	
 
-	public static function create_string(types:Array<Type>, delimiter:String = '_', sort:Bool = true):String {
+	public static function createString(types:Array<Type>, delimiter:String = '_', sort:Bool = true):String {
 
 		var len = types.length;
-		var types_strings = [];
+		var typesStrings = [];
 		
 		for (i in 0...len) {
 			
-			var type_name = switch (types[i]) {
+			var typeName = switch (types[i]) {
 				case TInst(ref, types): ref.get().name;
 				default:
 					throw false;
 			}
-			var type_pack = switch (types[i]) {
+			var typePack = switch (types[i]) {
 				case TInst(ref, types): ref.get().pack;
 				default:
 					throw false;
 			}
 			
-			type_pack.push(type_name);
-			var full_type = type_pack.join(delimiter);
-			types_strings.push(full_type);
-			// types_strings.push(type_name);
+			typePack.push(typeName);
+			var fullType = typePack.join(delimiter);
+			typesStrings.push(fullType);
+			// typesStrings.push(typeName);
 
 		}
 
 		if(sort) {
-			types_strings.sort(function(a:String, b:String):Int {
+			typesStrings.sort(function(a:String, b:String):Int {
 
 				a = a.toUpperCase();
 				b = b.toUpperCase();
@@ -51,20 +51,20 @@ class MacroUtils {
 			});
 		}
 
-		return types_strings.join(delimiter);
+		return typesStrings.join(delimiter);
 
 	}
 	
-	public static function build_type_expr(pack:Array<String>, module:String, name:String):Expr {
-		var pack_module = pack.concat([module, name]);
+	public static function buildTypeExpr(pack:Array<String>, module:String, name:String):Expr {
+		var packModule = pack.concat([module, name]);
 		
-		var type_expr = macro $i{pack_module[0]};
-		for (idx in 1...pack_module.length){
-			var field = $i{pack_module[idx]};
-			type_expr = macro $type_expr.$field;
+		var typeExpr = macro $i{packModule[0]};
+		for (idx in 1...packModule.length){
+			var field = $i{packModule[idx]};
+			typeExpr = macro $typeExpr.$field;
 		}
 		
-		return macro $type_expr;
+		return macro $typeExpr;
 	}
 	
 	public static inline function camelCase(name:String):String {
@@ -74,7 +74,7 @@ class MacroUtils {
 	}
 
 	#if macro
-	public static function build_var(name:String, access:Array<Access>, type:ComplexType, e:Expr = null, m:Metadata = null):Field {
+	public static function buildVar(name:String, access:Array<Access>, type:ComplexType, e:Expr = null, m:Metadata = null):Field {
 
 		return {
 			pos: Context.currentPos(),
@@ -86,7 +86,7 @@ class MacroUtils {
 
 	}
 	
-	public static function build_prop(name:String, access:Array<Access>, get:String, set:String, type:ComplexType, e:Expr = null, m:Metadata = null):Field {
+	public static function buildProp(name:String, access:Array<Access>, get:String, set:String, type:ComplexType, e:Expr = null, m:Metadata = null):Field {
 
 		return {
 			pos: Context.currentPos(),
@@ -98,7 +98,7 @@ class MacroUtils {
 
 	}
 	
-	public static function build_function(name:String, access:Array<Access>, args:Array<FunctionArg>, ret:ComplexType, exprs:Array<Expr>, m:Metadata = null):Field {
+	public static function buildFunction(name:String, access:Array<Access>, args:Array<FunctionArg>, ret:ComplexType, exprs:Array<Expr>, m:Metadata = null):Field {
 
 		return {
 			pos: Context.currentPos(),
@@ -114,7 +114,7 @@ class MacroUtils {
 
 	}
 
-	public static function build_constructor(name:String, pack:Array<String>, params:Array<TypeParam>, exprs:Array<Expr>):Expr {
+	public static function buildConstructor(name:String, pack:Array<String>, params:Array<TypeParam>, exprs:Array<Expr>):Expr {
 
 		return {
 			pos: Context.currentPos(),
@@ -131,7 +131,7 @@ class MacroUtils {
 	}
 	#end
 	
-	public static function get_path_info(type:Type):PathInfo {
+	public static function getPathInfo(type:Type):PathInfo {
 
 		var data:PathInfo = {
 			pack: null,
@@ -156,7 +156,7 @@ class MacroUtils {
 
 	}
 
-	public static function get_class_typepath(type:haxe.macro.Type) {
+	public static function getClassTypePath(type:haxe.macro.Type) {
 
 		switch (type) {
 			case TType(ref, types):

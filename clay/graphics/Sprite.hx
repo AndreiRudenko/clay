@@ -11,13 +11,13 @@ import clay.utils.Log.*;
 class Sprite extends Quad {
 
 
-	public var centered         (default, set):Bool;
-	public var uv               (default, null):RectangleCallback;
-	public var flipx            (get, set):Bool;
-	public var flipy            (get, set):Bool;
+	public var centered(default, set):Bool;
+	public var uv(default, null):RectangleCallback;
+	public var flipX(get, set):Bool;
+	public var flipY(get, set):Bool;
 
-	var _flipx:Bool;
-	var _flipy:Bool;
+	var _flipX:Bool;
+	var _flipY:Bool;
 
 
 	public function new(?texture:Texture) {
@@ -27,30 +27,30 @@ class Sprite extends Quad {
 		this.texture = texture;
 
 		uv = new RectangleCallback();
-		uv.listen(uv_changed);
+		uv.listen(uvChanged);
 
-		update_tcoord();
-		set_uv(0, 0, 1, 1);
+		updateTcoord();
+		setUV(0, 0, 1, 1);
 
-		_flipx = false;
-		_flipy = false;
+		_flipX = false;
+		_flipY = false;
 
 		centered = true;
 
 	}
 	
-	public function set_uv(_x:Float, _y:Float, _w:Float, _h:Float) {
+	public function setUV(_x:Float, _y:Float, _w:Float, _h:Float) {
 
-		var lstate = uv.ignore_listeners;
-		uv.ignore_listeners = true;
+		var lstate = uv.ignoreListeners;
+		uv.ignoreListeners = true;
 		uv.set(_x, _y, _w, _h);
-		uv.ignore_listeners = lstate;
+		uv.ignoreListeners = lstate;
 
-		update_tcoord();
+		updateTcoord();
 
 	}
 
-	override function size_changed(v:Float) {
+	override function sizeChanged(v:Float) {
 
 		if(centered) {
 			var hw = size.x * 0.5;
@@ -60,94 +60,94 @@ class Sprite extends Quad {
 			vertices[2].pos.set( hw,  hh);
 			vertices[3].pos.set(-hw,  hh);
 		} else {
-			super.size_changed(v);
+			super.sizeChanged(v);
 		}
 
 	}
 
-	function uv_changed(v:Float) {
+	function uvChanged(v:Float) {
 
-		update_tcoord();
+		updateTcoord();
 
 	}
 
-	function update_tcoord() {
+	function updateTcoord() {
 		
-		var tl_x = uv.x;
-		var tl_y = uv.y;
-		var tr_x = uv.x + uv.w;
-		var tr_y = uv.y;
-		var br_x = uv.x + uv.w;
-		var br_y = uv.y + uv.h;
-		var bl_x = uv.x;
-		var bl_y = uv.y + uv.h;
+		var tlX = uv.x;
+		var tlY = uv.y;
+		var trX = uv.x + uv.w;
+		var trY = uv.y;
+		var brX = uv.x + uv.w;
+		var brY = uv.y + uv.h;
+		var blX = uv.x;
+		var blY = uv.y + uv.h;
 
-		if(_flipx) {
-			var tmp_x = tl_x;
-			var tmp_y = tl_y;
-			tl_x = tr_x;
-			tl_y = tr_y;
-			tr_x = tmp_x;
-			tr_y = tmp_y;
-			tmp_x = bl_x;
-			tmp_y = bl_y;
-			bl_x = br_x;
-			bl_y = br_y;
-			br_x = tmp_x;
-			br_y = tmp_y;
+		if(_flipX) {
+			var tmpX = tlX;
+			var tmpY = tlY;
+			tlX = trX;
+			tlY = trY;
+			trX = tmpX;
+			trY = tmpY;
+			tmpX = blX;
+			tmpY = blY;
+			blX = brX;
+			blY = brY;
+			brX = tmpX;
+			brY = tmpY;
 		}
 
-		if(_flipy) {
-			var tmp_x = tl_x;
-			var tmp_y = tl_y;
-			tl_x = bl_x;
-			tl_y = bl_y;
-			bl_x = tmp_x;
-			bl_y = tmp_y;
-			tmp_x = tr_x;
-			tmp_y = tr_y;
-			tr_x = br_x;
-			tr_y = br_y;
-			br_x = tmp_x;
-			br_y = tmp_y;
+		if(_flipY) {
+			var tmpX = tlX;
+			var tmpY = tlY;
+			tlX = blX;
+			tlY = blY;
+			blX = tmpX;
+			blY = tmpY;
+			tmpX = trX;
+			tmpY = trY;
+			trX = brX;
+			trY = brY;
+			brX = tmpX;
+			brY = tmpY;
 		}
 
-		vertices[0].tcoord.set(tl_x, tl_y);
-		vertices[1].tcoord.set(tr_x, tr_y);
-		vertices[2].tcoord.set(br_x, br_y);
-		vertices[3].tcoord.set(bl_x, bl_y);
+		vertices[0].tcoord.set(tlX, tlY);
+		vertices[1].tcoord.set(trX, trY);
+		vertices[2].tcoord.set(brX, brY);
+		vertices[3].tcoord.set(blX, blY);
 
 	}
 
-	inline function get_flipx():Bool {
+	inline function get_flipX():Bool {
 
-		return _flipx;
-
-	}
-
-	function set_flipx(v:Bool):Bool {
-
-		_flipx = v;
-
-		update_tcoord();
-
-		return _flipx;
+		return _flipX;
 
 	}
 
-	inline function get_flipy():Bool {
+	function set_flipX(v:Bool):Bool {
 
-		return _flipy;
+		_flipX = v;
+
+		updateTcoord();
+
+		return _flipX;
 
 	}
 
-	function set_flipy(v:Bool):Bool {
+	inline function get_flipY():Bool {
 
-		_flipy = v;
+		return _flipY;
 
-		update_tcoord();
+	}
 
-		return _flipy;
+	function set_flipY(v:Bool):Bool {
+
+		_flipY = v;
+
+		updateTcoord();
+
+		return _flipY;
 
 	}
 
@@ -155,7 +155,7 @@ class Sprite extends Quad {
 
 		centered = v;
 
-		size_changed(0);
+		sizeChanged(0);
 
 		return centered;
 

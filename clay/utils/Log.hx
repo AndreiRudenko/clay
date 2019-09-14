@@ -16,15 +16,15 @@ class Log {
 	static var _level : Int = 1;
 	static var _filter : Array<String>;
 	static var _exclude : Array<String>;
-	static var _log_width : Int = 16;
+	static var _logWidth : Int = 16;
 
-	macro public static function get_level() : haxe.macro.Expr {
+	macro public static function getLevel() : haxe.macro.Expr {
 		return macro $v{ ${clay.utils.Log._level} };
 	}
-	macro public static function get_filter() : haxe.macro.Expr {
+	macro public static function getFilter() : haxe.macro.Expr {
 		return macro $v{ ${clay.utils.Log._filter} };
 	}
-	macro public static function get_exclude() : haxe.macro.Expr {
+	macro public static function getExclude() : haxe.macro.Expr {
 		return macro $v{ ${clay.utils.Log._exclude} };
 	}
 
@@ -66,7 +66,7 @@ class Log {
 
 	macro static function width( _width:Int ) : haxe.macro.Expr {
 
-		_log_width = _width;
+		_logWidth = _width;
 
 		return macro null;
 
@@ -79,7 +79,7 @@ class Log {
 
 		var _file = Path.withoutDirectory(Context.getPosInfos(Context.currentPos()).file);
 		var _context = Path.withoutExtension(_file).toLowerCase();
-		var _spaces = _get_spacing(_file);
+		var _spaces = _getSpacing(_file);
 
 		for(meta in Context.getLocalClass().get().meta.get()) {
 			if(meta.name == ':log_as') {
@@ -108,11 +108,11 @@ class Log {
 
 	}
 
-	macro public static function _debug( value:Dynamic ) : Expr {
+	macro public static function _debug( value:Dynamic ) : Expr { // TODO: rename to debug?
 
 		var _file = Path.withoutDirectory(Context.getPosInfos(Context.currentPos()).file);
 		var _context = Path.withoutExtension(_file).toLowerCase();
-		var _spaces = _get_spacing(_file);
+		var _spaces = _getSpacing(_file);
 
 		for(meta in Context.getLocalClass().get().meta.get()) {
 			if(meta.name == ':log_as') {
@@ -141,11 +141,11 @@ class Log {
 
 	}
 
-	macro public static function _verbose( value:Dynamic ) : Expr {
+	macro public static function _verbose( value:Dynamic ) : Expr { // TODO: rename to verbose?
 
 		var _file = Path.withoutDirectory(Context.getPosInfos(Context.currentPos()).file);
 		var _context = Path.withoutExtension(_file).toLowerCase();
-		var _spaces = _get_spacing(_file);
+		var _spaces = _getSpacing(_file);
 
 		for(meta in Context.getLocalClass().get().meta.get()) {
 			if(meta.name == ':log_as') {
@@ -174,11 +174,11 @@ class Log {
 
 	}
 
-	macro public static function _verboser( value:Dynamic ) : Expr {
+	macro public static function _verboser( value:Dynamic ) : Expr { // TODO: rename to verboser?
 
 		var _file = Path.withoutDirectory(Context.getPosInfos(Context.currentPos()).file);
 		var _context = Path.withoutExtension(_file).toLowerCase();
-		var _spaces = _get_spacing(_file);
+		var _spaces = _getSpacing(_file);
 
 		for(meta in Context.getLocalClass().get().meta.get()) {
 			if(meta.name == ':log_as') {
@@ -209,7 +209,7 @@ class Log {
 
 	macro public static function assert(expr:Expr, ?reason:ExprOf<String>) {
 
-		#if !luxe_no_assertions
+		#if !clay_no_assertions
 			var _str = haxe.macro.ExprTools.toString(expr);
 
 			reason = switch(reason) {
@@ -225,9 +225,9 @@ class Log {
 
 	}
 
-	macro public static function assertnull(value:Expr, ?reason:ExprOf<String>) {
+	macro public static function assertNull(value:Expr, ?reason:ExprOf<String>) {
 
-		#if !luxe_no_assertions
+		#if !clay_no_assertions
 			var _str = haxe.macro.ExprTools.toString(value);
 
 			reason = switch(reason) {
@@ -235,7 +235,7 @@ class Log {
 				case _: macro ' ( ' + $reason + ' )';
 			}
 			return macro @:pos(Context.currentPos()) {
-				if($value == null) throw clay.utils.Log.DebugError.null_assertion('$_str was null' + $reason);
+				if($value == null) throw clay.utils.Log.DebugError.nullAssertion('$_str was null' + $reason);
 			}
 		#end
 		return macro null;
@@ -255,13 +255,13 @@ class Log {
 //Internal Helpers
 
 
-	static function _get_spacing(_file:String ) {
+	static function _getSpacing(_file:String ) {
 
 		var _spaces = '';
 
 			//the magic number here is File.hx[:1234] for the trace listener log spacing
-		var _trace_length = _file.length + 4;
-		var _diff : Int = _log_width - _trace_length;
+		var _traceLength = _file.length + 4;
+		var _diff : Int = _logWidth - _traceLength;
 		if(_diff > 0) {
 			for(i in 0 ... _diff) {
 				_spaces += ' ';
@@ -276,5 +276,5 @@ class Log {
 
 enum DebugError {
 	assertion(expr:String);
-	null_assertion(expr:String);
+	nullAssertion(expr:String);
 }

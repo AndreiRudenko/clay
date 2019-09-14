@@ -9,22 +9,22 @@ class Pool<T> {
 
 
 	public var items:Vector<T>;
-	public var create_func:()->T;
-	public var size_limit:Int;
+	public var createFunc:()->T;
+	public var sizeLimit:Int;
 	public var size:Int;
 
 
-	public function new(_init_size:Int, _size_limit:Int = 0, create_callback:()->T){
+	public function new(_initSize:Int, _sizeLimit:Int = 0, createCallback:()->T){
 
-		size_limit = _init_size > _size_limit ? _init_size : _size_limit;
-		size = _init_size;
+		sizeLimit = _initSize > _sizeLimit ? _initSize : _sizeLimit;
+		size = _initSize;
 
-		items = new Vector(size_limit);
+		items = new Vector(sizeLimit);
 
-		create_func = create_callback;
+		createFunc = createCallback;
 
 		for (i in 0...size) {
-			items[i] = create_func();
+			items[i] = createFunc();
 		}
 
 	}
@@ -38,13 +38,13 @@ class Pool<T> {
 			return item;
 		}
 
-		return create_func();
+		return createFunc();
 
 	}
 
 	public inline function put(item:T) {
 
-		if(size < size_limit) {
+		if(size < sizeLimit) {
 			items[size] = item;
 			size++;
 		}

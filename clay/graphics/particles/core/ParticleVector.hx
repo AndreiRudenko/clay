@@ -16,10 +16,10 @@ class ParticleVector {
 	public var buffer(default, null):Vector<Particle>;
 
 	var _sorted:Vector<Particle>;
-	var _sort_tmp:Vector<Particle>;
+	var _sortTmp:Vector<Particle>;
 	var _components:ComponentManager;
-	var _wrap_index:Int = 0;
-	var _need_sort:Bool = true;
+	var _wrapIndex:Int = 0;
+	var _needSort:Bool = true;
 
 
 	public inline function new(components:ComponentManager, _capacity:Int) {
@@ -31,7 +31,7 @@ class ParticleVector {
 		buffer = new Vector(capacity);
 		_sorted = new Vector(capacity);
 
-		_sort_tmp = new Vector(capacity);
+		_sortTmp = new Vector(capacity);
 
 		for (i in 0...capacity) {
 			buffer[i] = new Particle(i);
@@ -47,7 +47,7 @@ class ParticleVector {
 
 	public inline function ensure():Particle {
 
-		_need_sort = true;
+		_needSort = true;
 
 		return buffer[length++];
 
@@ -55,26 +55,26 @@ class ParticleVector {
 
 	public inline function wrap():Particle {
 
-		_need_sort = true;
+		_needSort = true;
 
-		_wrap_index %= length - 1;
-		var last_idx:Int = length - 1;
-		swap(_wrap_index, last_idx);
-		_wrap_index++;
+		_wrapIndex %= length - 1;
+		var lastIdx:Int = length - 1;
+		swap(_wrapIndex, lastIdx);
+		_wrapIndex++;
 
-		return buffer[last_idx];
+		return buffer[lastIdx];
 
 	}
 
 	public inline function remove(p:Particle) {
 
-		_need_sort = true;
+		_needSort = true;
 
 		var idx:Int = p.id;
 
-		var last_idx:Int = length - 1;
-		if(idx != last_idx) {
-			swap(idx, last_idx);
+		var lastIdx:Int = length - 1;
+		if(idx != lastIdx) {
+			swap(idx, lastIdx);
 		}
 
 		length--;
@@ -83,7 +83,7 @@ class ParticleVector {
 
 	public inline function reset() {
 
-		_need_sort = true;
+		_needSort = true;
 
 		for (i in 0...capacity) {
 			buffer[i].id = i;
@@ -94,7 +94,7 @@ class ParticleVector {
 	}
 
 	@:access(clay.graphics.particles.ParticleVector)
-	public function for_each(f:(p:Particle)->Void) {
+	public function forEach(f:(p:Particle)->Void) {
 		
 		for (p in buffer) {
 			f(p);
@@ -104,13 +104,13 @@ class ParticleVector {
 
 	public function sort(compare:(p1:Particle, p2:Particle)->Int):Vector<Particle> {
 
-		if(_need_sort) {
+		if(_needSort) {
 			for (i in 0...length) {
 				_sorted[i] = buffer[i];
 			}
 
-			_sort(_sorted, _sort_tmp, 0, length-1, compare);
-			_need_sort = false;
+			_sort(_sorted, _sortTmp, 0, length-1, compare);
+			_needSort = false;
 		}
 
 		return _sorted;

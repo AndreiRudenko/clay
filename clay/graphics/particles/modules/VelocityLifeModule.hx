@@ -14,18 +14,18 @@ using clay.graphics.particles.utils.VectorExtender;
 class VelocityLifeModule extends VelocityModule {
 
 
-	public var end_velocity(default, null):Vector;
-	public var end_velocity_max:Vector;
+	public var endVelocity(default, null):Vector;
+	public var endVelocityMax:Vector;
 
-	var velocity_delta:Components<VelocityDelta>;
+	var _velocityDelta:Components<VelocityDelta>;
 
 
 	public function new(_options:VelocityLifeModuleOptions) {
 
 		super(_options);
 
-		end_velocity = _options.end_velocity != null ? _options.end_velocity : new Vector();
-		end_velocity_max = _options.end_velocity_max;
+		endVelocity = _options.endVelocity != null ? _options.endVelocity : new Vector();
+		endVelocityMax = _options.endVelocityMax;
 
 	}
 
@@ -33,31 +33,31 @@ class VelocityLifeModule extends VelocityModule {
 
 		super.init();
 
-		velocity_delta = emitter.components.get(VelocityDelta);
+		_velocityDelta = emitter.components.get(VelocityDelta);
 	    
 	}
 
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
-		var v:Velocity = vel_comps.get(p.id);
-		if(initial_velocity_max != null) {
-			v.x = emitter.random_float(initial_velocity.x, initial_velocity_max.x);
-			v.y = emitter.random_float(initial_velocity.y, initial_velocity_max.y);
+		var v:Velocity = _velComps.get(p.id);
+		if(initialVelocityMax != null) {
+			v.x = emitter.randomFloat(initialVelocity.x, initialVelocityMax.x);
+			v.y = emitter.randomFloat(initialVelocity.y, initialVelocityMax.y);
 		} else {
-			v.x = initial_velocity.x;
-			v.y = initial_velocity.y;
+			v.x = initialVelocity.x;
+			v.y = initialVelocity.y;
 		}
 
-		if(end_velocity_max != null) {
-			velocity_delta.get(p.id).x = emitter.random_float(end_velocity.x, end_velocity_max.x) - v.x;
-			velocity_delta.get(p.id).y = emitter.random_float(end_velocity.y, end_velocity_max.y) - v.y;
+		if(endVelocityMax != null) {
+			_velocityDelta.get(p.id).x = emitter.randomFloat(endVelocity.x, endVelocityMax.x) - v.x;
+			_velocityDelta.get(p.id).y = emitter.randomFloat(endVelocity.y, endVelocityMax.y) - v.y;
 		} else {
-			velocity_delta.get(p.id).x = end_velocity.x - v.x;
-			velocity_delta.get(p.id).y = end_velocity.y - v.y;
+			_velocityDelta.get(p.id).x = endVelocity.x - v.x;
+			_velocityDelta.get(p.id).y = endVelocity.y - v.y;
 		}
 
-		if(velocity_delta.get(p.id).lengthsq != 0) {
-			velocity_delta.get(p.id).divide_scalar(p.lifetime);
+		if(_velocityDelta.get(p.id).lengthSq != 0) {
+			_velocityDelta.get(p.id).divideScalar(p.lifetime);
 		}
 
 	}
@@ -65,17 +65,19 @@ class VelocityLifeModule extends VelocityModule {
 	override function update(dt:Float) {
 
 		var v:Vector;
-		if(velocity_random != null) {
+		if(velocityRandom != null) {
 			for (p in particles) {
-				v = vel_comps.get(p.id);
-				v.x += velocity_delta.get(p.id).x * dt + velocity_random.x * emitter.random_1_to_1();
-				v.y += velocity_delta.get(p.id).y * dt + velocity_random.y * emitter.random_1_to_1();
+				v = _velComps.get(p.id);
+				v.x += _velocityDelta.get(p.id).x * dt + velocityRandom.x * emitter.random1To1();
+				v.y += _velocityDelta.get(p.id).y * dt + velocityRandom.y * emitter.random1To1();
+				// update position
 			}
 		} else {
 			for (p in particles) {
-				v = vel_comps.get(p.id);
-				v.x += velocity_delta.get(p.id).x * dt;
-				v.y += velocity_delta.get(p.id).y * dt;
+				v = _velComps.get(p.id);
+				v.x += _velocityDelta.get(p.id).x * dt;
+				v.y += _velocityDelta.get(p.id).y * dt;
+				// update position
 			}
 		}
 
@@ -84,31 +86,31 @@ class VelocityLifeModule extends VelocityModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		end_velocity.from_json(d.end_velocity);
+		endVelocity.fromJson(d.endVelocity);
 
-		if(d.end_velocity_max != null) {
-			if(end_velocity_max == null) {
-				end_velocity_max = new Vector();
+		if(d.endVelocityMax != null) {
+			if(endVelocityMax == null) {
+				endVelocityMax = new Vector();
 			}
-			end_velocity_max.from_json(d.end_velocity_max);
+			endVelocityMax.fromJson(d.endVelocityMax);
 		}
 
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.end_velocity = end_velocity.to_json();
+		d.endVelocity = endVelocity.toJson();
 
-		if(end_velocity_max != null) {
-			d.end_velocity_max = end_velocity_max.to_json();
+		if(endVelocityMax != null) {
+			d.endVelocityMax = endVelocityMax.toJson();
 		}
 
 		return d;
@@ -123,8 +125,8 @@ typedef VelocityLifeModuleOptions = {
 
 	> VelocityModuleOptions,
 	
-	@:optional var end_velocity : Vector;
-	@:optional var end_velocity_max : Vector;
+	@:optional var endVelocity : Vector;
+	@:optional var endVelocityMax : Vector;
 
 }
 

@@ -20,11 +20,11 @@ class Server extends Command {
 		var config:ConfigData = Config.get();
 		var port = 8080;
 
-		if(config.html5 != null && config.html5.server_port != null) {
-			port = config.html5.server_port;
+		if(config.html5 != null && config.html5.serverPort != null) {
+			port = config.html5.serverPort;
 		}
 
-		CLI.execute('start', ['cmd', "/c", '${CLI.khamake_path}', '--server', '--port', '$port']);
+		CLI.execute('start', ['cmd', "/c", '${CLI.khamakePath}', '--server', '--port', '$port']);
 
 	}
 

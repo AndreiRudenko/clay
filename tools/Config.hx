@@ -10,7 +10,7 @@ import yaml.Parser;
 
 class Config {
 
-	public static function create_khafile(config:ConfigData):String {
+	public static function createKhaFile(config:ConfigData):String {
 
 		var project = config.project;
 		var compiler = config.compiler;
@@ -21,7 +21,7 @@ class Config {
 			kfile += 'p.addSources("${s}");\n';
 		}
 
-		kfile += 'p.addLibrary("${CLI.engine_name}");\n';
+		kfile += 'p.addLibrary("${CLI.engineName}");\n';
 
 		if(project.libraries != null) {
 			for (s in project.libraries) {
@@ -35,7 +35,7 @@ class Config {
 			}
 		}
 
-		kfile += 'p.addShaders("${Path.join([CLI.engine_dir, 'assets/shaders'])}");\n';
+		kfile += 'p.addShaders("${Path.join([CLI.engineDir, 'assets/shaders'])}");\n';
 
 		// inputs
 		if(config.input != null) {
@@ -62,13 +62,13 @@ class Config {
 			// kfile += 'p.addDefine("use_pen_input");\n';
 		}
 
-		var no_default_font = false;
+		var noDefaultFont = false;
 
 		if(project.defines != null) {
 			for (s in project.defines) {
 				kfile += 'p.addDefine("${s}");\n';
 				if(s == 'no_default_font') {
-					no_default_font = true;
+					noDefaultFont = true;
 				}
 			}
 		}
@@ -79,8 +79,8 @@ class Config {
 			}
 		}
 
-		if(!no_default_font) {
-			var fp = Path.join([CLI.engine_dir, 'assets/fonts']);
+		if(!noDefaultFont) {
+			var fp = Path.join([CLI.engineDir, 'assets/fonts']);
 			kfile += 'p.addAssets("${fp}", {destination: "assets/{name}", noprocessing: true, notinlist: true});\n';
 		}
 
@@ -109,8 +109,8 @@ class Config {
 			if(config.android.orientation != null) {
 				kfile += 'p.targetOptions.android_native.screenOrientation = "${config.android.orientation}";\n';
 			}
-			if(config.android.version_code != null) {
-				kfile += 'p.targetOptions.android_native.versionCode = ${config.android.version_code};\n';
+			if(config.android.versionCode != null) {
+				kfile += 'p.targetOptions.android_native.versionCode = ${config.android.versionCode};\n';
 			}
 			if(config.android.permissions != null) {
 				kfile += 'p.targetOptions.android_native.permissions = [${config.android.permissions.join(',')}];\n';
@@ -153,11 +153,11 @@ class Config {
 
 	public static function get():ConfigData {
 	    
-		var config_path = Path.join([CLI.user_dir, 'project.yml']);
-		if (!FileSystem.exists(config_path)) {
-			CLI.error('Cant find project.yml in: ${CLI.user_dir}');
+		var configPath = Path.join([CLI.userDir, 'project.yml']);
+		if (!FileSystem.exists(configPath)) {
+			CLI.error('Cant find project.yml in: ${CLI.userDir}');
 		}
-		var data = File.getContent(config_path);
+		var data = File.getContent(configPath);
 		var config:ConfigData = Yaml.parse(data, Parser.options().useObjects());
 
 		return config;
@@ -243,7 +243,7 @@ typedef AndroidConfig = {
 	var arch:String;
 	var orientation:String;
 	var installLocation:String;
-	var version_code:Int;
+	var versionCode:Int;
 	var permissions:Array<String>;
 }
 typedef IOSConfig = {
@@ -261,6 +261,6 @@ typedef HtmlConfig = {
 	var favicon:String;
 	var width:Int;
 	var height:Int;
-	var html_file:String;
-	var server_port:Int;
+	var htmlFile:String;
+	var serverPort:Int;
 }

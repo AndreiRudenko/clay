@@ -25,18 +25,18 @@ class ComponentManager {
 
 	}
 
-	public macro function get<T>(self:Expr, component_class:ExprOf<Class<T>>):ExprOf<Components<T>> {
+	public macro function get<T>(self:Expr, componentClass:ExprOf<Class<T>>):ExprOf<Components<T>> {
 
-		var tp = MacroUtils.get_class_typepath(Context.typeof(component_class));
+		var tp = MacroUtils.getClassTypePath(Context.typeof(componentClass));
 
 		return macro {
-			var comps = $self._get($component_class);
+			var comps = $self._get($componentClass);
 			if(comps != null) {
 				comps;
 			} else {
 				$self._set(
 					particles, 
-					$component_class, 
+					$componentClass, 
 					function() {
 						return new $tp();
 					}
@@ -46,16 +46,16 @@ class ComponentManager {
 
 	}
 
-	@:noCompletion public function _get<T>(_component_class:Class<T>):Components<T> {
+	@:noCompletion public function _get<T>(_componentClass:Class<T>):Components<T> {
 
-		return cast get_components(Type.getClassName(_component_class));
+		return cast getComponents(Type.getClassName(_componentClass));
 
 	}
 
-	@:noCompletion public function _set<T>(_particles:ParticleVector, _component_class:Class<T>, _f:()->T):Components<T> {
+	@:noCompletion public function _set<T>(_particles:ParticleVector, _componentClass:Class<T>, _f:()->T):Components<T> {
 
-		var cname:String = Type.getClassName(_component_class);
-		var cp:Components<T> = cast get_components(cname);
+		var cname:String = Type.getClassName(_componentClass);
+		var cp:Components<T> = cast getComponents(cname);
 
 		if(cp == null) {
 			cp = new Components<T>(cname, _capacity);
@@ -74,9 +74,9 @@ class ComponentManager {
 
 	}
 
-	public function remove<T>(_component_class:Class<T>):Bool {
+	public function remove<T>(_componentClass:Class<T>):Bool {
 
-		var cp = get_components(Type.getClassName(_component_class));
+		var cp = getComponents(Type.getClassName(_componentClass));
 
 		if(cp != null) {
 			cp.clear();
@@ -95,7 +95,7 @@ class ComponentManager {
 
 	}
 
-	public function remove_all(id:Int) {
+	public function removeAll(id:Int) {
 
 		for (c in _components) {
 			c.remove(id);
@@ -111,7 +111,7 @@ class ComponentManager {
 
 	}
 
-	function get_components(name:String) {
+	function getComponents(name:String) {
 		
 		for (c in _components) {
 			if(c.name == name) {

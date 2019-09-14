@@ -14,7 +14,7 @@ class Game {
 
 	public function new() {
 
-		Clay.resources.load_all(
+		Clay.resources.loadAll(
 			[
 				'assets/walk_spritesheet.png',
 				'assets/walk_1.png',
@@ -41,12 +41,12 @@ class Game {
 
 	function ready() {
 
-		var anim_sprite = new AnimatedSprite();
-		anim_sprite.size.set(64,64);
-		anim_sprite.transform.origin.set(32, 32);
-		anim_sprite.transform.pos.set(-32, Clay.screen.mid.y-64);
+		var animSprite = new AnimatedSprite();
+		animSprite.size.set(64,64);
+		animSprite.transform.origin.set(32, 32);
+		animSprite.transform.pos.set(-32, Clay.screen.mid.y-64);
 
-		anim_sprite.from_textures(
+		animSprite.fromTextures(
 			'walk', 
 			[			
 			'assets/walk_1.png',
@@ -67,41 +67,41 @@ class Game {
 			'assets/walk_16.png'
 			]
 		)
-		.set_speed(24)
-		.set_all()
+		.setSpeed(24)
+		.setAll()
 		.loop();
 
-		anim_sprite.set_animation('walk');
-		anim_sprite.play();
+		animSprite.setAnimation('walk');
+		animSprite.play();
 
-		Clay.layer.add(anim_sprite);
-		Clay.tween.object(anim_sprite.transform.pos).to({x: Clay.screen.width + 32}, 4).repeat().start();
+		Clay.layer.add(animSprite);
+		Clay.tween.object(animSprite.transform.pos).to({x: Clay.screen.width + 32}, 4).repeat().start();
 
 
-		var anim_sprite2 = new AnimatedSprite();
-		anim_sprite2.size.set(64,64);
-		anim_sprite2.transform.origin.set(32, 32);
-		anim_sprite2.transform.pos.set(-32, Clay.screen.mid.y+64);
+		var animSprite2 = new AnimatedSprite();
+		animSprite2.size.set(64,64);
+		animSprite2.transform.origin.set(32, 32);
+		animSprite2.transform.pos.set(-32, Clay.screen.mid.y+64);
 
-		anim_sprite2.events = new Events();
-		anim_sprite2.events.listen('test', function(e) {trace(e);});
+		animSprite2.events = new Events();
+		animSprite2.events.listen('test', function(e) {trace(e);});
 
-		anim_sprite2.from_grid(
+		animSprite2.fromGrid(
 			'walk', 
 			'assets/walk_spritesheet.png',
 			4,
 			4
 		)
-		.set_speed(32)
-		.set_all()
+		.setSpeed(32)
+		.setAll()
 		.loop();
-		anim_sprite2.add_event('walk', 6, 'test');
+		animSprite2.addEvent('walk', 6, 'test');
 
-		anim_sprite2.set_animation('walk');
-		anim_sprite2.play();
+		animSprite2.setAnimation('walk');
+		animSprite2.play();
 
-		Clay.layer.add(anim_sprite2);
-		Clay.tween.object(anim_sprite2.transform.pos).to({x: Clay.screen.width + 32}, 3).repeat().start();
+		Clay.layer.add(animSprite2);
+		Clay.tween.object(animSprite2.transform.pos).to({x: Clay.screen.width + 32}, 3).repeat().start();
 
 	}
 

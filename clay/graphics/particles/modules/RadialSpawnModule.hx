@@ -21,7 +21,7 @@ class RadialSpawnModule  extends ParticleModule {
 		
 	}
 
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
 		var a = emitter.random() * Math.PI * 2;
 		var r = emitter.random() * radius;
@@ -33,9 +33,9 @@ class RadialSpawnModule  extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
 		radius = d.radius;
 		
@@ -43,9 +43,9 @@ class RadialSpawnModule  extends ParticleModule {
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
 		d.radius = radius;
 

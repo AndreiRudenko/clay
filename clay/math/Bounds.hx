@@ -24,7 +24,7 @@ class Bounds {
 
     }
     
-    public function point_inside(_p:Vector):Bool {
+    public function pointInside(_p:Vector):Bool {
 
         if(_p.x < min.x) return false;
         if(_p.y < min.y) return false;
@@ -59,10 +59,10 @@ class Bounds {
 
     }
 
-    public function copy_from(_other:Bounds):Bounds {
+    public function copyFrom(_other:Bounds):Bounds {
 
-        min.copy_from(_other.min);
-        max.copy_from(_other.max);
+        min.copyFrom(_other.min);
+        max.copyFrom(_other.max);
 
         return this;
 

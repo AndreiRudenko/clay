@@ -9,52 +9,52 @@ import clay.Sound;
 class LadderFilter extends AudioEffect {
 
 
-	public var cutoff   	(default, set): Float;
-	public var resonance	(default, set): Float;
+	public var cutoff(default, set):Float;
+	public var resonance(default, set):Float;
 
-	var stage_l: Array<Float>;
-	var stage_r: Array<Float>;
-	var delay_l: Array<Float>;
-	var delay_r: Array<Float>;
+	var stageL:Array<Float>;
+	var stageR:Array<Float>;
+	var delayL:Array<Float>;
+	var delayR:Array<Float>;
 
-	var p: Float;
-	var k: Float;
-	var t1: Float;
-	var t2: Float;
-	var r: Float;
+	var p:Float;
+	var k:Float;
+	var t1:Float;
+	var t2:Float;
+	var r:Float;
 
-	var sample_rate: Float;
+	var sampleRate:Float;
 
 
-	public function new(_cut: Float, _res: Float, _sample_rate: Int = 44100) {
+	public function new(_cut:Float, _res:Float, _sampleRate:Int = 44100) {
 
-		stage_l = [0,0,0,0];
-		stage_r = [0,0,0,0];
-		delay_l = [0,0,0,0];
-		delay_r = [0,0,0,0];
+		stageL = [0,0,0,0];
+		stageR = [0,0,0,0];
+		delayL = [0,0,0,0];
+		delayR = [0,0,0,0];
 
 		p = 0;
 		k = 0;
 		t1 = 0;
 		t2 = 0;
 
-		sample_rate = _sample_rate;
+		sampleRate = _sampleRate;
 
 		cutoff = _cut;
 		resonance = _res;
 
 	}
 
-	override function process(samples: Int, buffer: kha.arrays.Float32Array, sample_rate: Int) {
+	override function process(samples:Int, buffer:kha.arrays.Float32Array, sampleRate:Int) {
 
 		for (i in 0...Std.int(samples/2)) {
-			buffer[i*2] = filter(buffer[i*2], stage_l, delay_l);
-			buffer[i*2+1] = filter(buffer[i*2+1], stage_r, delay_r);
+			buffer[i*2] = filter(buffer[i*2], stageL, delayL);
+			buffer[i*2+1] = filter(buffer[i*2+1], stageR, delayR);
 		}
 
 	}
 
-	function filter(input: Float, stage: Array<Float>, delay: Array<Float>):Float {
+	function filter(input:Float, stage:Array<Float>, delay:Array<Float>):Float {
 
 		var x = input - r * stage[3];
 
@@ -75,9 +75,9 @@ class LadderFilter extends AudioEffect {
 		return stage[3];
 	}
 
-	public function calc_coef() {
+	public function calcCoef() {
 		
-		var c = 2.0 * cutoff / sample_rate;
+		var c = 2.0 * cutoff / sampleRate;
 
 		p = c * (1.8 - 0.8 * c);
 		k = 2.0 * Math.sin(c * Math.PI * 0.5) - 1.0;
@@ -88,19 +88,19 @@ class LadderFilter extends AudioEffect {
 
 	}
 
-	function set_cutoff(v: Float): Float {
+	function set_cutoff(v:Float):Float {
 
 		cutoff = v;
-		calc_coef();
+		calcCoef();
 
 		return cutoff;
 
 	}
 
-	function set_resonance(v: Float): Float {
+	function set_resonance(v:Float):Float {
 
 		resonance = v;
-		calc_coef();
+		calcCoef();
 
 		return resonance;
 

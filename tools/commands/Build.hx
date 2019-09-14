@@ -10,9 +10,9 @@ import haxe.io.Path;
 class Build extends Command {
 
 
-	var windows_graphics:Array<String> = ["direct3d9", "direct3d11", "direct3d12", "vulkan", "opengl"];
-	var uwp_graphics:Array<String> = ["direct3d11", "direct3d12"];
-	var linux_graphics:Array<String> = ["vulkan", "opengl"];
+	var windowsGraphics:Array<String> = ["direct3d9", "direct3d11", "direct3d12", "vulkan", "opengl"];
+	var uwpGraphics:Array<String> = ["direct3d11", "direct3d12"];
+	var linuxGraphics:Array<String> = ["vulkan", "opengl"];
 
 	var audio:Array<String> = ["wasapi", "directsound"];
 
@@ -60,23 +60,23 @@ class Build extends Command {
 		}
 
 		// create build folder
-		var build_path = Path.join([CLI.user_dir, 'build']);
-		if (!FileSystem.exists(build_path)) {
-			FileSystem.createDirectory(build_path);
+		var buildPath = Path.join([CLI.userDir, 'build']);
+		if (!FileSystem.exists(buildPath)) {
+			FileSystem.createDirectory(buildPath);
 		}
 		// create kha file
-		var khafile = Config.create_khafile(config);
-        File.saveContent(Path.join([CLI.user_dir, 'khafile.js']), khafile);
+		var khafile = Config.createKhaFile(config);
+        File.saveContent(Path.join([CLI.userDir, 'khafile.js']), khafile);
 
 		// copy icon
 		if(config.target != 'html5' && config.app.icon != null && config.app.icon != '') {
-			var icon_path = Path.join([CLI.user_dir, config.app.icon]);
-			var dest_path = Path.join([CLI.user_dir, 'icon.png']);
-			if (FileSystem.exists(icon_path)) {
-				File.copy(icon_path, dest_path);
-				CLI.print('Copy icon from: $icon_path');
+			var iconPath = Path.join([CLI.userDir, config.app.icon]);
+			var destPath = Path.join([CLI.userDir, 'icon.png']);
+			if (FileSystem.exists(iconPath)) {
+				File.copy(iconPath, destPath);
+				CLI.print('Copy icon from: $iconPath');
 			} else {
-				CLI.print('Can`t find icon at: $icon_path');
+				CLI.print('Can`t find icon at: $iconPath');
 			}
 		}
 
@@ -84,16 +84,16 @@ class Build extends Command {
         	for (t in CLI.targets) {
 	        	if(Reflect.hasField(config, t)) {
 	        		config.target = t;
-					build_project(config);
+					buildProject(config);
 	        	}
         	}
         } else {
-			build_project(config);
+			buildProject(config);
         }
 
 	}
 
-	function build_project(config:ConfigData) {
+	function buildProject(config:ConfigData) {
 
 		var args:Array<String> = [];
 		args.push('--target');
@@ -110,8 +110,8 @@ class Build extends Command {
 			case 'windows', 'windows-hl': {
 				if(config.windows != null) {
 					if(config.windows.graphics != null) {
-						if(windows_graphics.indexOf(config.windows.graphics) == -1) {
-							CLI.error('Unknown graphics target, use: [${windows_graphics.join(',')}]'); 
+						if(windowsGraphics.indexOf(config.windows.graphics) == -1) {
+							CLI.error('Unknown graphics target, use: [${windowsGraphics.join(',')}]'); 
 						}
 						args.push('--graphics');
 						args.push(config.windows.graphics);
@@ -123,7 +123,6 @@ class Build extends Command {
 						args.push('--audio');
 						args.push(config.windows.audio);
 					}
-
 				}
 			}
 			case 'android-native', 'android-native-hl': {
@@ -138,8 +137,8 @@ class Build extends Command {
 			case 'linux': {
 				if(config.linux != null) {
 					if(config.linux.graphics != null) {
-						if(linux_graphics.indexOf(config.linux.graphics) == -1) {
-							CLI.error('Unknown graphics target, use: [${linux_graphics.join(',')}]'); 
+						if(linuxGraphics.indexOf(config.linux.graphics) == -1) {
+							CLI.error('Unknown graphics target, use: [${linuxGraphics.join(',')}]'); 
 						}
 						args.push('--graphics');
 						args.push(config.linux.graphics);
@@ -150,8 +149,8 @@ class Build extends Command {
 			case 'uwp' : {
 				if(config.uwp != null) {
 					if(config.uwp.graphics != null) {
-						if(uwp_graphics.indexOf(config.uwp.graphics) == -1) {
-							CLI.error('Unknown graphics target, use: [${uwp_graphics.join(',')}]'); 
+						if(uwpGraphics.indexOf(config.uwp.graphics) == -1) {
+							CLI.error('Unknown graphics target, use: [${uwpGraphics.join(',')}]'); 
 						}
 						args.push('--graphics');
 						args.push(config.uwp.graphics);
@@ -190,71 +189,71 @@ class Build extends Command {
 		}
 
 		CLI.print('Run build command: ${args.join(" ")}');
-		var res = CLI.execute(CLI.khamake_path, args);
+		var res = CLI.execute(CLI.khamakePath, args);
 		if(res != 0) {
 			CLI.error('Build failed'); 
 		}
 
 		if(config.target == 'html5') {
-			postbuild_html5(config);
+			postbuildHtml5(config);
 		}
 
 		CLI.print('Build ${config.target} complete.');
 
 	}
 
-	function postbuild_html5(config:ConfigData) {
+	function postbuildHtml5(config:ConfigData) {
 		
 		if(config.html5 != null) {
 			// copy favicon
 			if(config.html5.favicon != null && config.html5.favicon != '') {
-				var icon_path = Path.join([CLI.user_dir, config.html5.favicon]);
-				var dest_path = Path.join([CLI.user_dir, 'build/html5/favicon.png']);
-				if (FileSystem.exists(icon_path)) {
-					File.copy(icon_path, dest_path);
-					CLI.print('Copy favicon from: $icon_path');
+				var iconPath = Path.join([CLI.userDir, config.html5.favicon]);
+				var destPath = Path.join([CLI.userDir, 'build/html5/favicon.png']);
+				if (FileSystem.exists(iconPath)) {
+					File.copy(iconPath, destPath);
+					CLI.print('Copy favicon from: $iconPath');
 				} else {
-					CLI.print('Can`t find favicon at: $icon_path');
+					CLI.print('Can`t find favicon at: $iconPath');
 				}
 			}
 
 			// copy html
-			var html_path:String;
-			if(config.html5.html_file != null && config.html5.html_file != '') {
-				html_path = Path.join([CLI.user_dir, config.html5.html_file]);
+			var htmlPath:String;
+			if(config.html5.htmlFile != null && config.html5.htmlFile != '') {
+				htmlPath = Path.join([CLI.userDir, config.html5.htmlFile]);
 			} else {
-				html_path = Path.join([CLI.engine_dir, 'assets/html/index.html']);
+				htmlPath = Path.join([CLI.engineDir, 'assets/html/index.html']);
 			}
 
-			if (FileSystem.exists(html_path)) {
-				var dest_path = Path.join([CLI.user_dir, 'build/html5/index.html']);
-				var html_file = File.getContent(html_path);
+			if (FileSystem.exists(htmlPath)) {
+				var destPath = Path.join([CLI.userDir, 'build/html5/index.html']);
+				var htmlFile = File.getContent(htmlPath);
 
-				var canvas_width:Int = 800;
-				var canvas_height:Int = 600;
+				var canvasWidth:Int = 800;
+				var canvasHeight:Int = 600;
 
 				var r = ~/\{name\}/g;
-				html_file = r.replace(html_file, config.project.title);
-				r = ~/\{script_name\}/g;
-				html_file = r.replace(html_file, config.html5.script);
-				r = ~/\{canvas_id\}/g;
-				html_file = r.replace(html_file, config.html5.canvas);
+				htmlFile = r.replace(htmlFile, config.project.title);
+				r = ~/\{scriptName\}/g;
+				htmlFile = r.replace(htmlFile, config.html5.script);
+				r = ~/\{canvasID\}/g;
+				htmlFile = r.replace(htmlFile, config.html5.canvas);
 
 				if(config.html5.width != null) {
-					r = ~/\{canvas_width\}/g;
-					html_file = r.replace(html_file, '${config.html5.width}');
-					r = ~/\{canvas_half_width\}/g;
-					html_file = r.replace(html_file, '${config.html5.width/2}'); // todo: ftw
+					r = ~/\{canvasWidth\}/g;
+					htmlFile = r.replace(htmlFile, '${config.html5.width}');
+					r = ~/\{canvasHalfWidth\}/g;
+					htmlFile = r.replace(htmlFile, '${config.html5.width/2}'); // todo: ftw
 				}
 				if(config.html5.height != null) {
-					r = ~/\{canvas_height\}/g;
-					html_file = r.replace(html_file, '${config.html5.height}');
+					r = ~/\{canvasHeight\}/g;
+					htmlFile = r.replace(htmlFile, '${config.html5.height}');
 				}
 
-		    	File.saveContent(dest_path, html_file);
-				CLI.print('Copy html from: $html_path');
+		    	File.saveContent(destPath, htmlFile);
+				CLI.print('Copy html from: $htmlPath');
 			} else {
-				CLI.print('Can`t find html at: $html_path');
+				CLI.print('Can`t find html at: $htmlPath');
 			}
 
 		}

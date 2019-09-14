@@ -13,28 +13,28 @@ import clay.tween.tweens.TweenObject;
 class TweenManager {
 
 
-	var _active_tweens:Array<Tween<Dynamic>>;
+	var _activeTweens:Array<Tween<Dynamic>>;
 	var _targets:ObjectMap<Dynamic, Array<Tween<Dynamic>>>;
-	var _check_time:Int;
+	var _checkTime:Int;
 
 
 	public function new() {
 
-		_active_tweens = [];
+		_activeTweens = [];
 		_targets = new ObjectMap();
-		_check_time = 0;
+		_checkTime = 0;
 
 	}
 
-	public function object<T>(target:T, manual_update:Bool = false):TweenObject<T> {
+	public function object<T>(target:T, manualUpdate:Bool = false):TweenObject<T> {
 
-		return new TweenObject(this, target, manual_update);
+		return new TweenObject(this, target, manualUpdate);
 		
 	}
 
-	public function fun<T>(target:T, manual_update:Bool = false):TweenFn<T> {
+	public function fun<T>(target:T, manualUpdate:Bool = false):TweenFn<T> {
 
-		return new TweenFn(this, target, manual_update);
+		return new TweenFn(this, target, manualUpdate);
 
 	}
 
@@ -52,52 +52,52 @@ class TweenManager {
 
 	public function step(time:Float) {
 
-		for (s in _active_tweens) {
+		for (s in _activeTweens) {
 			s.step(time);
 		}
 
-		_check_time++;
-		if(_check_time > 60) {
-			_check_time = 0;
-			var n = _active_tweens.length;
+		_checkTime++;
+		if(_checkTime > 60) {
+			_checkTime = 0;
+			var n = _activeTweens.length;
 			while(n-- > 0) {
-				if(!_active_tweens[n].active) {
-					_active_tweens[n].drop();
-					_active_tweens.splice(n, 1);
+				if(!_activeTweens[n].active) {
+					_activeTweens[n].drop();
+					_activeTweens.splice(n, 1);
 				}
 			}
 		}
 
 	}
 
-	function add_target_tween<T>(tween:Tween<T>, target:T) {
+	function addTargetTween<T>(tween:Tween<T>, target:T) {
 
-		var _target_tweens = _targets.get(target);
-		if(_target_tweens == null) {
-			_target_tweens = [];
-			_targets.set(target, _target_tweens);
+		var _targetTweens = _targets.get(target);
+		if(_targetTweens == null) {
+			_targetTweens = [];
+			_targets.set(target, _targetTweens);
 		}
 		
-		_target_tweens.push(tween);
+		_targetTweens.push(tween);
 
 	}
 
-	function remove_target_tween<T>(tween:Tween<T>, target:T) {
+	function removeTargetTween<T>(tween:Tween<T>, target:T) {
 
-		var target_tweens = _targets.get(target);
+		var targetTweens = _targets.get(target);
 
-		if(target_tweens != null) {
-			target_tweens.remove(tween);
-			if(target_tweens.length == 0) {
+		if(targetTweens != null) {
+			targetTweens.remove(tween);
+			if(targetTweens.length == 0) {
 				_targets.remove(target);
 			}
 		}
 
 	}
 
-	function add_tween<T>(tween:Tween<T>) {
+	function addTween<T>(tween:Tween<T>) {
 
-		_active_tweens.push(tween);
+		_activeTweens.push(tween);
 
 	}
 

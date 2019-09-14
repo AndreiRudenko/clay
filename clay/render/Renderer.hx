@@ -24,8 +24,8 @@ import clay.ds.IntRingBuffer;
 class Renderer {
 
 
-	@:noCompletion public var batch_size   (default, null):Int = 8192; // 8192 // 16384 // 32768 // 65535
-	@:noCompletion public var sort_options (default, null):SortOptions;
+	@:noCompletion public var batchSize   (default, null):Int = 8192; // 8192 // 16384 // 32768 // 65535
+	@:noCompletion public var sortOptions (default, null):SortOptions;
 
 	public var rendering        (default, null):Bool = false;
 
@@ -38,36 +38,36 @@ class Renderer {
 	public var layers 	        (default, null):LayerManager;
 	public var shaders    	  	(default, null):Map<String, Shader>;
 
-	public var shader_textured	(default, null):Shader;
-	public var shader_text    	(default, null):Shader;
+	public var shaderTextured	(default, null):Shader;
+	public var shaderText    	(default, null):Shader;
 
 	public var camera:Camera;
 	public var layer:Layer;
 	public var font:FontResource;
-	public var clear_color:Color;
+	public var clearColor:Color;
 
 	#if !no_debug_console
 	public var stats:RenderStats;
 	#end
 	
-	var _texture_ids:IntRingBuffer;
-	var _textures_used:Int = 0;
+	var _textureIds:IntRingBuffer;
+	var _texturesUsed:Int = 0;
 
 
 	public function new(_options:RendererOptions) {
 
-		if(_options.batch_size != null) {
-			batch_size = _options.batch_size;
+		if(_options.batchSize != null) {
+			batchSize = _options.batchSize;
 		}
 
-		var layers_max = def(_options.layers_max, 64);
+		var layersMax = def(_options.layersMax, 64);
 
-		sort_options = new SortOptions(_options.shader_bits, _options.texture_bits);
+		sortOptions = new SortOptions(_options.shaderBits, _options.textureBits);
 		cameras = new CameraManager();
-		layers = new LayerManager(layers_max);
-		clear_color = new Color(0.1,0.1,0.1,1);
+		layers = new LayerManager(layersMax);
+		clearColor = new Color(0.1,0.1,0.1,1);
 		shaders = new Map();
-		_texture_ids = new IntRingBuffer(sort_options.texture_max+1);
+		_textureIds = new IntRingBuffer(sortOptions.textureMax+1);
 
 	}
 
@@ -87,12 +87,12 @@ class Renderer {
 
 		var buffer = Clay.screen.buffer.image.g4;
 	    buffer.begin();
-		buffer.clear(clear_color.to_int());
+		buffer.clear(clearColor.toInt());
 
-		for (cam in cameras.active_cameras) {
-			cam.prerender();
+		for (cam in cameras.activeCameras) {
+			cam.preRender();
 			layers.render(cam);
-			cam.postrender();
+			cam.postRender();
 		}
 
 		// buffer.disableScissor();
@@ -102,7 +102,7 @@ class Renderer {
 		g.begin();
 		// g.clear();
 		g.scissor(0, 0, Clay.screen.width, Clay.screen.height);
-		frontbuffer.render(Clay.screen.buffer, f, shader_textured, kha.ScreenRotation.RotationNone); // todo: kha.System.screenRotation
+		frontbuffer.render(Clay.screen.buffer, f, shaderTextured, kha.ScreenRotation.RotationNone); // todo: kha.System.screenRotation
 		g.disableScissor();
 		g.end();
 
@@ -110,7 +110,7 @@ class Renderer {
 
 	}
 
-	public function register_shader(_name:String, _shader:Shader) {
+	public function registerShader(_name:String, _shader:Shader) {
 
 		if(shaders.exists(_name)) {
 			log("shader: " + _name + " already exists, this will overwrite to new shader");
@@ -120,33 +120,33 @@ class Renderer {
 		
 	}
 
-	@:noCompletion public function pop_texture_id():Int {
+	@:noCompletion public function popTextureID():Int {
 
-		if(_textures_used >= sort_options.texture_max) {
-			throw("Out of textures, max allowed " + sort_options.texture_max);
+		if(_texturesUsed >= sortOptions.textureMax) {
+			throw("Out of textures, max allowed " + sortOptions.textureMax);
 		}
 
-		++_textures_used;
-		return _texture_ids.pop();
+		++_texturesUsed;
+		return _textureIds.pop();
 
 	}
 
-	@:noCompletion public function push_texture_id(_id:Int) {
+	@:noCompletion public function pushTextureID(_id:Int) {
 
-		--_textures_used;
-		_texture_ids.push(_id);
+		--_texturesUsed;
+		_textureIds.push(_id);
 
 	}
 
 	function init() {
 
-		create_default_shaders();
+		createDefaultShaders();
 
-		layer = layers.create("default_layer");
-		camera = cameras.create("default_camera");
+		layer = layers.create("defaultLayer");
+		camera = cameras.create("defaultCamera");
 
 		frontbuffer = new FrontBuffer(this);
-		painter = new Painter(this, batch_size);
+		painter = new Painter(this, batchSize);
 		
 		#if !no_default_font
 		font = Clay.resources.font("assets/Muli-Regular.ttf");
@@ -160,7 +160,7 @@ class Renderer {
 
 	function destroy() {}
 
-	function create_default_shaders() {
+	function createDefaultShaders() {
 
 		var structure = new VertexStructure();
 		structure.add("vertexPosition", VertexData.Float2);
@@ -168,16 +168,16 @@ class Renderer {
 		structure.add("texPosition", VertexData.Float2);
 
 	// textured
-		shader_textured = new Shader([structure], Shaders.textured_vert, Shaders.textured_frag);
-		shader_textured.set_blendmode(BlendingFactor.BlendOne, BlendingFactor.InverseSourceAlpha, BlendingOperation.Add);
-		shader_textured.compile();
-		register_shader("textured", shader_textured);
+		shaderTextured = new Shader([structure], Shaders.textured_vert, Shaders.textured_frag);
+		shaderTextured.setBlendMode(BlendingFactor.BlendOne, BlendingFactor.InverseSourceAlpha, BlendingOperation.Add);
+		shaderTextured.compile();
+		registerShader("textured", shaderTextured);
 
 	// text
-		shader_text = new Shader([structure], Shaders.textured_vert, Shaders.text_frag);
-		shader_text.set_blendmode(BlendingFactor.SourceAlpha, BlendingFactor.InverseSourceAlpha, BlendingOperation.Add);
-		shader_text.compile();
-		register_shader("text", shader_text);
+		shaderText = new Shader([structure], Shaders.textured_vert, Shaders.text_frag);
+		shaderText.setBlendMode(BlendingFactor.SourceAlpha, BlendingFactor.InverseSourceAlpha, BlendingOperation.Add);
+		shaderText.compile();
+		registerShader("text", shaderText);
 
 	}
 
@@ -189,10 +189,10 @@ class Renderer {
 			}
 			if(v != null) {
 				v.image.g4.begin();
-				v.image.g4.clear(clear_color.to_int());
+				v.image.g4.clear(clearColor.toInt());
 			} else {
 				Clay.screen.buffer.image.g4.begin();
-				Clay.screen.buffer.image.g4.clear(clear_color.to_int());
+				Clay.screen.buffer.image.g4.clear(clearColor.toInt());
 			}
 		}
 
@@ -207,9 +207,9 @@ class Renderer {
 
 typedef RendererOptions = {
 
-	@:optional var shader_bits:Int;
-	@:optional var texture_bits:Int;
-	@:optional var layers_max:Int;
-	@:optional var batch_size:Int;
+	@:optional var shaderBits:Int;
+	@:optional var textureBits:Int;
+	@:optional var layersMax:Int;
+	@:optional var batchSize:Int;
 
 }

@@ -14,7 +14,7 @@ class GravityModule extends ParticleModule {
 
 	public var gravity(default, null):Vector;
 
-	var vel_comps:Components<Velocity>;
+	var _velComps:Components<Velocity>;
 
 
 	public function new(_options:GravityModuleOptions) {
@@ -27,29 +27,29 @@ class GravityModule extends ParticleModule {
 
 	override function init() {
 
-		vel_comps = emitter.components.get(Velocity);
+		_velComps = emitter.components.get(Velocity);
 
 	}
 
-	override function onremoved() {
+	override function onRemoved() {
 
-		vel_comps = null;
+		_velComps = null;
 		
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
-		particles.for_each(
+		particles.forEach(
 			function(p) {
-				vel_comps.get(p.id).set(0,0);
+				_velComps.get(p.id).set(0,0);
 			}
 		);
 		
 	}
 
-	override function onunspawn(p:Particle) {
+	override function onUnSpawn(p:Particle) {
 
-		vel_comps.get(p.id).set(0,0);
+		_velComps.get(p.id).set(0,0);
 		
 	}
 
@@ -57,7 +57,7 @@ class GravityModule extends ParticleModule {
 
 		var vel:Vector;
 		for (p in particles) {
-			vel = vel_comps.get(p.id);
+			vel = _velComps.get(p.id);
 			vel.x += gravity.x * dt;
 			vel.y += gravity.y * dt;
 		}
@@ -67,21 +67,21 @@ class GravityModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		gravity.from_json(d.gravity);
+		gravity.fromJson(d.gravity);
 
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.gravity = gravity.to_json();
+		d.gravity = gravity.toJson();
 
 		return d;
 	    

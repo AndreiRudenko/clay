@@ -6,8 +6,8 @@ class Emitter {
 
 	@:noCompletion public var bindings:Map<EventType<Dynamic>, Array<EmitHandler<Dynamic>>>;
 
-	var _to_remove:Array<EmitDef<Dynamic>>;
-	var _to_add:Array<EmitHandler<Dynamic>>;
+	var _toRemove:Array<EmitDef<Dynamic>>;
+	var _toAdd:Array<EmitHandler<Dynamic>>;
 	var _processing:Bool;
 
 
@@ -15,8 +15,8 @@ class Emitter {
 
 		bindings = new Map();
 
-		_to_remove = [];
-		_to_add = [];
+		_toRemove = [];
+		_toAdd = [];
 		_processing = false;
 
 	}
@@ -32,17 +32,17 @@ class Emitter {
 			}
 			_processing = false;
 
-			if(_to_remove.length > 0) {
-				for (e in _to_remove) {
+			if(_toRemove.length > 0) {
+				for (e in _toRemove) {
 					_remove(e.event, e.handler);
 				}
-				_to_remove.splice(0, _to_remove.length);
+				_toRemove.splice(0, _toRemove.length);
 			}
-			if(_to_add.length > 0) {
-				for (eh in _to_add) {
+			if(_toAdd.length > 0) {
+				for (eh in _toAdd) {
 					_add(eh);
 				}
-				_to_add.splice(0, _to_add.length);
+				_toAdd.splice(0, _toAdd.length);
 			}
 		}
 		
@@ -55,12 +55,12 @@ class Emitter {
 		}
 
 		if(_processing) {
-			for (e in _to_add) {
+			for (e in _toAdd) {
 				if(e.callback == handler) {
 					return;
 				} 
 			}
-			_to_add.push(new EmitHandler<T>(event, handler, priority));
+			_toAdd.push(new EmitHandler<T>(event, handler, priority));
 		} else {
 			_add(new EmitHandler<T>(event, handler, priority));
 		}
@@ -74,12 +74,12 @@ class Emitter {
 		}
 
 		if(_processing) {
-			for (e in _to_remove) {
+			for (e in _toRemove) {
 				if(e.handler == handler) {
 					return false;
 				} 
 			}
-			_to_remove.push({event:event, handler:handler});
+			_toRemove.push({event:event, handler:handler});
 		} else {
 			_remove(event, handler);
 		}
@@ -104,22 +104,22 @@ class Emitter {
 		
 	}
 
-	function _add<T>(emit_handler:EmitHandler<T>) {
+	function _add<T>(emitHandler:EmitHandler<T>) {
 
-		var list = bindings.get(emit_handler.event);
+		var list = bindings.get(emitHandler.event);
 		if(list == null) {
 			list = new Array<EmitHandler<T>>();
-			list.push(emit_handler);
-			bindings.set(emit_handler.event, list);
+			list.push(emitHandler);
+			bindings.set(emitHandler.event, list);
 		} else {
-			var at_pos:Int = list.length;
+			var atPos:Int = list.length;
 			for (i in 0...list.length) {
-				if (emit_handler.priority < list[i].priority) {
-					at_pos = i;
+				if (emitHandler.priority < list[i].priority) {
+					atPos = i;
 					break;
 				}
 			}
-			list.insert(at_pos, emit_handler);
+			list.insert(atPos, emitHandler);
 		}
 
 	}

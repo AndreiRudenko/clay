@@ -41,7 +41,7 @@ class Color {
 
 	}
 
-	public function copy_from(other:Color):Color {
+	public function copyFrom(other:Color):Color {
 
 		r = other.r;
 		g = other.g;
@@ -52,7 +52,7 @@ class Color {
 		
 	}
 
-	public function from_int(_i:Int):Color {
+	public function fromInt(_i:Int):Color {
 
 		// var _a = _i >> 24;
 		var _r = _i >> 16;
@@ -74,25 +74,25 @@ class Color {
 		
 	}
 
-	public function to_int():Int {
+	public function toInt():Int {
 
 		return (Std.int(a * 255) << 24) | (Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255);
 		
 	}
 
-	public static function random(?_include_alpha:Bool=false) : Color {
+	public static function random(?_includeAlpha:Bool=false) : Color {
 
-		return new Color(Math.random(), Math.random(), Math.random(), _include_alpha ? Math.random() : 1.0 );
+		return new Color(Math.random(), Math.random(), Math.random(), _includeAlpha ? Math.random() : 1.0 );
 		
 	}
 
-	public inline function to_json() {
+	public inline function toJson() {
 
 		return {r:r, g:g, b:b, a:a};
 		
 	}
 
-	public inline function from_json(d:Dynamic):Color {
+	public inline function fromJson(d:Dynamic):Color {
 
 		r = d.r;
 		g = d.g;

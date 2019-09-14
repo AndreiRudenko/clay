@@ -9,21 +9,21 @@ import clay.Sound;
 class Filter extends AudioEffect {
 
 
-	public var cutoff   	(default, set): Float;
-	public var resonance	(default, set): Float;
-	public var filter_type: FilterType;
+	public var cutoff(default, set):Float;
+	public var resonance(default, set):Float;
+	public var filterType:FilterType;
 
-	var freq: Float;
-	var damp: Float;
+	var freq:Float;
+	var damp:Float;
 
-	var sample_rate: Float;
+	var sampleRate:Float;
 
 	var f:Array<Float>;
 
 
-	public function new(_type: FilterType, _cut: Float, _res: Float, _sample_rate: Int = 44100) {
+	public function new(_type:FilterType, _cut:Float, _res:Float, _sampleRate:Int = 44100) {
 
-		filter_type = _type;
+		filterType = _type;
 
 		f = [];
 
@@ -35,16 +35,16 @@ class Filter extends AudioEffect {
 		freq = 0;
 		damp = 0;
 
-		sample_rate = _sample_rate;
+		sampleRate = _sampleRate;
 
 		cutoff = _cut;
 		resonance = _res;
 
-		calc_coef();
+		calcCoef();
 
 	}
 
-	override function process(samples: Int, buffer: kha.arrays.Float32Array, sample_rate: Int) {
+	override function process(samples:Int, buffer:kha.arrays.Float32Array, sampleRate:Int) {
 
 		var input:Float = 0;
 		var output:Float = 0;
@@ -55,39 +55,39 @@ class Filter extends AudioEffect {
 			f[0] = f[0] + freq * f[2];
 			f[1] = f[3] - f[0];
 			f[2] = freq * f[1] + f[2];
-			output = 0.5 * f[filter_type];
+			output = 0.5 * f[filterType];
 
 			// second pass
 			f[3] = input - damp * f[2];
 			f[0] = f[0] + freq * f[2];
 			f[1] = f[3] - f[0];
 			f[2] = freq * f[1] + f[2];
-			output += 0.5 * f[filter_type];
+			output += 0.5 * f[filterType];
 			buffer[i] = output;
 		}
 
 	}
 
-	function calc_coef() {
+	function calcCoef() {
 
-		freq = 2 * Math.sin(Math.PI * Math.min(0.25, cutoff/(sample_rate*2)));  
+		freq = 2 * Math.sin(Math.PI * Math.min(0.25, cutoff/(sampleRate*2)));  
 		damp = Math.min(2 * (1 - Math.pow(resonance, 0.25)), Math.min(2, 2/freq - freq * 0.5));
 
 	}
 
-	function set_cutoff(v: Float): Float {
+	function set_cutoff(v:Float):Float {
 
 		cutoff = v;
-		calc_coef();
+		calcCoef();
 
 		return cutoff;
 
 	}
 
-	function set_resonance(v: Float): Float {
+	function set_resonance(v:Float):Float {
 
 		resonance = Mathf.clamp(v, 0, 1);
-		calc_coef();
+		calcCoef();
 
 		return resonance;
 

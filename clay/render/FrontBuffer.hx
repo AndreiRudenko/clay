@@ -27,18 +27,18 @@ class FrontBuffer {
 
 	var _vertexbuffer:VertexBuffer;
 	var _indexbuffer:IndexBuffer;
-	var _texture_loc:TextureUnit;
+	var _textureLoc:TextureUnit;
 
 	var _renderer:Renderer;
-	var _projection_matrix:FastMatrix3;
+	var _projectionMatrix:FastMatrix3;
 
 
 	public function new(renderer:Renderer) {
 		
 		_renderer = renderer;
-		var shader = _renderer.shader_textured;
+		var shader = _renderer.shaderTextured;
 		
-		_projection_matrix = FastMatrix3.identity();
+		_projectionMatrix = FastMatrix3.identity();
 
     	_vertexbuffer = new VertexBuffer(4, shader.pipeline.inputLayout[0], Usage.StaticUsage);
 		var vertices = _vertexbuffer.lock();
@@ -69,7 +69,7 @@ class FrontBuffer {
 
 	}
 
-	function set_vertices(texture:Texture, transformation:FastMatrix3) {
+	function setVertices(texture:Texture, transformation:FastMatrix3) {
 
 		var vertices = _vertexbuffer.lock();
 
@@ -77,8 +77,8 @@ class FrontBuffer {
 		var y = 0;
 		var w = x + texture.width;
 		var h = y + texture.height;
-		var wr = w / texture.width_actual;
-		var hr = h / texture.height_actual;
+		var wr = w / texture.widthActual;
+		var hr = h / texture.heightActual;
 		var p1 = transformation.multvec(new FastVector2(x, y));
 		var p2 = transformation.multvec(new FastVector2(w, y));
 		var p3 = transformation.multvec(new FastVector2(w, h));
@@ -116,15 +116,15 @@ class FrontBuffer {
 
 		var g = destination.g4;
 
-		_projection_matrix.identity().orto(0, Clay.screen.width, Clay.screen.height, 0);
+		_projectionMatrix.identity().orto(0, Clay.screen.width, Clay.screen.height, 0);
 
 		var transformation = Scaler.getScaledTransformation(source.width, source.height, destination.width, destination.height, rotation);
-		set_vertices(source, transformation);
+		setVertices(source, transformation);
 
-		_texture_loc = shader.set_texture('tex', source).location;
-		shader.set_matrix3('mvpMatrix', _projection_matrix);
+		_textureLoc = shader.setTexture('tex', source).location;
+		shader.setMatrix3('mvpMatrix', _projectionMatrix);
 
-		shader.reset_blendmodes();
+		shader.resetBlendModes();
 		shader.use(g);
 		shader.apply(g);
 
@@ -133,7 +133,7 @@ class FrontBuffer {
 
 		g.drawIndexedVertices();
 
-		g.setTexture(_texture_loc, null);
+		g.setTexture(_textureLoc, null);
 
 	}
 	

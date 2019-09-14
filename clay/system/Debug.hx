@@ -17,13 +17,13 @@ import clay.render.Layer;
 class Debug {
 
 	#if !no_debug_console
-	public static var trace_callbacks:Array<Dynamic->?haxe.PosInfos->Void> = [];
+	public static var traceCallbacks:Array<Dynamic->?haxe.PosInfos->Void> = [];
 
-	static var shut_down:Bool = false;
+	static var shutDown:Bool = false;
 	static var tracing:Bool = false;
-	static var haxe_trace:(v:Dynamic, ?p:haxe.PosInfos)->Void;
+	static var haxeTrace:(v:Dynamic, ?p:haxe.PosInfos)->Void;
 
-	static function internal_trace(_value:Dynamic, ?_info:haxe.PosInfos) {
+	static function internalTrace(_value:Dynamic, ?_info:haxe.PosInfos) {
 
 		assert(tracing == false, 'clay.Debug: calling trace from a trace callback is an infinite loop!');
 		tracing = true;
@@ -34,10 +34,10 @@ class Debug {
 			_out += ' ' + _info.customParams.join(' ');
 		}
 
-		haxe_trace(_value, _info);
+		haxeTrace(_value, _info);
 
-		if(!shut_down) {
-			for(_callback in trace_callbacks) {
+		if(!shutDown) {
+			for(_callback in traceCallbacks) {
 				_callback(_value, _info);
 			}
 		}
@@ -52,39 +52,39 @@ class Debug {
 	public var padding:Vector;
     public var margin:Float = 32;
 
-	@:noCompletion public var current_view:DebugView;
+	@:noCompletion public var currentView:DebugView;
 
 	public var layer(default, null):Layer;
 	var engine:App;
 	#end
 
-	// var current_view_index = 0;
-	// var last_view_index = 0;
+	// var currentViewIndex = 0;
+	// var lastViewIndex = 0;
 
 	function new(_engine:App) {
 
 		#if !no_debug_console
 		engine = _engine;
 		views = [];
-		layer = Clay.renderer.layers.create('debug_layer', 999);
+		layer = Clay.renderer.layers.create('debugLayer', 999);
 		#end
 	}
 
-	@:noCompletion public function add_view(_view:DebugView) {
+	@:noCompletion public function addView(_view:DebugView) {
 
 		#if !no_debug_console
 
 		_view.index = views.length;
-		inspector.add_tab(_view.debug_name);
+		inspector.addTab(_view.debugName);
 		views.push(_view);
 		// world.processors.add(_view, null, false);
 
 		#end
 	}
 
-	// public function get_view<T>(_name:String):T {
+	// public function getView<T>(_name:String):T {
 
-	// 	#if !no_debug_console
+	// 	#if !noDebugConsole
 
 	// 	for(view in views) {
 	// 		if(view.name == _name) {
@@ -98,13 +98,13 @@ class Debug {
 
 	// }
 
-	@:noCompletion public function switch_view(index:Int) {
+	@:noCompletion public function switchView(index:Int) {
 
 		#if !no_debug_console
 
-		// log('switch_view');
+		// log('switchView');
 
-		// current_view_index = _next ? current_view_index + 1 : current_view_index - 1;
+		// currentViewIndex = _next ? currentViewIndex + 1 : currentViewIndex - 1;
 
 		if(index < 0) {
 			index = views.length-1;
@@ -112,16 +112,16 @@ class Debug {
 			index = 0;
 		}
 
-		// last_view_index = index;
+		// lastViewIndex = index;
 
-		// views[last_view_index].disable();
-		if(current_view != null) {
-			current_view.active = false;
+		// views[lastViewIndex].disable();
+		if(currentView != null) {
+			currentView.active = false;
 		}
 
-		current_view = views[index];
-		current_view.active = true;
-		inspector.enable_tab(index);
+		currentView = views[index];
+		currentView.active = true;
+		inspector.enableTab(index);
 
 		#end
 
@@ -132,28 +132,28 @@ class Debug {
 		#if !no_debug_console
 
 		var c = Clay.cameras.create('debug', null, 999);
-		c.hide_layers();
-		c.show_layers(['debug_layer']);
-		Clay.camera.hide_layers(['debug_layer']);
+		c.hideLayers();
+		c.showLayers(['debugLayer']);
+		Clay.camera.hideLayers(['debugLayer']);
 
 		Clay.cameras.oncameracreate.add(function(c) {
-			c.hide_layers(['debug_layer']);
+			c.hideLayers(['debugLayer']);
 		});
 		
 		padding = new Vector(Clay.screen.width*0.05,Clay.screen.height*0.05);
 
-		haxe_trace = haxe.Log.trace;
-		haxe.Log.trace = internal_trace;
+		haxeTrace = haxe.Log.trace;
+		haxe.Log.trace = internalTrace;
 
 		inspector = new Inspector(this);
 
-		add_view(new clay.system.debug.TraceDebugView(this));
-		add_view(new clay.system.debug.StatsDebugView(this));
-		add_view(new clay.system.debug.AudioDebugView(this));
+		addView(new clay.system.debug.TraceDebugView(this));
+		addView(new clay.system.debug.StatsDebugView(this));
+		addView(new clay.system.debug.AudioDebugView(this));
 		profiller = new clay.system.debug.ProfilerDebugView(this);
-		add_view(profiller);
+		addView(profiller);
 
-		current_view = views[0];
+		currentView = views[0];
 
 		#end
 	}
@@ -162,8 +162,8 @@ class Debug {
 
 		#if !no_debug_console
 
-		shut_down = true;
-		haxe.Log.trace = haxe_trace;
+		shutDown = true;
+		haxe.Log.trace = haxeTrace;
 
 		#end
 

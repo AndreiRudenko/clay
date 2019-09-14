@@ -8,7 +8,7 @@ class Vector {
     public var y(default, set):Float;
 
     public var length(get, set):Float;
-    public var lengthsq(get, never):Float;
+    public var lengthSq(get, never):Float;
 
 
     public function new(_x:Float = 0, _y:Float = 0) {
@@ -27,7 +27,7 @@ class Vector {
         
     }
 
-    public inline function copy_from(_other:Vector) {
+    public inline function copyFrom(_other:Vector) {
 
         x = _other.x;
         y = _other.y;
@@ -50,7 +50,7 @@ class Vector {
 
     public inline function normalize() {
 
-        return divide_scalar(length);
+        return divideScalar(length);
         
     }
 
@@ -82,7 +82,7 @@ class Vector {
         
     }
 
-    public inline function add_xy(_x:Float, _y:Float) {
+    public inline function addXY(_x:Float, _y:Float) {
 
         set(x + _x, y + _y);
 
@@ -90,7 +90,7 @@ class Vector {
         
     }
 
-    public inline function add_scalar(_v:Float) {
+    public inline function addScalar(_v:Float) {
 
         set(x + _v, y + _v);
 
@@ -106,7 +106,7 @@ class Vector {
         
     }
 
-    public inline function subtract_xy(_x:Float, _y:Float) {
+    public inline function subtractXY(_x:Float, _y:Float) {
 
         set(x - _x, y - _y);
 
@@ -114,7 +114,7 @@ class Vector {
         
     }
 
-    public inline function subtract_scalar(_v:Float) {
+    public inline function subtractScalar(_v:Float) {
 
         set(x - _v, y - _v);
 
@@ -130,7 +130,7 @@ class Vector {
         
     }
 
-    public inline function multiply_xy(_x:Float, _y:Float) {
+    public inline function multiplyXY(_x:Float, _y:Float) {
 
         set(x * _x, y * _y);
 
@@ -138,7 +138,7 @@ class Vector {
         
     }
 
-    public inline function multiply_scalar(_v:Float) {
+    public inline function multiplyScalar(_v:Float) {
 
         set(x * _v, y * _v);
 
@@ -154,7 +154,7 @@ class Vector {
         
     }
 
-    public inline function divide_xy(_x:Float, _y:Float) {
+    public inline function divideXY(_x:Float, _y:Float) {
 
         set(x / _x, y / _y);
 
@@ -162,7 +162,7 @@ class Vector {
         
     }
 
-    public inline function divide_scalar(_v:Float) {
+    public inline function divideScalar(_v:Float) {
 
         set(x / _v, y / _v);
 
@@ -178,7 +178,7 @@ class Vector {
         
     }
     
-    inline function get_lengthsq() {
+    inline function get_lengthSq() {
 
         return x * x + y * y;
 
@@ -192,7 +192,7 @@ class Vector {
 
     inline function set_length(_v:Float) {
 
-        normalize().multiply_scalar(_v);
+        normalize().multiplyScalar(_v);
         return _v;
 
     }

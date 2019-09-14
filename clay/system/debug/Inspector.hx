@@ -27,16 +27,16 @@ class Inspector {
 
 	public var overlay:Quad;
 	// public var window:Sprite;
-	public var fps_text:Text;
+	public var fpsText:Text;
 	public var debug:Debug;
 	public var viewrect:Rectangle;
 
 	public var tabs:Array<InspectorTab>;
 
-    var dt_average : Float = 0;
-    var dt_average_accum : Float = 0;
-    var dt_average_span : Int = 60;
-    var dt_average_count : Int = 0;
+    var dtAverage : Float = 0;
+    var dtAverageAccum : Float = 0;
+    var dtAverageSpan : Int = 60;
+    var dtAverageCount : Int = 0;
 
 	public var size:Vector;
 	public var pos:Vector;
@@ -62,22 +62,22 @@ class Inspector {
 		overlay.depth = 999;
 		overlay.layer = debug.layer;
 
-		fps_text = new Text(Clay.resources.font("assets/Muli-Regular.ttf"));
-		fps_text.align = TextAlign.left;
-		fps_text.size = 15;
-		fps_text.visible = false;
-		fps_text.color = new Color().from_int(0xffa563);
-		fps_text.transform.pos.set(debug.padding.x, debug.padding.y-16);
-		fps_text.layer = debug.layer;
-		fps_text.depth = 999.2;
+		fpsText = new Text(Clay.resources.font("assets/Muli-Regular.ttf"));
+		fpsText.align = TextAlign.left;
+		fpsText.size = 15;
+		fpsText.visible = false;
+		fpsText.color = new Color().fromInt(0xffa563);
+		fpsText.transform.pos.set(debug.padding.x, debug.padding.y-16);
+		fpsText.layer = debug.layer;
+		fpsText.depth = 999.2;
 
 		Clay.on(RenderEvent.RENDER, onrender);
-		Clay.on(KeyEvent.KEY_DOWN, onkeydown);
+		Clay.on(KeyEvent.KEY_DOWN, onKeyDown);
 		Clay.on(TouchEvent.TOUCH_DOWN, ontouchdown);
 
 	}
 
-	public function add_tab(name:String) {
+	public function addTab(name:String) {
 		
 		var tab = new InspectorTab(this, name);
 		tab.index = tabs.length;
@@ -85,7 +85,7 @@ class Inspector {
 
 		var ttwidth:Float = 0;
 		for (t in tabs) {
-			ttwidth += t.text_width;
+			ttwidth += t.textWidth;
 		}
 
 		var rw:Float = Clay.screen.width - ttwidth - debug.margin*2;
@@ -94,13 +94,13 @@ class Inspector {
 		var ps:Float = debug.margin;
 		for (t in tabs) {
 			// ps += td;
-			t.set_pos(ps);
-			ps += t.text_width + td;
+			t.setPos(ps);
+			ps += t.textWidth + td;
 		}
 
 	}
 
-	public function enable_tab(index:Int) {
+	public function enableTab(index:Int) {
 
 		for (t in tabs) {
 			t.disable();
@@ -114,45 +114,45 @@ class Inspector {
 
 		overlay.drop();
 		// window.destroy();
-		fps_text.drop();
+		fpsText.drop();
 
 		overlay = null;
 		// window = null;
-		fps_text = null;
+		fpsText = null;
 
 	}
 
 	function onrender(e) {
 	    
-        dt_average_accum += Clay.app.frame_delta;
-        dt_average_count++;
+        dtAverageAccum += Clay.app.frameDelta;
+        dtAverageCount++;
 
-        if(dt_average_count == dt_average_span - 1) {
-            dt_average = dt_average_accum/dt_average_span;
-            dt_average_accum = dt_average;
-            dt_average_count = 0;
+        if(dtAverageCount == dtAverageSpan - 1) {
+            dtAverage = dtAverageAccum/dtAverageSpan;
+            dtAverageAccum = dtAverage;
+            dtAverageCount = 0;
         }
 
         if(!visible) {
             return;
         }
 
-            //update the fps_text
-        fps_text.text = Math.round(1/dt_average) + " / " + Mathf.fixed(dt_average,5) + " / " + Mathf.fixed(Clay.app.frame_delta,5);
+            //update the fpsText
+        fpsText.text = Math.round(1/dtAverage) + " / " + Mathf.fixed(dtAverage,5) + " / " + Mathf.fixed(Clay.app.frameDelta,5);
 
 	}
 
-	function onkeydown(e:KeyEvent) {
+	function onKeyDown(e:KeyEvent) {
 
-		if(e.key == Key.backquote || e.key == Key.f1) {
+		if(e.key == Key.BackQuote || e.key == Key.F1) {
 			visible = !visible;
 		}
 
 		if(visible) {
-			if(e.key == Key.one) {
-				debug.switch_view(Clay.debug.current_view.index - 1);
-			} else if(e.key == Key.two) {
-				debug.switch_view(Clay.debug.current_view.index + 1);
+			if(e.key == Key.One) {
+				debug.switchView(Clay.debug.currentView.index - 1);
+			} else if(e.key == Key.Two) {
+				debug.switchView(Clay.debug.currentView.index + 1);
 			}
 		}
 
@@ -166,7 +166,7 @@ class Inspector {
 
 		if(visible) {
 			if(Clay.input.touch.count < 2) {
-				debug.switch_view(Clay.debug.current_view.index + 1);
+				debug.switchView(Clay.debug.currentView.index + 1);
 			}
 		}
 
@@ -178,15 +178,15 @@ class Inspector {
 
 		overlay.visible = visible;
 		// window.visible = visible;
-		fps_text.visible = visible;
+		fpsText.visible = visible;
 
 		if(visible) {
-			debug.current_view.active = true;
+			debug.currentView.active = true;
 			for (t in tabs) {
 				t.show();
 			}
 		} else {
-			debug.current_view.active = false;
+			debug.currentView.active = false;
 			for (t in tabs) {
 				t.hide();
 			}
@@ -206,7 +206,7 @@ private class InspectorTab {
 	public var title:Text;
 	public var inspector:Inspector;
 	public var index:Int = 0;
-	public var text_width:Float = 0;
+	public var textWidth:Float = 0;
 
 
 	public function new(inspector:Inspector, name:String, size:Int = 15) {
@@ -219,17 +219,17 @@ private class InspectorTab {
 		title.size = size;
 		title.align = TextAlign.left;
 		title.visible = false;
-		title.color = new Color().from_int(0xffa563);
+		title.color = new Color().fromInt(0xffa563);
 		title.transform.pos.set(Clay.debug.padding.x+14, Clay.debug.padding.y+6);
 		title.layer = Clay.debug.layer;
 		title.depth = 999.2;
 
 		var	_kravur = title.font.font._get(size);
-		text_width = _kravur.stringWidth(name);
+		textWidth = _kravur.stringWidth(name);
 
 	}
 
-	public function set_pos(pos:Float) {
+	public function setPos(pos:Float) {
 
 		// if(inspector.tabs.length > 0) {
 			// var w = Clay.screen.width / inspector.tabs.length;

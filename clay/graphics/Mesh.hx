@@ -32,20 +32,20 @@ class Mesh extends DisplayObject {
 	public var vertices:Array<Vertex>;
 	public var indices:Array<Int>;
 
-	public var blend_disabled:Bool = false;
+	public var blendDisabled:Bool = false;
 
-	public var blend_src:BlendMode;
-	public var blend_dst:BlendMode;
-	public var blend_op:BlendEquation;
+	public var blendSrc:BlendMode;
+	public var blendDst:BlendMode;
+	public var blendOp:BlendEquation;
 
-	public var alpha_blend_dst:BlendMode;
-	public var alpha_blend_src:BlendMode;
-	public var alpha_blend_op:BlendEquation;
+	public var alphaBlendDst:BlendMode;
+	public var alphaBlendSrc:BlendMode;
+	public var alphaBlendOp:BlendEquation;
 
 	var _texture:Texture;
 	var _vertexbuffer:VertexBuffer;
 	var _indexbuffer:IndexBuffer;
-	var _region_scaled:Rectangle;
+	var _regionScaled:Rectangle;
 
 
 	public function new(?vertices:Array<Vertex>, ?indices:Array<Int>, ?texture:Texture) {
@@ -57,11 +57,11 @@ class Mesh extends DisplayObject {
     	this.vertices = vertices != null ? vertices : [];
 		this.indices = indices != null ? indices : [];
 		this.texture = texture;
-		_region_scaled = new Rectangle();
+		_regionScaled = new Rectangle();
 
 		color = new Color();
 
-		set_blendmode(BlendMode.BlendOne, BlendMode.InverseSourceAlpha, BlendEquation.Add);
+		setBlendMode(BlendMode.BlendOne, BlendMode.InverseSourceAlpha, BlendEquation.Add);
 
 	}
 
@@ -79,81 +79,81 @@ class Mesh extends DisplayObject {
 
 	override function render(p:Painter) {
 
-		if(locked || p.can_batch(vertices.length, indices.length)) {
+		if(locked || p.canBatch(vertices.length, indices.length)) {
 			p.ensure(vertices.length, indices.length);
 			
-			p.set_shader(shader != null ? shader : shader_default);
-			p.clip(clip_rect);
-			p.set_texture(texture);
+			p.setShader(shader != null ? shader : shaderDefault);
+			p.clip(clipRect);
+			p.setTexture(texture);
 
-			if(blend_disabled) {
-				var sh = shader != null ? shader : shader_default;
-				p.set_blendmode(
-					sh._blend_src_default, sh._blend_dst_default, sh._blend_op_default, 
-					sh._alpha_blend_src_default, sh._alpha_blend_dst_default, sh._alpha_blend_op_default
+			if(blendDisabled) {
+				var sh = shader != null ? shader : shaderDefault;
+				p.setBlendMode(
+					sh._blendSrcDefault, sh._blendDstDefault, sh._blendOpDefault, 
+					sh._alphaBlendSrcDefault, sh._alphaBlendDstDefault, sh._alphaBlendOpDefault
 				);
 			} else {
-				p.set_blendmode(blend_src, blend_dst, blend_op, alpha_blend_src, alpha_blend_dst, alpha_blend_op);
+				p.setBlendMode(blendSrc, blendDst, blendOp, alphaBlendSrc, alphaBlendDst, alphaBlendOp);
 			}
 
 			if(locked) {
-				#if !no_debug_console
+				#if !noDebugConsole
 				p.stats.locked++;
 				#end
-				p.draw_from_buffers(_vertexbuffer, _indexbuffer);
+				p.drawFromBuffers(_vertexbuffer, _indexbuffer);
 			} else {
-				update_region_scaled();
+				updateRegionScaled();
 
 				for (index in indices) {
-					p.add_index(index);
+					p.addIndex(index);
 				}
 
 				var m = transform.world.matrix;
 				for (v in vertices) {
-					p.add_vertex(
+					p.addVertex(
 						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
 						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
-						v.tcoord.x * _region_scaled.w + _region_scaled.x,
-						v.tcoord.y * _region_scaled.h + _region_scaled.y,
+						v.tcoord.x * _regionScaled.w + _regionScaled.x,
+						v.tcoord.y * _regionScaled.h + _regionScaled.y,
 						v.color
 					);
 				}
 			}
 
 		} else {
-			log('WARNING: can`t batch a geometry, vertices: ${vertices.length} vs max ${p.vertices_max}, indices: ${indices.length} vs max ${p.indices_max}');
+			log('WARNING: can`t batch a geometry, vertices: ${vertices.length} vs max ${p.verticesMax}, indices: ${indices.length} vs max ${p.indicesMax}');
 		}
 
 	}
 
-	public function update_locked() {
+	public function updateLocked() {
 
 		if(locked) {
 			if(_vertexbuffer.count() != vertices.length * 8) {
-				clear_buffers();
-				setup_locked_buffers();
+				clearBuffers();
+				setupLockedBuffers();
 			}
 
-			update_locked_buffer();
+			updateLockedBuffer();
 		}
 		
 	}
 
-	public function set_blendmode(blend_src:BlendMode, blend_dst:BlendMode, ?blend_op:BlendEquation, ?alpha_blend_src:BlendMode, ?alpha_blend_dst:BlendMode, ?alpha_blend_op:BlendEquation) {
+	public function setBlendMode(blendSrc:BlendMode, blendDst:BlendMode, ?blendOp:BlendEquation, ?alphaBlendSrc:BlendMode, ?alphaBlendDst:BlendMode, ?alphaBlendOp:BlendEquation) {
 		
-		this.blend_src = blend_src;
-		this.blend_dst = blend_dst;
-		this.blend_op = blend_op != null ? blend_op : BlendEquation.Add;	
+		this.blendSrc = blendSrc;
+		this.blendDst = blendDst;
+		this.blendOp = blendOp != null ? blendOp : BlendEquation.Add;	
 
-		this.alpha_blend_src = alpha_blend_src != null ? alpha_blend_src : blend_src;
-		this.alpha_blend_dst = alpha_blend_dst != null ? alpha_blend_dst : blend_dst;
-		this.alpha_blend_op = alpha_blend_op != null ? alpha_blend_op : blend_op;	
+		this.alphaBlendSrc = alphaBlendSrc != null ? alphaBlendSrc : blendSrc;
+		this.alphaBlendDst = alphaBlendDst != null ? alphaBlendDst : blendDst;
+		this.alphaBlendOp = alphaBlendOp != null ? alphaBlendOp : blendOp;	
 
 	}
 
-	function setup_locked_buffers() {
+	function setupLockedBuffers() {
 
-		var sh = shader != null ? shader : shader_default;
+		var sh = shader != null ? shader : shaderDefault;
 
 		_vertexbuffer = new VertexBuffer(
 			vertices.length,
@@ -168,9 +168,9 @@ class Mesh extends DisplayObject {
 
 	}
 
-	function update_locked_buffer() {
+	function updateLockedBuffer() {
 
-		update_region_scaled();
+		updateRegionScaled();
 
 		transform.update();
 
@@ -186,8 +186,8 @@ class Mesh extends DisplayObject {
 			data.set(n++, v.color.b);
 			data.set(n++, v.color.a);
 
-			data.set(n++, v.tcoord.x * _region_scaled.w + _region_scaled.x);
-			data.set(n++, v.tcoord.y * _region_scaled.h + _region_scaled.y);
+			data.set(n++, v.tcoord.x * _regionScaled.w + _regionScaled.x);
+			data.set(n++, v.tcoord.y * _regionScaled.h + _regionScaled.y);
 		}
 		_vertexbuffer.unlock();
 
@@ -200,7 +200,7 @@ class Mesh extends DisplayObject {
 
 	}
 
-	function clear_buffers() {
+	function clearBuffers() {
 
 		if(_vertexbuffer != null) {
 			_vertexbuffer.delete();
@@ -214,16 +214,16 @@ class Mesh extends DisplayObject {
 
 	}
 
-	inline function update_region_scaled() {
+	inline function updateRegionScaled() {
 		
 		if(region == null || _texture == null) {
-			_region_scaled.set(0, 0, 1, 1);
+			_regionScaled.set(0, 0, 1, 1);
 		} else {
-			_region_scaled.set(
-				_region_scaled.x = region.x / _texture.width_actual,
-				_region_scaled.y = region.y / _texture.height_actual,
-				_region_scaled.w = region.w / _texture.width_actual,
-				_region_scaled.h = region.h / _texture.height_actual
+			_regionScaled.set(
+				_regionScaled.x = region.x / _texture.widthActual,
+				_regionScaled.y = region.y / _texture.heightActual,
+				_regionScaled.w = region.w / _texture.widthActual,
+				_regionScaled.h = region.h / _texture.heightActual
 			);
 		}
 
@@ -237,15 +237,15 @@ class Mesh extends DisplayObject {
 
 	function set_texture(v:Texture):Texture {
 
-		var tid:Int = Clay.renderer.sort_options.texture_max; // for colored sorting
+		var tid:Int = Clay.renderer.sortOptions.textureMax; // for colored sorting
 
 		if(v != null) {
 			tid = v.tid;
 		}
 
-		sort_key.texture = tid;
+		sortKey.texture = tid;
 
-		dirty_sort();
+		dirtySort();
 
 		return _texture = v;
 
@@ -266,10 +266,10 @@ class Mesh extends DisplayObject {
 	function set_locked(v:Bool):Bool {
 
 		if(v) {
-			setup_locked_buffers();
-			update_locked_buffer();
+			setupLockedBuffers();
+			updateLockedBuffer();
 		} else {
-			clear_buffers();
+			clearBuffers();
 		}
 
 		return locked = v;

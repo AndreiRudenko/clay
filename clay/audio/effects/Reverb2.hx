@@ -57,7 +57,7 @@ class Reverb2 extends AudioEffect {
 	// amount of dry signal fed into main line
 	public var wet      	(get, set): Float;
 	public var dampening	(get, set): Float;
-	public var room_size	(get, set): Float;
+	public var roomSize	(get, set): Float;
 	public var width    	(default, set): Float;
 	public var frozen   	(default, set): Bool;
 	public var dry          (default, set): Float;
@@ -65,99 +65,99 @@ class Reverb2 extends AudioEffect {
 
 	var _wet: Float;
 	var _dampening: Float;
-	var _room_size: Float;
-	var input_gain: Float;
+	var _roomSize: Float;
+	var inputGain: Float;
 	var wet0: Float;
 	var wet1: Float;
 
-	var combs_l: Array<Comb>;
-	var combs_r: Array<Comb>;
-	var allpasses_l: Array<AllPass>;
-	var allpasses_r: Array<AllPass>;
+	var combsL: Array<Comb>;
+	var combsR: Array<Comb>;
+	var allpassesL: Array<AllPass>;
+	var allpassesR: Array<AllPass>;
 
-	var combs_num: Int = 8;
-	var allpass_num: Int = 4;
+	var combsNum: Int = 8;
+	var allpassNum: Int = 4;
 
 
 	public function new(_options: Reverb2Options) {
 
-		combs_l = [];
-		combs_r = [];
-		allpasses_l = [];
-		allpasses_r = [];
+		combsL = [];
+		combsR = [];
+		allpassesL = [];
+		allpassesR = [];
 
-		for (i in 0...combs_num) {
-			combs_l.push(new Comb(COMB_TUNING_L[i]));
-			combs_r.push(new Comb(COMB_TUNING_R[i]));
+		for (i in 0...combsNum) {
+			combsL.push(new Comb(COMB_TUNING_L[i]));
+			combsR.push(new Comb(COMB_TUNING_R[i]));
 		}
 
-		for (i in 0...allpass_num) {
-			allpasses_l.push(new AllPass(ALLPASS_TUNING_L[i]));
-			allpasses_r.push(new AllPass(ALLPASS_TUNING_R[i]));
+		for (i in 0...allpassNum) {
+			allpassesL.push(new AllPass(ALLPASS_TUNING_L[i]));
+			allpassesR.push(new AllPass(ALLPASS_TUNING_R[i]));
 		}
 
-		input_gain = 0;
+		inputGain = 0;
 		wet = def(_options.wet, 1);
 		dry = def(_options.dry, 0);
 		width = def(_options.width, 0.5);
 		dampening = def(_options.dampening, 0.5);
-		room_size = def(_options.room_size, 0.5);
+		roomSize = def(_options.roomSize, 0.5);
 		frozen = def(_options.frozen, false);
 
 	}
 
-	override function process(samples: Int, buffer: Float32Array, sample_rate: Int) {
+	override function process(samples: Int, buffer: Float32Array, sampleRate: Int) {
 
-		var in_l: Float;
-		var in_r: Float;
-		var out_l: Float;
-		var out_r: Float;
-		var input_mixed: Float;
+		var inL: Float;
+		var inR: Float;
+		var outL: Float;
+		var outR: Float;
+		var inputMixed: Float;
 
 		for (i in 0...Std.int(samples/2)) {
-			in_l = buffer[i*2];
-			in_r = buffer[i*2+1];
-			input_mixed = (in_l + in_r) * FIXED_GAIN * input_gain;
-			out_l = 0;
-			out_r = 0;
+			inL = buffer[i*2];
+			inR = buffer[i*2+1];
+			inputMixed = (inL + inR) * FIXED_GAIN * inputGain;
+			outL = 0;
+			outR = 0;
 
-			for (i in 0...combs_num) {
-				out_l += combs_l[i].tick(input_mixed);
-				out_r += combs_r[i].tick(input_mixed);
+			for (i in 0...combsNum) {
+				outL += combsL[i].tick(inputMixed);
+				outR += combsR[i].tick(inputMixed);
 			}
 
-			for (i in 0...allpass_num) {
-				out_l += allpasses_l[i].tick(out_l);
-				out_r += allpasses_r[i].tick(out_r);
+			for (i in 0...allpassNum) {
+				outL += allpassesL[i].tick(outL);
+				outR += allpassesR[i].tick(outR);
 			}
 
-			// trace(out_l);
-			buffer[i*2] = out_l * wet0 + out_r * wet1 + in_l * dry;
-			buffer[i*2+1] = out_r * wet0 + out_l * wet1 + in_r * dry;
+			// trace(outL);
+			buffer[i*2] = outL * wet0 + outR * wet1 + inL * dry;
+			buffer[i*2+1] = outR * wet0 + outL * wet1 + inR * dry;
 
-            // out.0 * self.wet_gains.0 + out.1 * self.wet_gains.1 + input.0 * self.dry,
-            // out.1 * self.wet_gains.0 + out.0 * self.wet_gains.1 + input.1 * self.dry,
+			// out.0 * self.wetGains.0 + out.1 * self.wetGains.1 + input.0 * self.dry,
+			// out.1 * self.wetGains.0 + out.0 * self.wetGains.1 + input.1 * self.dry,
 		}
 
 	}
 
-	function update_wet_gains() {
+	function updateWetGains() {
 		
 		wet0 = _wet * SCALE_WET * (width / 2.0 + 0.5);
 		wet1 = _wet * SCALE_WET * ((1.0 - width) / 2.0);
 
 	}
 	
-	function update_combs() {
+	function updateCombs() {
 
-		var feed = frozen ? 1 : _room_size;
+		var feed = frozen ? 1 : _roomSize;
 		var damp = frozen ? 0 : _dampening;
 
-		for (i in 0...combs_num) {
-			combs_l[i].feedback = feed;
-			combs_r[i].feedback = feed;
-			combs_l[i].dampening = damp;
-			combs_r[i].dampening = damp;
+		for (i in 0...combsNum) {
+			combsL[i].feedback = feed;
+			combsR[i].feedback = feed;
+			combsL[i].dampening = damp;
+			combsR[i].dampening = damp;
 		}
 
 	}
@@ -172,7 +172,7 @@ class Reverb2 extends AudioEffect {
 
 		_wet = Mathf.clamp(v, 0, 1) * SCALE_WET;
 		
-		update_wet_gains();
+		updateWetGains();
 
 		return _wet;
 
@@ -190,7 +190,7 @@ class Reverb2 extends AudioEffect {
 
 		width = Mathf.clamp(v, 0, 1);
 
-		update_wet_gains();
+		updateWetGains();
 
 		return width;
 
@@ -206,25 +206,25 @@ class Reverb2 extends AudioEffect {
 
 		_dampening = v * SCALE_DAMPENING;
 
-		update_combs();
+		updateCombs();
 
 		return _dampening;
 
 	}
 
-	function get_room_size(): Float {
+	function get_roomSize(): Float {
 
-		return (_room_size - OFFSET_ROOM) / SCALE_ROOM;
+		return (_roomSize - OFFSET_ROOM) / SCALE_ROOM;
 
 	}
 
-	function set_room_size(v: Float): Float {
+	function set_roomSize(v: Float): Float {
 
-        _room_size = (v * SCALE_ROOM) + OFFSET_ROOM;
+		_roomSize = (v * SCALE_ROOM) + OFFSET_ROOM;
 
-		update_combs();
+		updateCombs();
 
-		return _room_size;
+		return _roomSize;
 
 	}
 
@@ -232,9 +232,9 @@ class Reverb2 extends AudioEffect {
 
 		frozen = v;
 
-        input_gain = frozen ? 0.0 : 1.0 ;
+		inputGain = frozen ? 0.0 : 1.0 ;
 
-		update_combs();
+		updateCombs();
 
 		return v;
 
@@ -249,9 +249,9 @@ typedef Reverb2Options = {
 	@:optional var wet: Float;
 	@:optional var width: Float;
 	@:optional var dry: Float;
-	// @:optional var input_gain: Float;
+	// @:optional var inputGain: Float;
 	@:optional var dampening: Float;
-	@:optional var room_size: Float;
+	@:optional var roomSize: Float;
 	@:optional var frozen: Bool;
 
 }
@@ -274,7 +274,7 @@ private class DelayLine {
 		
 	}
 
-	public function write_and_advance(value: Float) {
+	public function writeAndAdvance(value: Float) {
 
 		buffer.set(index, value);
 
@@ -293,27 +293,27 @@ private class Comb {
 	public var feedback 	(default, set): Float;
 	public var dampening	(default, set): Float;
 
-	var delay_line: DelayLine;
-	var filter_state: Float;
-	var dampening_inverse: Float;
+	var delayLine: DelayLine;
+	var filterState: Float;
+	var dampeningInverse: Float;
 
-	public function new(delay_length: Int) {
+	public function new(delayLength: Int) {
 
-		delay_line = new DelayLine(delay_length);
+		delayLine = new DelayLine(delayLength);
 		feedback = 0.5;
-		filter_state = 0.0;
+		filterState = 0.0;
 		dampening = 0.5;
-		dampening_inverse = 0.5;
+		dampeningInverse = 0.5;
 		
 	}
 
 	public function tick(input: Float): Float {
 
-		var output = delay_line.read();
+		var output = delayLine.read();
 
-		filter_state = output * dampening_inverse + filter_state * dampening;
+		filterState = output * dampeningInverse + filterState * dampening;
 
-		delay_line.write_and_advance(input + filter_state * feedback);
+		delayLine.writeAndAdvance(input + filterState * feedback);
 
 		return output;
 	}
@@ -329,7 +329,7 @@ private class Comb {
 	function set_dampening(v: Float): Float {
 
 		dampening = Mathf.clamp(v, 0, 1);
-		dampening_inverse = 1.0 - dampening;
+		dampeningInverse = 1.0 - dampening;
 
 		return dampening;
 
@@ -349,24 +349,24 @@ private class Comb {
 private class AllPass {
 
 
-	var delay_line: DelayLine;
+	var delayLine: DelayLine;
 
 
-	public function new(delay_length: Int) {
+	public function new(delayLength: Int) {
 
-		delay_line = new DelayLine(delay_length);
+		delayLine = new DelayLine(delayLength);
 		
 	}
 
 	public function tick(input: Float): Float {
 
-		var delayed = delay_line.read();
+		var delayed = delayLine.read();
 		var output = -input + delayed;
 
 		// in the original version of freeverb this is a member which is never modified
 		var feedback = 0.5;
 
-		delay_line.write_and_advance(input + delayed * feedback);
+		delayLine.writeAndAdvance(input + delayed * feedback);
 
 
 		return output;

@@ -12,8 +12,8 @@ import clay.graphics.Mesh;
 class PolyLine extends Mesh {
 
 
-	public var weight (get, set):Float;
-	public var points (get, set):Array<Vector>;
+	public var weight(get, set):Float;
+	public var points(get, set):Array<Vector>;
 
 	var _weight:Float;
 	var _points:Array<Vector>;
@@ -40,26 +40,26 @@ class PolyLine extends Mesh {
 			vertices.push(new Vertex());
 		}
 
-		var total_verts = len * 2;
+		var totalVerts = len * 2;
 		var indices = [];
 		for (i in 0...len-1) {
 			indices.push(i*2);
 			indices.push(i*2+1);
-			indices.push((i*2+2) % total_verts);
+			indices.push((i*2+2) % totalVerts);
 
-			indices.push((i*2+2) % total_verts);
-			indices.push((i*2+3) % total_verts);
+			indices.push((i*2+2) % totalVerts);
+			indices.push((i*2+3) % totalVerts);
 			indices.push(i*2+1);
 		}
 
 		super(vertices, indices, null);
 
-		update_points();
-		update_tcoords();
+		updatePoints();
+		updateTcoords();
 
 	}
 
-	public function update_points() {
+	public function updatePoints() {
 
 		var len = _points.length;
 
@@ -73,15 +73,15 @@ class PolyLine extends Mesh {
 	        var p2 = _points[i+1 >= len ? len-1 : i+1];
 
 			if (p0 == p1) {
-				_line.copy_from(p2).subtract(p1).normalize();
-				_tangent.copy_from(_line);
+				_line.copyFrom(p2).subtract(p1).normalize();
+				_tangent.copyFrom(_line);
 			} else if (p1 == p2) {
-				_line.copy_from(p1).subtract(p0).normalize();
-				_tangent.copy_from(_line);
+				_line.copyFrom(p1).subtract(p0).normalize();
+				_tangent.copyFrom(_line);
 			} else {
-				_line.copy_from(p1).subtract(p0).normalize();
-				_line1.copy_from(p2).subtract(p1).normalize();
-				_tangent.copy_from(_line1.add(_line)).normalize();
+				_line.copyFrom(p1).subtract(p0).normalize();
+				_line1.copyFrom(p2).subtract(p1).normalize();
+				_tangent.copyFrom(_line1.add(_line)).normalize();
 			}
 
 			var tmp = _line.x;
@@ -104,7 +104,7 @@ class PolyLine extends Mesh {
 		
 	}
 
-	function update_tcoords() {
+	function updateTcoords() {
 
 		var len = _points.length-1;
 		for (i in 0..._points.length) {
@@ -124,8 +124,8 @@ class PolyLine extends Mesh {
 
 		_points = v;
 
-		update_points();
-		update_tcoords();
+		updatePoints();
+		updateTcoords();
 
 		return v;
 
@@ -141,7 +141,7 @@ class PolyLine extends Mesh {
 
 		_weight = v;
 
-		update_points();
+		updatePoints();
 
 		return v;
 

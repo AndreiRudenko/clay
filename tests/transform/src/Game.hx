@@ -13,7 +13,7 @@ class Game {
 
 	public function new() {
 
-		Clay.on(MouseEvent.MOUSE_MOVE, mousemove);
+		Clay.on(MouseEvent.MOUSE_MOVE, mouseMove);
 
 		sprite = new Sprite();
 		sprite.size.set(128,128);
@@ -43,19 +43,19 @@ class Game {
 		Clay.layer.add(s3);
 
 		var l1 = new Line();
-		l1.p0.copy_from(Clay.screen.mid);
+		l1.p0.copyFrom(Clay.screen.mid);
 		l1.strength = 8;
 		Clay.layer.add(l1);
 
 		s2.transform.listen(function(t) {
-			l1.p1.copy_from(sprite.transform.pos);
+			l1.p1.copyFrom(sprite.transform.pos);
 			t.world.decompose();
-			l1.p0.copy_from(t.world.pos);
+			l1.p0.copyFrom(t.world.pos);
 		});
 
 	}
 
-	function mousemove(e:MouseEvent) {
+	function mouseMove(e:MouseEvent) {
 
 		sprite.transform.pos.set(e.x, e.y);
 		

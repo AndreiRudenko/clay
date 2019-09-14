@@ -12,13 +12,13 @@ import clay.graphics.Mesh;
 class Quad extends Mesh {
 
 
-	public var size  (default, null):VectorCallback;
+	public var size(default, null):VectorCallback;
 
 
 	public function new(w:Float = 32, h:Float = 32) {
 
 		size = new VectorCallback(w, h);
-		size.listen(size_changed);
+		size.listen(sizeChanged);
 
 		var vertices = [
 			new Vertex(new Vector(0, 0), new Vector(0, 0)),
@@ -33,7 +33,7 @@ class Quad extends Mesh {
 
 	}
 
-	function size_changed(v:Float) {
+	function sizeChanged(v:Float) {
 		
 		var w:Float = size.x;
 		var h:Float = size.y;

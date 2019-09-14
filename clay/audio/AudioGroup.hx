@@ -18,47 +18,47 @@ class AudioGroup extends AudioChannel {
 
 	public var channels:Vector<AudioChannel>;
 
-	public var channels_count (default, null):Int;
+	public var channelsCount(default, null):Int;
 
-	var _max_channels:Int;
-	var _cache: Float32Array;
+	var _maxChannels:Int;
+	var _cache:Float32Array;
 
-	var _internal_channels:Vector<AudioChannel>;
-	var _to_remove:Array<AudioChannel>;
+	var _internalChannels:Vector<AudioChannel>;
+	var _toRemove:Array<AudioChannel>;
 
-	public function new(max_channels:Int = 32) {
+	public function new(maxChannels:Int = 32) {
 
 		super();
 
-		_max_channels = max_channels;
-		channels_count = 0;
+		_maxChannels = maxChannels;
+		channelsCount = 0;
 		_cache = new Float32Array(512);
 		// output = Clay.audio;
 
-		channels = new Vector(_max_channels);
-		_internal_channels = new Vector(_max_channels);
-		_to_remove = [];
+		channels = new Vector(_maxChannels);
+		_internalChannels = new Vector(_maxChannels);
+		_toRemove = [];
 
 	}
 
 	public inline function add(channel:AudioChannel) {
 
-		if(channels_count >= _max_channels) {
-			trace('cant add channel, max channels: ${_max_channels}');
+		if(channelsCount >= _maxChannels) {
+			trace('cant add channel, max channels: ${_maxChannels}');
 			return;
 		}
 		
-		clay.system.Audio.mutex_lock();
+		clay.system.Audio.mutexLock();
 
-		channels[channels_count++] = channel;
+		channels[channelsCount++] = channel;
 
-		clay.system.Audio.mutex_unlock();
+		clay.system.Audio.mutexUnlock();
 
 	}
 
 	public inline function remove(channel:AudioChannel) {
 
-		_to_remove.push(channel);
+		_toRemove.push(channel);
 
 	}
 
@@ -77,36 +77,36 @@ class AudioGroup extends AudioChannel {
 			return;
 		}
 
-		clay.system.Audio.mutex_lock();
-		for (i in 0...channels_count) {
-			_internal_channels[i] = channels[i];
+		clay.system.Audio.mutexLock();
+		for (i in 0...channelsCount) {
+			_internalChannels[i] = channels[i];
 		}
-		clay.system.Audio.mutex_unlock();
+		clay.system.Audio.mutexUnlock();
 
 
-		for (i in 0...channels_count) {
-			if(!_internal_channels[i].mute) {
-				_internal_channels[i].process(_cache, samples);
+		for (i in 0...channelsCount) {
+			if(!_internalChannels[i].mute) {
+				_internalChannels[i].process(_cache, samples);
 			}
 		}
 
-		if(_to_remove.length > 0) {
+		if(_toRemove.length > 0) {
 
-			clay.system.Audio.mutex_lock();
-			for (c in _to_remove) {
-				for (i in 0...channels_count) {
-					if(channels[i] == c) { // todo: remove rest from _internal_channels and channels
-						channels[i] = channels[--channels_count];
+			clay.system.Audio.mutexLock();
+			for (c in _toRemove) {
+				for (i in 0...channelsCount) {
+					if(channels[i] == c) { // todo: remove rest from _internalChannels and channels
+						channels[i] = channels[--channelsCount];
 						break;
 					}
 				}
 			}
-			clay.system.Audio.mutex_unlock();
+			clay.system.Audio.mutexUnlock();
 
-			ArrayTools.clear(_to_remove);
+			ArrayTools.clear(_toRemove);
 		}
 
-		process_effects(_cache, samples);
+		processEffects(_cache, samples);
 
 		for (i in 0...Std.int(samples/2)) {
 			data[i*2] += _cache[i*2] * volume * l;

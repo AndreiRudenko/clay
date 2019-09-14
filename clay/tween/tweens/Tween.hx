@@ -20,24 +20,24 @@ class Tween<T> {
 	public var timescale(default, set):Float;
 
 	var _manager:TweenManager;
-	var _next_tween:Tween<Dynamic>;
+	var _nextTween:Tween<Dynamic>;
 
-	var _onstart:()->Void;
-	var _onstop:()->Void;
+	var _onStart:()->Void;
+	var _onStop:()->Void;
 	var _onpause:()->Void;
 	var _onresume:()->Void;
-	var _onupdate:()->Void;
-	var _onrepeat:()->Void;
-	var _oncomplete:()->Void;
+	var _onUpdate:()->Void;
+	var _onRepeat:()->Void;
+	var _onComplete:()->Void;
 
 	var _added:Bool;
 	var _reflect:Bool;
 	var _backwards:Bool;
 	var _repeat:Int;
-	var _time_remains:Float;
+	var _timeRemains:Float;
 	var _duration:Float;
 
-	var _manual_update:Bool;
+	var _manualUpdate:Bool;
 	var _easing:EaseFunc;
 
 	var _action:TweenAction<T>;
@@ -46,12 +46,12 @@ class Tween<T> {
 	var _tail:TweenAction<T>;
 
 
-	public function new(manager:TweenManager, target:T, manual_update:Bool) {
+	public function new(manager:TweenManager, target:T, manualUpdate:Bool) {
 
 		this.target = target;
 
 		_manager = manager;
-		_manual_update = manual_update;
+		_manualUpdate = manualUpdate;
 
 		active = false;
 		complete = false;
@@ -62,7 +62,7 @@ class Tween<T> {
 		_reflect = false;
 		_backwards = false;
 		_repeat = 0;
-		_time_remains = 0;
+		_timeRemains = 0;
 		_duration = 0;
 		
 		_easing = clay.tween.easing.Linear.none;
@@ -71,8 +71,8 @@ class Tween<T> {
 	public function stop(complete:Bool = false) {
 
 		if(active) {
-			if(_onstop != null) {
-				_onstop();
+			if(_onStop != null) {
+				_onStop();
 			}
 
 			_action.stop();
@@ -99,7 +99,7 @@ class Tween<T> {
 
 		if(dt > 0) {
 			_action.step(dt);
-			check_next();
+			checkNext();
 		}
 
 	}
@@ -108,16 +108,16 @@ class Tween<T> {
 
 		if(!active) {
 
-			if(_onstart != null) {
-				_onstart();
+			if(_onStart != null) {
+				_onStart();
 			}
 
-			_time_remains = time;
+			_timeRemains = time;
 
 			if(_head == null) {
 				stop();
 				finish();
-				next_tween();
+				nextTween();
 			} else {
 				active = true;
 				complete = false;
@@ -128,7 +128,7 @@ class Tween<T> {
 				_action = _head;
 				_action.start(time);
 
-				check_next();
+				checkNext();
 			}
 
 		}
@@ -137,9 +137,9 @@ class Tween<T> {
 
 	function init() {
 		
-		if(!_added && !_manual_update) {
-			_manager.add_tween(this);
-			_manager.add_target_tween(this, target);
+		if(!_added && !_manualUpdate) {
+			_manager.addTween(this);
+			_manager.addTargetTween(this, target);
 			_added = true;
 		}
 		
@@ -147,34 +147,34 @@ class Tween<T> {
 
 	function drop() {
 
-		_manager.remove_target_tween(this, target);
+		_manager.removeTargetTween(this, target);
 		_added = false;
 
 	}
 
-	inline function check_next() {
+	inline function checkNext() {
 		
 		while(_action.complete && active) {
-			next_action();
+			nextAction();
 		}
 
 	}
 
-	function next_action() {
+	function nextAction() {
 
 		var next = _backwards ? _action._prev : _action._next;
 
 		if(next != null) {
 			_action = next;
-			_action.start(_time_remains);
+			_action.start(_timeRemains);
 		} else {
 			if(_repeat != 0) {
 				if(_repeat < 0 && _duration <= 0) {
 					throw('Infinity loop, tween duration is 0 with infinity repeat');
 				}
 
-				if(_onrepeat != null) {
-					_onrepeat();
+				if(_onRepeat != null) {
+					_onRepeat();
 				}
 
 				if(_reflect) {
@@ -186,11 +186,11 @@ class Tween<T> {
 				}
 
 				_action = _backwards ? _tail : _head; 
-				_action.start(_time_remains);
+				_action.start(_timeRemains);
 			} else {
 				stop();
 				finish();
-				next_tween();
+				nextTween();
 			}
 		}
 
@@ -200,21 +200,21 @@ class Tween<T> {
 
 		complete = true;
 		
-		if(_oncomplete != null) {
-			_oncomplete();
+		if(_onComplete != null) {
+			_onComplete();
 		}
 
 	}
 
-	inline function next_tween() {
+	inline function nextTween() {
 		
-		if(_next_tween != null) {
-			_next_tween.begin(_time_remains);
+		if(_nextTween != null) {
+			_nextTween.begin(_timeRemains);
 		}
 
 	}
 
-	function add_action(a:TweenAction<T>):TweenAction<T> {
+	function addAction(a:TweenAction<T>):TweenAction<T> {
 
 		_duration += a.duration;
 
@@ -260,25 +260,25 @@ class Tween<T> {
 	}
 
 	@:noCompletion
-	public static macro function get_fn(name:String, start:ExprOf<Array<Float>> = null, end:ExprOf<Array<Float>> = null) {
+	public static macro function getFn(name:String, start:ExprOf<Array<Float>> = null, end:ExprOf<Array<Float>> = null) {
 
-		var start_len = switch (start.expr) {
+		var startLen = switch (start.expr) {
 			case EArrayDecl(a): a.length;
 			case _: 0;
 		}
 
-		var end_len = switch (end.expr) {
+		var endLen = switch (end.expr) {
 			case EArrayDecl(a): a.length;
 			case _: 0;
 		}
 
-		if(start_len != end_len) {
+		if(startLen != endLen) {
 			throw('Start & end args count must be same');
 		}
 		
 	    var fv:Array<Expr> = [];
 	    
-		for (i in 0...start_len) {
+		for (i in 0...startLen) {
 			fv.push(macro v[$v{i}]);
 		}
 
@@ -299,7 +299,7 @@ class Tween<T> {
 	}
 	
 	@:noCompletion
-	public static function get_props(props:Expr, fields:Array<String>, values:Array<Expr>) {
+	public static function getProps(props:Expr, fields:Array<String>, values:Array<Expr>) {
 		
 		switch (props.expr) {
 			case EObjectDecl(obj):

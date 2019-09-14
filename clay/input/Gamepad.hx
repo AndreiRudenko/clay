@@ -14,9 +14,9 @@ class Gamepads extends Input {
 
 	// need to figure how gamepad is stored, and change map to array maybe
 	var gamepads:Map<Int, Gamepad>;
-	var gamepad_event:GamepadEvent;
+	var gamepadEvent:GamepadEvent;
 
-	var gamepad_bindings:Map<String, Map<Int, Int>>;
+	var gamepadBindings:Map<String, Map<Int, Int>>;
 	var binding:Bindings;
 
 
@@ -24,7 +24,7 @@ class Gamepads extends Input {
 		
 		super(app);
 
-		gamepad_bindings = new Map();
+		gamepadBindings = new Map();
 		binding = Clay.input.binding;
 
 	}
@@ -53,7 +53,7 @@ class Gamepads extends Input {
 
 		#end 
 
-		gamepad_event = new GamepadEvent();
+		gamepadEvent = new GamepadEvent();
 
 		super.enable();
 
@@ -69,13 +69,13 @@ class Gamepads extends Input {
 
 		kha.input.Gamepad.removeConnect(onconnect, ondisconnect);
 		for (g in gamepads) {
-			g.unlisten_events();
+			g.unlistenEvents();
 		}
 
 		#end 
 
 		gamepads = null;
-		gamepad_event = null;
+		gamepadEvent = null;
 
 		super.disable();
 
@@ -127,11 +127,11 @@ class Gamepads extends Input {
 
     public function bind(_name:String, _gamepad:Int, _button:Int) {
 
-    	var b = gamepad_bindings.get(_name);
+    	var b = gamepadBindings.get(_name);
 
     	if(b == null) {
     		b = new Map();
-    		gamepad_bindings.set(_name, b);
+    		gamepadBindings.set(_name, b);
     	}
 
     	b.set(_gamepad, _button);
@@ -140,26 +140,26 @@ class Gamepads extends Input {
 
     public function unbind(_name:String) {
 
-    	if(gamepad_bindings.exists(_name)) {
-    		gamepad_bindings.remove(_name);
-    		binding.remove_all(_name);
+    	if(gamepadBindings.exists(_name)) {
+    		gamepadBindings.remove(_name);
+    		binding.removeAll(_name);
     	}
 
     }
 
-    function check_binding(_gamepad:Int, _button:Int, _pressed:Bool) {
+    function checkBinding(_gamepad:Int, _button:Int, _pressed:Bool) {
 
-    	for (k in gamepad_bindings.keys()) { // todo: using this is broke hashlink build, ftw?
-    		var g = gamepad_bindings.get(k);
+    	for (k in gamepadBindings.keys()) { // todo: using this is broke hashlink build, ftw?
+    		var g = gamepadBindings.get(k);
     		if(g != null) {
     			if(g.exists(_gamepad)) {
     				var n = g.get(_gamepad);
 		    		if(Bits.check(n, _button)) {
-			    		binding.input_event.set_gamepad(k, gamepad_event);
+			    		binding.inputEvent.setGamepad(k, gamepadEvent);
 				    	if(_pressed) {
-				    		binding.inputpressed();
+				    		binding.inputPressed();
 				    	} else {
-							binding.inputreleased();
+							binding.inputReleased();
 				    	}
 				    	return;
 		    		}
@@ -187,12 +187,12 @@ class Gamepads extends Input {
 		assert(!gamepads.exists(_gamepad), 'trying to add gamepad that already exists');
 
 		var g = new Gamepad(_gamepad, this);
-		g.listen_events();
+		g.listenEvents();
 		gamepads.set(_gamepad, g);
 
-		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_ADDED);
+		gamepadEvent.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_ADDED);
 
-		_app.emitter.emit(GamepadEvent.DEVICE_ADDED, gamepad_event);
+		_app.emitter.emit(GamepadEvent.DEVICE_ADDED, gamepadEvent);
 
 	}
 
@@ -202,12 +202,12 @@ class Gamepads extends Input {
 		assert(gamepads.exists(_gamepad), 'trying to remove gamepad that not exists');
 
 		var g = gamepads.get(_gamepad);
-		g.unlisten_events();
+		g.unlistenEvents();
 		gamepads.remove(_gamepad);
 
-		gamepad_event.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_REMOVED);
+		gamepadEvent.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_REMOVED);
 		
-		_app.emitter.emit(GamepadEvent.DEVICE_REMOVED, gamepad_event);
+		_app.emitter.emit(GamepadEvent.DEVICE_REMOVED, gamepadEvent);
 
 	}
 
@@ -222,14 +222,14 @@ class Gamepad {
 	public var gamepad(default, null):Int;
 	public var deadzone:Float = 0.15;
 
-	var buttons_pressed:UInt = 0;
-	var buttons_released:UInt = 0;
-	var buttons_down:UInt = 0;
+	var buttonsPressed:UInt = 0;
+	var buttonsReleased:UInt = 0;
+	var buttonsDown:UInt = 0;
 
-	var axis_id:Int = -1;
-	var axis_value:Float = 0;
+	var axisID:Int = -1;
+	var axisValue:Float = 0;
 
-	var gamepad_event:GamepadEvent;
+	var gamepadEvent:GamepadEvent;
 	var gamepads:Gamepads;
 
 
@@ -238,116 +238,116 @@ class Gamepad {
 		gamepad = _g;
 		gamepads = _gamepads;
 		id = kha.input.Gamepad.get(gamepad).id;
-		gamepad_event = new GamepadEvent();
+		gamepadEvent = new GamepadEvent();
 
 	}
 
 	public inline function pressed(_b:Int):Bool {
 
-		return Bits.check(buttons_pressed, _b);
+		return Bits.check(buttonsPressed, _b);
 
 	}
 
 	public inline function released(_b:Int):Bool {
 
-		return Bits.check(buttons_released, _b);
+		return Bits.check(buttonsReleased, _b);
 
 	}
 
 	public inline function down(_b:Int):Bool {
 
-		return Bits.check(buttons_down, _b);
+		return Bits.check(buttonsDown, _b);
 
 	}
 
 	public inline function axis(_a:Int):Float {
 
-		if(_a == axis_id) {
-			return axis_value;
+		if(_a == axisID) {
+			return axisValue;
 		}
 
 		return 0;
 
 	}
 
-	function listen_events() {
+	function listenEvents() {
 
-		kha.input.Gamepad.get(gamepad).notify(onaxis, onbutton);
+		kha.input.Gamepad.get(gamepad).notify(onAxis, onButton);
 
 	}
 
-	function unlisten_events() {
+	function unlistenEvents() {
 
-		kha.input.Gamepad.get(gamepad).remove(onaxis, onbutton);
+		kha.input.Gamepad.get(gamepad).remove(onAxis, onButton);
 
 	}
 
 	function clear() {
 
-		buttons_pressed = 0;
-		buttons_released = 0;
-		axis_id = -1;
-		axis_value = 0;
+		buttonsPressed = 0;
+		buttonsReleased = 0;
+		axisID = -1;
+		axisValue = 0;
 
 	}
 
-	function onaxis(_a:Int, _v:Float) {
+	function onAxis(_a:Int, _v:Float) {
 
 		if(Math.abs(_v) < deadzone) {
 			return;
 		}
 		
-		_debug('onaxis gamepad:$gamepad, axis:$_a, value:$value');
+		_debug('onAxis gamepad:$gamepad, axis:$_a, value:$value');
 
-		axis_id = _a;
-		axis_value = _v;
+		axisID = _a;
+		axisValue = _v;
 
-		gamepad_event.set(gamepad, id, -1, axis_id, axis_value, GamepadEvent.AXIS);
+		gamepadEvent.set(gamepad, id, -1, axisID, axisValue, GamepadEvent.AXIS);
 
-		gamepads._app.emitter.emit(GamepadEvent.AXIS, gamepad_event);
+		gamepads._app.emitter.emit(GamepadEvent.AXIS, gamepadEvent);
 
 	}
 
-	function onbutton(_b:Int, _v:Float) {
+	function onButton(_b:Int, _v:Float) {
 		
-		_debug('onbutton gamepad:$gamepad, button:$_b, value:$_v');
+		_debug('onButton gamepad:$gamepad, button:$_b, value:$_v');
 
 		if(_v > 0.5) {
-			onpressed(_b);
+			onPressed(_b);
 		} else {
-			onreleased(_b);
+			onReleased(_b);
 		}
 
 	}
 
-	inline function onpressed(_b:Int) {
+	inline function onPressed(_b:Int) {
 
-		_debug('onpressed gamepad:$gamepad, button:$_b');
+		_debug('onPressed gamepad:$gamepad, button:$_b');
 
-		buttons_pressed = Bits.set(buttons_pressed, _b);
-		buttons_down = Bits.set(buttons_down, _b);
+		buttonsPressed = Bits.set(buttonsPressed, _b);
+		buttonsDown = Bits.set(buttonsDown, _b);
 
-		gamepad_event.set(gamepad, id, _b, -1, 0, GamepadEvent.BUTTON_DOWN);
+		gamepadEvent.set(gamepad, id, _b, -1, 0, GamepadEvent.BUTTON_DOWN);
 
-		gamepads.check_binding(gamepad, _b, true);
+		gamepads.checkBinding(gamepad, _b, true);
 
-		gamepads._app.emitter.emit(GamepadEvent.BUTTON_DOWN, gamepad_event);
+		gamepads._app.emitter.emit(GamepadEvent.BUTTON_DOWN, gamepadEvent);
 
 	}
 
-	inline function onreleased(_b:Int) {
+	inline function onReleased(_b:Int) {
 
-		_debug('onreleased gamepad:$gamepad, button:$_b');
+		_debug('onReleased gamepad:$gamepad, button:$_b');
 
-		buttons_pressed = Bits.clear(buttons_pressed, _b);
-		buttons_down = Bits.clear(buttons_down, _b);
-		buttons_released = Bits.set(buttons_released, _b);
+		buttonsPressed = Bits.clear(buttonsPressed, _b);
+		buttonsDown = Bits.clear(buttonsDown, _b);
+		buttonsReleased = Bits.set(buttonsReleased, _b);
 
-		gamepad_event.set(gamepad, id, _b, -1, 0, GamepadEvent.BUTTON_UP);
+		gamepadEvent.set(gamepad, id, _b, -1, 0, GamepadEvent.BUTTON_UP);
 
-		gamepads.check_binding(gamepad, _b, false);
+		gamepads.checkBinding(gamepad, _b, false);
 
-		gamepads._app.emitter.emit(GamepadEvent.BUTTON_UP, gamepad_event);
+		gamepads._app.emitter.emit(GamepadEvent.BUTTON_UP, gamepadEvent);
 
 	}
 

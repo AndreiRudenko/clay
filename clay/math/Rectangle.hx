@@ -30,7 +30,7 @@ class Rectangle {
 
     }
     
-    public function point_inside(_p:Vector) {
+    public function pointInside(_p:Vector) {
 
         if(_p.x < x) return false;
         if(_p.y < y) return false;
@@ -72,7 +72,7 @@ class Rectangle {
 
     }
 
-    public function copy_from(_rect:Rectangle):Rectangle {
+    public function copyFrom(_rect:Rectangle):Rectangle {
 
         x = _rect.x;
         y = _rect.y;

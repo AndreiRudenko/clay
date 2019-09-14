@@ -24,15 +24,15 @@ class PolyLineSpawnModule extends ParticleModule {
 		
 	}
 
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
 		if(points.length > 1) {
 
-			var rnd_idx = emitter.random_int(points.length-1);
-			var p0 = points[rnd_idx];
-			var p1 = points[rnd_idx+1];
+			var rndIdx = emitter.randomInt(points.length-1);
+			var p0 = points[rndIdx];
+			var p1 = points[rndIdx+1];
 
-			var rnd = emitter.random_float(1);
+			var rnd = emitter.randomFloat(1);
 
 			p.x = emitter.system.pos.x + emitter.pos.x + (p0.x + (p1.x - p0.x) * rnd);
 			p.y = emitter.system.pos.y + emitter.pos.y + (p0.y + (p1.y - p0.y) * rnd);
@@ -43,26 +43,26 @@ class PolyLineSpawnModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
 		for (i in 0...d.points.length) {
-			points[i].from_json(d.points[i]);
+			points[i].fromJson(d.points[i]);
 		}
 
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
 		d.points = [];
 
 		for (p in points) {
-			d.points.push(p.to_json());
+			d.points.push(p.toJson());
 		}
 
 		return d;

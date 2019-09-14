@@ -24,12 +24,12 @@ class GamepadEvent implements IEvent {
 
 	function new() {}
 
-	inline function set(gamepad:Int, id:String, button:Int, axis_id:Int, value:Float, state:EventType<GamepadEvent>) {
+	inline function set(gamepad:Int, id:String, button:Int, axisID:Int, value:Float, state:EventType<GamepadEvent>) {
 
 		this.id = id;
 		this.gamepad = gamepad;
 		this.button = button;
-		this.axis = axis_id;
+		this.axis = axisID;
 		this.value = value;
 		this.state = state;
 

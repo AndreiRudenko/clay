@@ -11,8 +11,8 @@ import clay.utils.Log.*;
 class CircleOutline extends Circle {
 
 
-	public var weight (get, set):Float;
-	public var align (get, set):StrokeAlign;
+	public var weight(get, set):Float;
+	public var align(get, set):StrokeAlign;
 
 	var _weight:Float;
 	var _align:StrokeAlign;
@@ -28,7 +28,7 @@ class CircleOutline extends Circle {
 	}
 	
 	// https://www.gamedev.net/forums/topic/673527-draw-2d-empty-and-filled-circle/?page=2
-	override function set_circle_vertices(r:Float, segments:Int) {
+	override function setCircleVertices(r:Float, segments:Int) {
 
 	    vertices = [];
 		indices = [];
@@ -53,7 +53,7 @@ class CircleOutline extends Circle {
 		var y:Float;
 
 		var len = segments+1; // +1 for texcoords
-		var total_verts = len * 2;
+		var totalVerts = len * 2;
 
 		for (i in 0...len) {
 
@@ -66,17 +66,17 @@ class CircleOutline extends Circle {
 
 			indices.push(i*2);
 			indices.push(i*2+1);
-			indices.push((i*2+2) % total_verts);
+			indices.push((i*2+2) % totalVerts);
 
-			indices.push((i*2+2) % total_verts);
-			indices.push((i*2+3) % total_verts);
+			indices.push((i*2+2) % totalVerts);
+			indices.push((i*2+3) % totalVerts);
 			indices.push(i*2+1);
 
 		}
 
 	}
 
-	override function update_circle_vertices(r:Float) {
+	override function updateCircleVertices(r:Float) {
 	    
 		var theta = 2 * Math.PI / segments;
 
@@ -120,7 +120,7 @@ class CircleOutline extends Circle {
 
 		_align = v;
 
-		update_circle_vertices(_radius);
+		updateCircleVertices(_radius);
 
 		return v;
 
@@ -136,7 +136,7 @@ class CircleOutline extends Circle {
 
 		_weight = v;
 
-		update_circle_vertices(_radius);
+		updateCircleVertices(_radius);
 
 		return v;
 

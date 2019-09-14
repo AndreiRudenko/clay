@@ -18,7 +18,7 @@ class Game {
 
 	public function new() {
 
-		Clay.resources.load_all(
+		Clay.resources.loadAll(
 			[
 				'assets/test.png',
 				'assets/thread.png'
@@ -53,14 +53,14 @@ class Game {
 		var circle = new Circle(64);
 		circle.texture = Clay.resources.texture('assets/test.png');
 		// circle.color.set(0,0.5,1);
-		circle.transform.pos.copy_from(Clay.screen.mid);
+		circle.transform.pos.copyFrom(Clay.screen.mid);
 		Clay.layer.add(circle);
 
 		var circle2 = new CircleOutline(96, 16);
 		circle2.texture = Clay.resources.texture('assets/test.png');
 		circle2.align = StrokeAlign.outside;
 		// circle2.color.set(0,0.5,1);
-		circle2.transform.pos.copy_from(Clay.screen.mid);
+		circle2.transform.pos.copyFrom(Clay.screen.mid);
 		Clay.tween.object(circle2).to({radius: 128}, 1)
 		.ease(clay.tween.easing.Quad.easeIn)
 		.repeat()

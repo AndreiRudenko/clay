@@ -10,15 +10,15 @@ import clay.graphics.Mesh;
 class NineSlice extends Mesh {
 
 
-	public var width 	(get, set):Float;
-	public var height	(get, set):Float;
+	public var width(get, set):Float;
+	public var height(get, set):Float;
 
-	public var top 	    (get, set):Float;
-	public var bottom	(get, set):Float;
-	public var left	    (get, set):Float;
-	public var right 	(get, set):Float;
+	public var top(get, set):Float;
+	public var bottom(get, set):Float;
+	public var left(get, set):Float;
+	public var right(get, set):Float;
 
-	public var draw_cender(default, set):Bool;
+	public var drawCender(default, set):Bool;
 
 	var _width:Float;
 	var _height:Float;
@@ -46,31 +46,31 @@ class NineSlice extends Mesh {
 		_width = 128;
 		_height = 128;
 
-		draw_cender = true;
+		drawCender = true;
 
-		update_width();
-		update_height();
+		updateWidth();
+		updateHeight();
 
 	}
 
-	override function set_texture(v:Texture):Texture {
+	override function setTexture(v:Texture):Texture {
 
-		super.set_texture(v);
+		super.setTexture(v);
 
-		update_width();
-		update_height();
+		updateWidth();
+		updateHeight();
 
 		return v;
 		
 	}
 
-	function update_width() {
+	function updateWidth() {
 
 		if(texture == null) {
 			return;
 		}
 		
-		var tw = texture.width_actual;
+		var tw = texture.widthActual;
 		
 		vertices[0].pos.x = vertices[4].pos.x = vertices[8].pos.x = vertices[12].pos.x = 0; 
 		vertices[1].pos.x = vertices[5].pos.x = vertices[9].pos.x = vertices[13].pos.x = _left; 
@@ -84,13 +84,13 @@ class NineSlice extends Mesh {
 
 	}
 
-	function update_height() {
+	function updateHeight() {
 		
 		if(texture == null) {
 			return;
 		}
 
-		var th = texture.height_actual;
+		var th = texture.heightActual;
 
 		vertices[0].pos.y = vertices[1].pos.y = vertices[2].pos.y = vertices[3].pos.y = 0; 
 		vertices[4].pos.y = vertices[5].pos.y = vertices[6].pos.y = vertices[7].pos.y = _top; 
@@ -104,9 +104,9 @@ class NineSlice extends Mesh {
 
 	}
 
-	function update_indices() {
+	function updateIndices() {
 
-		if(draw_cender) {
+		if(drawCender) {
 			indices = [
 				0,  1,  5,  5,  4,  0,  // 0
 				1,  2,  6,  6,  5,  1,  // 1
@@ -134,12 +134,12 @@ class NineSlice extends Mesh {
 		}
 	}
 
-	function set_draw_cender(v:Bool):Bool {
+	function set_drawCender(v:Bool):Bool {
 		
-		draw_cender = v;
-		update_indices();
+		drawCender = v;
+		updateIndices();
 
-		return draw_cender;
+		return drawCender;
 
 	}
 
@@ -153,7 +153,7 @@ class NineSlice extends Mesh {
 		
 		if(_width != v) {
 			_width = v;
-			update_width();
+			updateWidth();
 		}
 
 		return _width;
@@ -169,7 +169,7 @@ class NineSlice extends Mesh {
 		
 		if(_height != v) {
 			_height = v;
-			update_height();
+			updateHeight();
 		}
 
 		return _height;
@@ -185,7 +185,7 @@ class NineSlice extends Mesh {
 	function set_top(v:Float):Float {
 		
 		_top = v;
-		update_height();
+		updateHeight();
 
 		return _top;
 
@@ -200,7 +200,7 @@ class NineSlice extends Mesh {
 	function set_bottom(v:Float):Float {
 		
 		_bottom = v;
-		update_height();
+		updateHeight();
 
 		return _bottom;
 
@@ -215,7 +215,7 @@ class NineSlice extends Mesh {
 	function set_left(v:Float):Float {
 		
 		_left = v;
-		update_width();
+		updateWidth();
 
 		return _left;
 
@@ -230,7 +230,7 @@ class NineSlice extends Mesh {
 	function set_right(v:Float):Float {
 		
 		_right = v;
-		update_width();
+		updateWidth();
 
 		return _right;
 

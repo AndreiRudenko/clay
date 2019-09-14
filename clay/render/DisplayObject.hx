@@ -22,10 +22,10 @@ class DisplayObject {
 	public var depth         	(default, set):Float;
 
 	public var shader        	(default, set):Shader;
-	public var clip_rect     	(default, set):Rectangle;
+	public var clipRect     	(default, set):Rectangle;
 
-	public var sort_key      	(default, null):SortKey;
-	public var shader_default	(default, null):Shader;
+	public var sortKey      	(default, null):SortKey;
+	public var shaderDefault	(default, null):Shader;
 
 	var _layer:Layer;
 
@@ -34,18 +34,18 @@ class DisplayObject {
 		
 		visible = true;
 		renderable = true;
-		name = 'display_object.${ID++}';
+		name = 'displayObject.${ID++}';
 		transform = new Transform();
-		sort_key = new SortKey(0,0);
+		sortKey = new SortKey(0,0);
 		depth = 0;
-		shader_default = Clay.renderer.shaders.get('textured');
+		shaderDefault = Clay.renderer.shaders.get('textured');
 
 	}
 
 	public function drop() {
 		
 		if(_layer != null) {
-			_layer._remove_unsafe(this);
+			_layer._removeUnsafe(this);
 		}
 
 	}
@@ -67,13 +67,13 @@ class DisplayObject {
 	function set_layer(v:Layer):Layer {
 
 		if(_layer != null) {
-			_layer._remove_unsafe(this);
+			_layer._removeUnsafe(this);
 		}
 
 		_layer = v;
 
 		if(_layer != null) {
-			_layer._add_unsafe(this);
+			_layer._addUnsafe(this);
 		}
 
 		return v;
@@ -82,9 +82,9 @@ class DisplayObject {
 
 	function set_depth(v:Float):Float {
 
-		sort_key.depth = v;
+		sortKey.depth = v;
 
-		dirty_sort();
+		dirtySort();
 
 		return depth = v;
 
@@ -92,30 +92,30 @@ class DisplayObject {
 	
 	function set_shader(v:Shader):Shader {
 
-		sort_key.shader = v != null ? v.id : shader_default.id;
+		sortKey.shader = v != null ? v.id : shaderDefault.id;
 
-		dirty_sort();
+		dirtySort();
 
 		return shader = v;
 
 	}
 
-	function set_clip_rect(v:Rectangle):Rectangle {
+	function set_clipRect(v:Rectangle):Rectangle {
 
-		sort_key.clip = v != null;
+		sortKey.clip = v != null;
 
-		if(clip_rect == null && v != null || clip_rect != null && v == null) {
-			dirty_sort();
+		if(clipRect == null && v != null || clipRect != null && v == null) {
+			dirtySort();
 		}
 
-		return clip_rect = v;
+		return clipRect = v;
 
 	}
 
-	inline function dirty_sort() {
+	inline function dirtySort() {
 
-		if(layer != null && layer.depth_sort) {
-			layer.dirty_sort = true;
+		if(layer != null && layer.depthSort) {
+			layer.dirtySort = true;
 		}
 
 	}

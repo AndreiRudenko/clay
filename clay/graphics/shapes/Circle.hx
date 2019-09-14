@@ -12,13 +12,13 @@ import clay.utils.Log.*;
 class Circle extends Mesh {
 
 
-	public var radius (get, set):Float;
-	public var segments (get, set):Int;
-	public var auto_segments (get, set):Bool;
+	public var radius(get, set):Float;
+	public var segments(get, set):Int;
+	public var autoSegments(get, set):Bool;
 
 	var _radius:Float;
 	var _segments:Int;
-	var _auto_segments:Bool;
+	var _autoSegments:Bool;
 
 
 	public function new(radius:Float, ?segments:Int) {
@@ -26,19 +26,19 @@ class Circle extends Mesh {
 		super();
 
 		_radius = radius;
-		_auto_segments = false;
+		_autoSegments = false;
 
 		if(segments == null) {
-			_segments = segments_for_smooth_circle(_radius);
+			_segments = segmentsForSmoothCircle(_radius);
 		} else {
 			_segments = segments;
 		}
 
-		set_circle_vertices(_radius, _segments);
+		setCircleVertices(_radius, _segments);
 
 	}
 
-	function set_circle_vertices(r:Float, segments:Int) {
+	function setCircleVertices(r:Float, segments:Int) {
 
 		vertices = [];
 		indices = [];
@@ -70,7 +70,7 @@ class Circle extends Mesh {
 			
 	}
 
-	function update_circle_vertices(r:Float) {
+	function updateCircleVertices(r:Float) {
 
 		var theta = 2 * Math.PI / segments;
 		
@@ -93,22 +93,28 @@ class Circle extends Mesh {
 			
 	}
 
-	inline function get_auto_segments():Bool {
+	inline function get_autoSegments():Bool {
 
-		return _auto_segments;
+		return _autoSegments;
 
 	}
 
-	function set_auto_segments(v:Bool):Bool {
+	function set_autoSegments(v:Bool):Bool {
 
-		_auto_segments = v;
+		_autoSegments = v;
 
 		if(v) {
-			_segments = segments_for_smooth_circle(_radius);
-			set_circle_vertices(_radius, _segments);
+			_segments = segmentsForSmoothCircle(_radius);
+			setCircleVertices(_radius, _segments);
 		}
 
 		return v;
+
+	}
+
+	inline function segmentsForSmoothCircle(radius:Float, smooth:Float = 5):Int {
+
+		return Std.int(smooth * Math.sqrt(radius));
 
 	}
 
@@ -122,11 +128,11 @@ class Circle extends Mesh {
 
 		_radius = v;
 
-		if(_auto_segments) {
-			_segments = segments_for_smooth_circle(_radius);
-			set_circle_vertices(_radius, _segments);
+		if(_autoSegments) {
+			_segments = segmentsForSmoothCircle(_radius);
+			setCircleVertices(_radius, _segments);
 		} else {
-			update_circle_vertices(_radius);
+			updateCircleVertices(_radius);
 		}
 
 		return v;
@@ -141,20 +147,14 @@ class Circle extends Mesh {
 
 	function set_segments(v:Int):Int {
 
-		if(!_auto_segments) {
+		if(!_autoSegments) {
 			_segments = v;
-			set_circle_vertices(_radius, _segments);
+			setCircleVertices(_radius, _segments);
 		}
 
 		return _segments;
 
 	}
 
-	inline function segments_for_smooth_circle(radius:Float, smooth:Float = 5):Int {
-
-		return Std.int(smooth * Math.sqrt(radius));
-
-	}
-	
 
 }

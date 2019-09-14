@@ -15,18 +15,18 @@ class Transform {
 	public var local(get, never):Spatial;
 	public var world(get, never):Spatial;
 
-	public var pos     	(get, never):VectorCallback;
-	public var scale   	(get, never):VectorCallback;
-	public var rotation	(get, set):Float;
-	public var origin   (default, null):VectorCallback;
+	public var pos(get, never):VectorCallback;
+	public var scale(get, never):VectorCallback;
+	public var rotation(get, set):Float;
+	public var origin(default, null):VectorCallback;
 
-	public var manual_update:Bool;
+	public var manualUpdate:Bool;
 	public var dirty:Bool;
 
 	var _local:Spatial;
 	var _world:Spatial;
 	var _cleaning:Bool;
-	var _clean_handlers:Array<(t:Transform)->Void>;
+	var _cleanHandlers:Array<(t:Transform)->Void>;
 	
 
 	public function new(?options:TransformOptions) {
@@ -37,24 +37,24 @@ class Transform {
 		origin = new VectorCallback();
 		
 		dirty = true;
-		manual_update = false;
+		manualUpdate = false;
 		_cleaning = false;
 
 		if(options != null) {
 			if(options.pos != null) {
-				pos.copy_from(options.pos);
+				pos.copyFrom(options.pos);
 			}
 			if(options.scale != null) {
-				scale.copy_from(options.scale);
+				scale.copyFrom(options.scale);
 			}
 			if(options.rotation != null) {
 				rotation = options.rotation;
 			}
-			if(options.manual_update != null) {
-				manual_update = options.manual_update;
+			if(options.manualUpdate != null) {
+				manualUpdate = options.manualUpdate;
 			}
 			if(options.origin != null) {
-				origin.copy_from(options.origin);
+				origin.copyFrom(options.origin);
 			}
 			if(options.parent != null) {
 				parent = options.parent;
@@ -87,7 +87,7 @@ class Transform {
 			parent.update();
 		}
 
-		if(dirty && !_cleaning && !manual_update) {
+		if(dirty && !_cleaning && !manualUpdate) {
 			_cleaning = true;
 
 			_local.matrix.identity()
@@ -107,8 +107,8 @@ class Transform {
 			_cleaning = false;
 			dirty = false;
 
-			if(_clean_handlers != null && _clean_handlers.length > 0) {
-				for(handler in _clean_handlers) {
+			if(_cleanHandlers != null && _cleanHandlers.length > 0) {
+				for(handler in _cleanHandlers) {
 					handler(this);
 				}
 			}
@@ -118,20 +118,20 @@ class Transform {
 
 	public function listen(handler:(t:Transform)->Void) {
 
-		if(_clean_handlers == null) {
-			_clean_handlers = [];
+		if(_cleanHandlers == null) {
+			_cleanHandlers = [];
 		}
 
-		_clean_handlers.push(handler);
+		_cleanHandlers.push(handler);
 
 	}
 
 	public function unlisten(handler:(t:Transform)->Void) {
 
-		if(_clean_handlers == null) {
-			_clean_handlers.remove(handler);
-			if(_clean_handlers.length == 0) {
-				_clean_handlers = null;
+		if(_cleanHandlers == null) {
+			_cleanHandlers.remove(handler);
+			if(_cleanHandlers.length == 0) {
+				_cleanHandlers = null;
 			}
 		}
 
@@ -140,13 +140,13 @@ class Transform {
 	function set_parent(v:Transform):Transform {
 
 		if(parent != null) {
-			parent.unlisten(on_parent_cleaned);
+			parent.unlisten(onParentCleaned);
 		}
 
 		parent = v;
 
 		if(parent != null) {
-			parent.listen(on_parent_cleaned);
+			parent.listen(onParentCleaned);
 		}
 
 		return v;
@@ -193,7 +193,7 @@ class Transform {
 
 	}
 
-	inline function on_parent_cleaned(p:Transform) {
+	inline function onParentCleaned(p:Transform) {
 
 		dirty = true;
 
@@ -210,7 +210,7 @@ class Spatial {
 	public var rotation:Float;
 
 	public var matrix:Matrix;
-	public var auto_decompose:Bool = false;
+	public var autoDecompose:Bool = false;
 
 
 	public function new() {
@@ -224,10 +224,10 @@ class Spatial {
 
 		//assigns the local values (pos/rotation/scale) according to the matrix
 		//when called manually, will make sure it happens using force.
-		//if force is false, auto_decompose will apply
+		//if force is false, autoDecompose will apply
 	public inline function decompose(_force:Bool = true):Spatial {
 
-		if(auto_decompose || _force) {
+		if(autoDecompose || _force) {
 			matrix.decompose(this);
 		}
 
@@ -245,7 +245,7 @@ typedef TransformOptions = {
 	@:optional var scale:Vector;
 	@:optional var origin:Vector;
 	@:optional var rotation:Float;
-	@:optional var manual_update:Bool;
+	@:optional var manualUpdate:Bool;
 	@:optional var parent:Transform;
 
 }

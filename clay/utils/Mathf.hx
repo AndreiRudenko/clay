@@ -32,21 +32,21 @@ class Mathf {
 
 	}
 
-	public static inline function clamp_bottom(value:Float, a:Float):Float {
+	public static inline function clampBottom(value:Float, a:Float):Float {
 
 		return value < a ? a : value;
 
 	}
 
-	public static inline function clamp_bottomi(value:Int, a:Int):Int {
+	public static inline function clampBottomi(value:Int, a:Int):Int {
 
 		return value < a ? a : value;
 
 	}
 
-	public static inline function within_range(value:Float, start_range:Float, end_range:Float):Bool {
+	public static inline function withinRange(value:Float, startRange:Float, endRange:Float):Bool {
 
-		return value >= start_range && value <= end_range;
+		return value >= startRange && value <= endRange;
 
 	}
 
@@ -95,7 +95,7 @@ class Mathf {
 	}
 
 		/** Returns the next power of two. */
-	public inline static function next_pow2(x:Int):Int {
+	public inline static function nextPow2(x:Int):Int {
 
 		x |= x >> 1;
 		x |= x >> 2;
@@ -108,7 +108,7 @@ class Mathf {
 	}
 
 		/** Returns the previous power of two. */
-	public inline static function prev_pow2(x:Int):Int {
+	public inline static function prevPow2(x:Int):Int {
 
 		x |= x >>> 1;
 		x |= x >>> 2;
@@ -124,7 +124,7 @@ class Mathf {
 		Returns the specified value if the value is already a power of two.
 		Returns next power of two else.
 	**/
-	public static function require_pow2(x:Int):Int {
+	public static function requirePow2(x:Int):Int {
 
 		if(x == 0) {
 			return 1;
@@ -157,7 +157,7 @@ class Mathf {
 	}
 
 	/** Checks if value is power of two **/
-	public inline static function check_pow2(x:Int):Bool {
+	public inline static function checkPow2(x:Int):Bool {
 
 		return x != 0 && (x & (x - 1)) == 0;
 

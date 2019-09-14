@@ -28,124 +28,124 @@ class Camera {
 	public var name (default, null):String;
 	public var active (get, set):Bool;
 	public var viewport:Rectangle;
-	public var round_pixels:Bool;
+	public var roundPixels:Bool;
 
 	public var bounds:Rectangle;
 	public var priority(default, null):Int;
 
-	public var onprerender  (default, null):Signal<(c:Camera)->Void>;
-	public var onpostrender	(default, null):Signal<(c:Camera)->Void>;
+	public var onpreRender  (default, null):Signal<(c:Camera)->Void>;
+	public var onpostRender	(default, null):Signal<(c:Camera)->Void>;
 
 	@:noCompletion public var transform:Transform;
-	@:noCompletion public var projection_matrix:Matrix;
+	@:noCompletion public var projectionMatrix:Matrix;
 
 	public var zoom(default, set):Float;
 	public var pos(default, null):VectorCallback;
 	public var rotation(get, set):Float;
 	public var size(default, null):VectorCallback;
 	public var anchor(default, null):VectorCallback;
-	public var size_mode (default, set):SizeMode;
+	public var sizeMode (default, set):SizeMode;
 	
-	@:noCompletion public var _size_factor:Vector;
+	@:noCompletion public var _sizeFactor:Vector;
 
 	var _active:Bool = false;
-	var _visible_layers_mask:BitVector;
+	var _visibleLayersMask:BitVector;
 	var _manager:CameraManager;
 
-	// var _view_matrix:Matrix;
-	var _view_matrix_inverted:Matrix;
+	// var _viewMatrix:Matrix;
+	var _viewMatrixInverted:Matrix;
 	
 
 	function new(manager:CameraManager, name:String, viewport:Rectangle, priority:Int) {
 
 		this.name = name;
 		this.priority = priority;
-		round_pixels = false;
+		roundPixels = false;
 		_manager = manager;
 
 		pos = new VectorCallback();
 		anchor = new VectorCallback(0.5,0.5);
 		size = new VectorCallback();
 
-		pos.listen(update_pos);
-		anchor.listen(update_pos);
+		pos.listen(updatePos);
+		anchor.listen(updatePos);
 		size.listen(set_size);
 
-		_size_factor = new Vector(1,1);
+		_sizeFactor = new Vector(1,1);
 
 		this.viewport = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
 
 		if(viewport != null) {
-			this.viewport.copy_from(viewport);
+			this.viewport.copyFrom(viewport);
 		}
 
-		// _view_matrix = new Matrix();
-		_view_matrix_inverted = new Matrix();
-		projection_matrix = new Matrix();
+		// _viewMatrix = new Matrix();
+		_viewMatrixInverted = new Matrix();
+		projectionMatrix = new Matrix();
 
-		_visible_layers_mask = new BitVector(Clay.renderer.layers.capacity);
-		_visible_layers_mask.enable_all();
+		_visibleLayersMask = new BitVector(Clay.renderer.layers.capacity);
+		_visibleLayersMask.enableAll();
 
 		transform = new Transform();
 
 		zoom = 1;
 
-		onprerender = new Signal();
-		onpostrender = new Signal();
+		onpreRender = new Signal();
+		onpostRender = new Signal();
 
-		size_mode = SizeMode.fit;
+		sizeMode = SizeMode.fit;
 
-		update_pos(0);
+		updatePos(0);
 
 	}
 
-	public function hide_layers(?layers:Array<String>):Camera {
+	public function hideLayers(?layers:Array<String>):Camera {
 
 		if(layers != null) {
 			var l:Layer;
 			for (n in layers) {
 				l = Clay.renderer.layers.get(n);
 				if(l != null) {
-					_visible_layers_mask.disable(l.id);
+					_visibleLayersMask.disable(l.id);
 				} else {
 					log('can`t hide layer `${n}` for camera `${name}`');
 				}
 			}
 		} else {
-			_visible_layers_mask.disable_all();
+			_visibleLayersMask.disableAll();
 		}
 
 		return this;
 
 	}
 
-	public function show_layers(?layers:Array<String>):Camera {
+	public function showLayers(?layers:Array<String>):Camera {
 
 		if(layers != null) {			
 			var l:Layer;
 			for (n in layers) {
 				l = Clay.renderer.layers.get(n);
 				if(l != null) {
-					_visible_layers_mask.enable(l.id);
+					_visibleLayersMask.enable(l.id);
 				} else {
 					log('can`t show layer `${n}` for camera `${name}`');
 				}
 			}
 		} else {
-			_visible_layers_mask.enable_all();
+			_visibleLayersMask.enableAll();
 		}
 		
 		return this;
 
 	}
 
-	public function screen_to_world(v:Vector, ?into:Vector):Vector {
+	public function screenToWorld(v:Vector, ?into:Vector):Vector {
 
 		if(into == null) {
 			into = new Vector();
 		}
 
-		into.copy_from(v);
+		into.copyFrom(v);
 
 		transform.update();
 
@@ -155,26 +155,26 @@ class Camera {
 		
 	}
 
-	public function world_to_screen(v:Vector, ?into:Vector):Vector {
+	public function worldToScreen(v:Vector, ?into:Vector):Vector {
 
 		if(into == null) {
 			into = new Vector();
 		}
 
-		into.copy_from(v);
+		into.copyFrom(v);
 
 		transform.update();
 
-		_view_matrix_inverted.copy(transform.world.matrix);
-		_view_matrix_inverted.invert();
+		_viewMatrixInverted.copy(transform.world.matrix);
+		_viewMatrixInverted.invert();
 
-		into.transform(_view_matrix_inverted);
+		into.transform(_viewMatrixInverted);
 
 		return into;
 		
 	}
 
-	function update_pos(_:Float) {
+	function updatePos(_:Float) {
 
 		var corx = 0.0;
 		var cory = 0.0;
@@ -193,7 +193,7 @@ class Camera {
 		}
 
 		if(bounds != null) {
-			pos.ignore_listeners = true;
+			pos.ignoreListeners = true;
 
 			if(pos.x < bounds.x) {
 				pos.x = bounds.x;
@@ -211,7 +211,7 @@ class Camera {
 				pos.y = bounds.y + bounds.h - vh;
 			}
 
-			pos.ignore_listeners = false;
+			pos.ignoreListeners = false;
 		}
 
 		var px = pos.x + ox + corx;
@@ -226,20 +226,60 @@ class Camera {
 
 		name = null;
 		viewport = null;
-		onprerender = null;
-		onpostrender = null;
+		onpreRender = null;
+		onpostRender = null;
 		transform = null;
-		// _view_matrix = null;
-		_view_matrix_inverted = null;
-		projection_matrix = null;
-		_visible_layers_mask = null;
+		// _viewMatrix = null;
+		_viewMatrixInverted = null;
+		projectionMatrix = null;
+		_visibleLayersMask = null;
 		_manager = null;
 
 	}
 
-	function set_size_mode(mode:SizeMode):SizeMode {
+	inline function updateMatrices(g:Graphics) {
 
-		size_mode = mode;
+		_viewMatrixInverted.copy(transform.world.matrix);
+		_viewMatrixInverted.invert();
+
+		projectionMatrix.identity();
+
+		if (kha.Image.renderTargetsInvertedY()) {
+			projectionMatrix.orto(0, viewport.w, 0, viewport.h);
+		} else {
+			projectionMatrix.orto(0, viewport.w, viewport.h, 0);
+		}
+
+		projectionMatrix.append(_viewMatrixInverted);
+
+	}
+
+	function preRender() {
+
+		onpreRender.emit(this);
+
+		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
+
+		transform.update();
+		updateMatrices(g);
+
+		g.viewport(Std.int(viewport.x), Std.int(viewport.y), Std.int(viewport.w), Std.int(viewport.h));
+
+	}
+
+	function postRender() {
+
+		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
+
+		// g.disableScissor();
+		
+		onpostRender.emit(this);
+		
+	}
+	
+	function set_sizeMode(mode:SizeMode):SizeMode {
+
+		sizeMode = mode;
 		set_size(0);
 
 		return mode;
@@ -257,7 +297,7 @@ class Camera {
 		var shortest = Math.max(rx, ry);
 		var longest = Math.min(rx, ry);
 
-		switch(size_mode) {
+		switch(sizeMode) {
 			case SizeMode.fit:{
 				rx = ry = longest;
 			}
@@ -269,28 +309,11 @@ class Camera {
 			}
 		}
 
-		_size_factor.x = rx;
-		_size_factor.y = ry;
+		_sizeFactor.x = rx;
+		_sizeFactor.y = ry;
 
 		zoom = zoom;
-		update_pos(0);
-
-	}
-
-	inline function update_matrices(g:Graphics) {
-
-		_view_matrix_inverted.copy(transform.world.matrix);
-		_view_matrix_inverted.invert();
-
-		projection_matrix.identity();
-
-		if (kha.Image.renderTargetsInvertedY()) {
-			projection_matrix.orto(0, viewport.w, 0, viewport.h);
-		} else {
-			projection_matrix.orto(0, viewport.w, viewport.h, 0);
-		}
-
-		projection_matrix.append(_view_matrix_inverted);
+		updatePos(0);
 
 	}
 
@@ -306,8 +329,8 @@ class Camera {
 
 		zoom = v;
 
-		var sx = 1 / (_size_factor.x * zoom);
-		var sy = 1 / (_size_factor.y * zoom);
+		var sx = 1 / (_sizeFactor.x * zoom);
+		var sy = 1 / (_sizeFactor.y * zoom);
 
 		transform.scale.set(sx, sy);
 
@@ -315,29 +338,6 @@ class Camera {
 
 	}
 
-	function prerender() {
-
-		onprerender.emit(this);
-
-		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
-
-		transform.update();
-		update_matrices(g);
-
-		g.viewport(Std.int(viewport.x), Std.int(viewport.y), Std.int(viewport.w), Std.int(viewport.h));
-
-	}
-
-	function postrender() {
-
-		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
-
-		// g.disableScissor();
-		
-		onpostrender.emit(this);
-		
-	}
-	
 	inline function get_active():Bool {
 
 		return _active;

@@ -17,13 +17,13 @@ class CameraManager {
 
 	public var length(default, null):Int;
 
-	@:noCompletion public var active_cameras:Array<Camera>;
+	@:noCompletion public var activeCameras:Array<Camera>;
 	@:noCompletion public var cameras:Map<String, Camera>;
 
 
 	public function new() {
 		
-		active_cameras = [];
+		activeCameras = [];
 		cameras = new Map();
 		length = 0;
 
@@ -36,7 +36,7 @@ class CameraManager {
 
 		var camera = new Camera(this, name, viewport, priority);
 
-		handle_duplicate_warning(name);
+		handleDuplicateWarning(name);
 		cameras.set(name, camera);
 		length++;
 
@@ -80,10 +80,10 @@ class CameraManager {
 		
 		var added:Bool = false;
 		var c:Camera = null;
-		for (i in 0...active_cameras.length) {
-			c = active_cameras[i];
+		for (i in 0...activeCameras.length) {
+			c = activeCameras[i];
 			if (camera.priority < c.priority) {
-				active_cameras.insert(i, camera);
+				activeCameras.insert(i, camera);
 				added = true;
 				break;
 			}
@@ -92,7 +92,7 @@ class CameraManager {
 		camera._active = true;
 
 		if(!added) {
-			active_cameras.push(camera);
+			activeCameras.push(camera);
 		}
 
 	}
@@ -103,7 +103,7 @@ class CameraManager {
 			return;
 		}
 
-		active_cameras.remove(camera);
+		activeCameras.remove(camera);
 		camera._active = false;
 		
 	}
@@ -117,7 +117,7 @@ class CameraManager {
 		
 	}
 
-	function handle_duplicate_warning(name:String) {
+	function handleDuplicateWarning(name:String) {
 
 		var c:Camera = cameras.get(name);
 		if(c != null) {
@@ -131,7 +131,7 @@ class CameraManager {
 
 	@:noCompletion public inline function iterator():Iterator<Camera> { // todo: using this is broke hashlink build, ftw?
 
-		return active_cameras.iterator();
+		return activeCameras.iterator();
 
 	}
 

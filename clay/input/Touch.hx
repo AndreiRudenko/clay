@@ -35,7 +35,7 @@ class Touch extends Input {
 
 		var t = kha.input.Surface.get();
 		if(t != null) {
-			t.notify(onpressed, onreleased, onmove);
+			t.notify(onPressed, onReleased, onMove);
 		}
 
 		#end
@@ -56,7 +56,7 @@ class Touch extends Input {
 
 		var t = kha.input.Surface.get();
 		if(t != null) {
-			t.remove(onpressed, onreleased, onmove);
+			t.remove(onPressed, onReleased, onMove);
 		}
 		
 		#end
@@ -71,9 +71,9 @@ class Touch extends Input {
 
 	}
 
-	function onpressed(id:Int, x:Int, y:Int) {
+	function onPressed(id:Int, x:Int, y:Int) {
 
-		_debug('onpressed id:$id, x:$x, y$y');
+		_debug('onPressed id:$id, x:$x, y$y');
 
 		count++;
 
@@ -84,9 +84,9 @@ class Touch extends Input {
 
 	}
 
-	function onreleased(id:Int, x:Int, y:Int) {
+	function onReleased(id:Int, x:Int, y:Int) {
 
-		_debug('onpressed id:$id, x:$x, y$y');
+		_debug('onPressed id:$id, x:$x, y$y');
 
 		count--;
 
@@ -97,9 +97,9 @@ class Touch extends Input {
 
 	}
 
-	function onmove(id:Int, x:Int, y:Int) {
+	function onMove(id:Int, x:Int, y:Int) {
 
-		_verboser('onmove id:$id, x:$x, y$y');
+		_verboser('onMove id:$id, x:$x, y$y');
 
 		var t = touches[id];
 		t.set(x, y, x - t.x, y - t.y, TouchEvent.TOUCH_MOVE);

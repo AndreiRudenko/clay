@@ -7,13 +7,13 @@ import clay.math.Vector;
 class VectorExtender {
 
 
-	public static inline function to_json(v:Vector):Dynamic {
+	public static inline function toJson(v:Vector):Dynamic {
 
 		return { x: v.x, y: v.y };
 	    
 	}
 
-	public static inline function from_json(v:Vector, json:Dynamic):Vector {
+	public static inline function fromJson(v:Vector, json:Dynamic):Vector {
 
 		return v.set(json.x, json.y);
 	    

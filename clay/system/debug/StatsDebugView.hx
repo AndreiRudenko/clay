@@ -35,139 +35,139 @@ import clay.events.KeyEvent;
 class StatsDebugView extends DebugView {
 
 
-	var render_stats_text:Text;
-	var resource_list_text:Text;
+	var renderStatsText:Text;
+	var resourceListText:Text;
 
-	var font_size:Int = 15;
-	var hide_layers:Bool = true;
-	var camera_stats:StringBuf;
-	var _byte_levels : Array<String> = ["bytes", "Kb", "MB", "GB", "TB"];
+	var fontSize:Int = 15;
+	var hideLayers:Bool = true;
+	var cameraStats:StringBuf;
+	var _byteLevels : Array<String> = ["bytes", "Kb", "MB", "GB", "TB"];
 
 
 	public function new(_debug:Debug) {
 
 		super(_debug);
 
-		debug_name = "Statistics";
-		camera_stats = new StringBuf();
+		debugName = "Statistics";
+		cameraStats = new StringBuf();
 		
 		var rect = debug.inspector.viewrect;
 
-		render_stats_text = new Text(Clay.renderer.font);
-		render_stats_text.size = font_size;
-		render_stats_text.visible = false;
-		render_stats_text.color = new Color().from_int(0xffa563);
-		render_stats_text.transform.pos.set(rect.x, rect.y);
-		render_stats_text.width = rect.w;
-		render_stats_text.height = 0;
-		render_stats_text.layer = debug.layer;
-		render_stats_text.clip_rect = rect;
-		render_stats_text.depth = 999.3;
+		renderStatsText = new Text(Clay.renderer.font);
+		renderStatsText.size = fontSize;
+		renderStatsText.visible = false;
+		renderStatsText.color = new Color().fromInt(0xffa563);
+		renderStatsText.transform.pos.set(rect.x, rect.y);
+		renderStatsText.width = rect.w;
+		renderStatsText.height = 0;
+		renderStatsText.layer = debug.layer;
+		renderStatsText.clipRect = rect;
+		renderStatsText.depth = 999.3;
 
-		resource_list_text = new Text(Clay.renderer.font);
-		resource_list_text.size = font_size;
-		resource_list_text.align = TextAlign.right;
-		resource_list_text.visible = false;
-		resource_list_text.color = new Color().from_int(0xffa563);
-		resource_list_text.transform.pos.set(rect.x, rect.y);
-		resource_list_text.width = rect.w;
-		resource_list_text.height = 0;
-		resource_list_text.layer = debug.layer;
-		resource_list_text.clip_rect = rect;
-		resource_list_text.depth = 999.3;
+		resourceListText = new Text(Clay.renderer.font);
+		resourceListText.size = fontSize;
+		resourceListText.align = TextAlign.right;
+		resourceListText.visible = false;
+		resourceListText.color = new Color().fromInt(0xffa563);
+		resourceListText.transform.pos.set(rect.x, rect.y);
+		resourceListText.width = rect.w;
+		resourceListText.height = 0;
+		resourceListText.layer = debug.layer;
+		resourceListText.clipRect = rect;
+		resourceListText.depth = 999.3;
 
-		Clay.renderer.cameras.oncameracreate.add(camera_added);
-		Clay.renderer.cameras.oncameradestroy.add(camera_removed);
+		Clay.renderer.cameras.oncameracreate.add(cameraAdded);
+		Clay.renderer.cameras.oncameradestroy.add(cameraRemoved);
 
 		for (c in Clay.renderer.cameras) {
-			camera_added(c);
+			cameraAdded(c);
 		}
 
 		Clay.on(RenderEvent.RENDER, onrender);
-		Clay.on(KeyEvent.KEY_DOWN, onkeydown);
-		Clay.on(MouseEvent.MOUSE_WHEEL, onmousewheel);
+		Clay.on(KeyEvent.KEY_DOWN, onKeyDown);
+		Clay.on(MouseEvent.MOUSE_WHEEL, onMouseWheel);
 		// Clay.on(TouchEvent.TOUCH_DOWN, ontouchdown);
 
 	}
 
-	// override function onremoved() {
+	// override function onRemoved() {
 
-	// 	render_stats_text.destroy();
-	// 	render_stats_text = null;
+	// 	renderStatsText.destroy();
+	// 	renderStatsText = null;
 
-	// 	resource_list_text.destroy();
-	// 	resource_list_text = null;
+	// 	resourceListText.destroy();
+	// 	resourceListText = null;
 
-	// 	Clay.renderer.cameras.oncameracreate.remove(camera_added);
-	// 	Clay.renderer.cameras.oncameradestroy.remove(camera_removed);
+	// 	Clay.renderer.cameras.oncameracreate.remove(cameraAdded);
+	// 	Clay.renderer.cameras.oncameradestroy.remove(cameraRemoved);
 
 	// }
 
-	override function onenabled() {
+	override function onEnabled() {
 
-		render_stats_text.visible = true;
-		resource_list_text.visible = true;
+		renderStatsText.visible = true;
+		resourceListText.visible = true;
 		refresh();
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
-		render_stats_text.visible = false;
-		resource_list_text.visible = false;
+		renderStatsText.visible = false;
+		resourceListText.visible = false;
 
 	}
 
-	function onkeydown(e:KeyEvent) {
+	function onKeyDown(e:KeyEvent) {
 
-		if(e.key == Key.three) {
-			hide_layers = !hide_layers;
+		if(e.key == Key.Three) {
+			hideLayers = !hideLayers;
 			refresh();
 		}
 
 	}
 
-	function onmousewheel(e:MouseEvent) {
+	function onMouseWheel(e:MouseEvent) {
 
 		var px = e.x/Clay.screen.width;
 
 		if(px > 0.5) {
 			
-			var h = resource_list_text.text_height;
+			var h = resourceListText.textHeight;
 			var vh = debug.inspector.size.y - debug.margin;
 			var diff = h - vh;
 
-			var new_y = resource_list_text.transform.pos.y;
-			var max_y = debug.padding.y +(debug.margin*1.5);
-			var min_y = max_y;
+			var newY = resourceListText.transform.pos.y;
+			var maxY = debug.padding.y +(debug.margin*1.5);
+			var minY = maxY;
 
 			if(diff > 0) {
-				min_y = (max_y - (diff+(debug.margin*2)));
+				minY = (maxY - (diff+(debug.margin*2)));
 			}
 
-			new_y -= (debug.margin/2) * e.wheel;
-			new_y = Mathf.clamp(new_y, min_y, max_y);
+			newY -= (debug.margin/2) * e.wheel;
+			newY = Mathf.clamp(newY, minY, maxY);
 
-			resource_list_text.transform.pos.y = new_y;
+			resourceListText.transform.pos.y = newY;
 
 		} else {
 
-			var h = render_stats_text.text_height;
+			var h = renderStatsText.textHeight;
 			var vh = debug.inspector.size.y - debug.margin;
 			var diff = h - vh;
 
-			var new_y = render_stats_text.transform.pos.y;
-			var max_y = debug.padding.y +(debug.margin*1.5);
-			var min_y = max_y;
+			var newY = renderStatsText.transform.pos.y;
+			var maxY = debug.padding.y +(debug.margin*1.5);
+			var minY = maxY;
 
 			if(diff > 0) {
-				min_y = (max_y - (diff+(debug.margin*2)));
+				minY = (maxY - (diff+(debug.margin*2)));
 			}
 
-			new_y -= (debug.margin/2) * e.wheel;
-			new_y = Mathf.clamp(new_y, min_y, max_y);
+			newY -= (debug.margin/2) * e.wheel;
+			newY = Mathf.clamp(newY, minY, maxY);
 
-			render_stats_text.transform.pos.y = new_y;
+			renderStatsText.transform.pos.y = newY;
 
 		}
 
@@ -181,109 +181,109 @@ class StatsDebugView extends DebugView {
 
 	}
 
-	function camera_added(c:Camera) {
+	function cameraAdded(c:Camera) {
 		
-		c.onpostrender.add(add_camera_stats);
+		c.onpostRender.add(addCameraStats);
 
 	}
 
-	function camera_removed(c:Camera) {
+	function cameraRemoved(c:Camera) {
 
-		c.onpostrender.remove(add_camera_stats);
+		c.onpostRender.remove(addCameraStats);
 		
 	}
 
-	function add_camera_stats(c:Camera) {
+	function addCameraStats(c:Camera) {
 
 		if(active) {
-			camera_stats.add(get_camera_info(c));
+			cameraStats.add(getCameraInfo(c));
 		}
 		
 	}
 
-	function bytes_to_string( bytes:Int, ?precision:Int=3 ):String {
+	function bytesToString( bytes:Int, ?precision:Int=3 ):String {
 
 		var index = bytes == 0 ? 0 : Math.floor(Math.log(bytes) / Math.log(1024));
-		var _byte_value = bytes / Math.pow(1024, index);
-			_byte_value = clay.utils.Mathf.fixed(_byte_value, precision);
+		var _byteValue = bytes / Math.pow(1024, index);
+			_byteValue = clay.utils.Mathf.fixed(_byteValue, precision);
 
-		return _byte_value + " " + _byte_levels[index];
+		return _byteValue + " " + _byteLevels[index];
 
 	}
 
 	@:access(kha.Kravur)
-	function get_resource_stats():String {
+	function getResourceStats():String {
 
 
-		var bytes_lists = new StringBuf();
-		var text_lists = new StringBuf();
-		var json_lists = new StringBuf();
-		var texture_lists = new StringBuf();
-		var font_lists = new StringBuf();
-		var rtt_lists = new StringBuf();
-		// var shader_lists = new StringBuf();
-		var audio_lists = new StringBuf();
-		var video_lists = new StringBuf();
+		var bytesLists = new StringBuf();
+		var textLists = new StringBuf();
+		var jsonLists = new StringBuf();
+		var textureLists = new StringBuf();
+		var fontLists = new StringBuf();
+		var rttLists = new StringBuf();
+		// var shaderLists = new StringBuf();
+		var audioLists = new StringBuf();
+		var videoLists = new StringBuf();
 
-		var _total_txt = 0;
-		var _total_bts = 0;
-		var _total_tex = 0;
-		var _total_rtt = 0;
-		var _total_snd = 0;
-		var _total_vid = 0;
-		var _total_fnt = 0;
-		var _total_all = 0;
+		var _totalTxt = 0;
+		var _totalBts = 0;
+		var _totalTex = 0;
+		var _totalRtt = 0;
+		var _totalSnd = 0;
+		var _totalVid = 0;
+		var _totalFnt = 0;
+		var _totalAll = 0;
 
 		inline function _res(res:Resource) return "" + res.id + " • " + res.ref + "    \n ";
 
 		
 		inline function _fnt(res:FontResource) {
-			_total_fnt += res.memory_use();
-			return "(~" + bytes_to_string(res.memory_use()) + ") " + res.id + " • " + Lambda.count(res.font.images) + "    \n ";
+			_totalFnt += res.memoryUse();
+			return "(~" + bytesToString(res.memoryUse()) + ") " + res.id + " • " + Lambda.count(res.font.images) + "    \n ";
 		}
 
 		inline function _txt(res:TextResource) {
 			var _l = if(res.text != null) res.text.length else 0;
-			_total_txt += _l;
-			return "(~" + bytes_to_string(_l) + ") " + res.id + " • " + res.ref + "    \n ";
+			_totalTxt += _l;
+			return "(~" + bytesToString(_l) + ") " + res.id + " • " + res.ref + "    \n ";
 		}
 
 		inline function _bts(res:BytesResource) {
-			var _l = res.blob != null ? res.memory_use() : 0;
-			_total_bts += _l;
-			return "(~" + bytes_to_string(_l) + ") " + res.id + " • " + res.ref + "    \n ";
+			var _l = res.blob != null ? res.memoryUse() : 0;
+			_totalBts += _l;
+			return "(~" + bytesToString(_l) + ") " + res.id + " • " + res.ref + "    \n ";
 		}
 
 		inline function _tex(res:Texture) {
-			if(res.resource_type == ResourceType.render_texture) {
-				_total_rtt += res.memory_use();
+			if(res.resourceType == ResourceType.renderTexture) {
+				_totalRtt += res.memoryUse();
 			} else {
-				_total_tex += res.memory_use();
+				_totalTex += res.memoryUse();
 			}
-			return "(" + res.width_actual + "x" + res.height_actual + " ~" + bytes_to_string(res.memory_use()) + ")    " + res.id + " • " + res.ref + "    \n ";
+			return "(" + res.widthActual + "x" + res.heightActual + " ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.ref + "    \n ";
 		}
 
 		inline function _snd(res:AudioResource) return {
-			_total_snd += res.memory_use();
-			return "(" + clay.utils.Mathf.fixed(res.duration, 2) + "s " + res.channels + "ch ~" + bytes_to_string(res.memory_use()) + ")    " + res.id + " • " + res.ref + "    \n ";
+			_totalSnd += res.memoryUse();
+			return "(" + clay.utils.Mathf.fixed(res.duration, 2) + "s " + res.channels + "ch ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.ref + "    \n ";
 		}
 
 		inline function _vid(res:VideoResource) {
-			_total_vid += res.memory_use();
-			return "(" + res.video.width + "x" + res.video.height + " ~" + bytes_to_string(res.memory_use()) + ")    " + res.id + " • " + res.ref + "    \n ";
+			_totalVid += res.memoryUse();
+			return "(" + res.video.width + "x" + res.video.height + " ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.ref + "    \n ";
 		}
 
 		for(res in Clay.resources.cache) {
-			switch(res.resource_type) {
-				case ResourceType.bytes:            bytes_lists.add(_bts(cast res));
-				case ResourceType.text:             text_lists.add(_txt(cast res));
-				case ResourceType.json:             json_lists.add(_res(res));
-				case ResourceType.texture:          texture_lists.add(_tex(cast res));
-				case ResourceType.render_texture:   rtt_lists.add(_tex(cast res));
-				case ResourceType.font:             font_lists.add(_fnt(cast res));
-				// case ResourceType.shader:           shader_lists.add(_shd(cast res));
-				case ResourceType.audio:            audio_lists.add(_snd(cast res));
-				case ResourceType.video:            video_lists.add(_vid(cast res));
+			switch(res.resourceType) {
+				case ResourceType.bytes:            bytesLists.add(_bts(cast res));
+				case ResourceType.text:             textLists.add(_txt(cast res));
+				case ResourceType.json:             jsonLists.add(_res(res));
+				case ResourceType.texture:          textureLists.add(_tex(cast res));
+				case ResourceType.renderTexture:   rttLists.add(_tex(cast res));
+				case ResourceType.font:             fontLists.add(_fnt(cast res));
+				// case ResourceType.shader:           shaderLists.add(_shd(cast res));
+				case ResourceType.audio:            audioLists.add(_snd(cast res));
+				case ResourceType.video:            videoLists.add(_vid(cast res));
 				default:
 			}
 		}
@@ -297,71 +297,71 @@ class StatsDebugView extends DebugView {
 			return v;
 		}
 
-		_total_all += _total_bts;
-		_total_all += _total_txt;
-		_total_all += _total_tex;
-		_total_all += _total_rtt;
-		_total_all += _total_snd;
-		_total_all += _total_fnt;
-		_total_all += _total_vid;
+		_totalAll += _totalBts;
+		_totalAll += _totalTxt;
+		_totalAll += _totalTex;
+		_totalAll += _totalRtt;
+		_totalAll += _totalSnd;
+		_totalAll += _totalFnt;
+		_totalAll += _totalVid;
 
 		var lists = new StringBuf();
 
 		// lists.add("Resource list");
-		lists.add("Resource list (" + Clay.resources.stats.total + " • ~" + bytes_to_string(_total_all) + ") \n \n");
+		lists.add("Resource list (" + Clay.resources.stats.total + " • ~" + bytesToString(_totalAll) + ") \n \n");
 
-		lists.add("Bytes (" + Clay.resources.stats.bytes + " • ~" + bytes_to_string(_total_bts) + ")) \n");
-			lists.add(orblank(bytes_lists));
-		lists.add("\nText (" + Clay.resources.stats.texts + " • ~" + bytes_to_string(_total_txt) + ") \n");
-			lists.add(orblank(text_lists));
+		lists.add("Bytes (" + Clay.resources.stats.bytes + " • ~" + bytesToString(_totalBts) + ")) \n");
+			lists.add(orblank(bytesLists));
+		lists.add("\nText (" + Clay.resources.stats.texts + " • ~" + bytesToString(_totalTxt) + ") \n");
+			lists.add(orblank(textLists));
 		lists.add("\nJSON (" + Clay.resources.stats.jsons + ") \n");
-			lists.add(orblank(json_lists));
-		lists.add("\nTexture (" + Clay.resources.stats.textures + " • ~" + bytes_to_string(_total_tex) + ") \n");
-			lists.add(orblank(texture_lists));
-		lists.add("\nRenderTexture (" + Clay.resources.stats.rtt + " • ~" + bytes_to_string(_total_rtt) + ") \n");
-			lists.add(orblank(rtt_lists));
-		lists.add("\nFont (" + Clay.resources.stats.fonts + " • ~" + bytes_to_string(_total_fnt) + ") \n");
-			lists.add(orblank(font_lists));
+			lists.add(orblank(jsonLists));
+		lists.add("\nTexture (" + Clay.resources.stats.textures + " • ~" + bytesToString(_totalTex) + ") \n");
+			lists.add(orblank(textureLists));
+		lists.add("\nRenderTexture (" + Clay.resources.stats.rtt + " • ~" + bytesToString(_totalRtt) + ") \n");
+			lists.add(orblank(rttLists));
+		lists.add("\nFont (" + Clay.resources.stats.fonts + " • ~" + bytesToString(_totalFnt) + ") \n");
+			lists.add(orblank(fontLists));
 		// lists.add("\nShader (" + Clay.resources.stats.shaders + ") \n");
-			// lists.add(orblank(shader_lists));
-		lists.add("\nAudio (" + Clay.resources.stats.audios + " • ~" + bytes_to_string(_total_snd) + ") \n");
-			lists.add(orblank(audio_lists));
-		lists.add("\nVideo (" + Clay.resources.stats.videos + " • ~" + bytes_to_string(_total_vid) + ") \n");
-			lists.add(orblank(video_lists));
+			// lists.add(orblank(shaderLists));
+		lists.add("\nAudio (" + Clay.resources.stats.audios + " • ~" + bytesToString(_totalSnd) + ") \n");
+			lists.add(orblank(audioLists));
+		lists.add("\nVideo (" + Clay.resources.stats.videos + " • ~" + bytesToString(_totalVid) + ") \n");
+			lists.add(orblank(videoLists));
 
 		return lists.toString();
 
 	}
 
 
-	function get_render_stats():String {
+	function getRenderStats():String {
 
-		var _render_stats = Clay.renderer.stats;
+		var _renderStats = Clay.renderer.stats;
 
 		var sb = new StringBuf();
 
 		sb.add("Renderer Statistics \n \n " +
-			"total geometry : " + _render_stats.geometry + " \n " +
-			"visible geometry : " + _render_stats.visible_geometry + " \n " +
-			"static geometry : " + _render_stats.locked + " \n " +
-			"vertices : " + _render_stats.vertices + " \n " +
-			"indices : " + _render_stats.indices + " \n " +
-			"draw calls : " + _render_stats.draw_calls + " \n " +
-			"layers : " + Clay.renderer.layers.active_count + " \n " +
+			"total geometry : " + _renderStats.geometry + " \n " +
+			"visible geometry : " + _renderStats.visibleGeometry + " \n " +
+			"static geometry : " + _renderStats.locked + " \n " +
+			"vertices : " + _renderStats.vertices + " \n " +
+			"indices : " + _renderStats.indices + " \n " +
+			"draw calls : " + _renderStats.drawCalls + " \n " +
+			"layers : " + Clay.renderer.layers.activeCount + " \n " +
 			"cameras : " + Clay.renderer.cameras.length + " \n "
 		);
 
-		sb.add(camera_stats.toString());
+		sb.add(cameraStats.toString());
 
 		return sb.toString();
 
 	}
 
-	function get_camera_info(c:Camera):String {
+	function getCameraInfo(c:Camera):String {
 
 		var _layers = [];
 		for (l in Clay.renderer.layers) {
-			if(c._visible_layers_mask.get(l.id)) {
+			if(c._visibleLayersMask.get(l.id)) {
 				_layers.push(l);
 			}
 		}
@@ -370,9 +370,9 @@ class StatsDebugView extends DebugView {
 
 		var _s:String =  "    " + c.name + " ( " + _layers.length + " ) " + _active + " \n ";
 
-		if(!hide_layers && c.active) {
+		if(!hideLayers && c.active) {
 			for (l in _layers) {
-				_s += get_layer_info(l);
+				_s += getLayerInfo(l);
 			}
 		}
 
@@ -380,24 +380,24 @@ class StatsDebugView extends DebugView {
 		
 	}
 
-	inline function get_layer_info(l:Layer):String {
+	inline function getLayerInfo(l:Layer):String {
 
 		return
 			"        " + l.name + " | " + l.priority + " \n " +
 			"            total geometry : " + l.stats.geometry + " \n " +
-			"            visible geometry : " + l.stats.visible_geometry + " \n " +
+			"            visible geometry : " + l.stats.visibleGeometry + " \n " +
 			"            static geometry : " + l.stats.locked + " \n " +
 			"            vertices : " + l.stats.vertices + " \n " +
 			"            indices : " + l.stats.indices + " \n " +
-			"            draw calls : " + l.stats.draw_calls + " \n ";
+			"            draw calls : " + l.stats.drawCalls + " \n ";
 
 	}
 
 	function refresh() {
 
-		render_stats_text.text = get_render_stats();
-		resource_list_text.text = get_resource_stats();
-		camera_stats = new StringBuf();
+		renderStatsText.text = getRenderStats();
+		resourceListText.text = getResourceStats();
+		cameraStats = new StringBuf();
 
 	}
 

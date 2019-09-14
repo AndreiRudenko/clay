@@ -9,34 +9,34 @@ import clay.graphics.particles.components.RotationDelta;
 class RotationLifeModule extends ParticleModule {
 
 
-	public var initial_rotation:Float;
-	public var initial_rotation_max:Float;
-	public var end_rotation:Float;
-	public var end_rotation_max:Float;
-	public var rotation_random:Float;
+	public var initialRotation:Float;
+	public var initialRotationMax:Float;
+	public var endRotation:Float;
+	public var endRotationMax:Float;
+	public var rotationRandom:Float;
 
-	var rotation_delta:Components<RotationDelta>;
+	var rotationDelta:Components<RotationDelta>;
 
 
 	public function new(_options:RotationLifeModuleOptions) {
 
 		super(_options);
 
-		initial_rotation = _options.initial_rotation != null ? _options.initial_rotation : 0;
-		initial_rotation_max = _options.initial_rotation_max != null ? _options.initial_rotation_max : 0;
-		end_rotation = _options.end_rotation != null ? _options.end_rotation : 1;
-		end_rotation_max = _options.end_rotation_max != null ? _options.end_rotation_max : 0;
-		rotation_random = _options.rotation_random != null ? _options.rotation_random : 0;
+		initialRotation = _options.initialRotation != null ? _options.initialRotation : 0;
+		initialRotationMax = _options.initialRotationMax != null ? _options.initialRotationMax : 0;
+		endRotation = _options.endRotation != null ? _options.endRotation : 1;
+		endRotationMax = _options.endRotationMax != null ? _options.endRotationMax : 0;
+		rotationRandom = _options.rotationRandom != null ? _options.rotationRandom : 0;
 
 	}
 
 	override function init() {
 
-		rotation_delta = emitter.components.get(RotationDelta);
+		rotationDelta = emitter.components.get(RotationDelta);
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 		
 		for (p in particles) {
 			p.r = 0;
@@ -44,39 +44,39 @@ class RotationLifeModule extends ParticleModule {
 
 	}
 
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
-		if(initial_rotation_max != 0) {
-			p.r = emitter.random_float(initial_rotation, initial_rotation_max) * 360;
+		if(initialRotationMax != 0) {
+			p.r = emitter.randomFloat(initialRotation, initialRotationMax) * 360;
 		} else {
-			p.r = initial_rotation * 360;
+			p.r = initialRotation * 360;
 		}
 
-		if(end_rotation_max != 0) {
-			rotation_delta.get(p.id).value = emitter.random_float(end_rotation, end_rotation_max) * 360 - p.r;
+		if(endRotationMax != 0) {
+			rotationDelta.get(p.id).value = emitter.randomFloat(endRotation, endRotationMax) * 360 - p.r;
 		} else {
-			rotation_delta.get(p.id).value = end_rotation * 360 - p.r;
+			rotationDelta.get(p.id).value = endRotation * 360 - p.r;
 		}
 
-		if(rotation_delta.get(p.id).value != 0) {
-			rotation_delta.get(p.id).value /= p.lifetime;
+		if(rotationDelta.get(p.id).value != 0) {
+			rotationDelta.get(p.id).value /= p.lifetime;
 		}
 
 	}
 	
 	override function update(dt:Float) {
 
-		if(rotation_random > 0) {
+		if(rotationRandom > 0) {
 			for (p in particles) {
-				if(rotation_delta.get(p.id).value != 0) {
-					p.r += rotation_delta.get(p.id).value * dt;
+				if(rotationDelta.get(p.id).value != 0) {
+					p.r += rotationDelta.get(p.id).value * dt;
 				}
-				p.r += rotation_random * 360 * emitter.random_1_to_1() * dt;
+				p.r += rotationRandom * 360 * emitter.random1To1() * dt;
 			}
 		} else {
 			for (p in particles) {
-				if(rotation_delta.get(p.id).value != 0) {
-					p.r += rotation_delta.get(p.id).value * dt;
+				if(rotationDelta.get(p.id).value != 0) {
+					p.r += rotationDelta.get(p.id).value * dt;
 				}
 			}
 		}
@@ -86,29 +86,29 @@ class RotationLifeModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		initial_rotation = d.initial_rotation;
-		initial_rotation_max = d.initial_rotation_max;
-		end_rotation = d.end_rotation;
-		end_rotation_max = d.end_rotation_max;
-		rotation_random = d.rotation_random;
+		initialRotation = d.initialRotation;
+		initialRotationMax = d.initialRotationMax;
+		endRotation = d.endRotation;
+		endRotationMax = d.endRotationMax;
+		rotationRandom = d.rotationRandom;
 		
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.initial_rotation = initial_rotation;
-		d.initial_rotation_max = initial_rotation_max;
-		d.end_rotation = end_rotation;
-		d.end_rotation_max = end_rotation_max;
-		d.rotation_random = rotation_random;
+		d.initialRotation = initialRotation;
+		d.initialRotationMax = initialRotationMax;
+		d.endRotation = endRotation;
+		d.endRotationMax = endRotationMax;
+		d.rotationRandom = rotationRandom;
 
 		return d;
 	    
@@ -122,11 +122,11 @@ typedef RotationLifeModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initial_rotation : Float;
-	@:optional var initial_rotation_max : Float;
-	@:optional var end_rotation : Float;
-	@:optional var end_rotation_max : Float;
-	@:optional var rotation_random : Float;
+	@:optional var initialRotation : Float;
+	@:optional var initialRotationMax : Float;
+	@:optional var endRotation : Float;
+	@:optional var endRotationMax : Float;
+	@:optional var rotationRandom : Float;
 
 }
 

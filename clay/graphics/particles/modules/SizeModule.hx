@@ -11,16 +11,16 @@ using clay.graphics.particles.utils.VectorExtender;
 class SizeModule extends ParticleModule {
 
 
-	public var initial_size	(default, null):Vector;
-	public var initial_size_max:Vector;
+	public var initialSize	(default, null):Vector;
+	public var initialSizeMax:Vector;
 
 
 	public function new(_options:SizeModuleOptions) {
 
 		super(_options);
 
-		initial_size = _options.initial_size != null ? _options.initial_size : new Vector(32, 32);
-		initial_size_max = _options.initial_size_max;
+		initialSize = _options.initialSize != null ? _options.initialSize : new Vector(32, 32);
+		initialSizeMax = _options.initialSizeMax;
 		
 	}
 
@@ -28,14 +28,14 @@ class SizeModule extends ParticleModule {
 
 	}
 
-	override function onspawn(pd:Particle) {
+	override function onSpawn(pd:Particle) {
 
-		if(initial_size_max != null) {
-			pd.w = emitter.random_float(initial_size.x, initial_size_max.x);
-			pd.h = emitter.random_float(initial_size.y, initial_size_max.y);
+		if(initialSizeMax != null) {
+			pd.w = emitter.randomFloat(initialSize.x, initialSizeMax.x);
+			pd.h = emitter.randomFloat(initialSize.y, initialSizeMax.y);
 		} else {
-			pd.w = initial_size.x;
-			pd.h = initial_size.y;
+			pd.w = initialSize.x;
+			pd.h = initialSize.y;
 		}
 		
 	}
@@ -43,17 +43,17 @@ class SizeModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		initial_size.from_json(d.initial_size);
+		initialSize.fromJson(d.initialSize);
 
-		if(d.initial_size_max != null) {
-			if(initial_size_max == null) {
-				initial_size_max = new Vector();
+		if(d.initialSizeMax != null) {
+			if(initialSizeMax == null) {
+				initialSizeMax = new Vector();
 			}
-			initial_size_max.from_json(d.initial_size_max);
+			initialSizeMax.fromJson(d.initialSizeMax);
 		}
 		
 
@@ -61,14 +61,14 @@ class SizeModule extends ParticleModule {
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.initial_size = initial_size.to_json();
+		d.initialSize = initialSize.toJson();
 
-		if(initial_size_max != null) {
-			d.initial_size_max = initial_size_max.to_json();
+		if(initialSizeMax != null) {
+			d.initialSizeMax = initialSizeMax.toJson();
 		}
 
 		return d;
@@ -82,8 +82,8 @@ class SizeModule extends ParticleModule {
 typedef SizeModuleOptions = {
 	
 	>ParticleModuleOptions,
-	@:optional var initial_size : Vector;
-	@:optional var initial_size_max : Vector;
+	@:optional var initialSize : Vector;
+	@:optional var initialSizeMax : Vector;
 
 }
 

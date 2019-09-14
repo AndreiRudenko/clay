@@ -11,128 +11,128 @@ class Compressor extends AudioEffect {
 	public var ratio(default, set):Float;
 
 	public var threshold:Float;
-	public var attack_time(default, set):Float; // sec
-	public var release_time(default, set):Float; // sec
+	public var attackTime(default, set):Float; // sec
+	public var releaseTime(default, set):Float; // sec
 
-	public var pre_gain(default, set):Float;
-	public var post_gain(default, set):Float;
+	public var preGain(default, set):Float;
+	public var postGain(default, set):Float;
 
 	var _slope:Float = 0;
 
-	var _lookahead_time:Float = 0.005; // sec, 5ms: this introduces lag
+	var _lookaheadTime:Float = 0.005; // sec, 5ms: this introduces lag
 
-	var _delay_buffer:kha.arrays.Float32Array;
-	var _envelope_buffer:kha.arrays.Float32Array;
+	var _delayBuffer:kha.arrays.Float32Array;
+	var _envelopeBuffer:kha.arrays.Float32Array;
 
-	var _delay_read_pointer:Int;
-	var _delay_write_pointer:Int;
-	var _envelope_sample:Float;
-	var _sample_rate:Float;
+	var _delayReadPointer:Int;
+	var _delayWritePointer:Int;
+	var _envelopeSample:Float;
+	var _sampleRate:Float;
 
-	var _attack_gain:Float;
-	var _release_gain:Float;
+	var _attackGain:Float;
+	var _releaseGain:Float;
 
-	var _pre_gain_amp:Float;
-	var _post_gain_amp:Float;
+	var _preGainAmp:Float;
+	var _postGainAmp:Float;
 
 
-	public function new(ratio:Float = 3, threshold:Float = -2, attack:Float = 0, release:Float = 0.5, pre_gain:Float = 0, post_gain:Float = 0) {
+	public function new(ratio:Float = 3, threshold:Float = -2, attack:Float = 0, release:Float = 0.5, preGain:Float = 0, postGain:Float = 0) {
 
-		_sample_rate = Clay.audio.sample_rate;
+		_sampleRate = Clay.audio.sampleRate;
 		
-		var n = Std.int(_lookahead_time * _sample_rate);
-		_delay_buffer = new kha.arrays.Float32Array(n);
+		var n = Std.int(_lookaheadTime * _sampleRate);
+		_delayBuffer = new kha.arrays.Float32Array(n);
 
 		for (i in 0...n) { // this fix click on start in cpp build
-			_delay_buffer[i] = 0;
+			_delayBuffer[i] = 0;
 		}
 
-		_envelope_buffer = new kha.arrays.Float32Array(512);
+		_envelopeBuffer = new kha.arrays.Float32Array(512);
 
-		_delay_read_pointer = 0;
-		_delay_write_pointer = n - 1;
-		_envelope_sample = 0;
+		_delayReadPointer = 0;
+		_delayWritePointer = n - 1;
+		_envelopeSample = 0;
 
-		_attack_gain = 0;
-		_release_gain = 0;
+		_attackGain = 0;
+		_releaseGain = 0;
 
-		_pre_gain_amp = 0;
-		_post_gain_amp = 0;
+		_preGainAmp = 0;
+		_postGainAmp = 0;
 
 		this.threshold = threshold;
-		this.attack_time = attack;
-		this.release_time = release;
+		this.attackTime = attack;
+		this.releaseTime = release;
 		this.ratio = ratio;
 		
-		this.pre_gain = pre_gain;
-		this.post_gain = post_gain;
+		this.preGain = preGain;
+		this.postGain = postGain;
 
 	}
 
-	override function process(samples:Int, data:kha.arrays.Float32Array, sample_rate:Int) {
+	override function process(samples:Int, data:kha.arrays.Float32Array, sampleRate:Int) {
 		
 		//apply pre gain to signal
 		for (k in 0...samples) {
-			data[k] = _pre_gain_amp * data[k];
+			data[k] = _preGainAmp * data[k];
 		}
 
-		var envelope_data = get_envelope(samples, data);
+		var envelopeData = getEnvelope(samples, data);
 
 		var len = Std.int(samples/2);
 
-		if (_lookahead_time > 0){
+		if (_lookaheadTime > 0){
 			//write signal into buffer and read delayed signal
 			for (i in 0...len) {
-				_delay_buffer.set((_delay_write_pointer*2) % _delay_buffer.length, data[i*2]);
-				_delay_buffer.set((_delay_write_pointer*2+1) % _delay_buffer.length, data[i*2+1]);
-				data[i*2] = _delay_buffer.get((_delay_read_pointer*2) % _delay_buffer.length);
-				data[i*2+1] = _delay_buffer.get((_delay_read_pointer*2+1) % _delay_buffer.length);
+				_delayBuffer.set((_delayWritePointer*2) % _delayBuffer.length, data[i*2]);
+				_delayBuffer.set((_delayWritePointer*2+1) % _delayBuffer.length, data[i*2+1]);
+				data[i*2] = _delayBuffer.get((_delayReadPointer*2) % _delayBuffer.length);
+				data[i*2+1] = _delayBuffer.get((_delayReadPointer*2+1) % _delayBuffer.length);
 
-				_delay_write_pointer++;
-				_delay_read_pointer++;
+				_delayWritePointer++;
+				_delayReadPointer++;
 			}
 		}
 		
 		for (i in 0...len) {
-			var gain_db = _slope * (threshold - amp_to_db(envelope_data[i]));
+			var gainDb = _slope * (threshold - ampToDb(envelopeData[i]));
 			//is gain below zero?
-			gain_db = Math.min(0, gain_db);
-			var gain = db_to_amp(gain_db);
-			data[i*2] *= (gain * _post_gain_amp);
-			data[i*2+1] *= (gain * _post_gain_amp);
+			gainDb = Math.min(0, gainDb);
+			var gain = dbToAmp(gainDb);
+			data[i*2] *= (gain * _postGainAmp);
+			data[i*2+1] *= (gain * _postGainAmp);
 		}
 
 	}
 
-	function get_envelope(samples:Int, data:kha.arrays.Float32Array):kha.arrays.Float32Array {
+	function getEnvelope(samples:Int, data:kha.arrays.Float32Array):kha.arrays.Float32Array {
 
 		var len = Std.int(samples/2);
 
-		if(_envelope_buffer.length < len) {
-			_envelope_buffer = new kha.arrays.Float32Array(len);
+		if(_envelopeBuffer.length < len) {
+			_envelopeBuffer = new kha.arrays.Float32Array(len);
 		}
 		
 		for (i in 0...len) {
 				
-			var env_in = Math.abs(to_mono(data[i*2], data[i*2+1]));
+			var envIn = Math.abs(toMono(data[i*2], data[i*2+1]));
 			
-			if (_envelope_sample < env_in){
-				_envelope_sample = env_in + _attack_gain * (_envelope_sample - env_in);
+			if (_envelopeSample < envIn){
+				_envelopeSample = envIn + _attackGain * (_envelopeSample - envIn);
 			} else {
-				_envelope_sample = env_in + _release_gain * (_envelope_sample - env_in);
+				_envelopeSample = envIn + _releaseGain * (_envelopeSample - envIn);
 			}
 			
-			_envelope_buffer[i] = _envelope_sample;
+			_envelopeBuffer[i] = _envelopeSample;
 			
 		}
 		
-		return _envelope_buffer;
+		return _envelopeBuffer;
 
 	}
 
 	function set_ratio(v:Float):Float {
 
-		ratio = Mathf.clamp_bottom(v, 1);
+		ratio = Mathf.clampBottom(v, 1);
 
 		_slope = 1 - (1/ratio);
 
@@ -140,41 +140,41 @@ class Compressor extends AudioEffect {
 
 	}
 
-	function set_pre_gain(v:Float):Float {
+	function set_preGain(v:Float):Float {
 
-		_pre_gain_amp = db_to_amp(v);
+		_preGainAmp = dbToAmp(v);
 
-		return pre_gain = v;
-
-	}
-
-	function set_post_gain(v:Float):Float {
-
-		_post_gain_amp = db_to_amp(v);
-
-		return post_gain = v;
+		return preGain = v;
 
 	}
 
-	function set_attack_time(v:Float):Float {
+	function set_postGain(v:Float):Float {
+
+		_postGainAmp = dbToAmp(v);
+
+		return postGain = v;
+
+	}
+
+	function set_attackTime(v:Float):Float {
 
 		//attack in milliseconds
-		_attack_gain = Math.exp(-1 / (_sample_rate * v));
+		_attackGain = Math.exp(-1 / (_sampleRate * v));
 
-		return attack_time = v;
+		return attackTime = v;
 
 	}
 
-	function set_release_time(v:Float):Float {
+	function set_releaseTime(v:Float):Float {
 
 		//release in milliseconds
-		_release_gain = Math.exp(-1 / (_sample_rate * v));	
+		_releaseGain = Math.exp(-1 / (_sampleRate * v));	
 
-		return release_time = v;
+		return releaseTime = v;
 
 	}
 
-	inline function to_mono(l:Float, r:Float):Float {
+	inline function toMono(l:Float, r:Float):Float {
 		
 		return (l + r) / 2;
 
@@ -186,13 +186,13 @@ class Compressor extends AudioEffect {
 
 	}
 
-	inline function amp_to_db(v:Float):Float {
+	inline function ampToDb(v:Float):Float {
 		
 		return 20 * log10(v);	
 
 	}
 
-	inline function db_to_amp(db:Float):Float {
+	inline function dbToAmp(db:Float):Float {
 
 		return Math.pow(10, db / 20);
 

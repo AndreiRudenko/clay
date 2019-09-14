@@ -9,8 +9,8 @@ import haxe.macro.Expr;
 class EventMacro {
 
 
-	public static var event_id:Int = 0;
-	public static var event_map:Map<String, Int> = new Map();
+	public static var eventID:Int = 0;
+	public static var eventMap:Map<String, Int> = new Map();
 
 
 	public static function build():Array<Field> {
@@ -55,10 +55,10 @@ class EventMacro {
 								}
 								var name = get_event_name(field);
 								var id:Int = 0;
-								if(event_map.exists(name)) {
-									id = event_map.get(name);
+								if(eventMap.exists(name)) {
+									id = eventMap.get(name);
 								} else {
-									id = event_id++;
+									id = eventID++;
 								}
 								field.kind = FVar(t,macro $v{id});
 							}

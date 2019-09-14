@@ -10,32 +10,32 @@ import clay.utils.Mathf;
 class ScaleLifeModule extends ParticleModule {
 
 
-	public var initial_scale:Float;
-	public var initial_scale_max:Float;
-	public var end_scale:Float;
-	public var end_scale_max:Float;
+	public var initialScale:Float;
+	public var initialScaleMax:Float;
+	public var endScale:Float;
+	public var endScaleMax:Float;
 
-	var scale_delta:Components<ScaleDelta>;
+	var _scaleDelta:Components<ScaleDelta>;
 
 
 	public function new(_options:ScaleLifeModuleOptions) {
 
 		super(_options);
 
-		initial_scale = _options.initial_scale != null ? _options.initial_scale : 1;
-		initial_scale_max = _options.initial_scale_max != null ? _options.initial_scale_max : 0;
-		end_scale = _options.end_scale != null ? _options.end_scale : 1;
-		end_scale_max = _options.end_scale_max != null ? _options.end_scale_max : 0;
+		initialScale = _options.initialScale != null ? _options.initialScale : 1;
+		initialScaleMax = _options.initialScaleMax != null ? _options.initialScaleMax : 0;
+		endScale = _options.endScale != null ? _options.endScale : 1;
+		endScaleMax = _options.endScaleMax != null ? _options.endScaleMax : 0;
 
 	}
 
 	override function init() {
 
-		scale_delta = emitter.components.get(ScaleDelta);
+		_scaleDelta = emitter.components.get(ScaleDelta);
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
 		for (pd in particles) {
 			pd.s = 1;
@@ -43,22 +43,22 @@ class ScaleLifeModule extends ParticleModule {
 		
 	}
 
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
-		if(initial_scale_max > initial_scale) {
-			p.s = emitter.random_float(initial_scale, initial_scale_max);
+		if(initialScaleMax > initialScale) {
+			p.s = emitter.randomFloat(initialScale, initialScaleMax);
 		} else {
-			p.s = initial_scale;
+			p.s = initialScale;
 		}
 
-		if(end_scale_max > end_scale) {
-			scale_delta.get(p.id).value = emitter.random_float(end_scale, end_scale_max) - p.s;
+		if(endScaleMax > endScale) {
+			_scaleDelta.get(p.id).value = emitter.randomFloat(endScale, endScaleMax) - p.s;
 		} else {
-			scale_delta.get(p.id).value = end_scale - p.s;
+			_scaleDelta.get(p.id).value = endScale - p.s;
 		}
 
-		if(scale_delta.get(p.id).value != 0) {
-			scale_delta.get(p.id).value /= p.lifetime;
+		if(_scaleDelta.get(p.id).value != 0) {
+			_scaleDelta.get(p.id).value /= p.lifetime;
 		}
 
 	}
@@ -66,8 +66,8 @@ class ScaleLifeModule extends ParticleModule {
 	override function update(dt:Float) {
 
 		for (p in particles) {
-			if(scale_delta.get(p.id).value != 0) {
-				p.s = Mathf.clamp_bottom(p.s + scale_delta.get(p.id).value * dt, 0);
+			if(_scaleDelta.get(p.id).value != 0) {
+				p.s = Mathf.clampBottom(p.s + _scaleDelta.get(p.id).value * dt, 0);
 			}
 		}
 
@@ -76,27 +76,27 @@ class ScaleLifeModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		initial_scale = d.initial_scale;
-		initial_scale_max = d.initial_scale_max;
-		end_scale = d.end_scale;
-		end_scale_max = d.end_scale_max;
+		initialScale = d.initialScale;
+		initialScaleMax = d.initialScaleMax;
+		endScale = d.endScale;
+		endScaleMax = d.endScaleMax;
 		
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.initial_scale = initial_scale;
-		d.initial_scale_max = initial_scale_max;
-		d.end_scale = end_scale;
-		d.end_scale_max = end_scale_max;
+		d.initialScale = initialScale;
+		d.initialScaleMax = initialScaleMax;
+		d.endScale = endScale;
+		d.endScaleMax = endScaleMax;
 
 		return d;
 	    
@@ -110,10 +110,10 @@ typedef ScaleLifeModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initial_scale : Float;
-	@:optional var initial_scale_max : Float;
-	@:optional var end_scale : Float;
-	@:optional var end_scale_max : Float;
+	@:optional var initialScale : Float;
+	@:optional var initialScaleMax : Float;
+	@:optional var endScale : Float;
+	@:optional var endScaleMax : Float;
 
 }
 

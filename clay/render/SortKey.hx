@@ -54,6 +54,19 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 
 	}
 
+	inline function setSortKey(val:UInt, bnum:Int, offset:Int) {
+		
+		this.other = Bits.clearRange(this.other, offset+1, offset+bnum);
+		this.other = Bits.setToPos(this.other, val, offset);
+
+	}
+
+	inline function getSortKey(bnum:Int, offset:Int):Int {
+		
+		return Bits.extractRange(this.other, offset+1, bnum);
+
+	}
+
 	inline function get_depth():Float {
 
 		return this.depth;
@@ -80,14 +93,14 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 
 	inline function get_shader():UInt {
 
-		return get_sort_key(Clay.renderer.sort_options.shader_bits, Clay.renderer.sort_options.shader_offset);
+		return getSortKey(Clay.renderer.sortOptions.shaderBits, Clay.renderer.sortOptions.shaderOffset);
 
 	}
 
 	inline function set_shader(id:UInt):UInt {
 
-		id = Mathf.clampi(id, 0, Clay.renderer.sort_options.shader_max);
-		set_sort_key(id, Clay.renderer.sort_options.shader_bits, Clay.renderer.sort_options.shader_offset);
+		id = Mathf.clampi(id, 0, Clay.renderer.sortOptions.shaderMax);
+		setSortKey(id, Clay.renderer.sortOptions.shaderBits, Clay.renderer.sortOptions.shaderOffset);
 
 		return id;
 
@@ -95,14 +108,14 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 
 	inline function get_texture():UInt {
 
-		return get_sort_key(Clay.renderer.sort_options.texture_bits, Clay.renderer.sort_options.texture_offset);
+		return getSortKey(Clay.renderer.sortOptions.textureBits, Clay.renderer.sortOptions.textureOffset);
 
 	}
 	
 	inline function set_texture(id:UInt):UInt {
 
-		id = Mathf.clampi(id, 0, Clay.renderer.sort_options.texture_max);
-		set_sort_key(id, Clay.renderer.sort_options.texture_bits, Clay.renderer.sort_options.texture_offset);
+		id = Mathf.clampi(id, 0, Clay.renderer.sortOptions.textureMax);
+		setSortKey(id, Clay.renderer.sortOptions.textureBits, Clay.renderer.sortOptions.textureOffset);
 
 		return id;
 
@@ -110,28 +123,15 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 
 	inline function get_clip():Bool {
 
-		return get_sort_key(Clay.renderer.sort_options.clip_bits, Clay.renderer.sort_options.clip_offset) == 1;
+		return getSortKey(Clay.renderer.sortOptions.clipBits, Clay.renderer.sortOptions.clipOffset) == 1;
 
 	}
 
 	inline function set_clip(v:Bool):Bool {
 
-		set_sort_key(v ? 1 : 0, Clay.renderer.sort_options.clip_bits, Clay.renderer.sort_options.clip_offset);
+		setSortKey(v ? 1 : 0, Clay.renderer.sortOptions.clipBits, Clay.renderer.sortOptions.clipOffset);
 
 		return v;
-
-	}
-
-	inline function set_sort_key(val:UInt, bnum:Int, offset:Int) {
-		
-		this.other = Bits.clear_range(this.other, offset+1, offset+bnum);
-		this.other = Bits.set_to_pos(this.other, val, offset);
-
-	}
-
-	inline function get_sort_key(bnum:Int, offset:Int):Int {
-		
-		return Bits.extract_range(this.other, offset+1, bnum);
 
 	}
 
@@ -166,30 +166,30 @@ private class __SortKey {
 class SortOptions {
 
 
-	public var clip_bits      	(default, null):Int;
-	public var texture_bits   	(default, null):Int;
-	public var shader_bits    	(default, null):Int;
+	public var clipBits      	(default, null):Int;
+	public var textureBits   	(default, null):Int;
+	public var shaderBits    	(default, null):Int;
 
-	public var clip_offset    	(default, null):Int;
-	public var texture_offset 	(default, null):Int;
-	public var shader_offset  	(default, null):Int;
+	public var clipOffset    	(default, null):Int;
+	public var textureOffset 	(default, null):Int;
+	public var shaderOffset  	(default, null):Int;
 
-	public var texture_max    	(default, null):Int;
-	public var shader_max     	(default, null):Int;
+	public var textureMax    	(default, null):Int;
+	public var shaderMax     	(default, null):Int;
 
 
-	public function new(_shader_bits:Int = 10, _texture_bits:Int = 19) {
+	public function new(_shaderBits:Int = 10, _textureBits:Int = 19) {
 		
-		shader_bits = _shader_bits;
-		texture_bits = _texture_bits;
-		clip_bits = 1;
+		shaderBits = _shaderBits;
+		textureBits = _textureBits;
+		clipBits = 1;
 
-		clip_offset = 0;
-		texture_offset = clip_bits;
-		shader_offset = clip_bits + texture_bits;
+		clipOffset = 0;
+		textureOffset = clipBits;
+		shaderOffset = clipBits + textureBits;
 
-		texture_max = Bits.count_singed(texture_bits);
-		shader_max = Bits.count_singed(shader_bits);
+		textureMax = Bits.countSinged(textureBits);
+		shaderMax = Bits.countSinged(shaderBits);
 
 	}
 

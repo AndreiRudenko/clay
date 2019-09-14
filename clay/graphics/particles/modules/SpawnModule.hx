@@ -15,7 +15,7 @@ class SpawnModule extends ParticleModule {
 
 	}
 
-	override function onspawn(pd:Particle) {
+	override function onSpawn(pd:Particle) {
 
 		pd.x = emitter.system.pos.x + emitter.pos.x;
 		pd.y = emitter.system.pos.y + emitter.pos.y;

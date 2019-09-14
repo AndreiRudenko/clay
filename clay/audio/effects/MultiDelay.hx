@@ -10,78 +10,78 @@ import clay.Sound;
 class MultiDelay extends AudioEffect {
 
 
-	public var delay_samples(default, set): Int;
+	public var delaySamples(default, set):Int;
 
-	var delay_buffer_samples: kha.arrays.Float32Array;
+	var delayBufferSamples:kha.arrays.Float32Array;
 
-	var delay_input_pointer: Int;
-	var delay_output_pointer: Int;
-	var delay_volume: Float;
-	var master_volume: Float;
+	var delayInputPointer:Int;
+	var delayOutputPointer:Int;
+	var delayVolume:Float;
+	var masterVolume:Float;
 
-	var sample_rate: Float;
+	var sampleRate:Float;
 
 
-	public function new(_delay_samples:Int, _master_volume:Float, _delay_volume:Float) {
+	public function new(_delaySamples:Int, _masterVolume:Float, _delayVolume:Float) {
 
-		delay_buffer_samples = new kha.arrays.Float32Array(_delay_samples); // The maximum size of delay
-		delay_input_pointer  = _delay_samples;
-		delay_output_pointer = 0;
+		delayBufferSamples = new kha.arrays.Float32Array(_delaySamples); // The maximum size of delay
+		delayInputPointer  = _delaySamples;
+		delayOutputPointer = 0;
 	 
-		delay_samples = _delay_samples;
-		delay_volume = _delay_volume;
-		master_volume = _master_volume;
+		delaySamples = _delaySamples;
+		delayVolume = _delayVolume;
+		masterVolume = _masterVolume;
 
-		sample_rate = Clay.audio.sample_rate;
+		sampleRate = Clay.audio.sampleRate;
 
 	}
 
-	override function process(samples: Int, buffer: kha.arrays.Float32Array, sample_rate: Int) {
+	override function process(samples:Int, buffer:kha.arrays.Float32Array, sampleRate:Int) {
 
 		for (i in 0...Std.int(samples/2)) {
-			buffer[i*2] = get_delayed(buffer[i*2]) * master_volume;
-			buffer[i*2+1] = get_delayed(buffer[i*2+1]) * master_volume;
+			buffer[i*2] = getDelayed(buffer[i*2]) * masterVolume;
+			buffer[i*2+1] = getDelayed(buffer[i*2+1]) * masterVolume;
 		}
 
 	}
 
-	function get_delayed(input:Float) {
+	function getDelayed(input:Float) {
 
-		var delay_sample = delay_buffer_samples.get(delay_output_pointer);
+		var delaySample = delayBufferSamples.get(delayOutputPointer);
 
 		// Mix normal audio data with delayed audio
-		var sample = (delay_sample * delay_volume) + input;
+		var sample = (delaySample * delayVolume) + input;
 
 		// Add audio data with the delay in the delay buffer
-		delay_buffer_samples.set(delay_input_pointer, sample);
+		delayBufferSamples.set(delayInputPointer, sample);
 		
 		// Manage circulair delay buffer pointers
-		delay_input_pointer++;
+		delayInputPointer++;
 
-		if (delay_input_pointer >= delay_buffer_samples.length-1) {
-			delay_input_pointer = 0;
+		if (delayInputPointer >= delayBufferSamples.length-1) {
+			delayInputPointer = 0;
 		}
 		 
-		delay_output_pointer++;
+		delayOutputPointer++;
 
-		if (delay_output_pointer >= delay_buffer_samples.length-1) {
-			delay_output_pointer = 0; 
+		if (delayOutputPointer >= delayBufferSamples.length-1) {
+			delayOutputPointer = 0; 
 		} 
 
 		return sample;
 
 	}
 
-	function set_delay_samples(v:Int):Int {
+	function set_delaySamples(v:Int):Int {
 
-		delay_samples = v;
-		delay_input_pointer = delay_output_pointer + delay_samples;
+		delaySamples = v;
+		delayInputPointer = delayOutputPointer + delaySamples;
 
-		if (delay_input_pointer >= delay_buffer_samples.length-1) {
-			delay_input_pointer = delay_input_pointer - delay_buffer_samples.length; 
+		if (delayInputPointer >= delayBufferSamples.length-1) {
+			delayInputPointer = delayInputPointer - delayBufferSamples.length; 
 		}
 
-		return delay_samples;
+		return delaySamples;
 		
 	}
 

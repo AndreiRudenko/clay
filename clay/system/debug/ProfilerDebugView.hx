@@ -36,22 +36,22 @@ class ProfilerDebugView extends DebugView {
 
 	public var lists:Map<String,ProfilerValue>;
 
-	public static var color_clip : Color = new Color().from_int(0xf55d4c);
-	public static var color_hi : Color = new Color().from_int(0xff9f19);
-	public static var color_mid : Color = new Color().from_int(0xe0ce00);
-	public static var color_low : Color = new Color().from_int(0x8cc63f);
+	public static var colorClip : Color = new Color().fromInt(0xf55d4c);
+	public static var colorHi : Color = new Color().fromInt(0xff9f19);
+	public static var colorMid : Color = new Color().fromInt(0xe0ce00);
+	public static var colorLow : Color = new Color().fromInt(0x8cc63f);
 
 
 	public function new(_debug:Debug) {
 
 		super(_debug);
 
-		debug_name = "Profiler";
+		debugName = "Profiler";
 		lists = new Map();
 
 	}
 
-	override function onenabled() {
+	override function onEnabled() {
 
 		for(_item in lists) {
 			if(!_item.hidden) {
@@ -61,7 +61,7 @@ class ProfilerDebugView extends DebugView {
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
 		for(_item in lists) {
 			_item.bar.hide();
@@ -76,7 +76,7 @@ class ProfilerDebugView extends DebugView {
 
 		if(_item == null) {
 			//create it
-			_item = new ProfilerValue(_id, new ProfilerBar(_id, _max, new Color().from_int(0xffa563) ));
+			_item = new ProfilerValue(_id, new ProfilerBar(_id, _max, new Color().fromInt(0xffa563) ));
 			// _item.bar.pos = new Vector(Clay.debug.padding.x*2,(Clay.debug.padding.y*3) + (Lambda.count(lists) * 20) );
 			_item.bar.pos = new Vector(rect.x,(rect.y) + (Lambda.count(lists) * 20) );
 			lists.set(_id, _item);
@@ -178,8 +178,8 @@ private class ProfilerValue {
 
 private class ProfilerGraph {
 
-	public var graphbg_geometry : Quad;
-	public var graph_geometry : Mesh;
+	public var graphbgGeometry : Quad;
+	public var graphGeometry : Mesh;
 	public var name : String;
 
 	var bg : Bool = true;
@@ -207,7 +207,7 @@ private class ProfilerGraph {
 		bg = _bg;
 		name = _name;
 		// color = new Color();
-		color = ProfilerDebugView.color_low;
+		color = ProfilerDebugView.colorLow;
 		max = Mathf.fixed((1/60) * 1000, 2);
 
 	} //new
@@ -220,29 +220,29 @@ private class ProfilerGraph {
 		height2 = height*2;
 
 		if(bg) {
-			graphbg_geometry = new Quad(width-segment, height2);
-			graphbg_geometry.color = new Color().from_int(0x101010);
-			graphbg_geometry.depth = 999.3;
-			graphbg_geometry.layer = Clay.debug.layer;
+			graphbgGeometry = new Quad(width-segment, height2);
+			graphbgGeometry.color = new Color().fromInt(0x101010);
+			graphbgGeometry.depth = 999.3;
+			graphbgGeometry.layer = Clay.debug.layer;
 		}
 
-		graph_geometry = new Mesh();
-		graph_geometry.depth = 999.3;
-		graph_geometry.color = color;
-		graph_geometry.layer = Clay.debug.layer;
+		graphGeometry = new Mesh();
+		graphGeometry.depth = 999.3;
+		graphGeometry.color = color;
+		graphGeometry.layer = Clay.debug.layer;
 
 		for (i in 0...history) {
 			var top = new Vertex(new Vector(segment*i, height2), color);
 			var bottom = new Vertex(new Vector(segment*i, height2), color);
 			vertices.push(top);
-			graph_geometry.vertices.push(top);
-			graph_geometry.vertices.push(bottom);
+			graphGeometry.vertices.push(top);
+			graphGeometry.vertices.push(bottom);
 		}
 
 		for (i in 0...(history-1)*2) {
-			graph_geometry.indices[i * 3 + 0] = i + 0;
-			graph_geometry.indices[i * 3 + 1] = i + 1;
-			graph_geometry.indices[i * 3 + 2] = i + 2;
+			graphGeometry.indices[i * 3 + 0] = i + 0;
+			graphGeometry.indices[i * 3 + 1] = i + 1;
+			graphGeometry.indices[i * 3 + 2] = i + 2;
 		}
 
 		hide();
@@ -256,7 +256,7 @@ private class ProfilerGraph {
 		var oldmax = max;
 		max = _v;
 
-		if(graph_geometry != null) {
+		if(graphGeometry != null) {
 			var ratio = 1.0;
 			if(oldmax != 0) {
 				ratio = oldmax/_v;
@@ -296,13 +296,13 @@ private class ProfilerGraph {
 		}
 
 		if(_p > 1) {
-			vertices[history-1].color = ProfilerDebugView.color_clip;
+			vertices[history-1].color = ProfilerDebugView.colorClip;
 		} else if(_p > 0.66) {
-			vertices[history-1].color = ProfilerDebugView.color_hi;
+			vertices[history-1].color = ProfilerDebugView.colorHi;
 		} else if(_p > 0.33) {
-			vertices[history-1].color = ProfilerDebugView.color_mid;
+			vertices[history-1].color = ProfilerDebugView.colorMid;
 		} else {
-			vertices[history-1].color = ProfilerDebugView.color_low;
+			vertices[history-1].color = ProfilerDebugView.colorLow;
 		}
 
 		_p = Mathf.clamp(_p, 0.001, 1);
@@ -311,35 +311,35 @@ private class ProfilerGraph {
 
 		return ping = _v;
 
-	} //set_ping
+	} //setPing
 
 	public function hide() {
 		visible = false;
-		graph_geometry.visible = false;
-		if(graphbg_geometry != null) graphbg_geometry.visible = false;
+		graphGeometry.visible = false;
+		if(graphbgGeometry != null) graphbgGeometry.visible = false;
 	}
 
 	public function show() {
 		visible = true;
-		graph_geometry.visible = true;
-		if(graphbg_geometry != null) graphbg_geometry.visible = true;
+		graphGeometry.visible = true;
+		if(graphbgGeometry != null) graphbgGeometry.visible = true;
 	}
 
 	function set_pos(_p:Vector) {
 
-		if(graphbg_geometry != null) graphbg_geometry.transform.pos.copy_from(_p);
-		graph_geometry.transform.pos.copy_from(_p);
+		if(graphbgGeometry != null) graphbgGeometry.transform.pos.copyFrom(_p);
+		graphGeometry.transform.pos.copyFrom(_p);
 
 		return pos = _p;
 
-	} //set_pos
+	} //setPos
 
 	public function destroy() {
 
-		graphbg_geometry.drop();
-		graph_geometry.drop();
-		graphbg_geometry = null;
-		graph_geometry = null;
+		graphbgGeometry.drop();
+		graphGeometry.drop();
+		graphbgGeometry = null;
+		graphGeometry = null;
 
 	}
 
@@ -347,11 +347,11 @@ private class ProfilerGraph {
 
 private class ProfilerBar {
 
-	public var bar_geometry : Quad;
-	public var bg_geometry : Quad;
+	public var barGeometry : Quad;
+	public var bgGeometry : Quad;
 	public var graph : ProfilerGraph;
 
-	public var text_item : Text;
+	public var textItem : Text;
 	public var name : String;
 
 	public var visible:Bool = false;
@@ -370,22 +370,22 @@ private class ProfilerBar {
 		graph.create();
 		if(_max != null) max = graph.max = _max;
 
-		text_item = new Text(Clay.renderer.font);
-		text_item.size = Std.int(height*1.8);
-		text_item.color = _color;
-		text_item.layer = Clay.debug.layer;
-		text_item.depth = 999.3;
+		textItem = new Text(Clay.renderer.font);
+		textItem.size = Std.int(height*1.8);
+		textItem.color = _color;
+		textItem.layer = Clay.debug.layer;
+		textItem.depth = 999.3;
 
-		bg_geometry = new Quad(graph.width-2, graph.height-2);
-		bg_geometry.color = new Color().from_int(0x090909);
-		bg_geometry.depth = 999.3;
-		bg_geometry.layer = Clay.debug.layer;
+		bgGeometry = new Quad(graph.width-2, graph.height-2);
+		bgGeometry.color = new Color().fromInt(0x090909);
+		bgGeometry.depth = 999.3;
+		bgGeometry.layer = Clay.debug.layer;
 
-		bar_geometry = new Quad(graph.width, graph.height);
-		bar_geometry.color = _color;
-		bar_geometry.depth = 999.33;
-		bar_geometry.layer = Clay.debug.layer;
-		bar_geometry.transform.pos.set(1,1);
+		barGeometry = new Quad(graph.width, graph.height);
+		barGeometry.color = _color;
+		barGeometry.depth = 999.33;
+		barGeometry.layer = Clay.debug.layer;
+		barGeometry.transform.pos.set(1,1);
 
 		hide();
 
@@ -393,30 +393,30 @@ private class ProfilerBar {
 
 	public function hide() {
 		visible = false;
-		bar_geometry.visible = false;
-		bg_geometry.visible = false;
-		text_item.visible = false;
+		barGeometry.visible = false;
+		bgGeometry.visible = false;
+		textItem.visible = false;
 		graph.hide();
 	}
 
 	public function show() {
 		visible = true;
-		bar_geometry.visible = true;
-		bg_geometry.visible = true;
-		text_item.visible = true;
+		barGeometry.visible = true;
+		bgGeometry.visible = true;
+		textItem.visible = true;
 		graph.show();
 	}
 
 	public function destroy() {
 
 		graph.destroy();
-		bar_geometry.drop();
-		bg_geometry.drop();
-		text_item.drop();
+		barGeometry.drop();
+		bgGeometry.drop();
+		textItem.drop();
 		graph = null;
-		bar_geometry = null;
-		bg_geometry = null;
-		text_item = null;
+		barGeometry = null;
+		bgGeometry = null;
+		textItem = null;
 		
 	}
 
@@ -430,34 +430,34 @@ private class ProfilerBar {
 		var _p = _vv/max;
 
 		if(_p > 1) {
-			bar_geometry.color = ProfilerDebugView.color_clip;
+			barGeometry.color = ProfilerDebugView.colorClip;
 		} else if(_p > 0.66) {
-			bar_geometry.color = ProfilerDebugView.color_hi;
+			barGeometry.color = ProfilerDebugView.colorHi;
 		} else if(_p > 0.33) {
-			bar_geometry.color = ProfilerDebugView.color_mid;
+			barGeometry.color = ProfilerDebugView.colorMid;
 		} else {
-			bar_geometry.color = ProfilerDebugView.color_low;
+			barGeometry.color = ProfilerDebugView.colorLow;
 		}
 
 		_p = Mathf.clamp(_p, 0.005, 1);
 
 		var nx = (graph.width-2) * _p;
-		bar_geometry.size.set(nx, graph.height-2);
+		barGeometry.size.set(nx, graph.height-2);
 
 		return value = _v;
 
-	} //set_value
+	} //setValue
 
 	function set_pos(_p:Vector) {
-		bg_geometry.transform.pos.copy_from(_p);
-		bar_geometry.transform.pos.set(_p.x+1, _p.y+1);
-		text_item.transform.pos.set(_p.x+(graph.width*2)+10, _p.y-6);
-		graph.pos = _p.clone().add_xy(graph.width+2, -graph.height+4);
+		bgGeometry.transform.pos.copyFrom(_p);
+		barGeometry.transform.pos.set(_p.x+1, _p.y+1);
+		textItem.transform.pos.set(_p.x+(graph.width*2)+10, _p.y-6);
+		graph.pos = _p.clone().addXY(graph.width+2, -graph.height+4);
 		return pos = _p;
 	}
 
 	function set_text(_t:String) {
-		text_item.text = name + " (" + graph.max + "ms) | " + _t + "ms";
+		textItem.text = name + " (" + graph.max + "ms) | " + _t + "ms";
 		return text = _t;
 	}
 

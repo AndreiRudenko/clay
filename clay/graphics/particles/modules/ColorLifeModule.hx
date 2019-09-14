@@ -12,59 +12,59 @@ import clay.utils.Mathf;
 class ColorLifeModule extends ParticleModule {
 
 
-	public var initial_color	(default, null):Color;
-	public var end_color    	(default, null):Color;
-	public var initial_color_max:Color;
-	public var end_color_max:Color;
+	public var initialColor	(default, null):Color;
+	public var endColor    	(default, null):Color;
+	public var initialColorMax:Color;
+	public var endColorMax:Color;
 
-	var color_delta:Components<ColorDelta>;
+	var colorDelta:Components<ColorDelta>;
 
 
 	public function new(_options:ColorLifeModuleOptions) {
 
 		super(_options);
 
-		initial_color = _options.initial_color != null ? _options.initial_color : new Color();
-		initial_color_max = _options.initial_color_max;
-		end_color = _options.end_color != null ? _options.end_color : new Color();
-		end_color_max = _options.end_color_max;
+		initialColor = _options.initialColor != null ? _options.initialColor : new Color();
+		initialColorMax = _options.initialColorMax;
+		endColor = _options.endColor != null ? _options.endColor : new Color();
+		endColorMax = _options.endColorMax;
 
 	}
 
 	override function init() {
 
-		color_delta = emitter.components.get(ColorDelta);
+		colorDelta = emitter.components.get(ColorDelta);
 	    
 	}
 
-	override function onspawn(pd:Particle) {
+	override function onSpawn(pd:Particle) {
 
-		var cd:Color = color_delta.get(pd.id);
+		var cd:Color = colorDelta.get(pd.id);
 		var lf:Float = pd.lifetime;
 		var pcolor:Color = pd.color;
 
-		if(initial_color_max != null) {
-			pcolor.r = emitter.random_float(initial_color.r, initial_color_max.r);
-			pcolor.g = emitter.random_float(initial_color.g, initial_color_max.g);
-			pcolor.b = emitter.random_float(initial_color.b, initial_color_max.b);
-			pcolor.a = emitter.random_float(initial_color.a, initial_color_max.a);
+		if(initialColorMax != null) {
+			pcolor.r = emitter.randomFloat(initialColor.r, initialColorMax.r);
+			pcolor.g = emitter.randomFloat(initialColor.g, initialColorMax.g);
+			pcolor.b = emitter.randomFloat(initialColor.b, initialColorMax.b);
+			pcolor.a = emitter.randomFloat(initialColor.a, initialColorMax.a);
 		} else {
-			pcolor.r = initial_color.r;
-			pcolor.g = initial_color.g;
-			pcolor.b = initial_color.b;
-			pcolor.a = initial_color.a;
+			pcolor.r = initialColor.r;
+			pcolor.g = initialColor.g;
+			pcolor.b = initialColor.b;
+			pcolor.a = initialColor.a;
 		}
 		
-		if(end_color_max != null) {
-			cd.r = emitter.random_float(end_color.r, end_color_max.r) - pcolor.r;
-			cd.g = emitter.random_float(end_color.g, end_color_max.g) - pcolor.g;
-			cd.b = emitter.random_float(end_color.b, end_color_max.b) - pcolor.b;
-			cd.a = emitter.random_float(end_color.a, end_color_max.a) - pcolor.a;
+		if(endColorMax != null) {
+			cd.r = emitter.randomFloat(endColor.r, endColorMax.r) - pcolor.r;
+			cd.g = emitter.randomFloat(endColor.g, endColorMax.g) - pcolor.g;
+			cd.b = emitter.randomFloat(endColor.b, endColorMax.b) - pcolor.b;
+			cd.a = emitter.randomFloat(endColor.a, endColorMax.a) - pcolor.a;
 		} else {
-			cd.r = end_color.r - pcolor.r;
-			cd.g = end_color.g - pcolor.g;
-			cd.b = end_color.b - pcolor.b;
-			cd.a = end_color.a - pcolor.a;
+			cd.r = endColor.r - pcolor.r;
+			cd.g = endColor.g - pcolor.g;
+			cd.b = endColor.b - pcolor.b;
+			cd.a = endColor.a - pcolor.a;
 		}
 
 		if(cd.r != 0) { cd.r /= lf; }
@@ -79,7 +79,7 @@ class ColorLifeModule extends ParticleModule {
 		var cd:Color;
 		var pcolor:Color;
 		for (p in particles) {
-			cd = color_delta.get(p.id);
+			cd = colorDelta.get(p.id);
 			pcolor = p.color;
 			pcolor.r = Mathf.clamp(pcolor.r + cd.r * dt, 0, 1);
 			pcolor.g = Mathf.clamp(pcolor.g + cd.g * dt, 0, 1);
@@ -92,49 +92,49 @@ class ColorLifeModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		if(d.initial_color != null) {
-			initial_color.from_json(d.initial_color);
+		if(d.initialColor != null) {
+			initialColor.fromJson(d.initialColor);
 		}
 
-		if(d.end_color != null) {
-			end_color.from_json(d.end_color);
+		if(d.endColor != null) {
+			endColor.fromJson(d.endColor);
 		}
 
-		if(d.initial_color_max != null) {
-			if(initial_color_max == null) {
-				initial_color_max = new Color();
+		if(d.initialColorMax != null) {
+			if(initialColorMax == null) {
+				initialColorMax = new Color();
 			}
-			initial_color_max.from_json(d.initial_color_max);
+			initialColorMax.fromJson(d.initialColorMax);
 		}
 		
-		if(d.end_color_max != null) {
-			if(end_color_max == null) {
-				end_color_max = new Color();
+		if(d.endColorMax != null) {
+			if(endColorMax == null) {
+				endColorMax = new Color();
 			}
-			end_color_max.from_json(d.end_color_max);
+			endColorMax.fromJson(d.endColorMax);
 		}
 
 		return this;
 
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.initial_color = initial_color.to_json();
-		d.end_color = end_color.to_json();
+		d.initialColor = initialColor.toJson();
+		d.endColor = endColor.toJson();
 
-		if(initial_color_max != null) {
-			d.initial_color_max = initial_color_max.to_json();
+		if(initialColorMax != null) {
+			d.initialColorMax = initialColorMax.toJson();
 		}
 		
-		if(end_color_max != null) {
-			d.end_color_max = end_color_max.to_json();
+		if(endColorMax != null) {
+			d.endColorMax = endColorMax.toJson();
 		}
 
 		return d;
@@ -148,10 +148,10 @@ typedef ColorLifeModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initial_color : Color;
-	@:optional var initial_color_max : Color;
-	@:optional var end_color : Color;
-	@:optional var end_color_max : Color;
+	@:optional var initialColor : Color;
+	@:optional var initialColorMax : Color;
+	@:optional var endColor : Color;
+	@:optional var endColorMax : Color;
 
 }
 

@@ -20,7 +20,7 @@ class TimerManager {
 	@:allow(clay.utils.Timer) 
 	inline function add(_timer:Timer) {
 
-		if(!_timer.manual_update) {
+		if(!_timer.manualUpdate) {
 			timers.push(_timer);
 			_timer._added = true;
 		}
@@ -30,7 +30,7 @@ class TimerManager {
 	@:allow(clay.utils.Timer) 
 	inline function remove(_timer:Timer) {
 		
-		if(!_timer.manual_update) {
+		if(!_timer.manualUpdate) {
 			timers.remove(_timer);
 			_timer._added = false;
 		}
@@ -45,19 +45,19 @@ class TimerManager {
 
 	}
 	
-	public function schedule(_timelimit:Float = 1, _oncompletefunc:()->Void = null):Timer {
+	public function schedule(_timelimit:Float = 1, _onCompletefunc:()->Void = null):Timer {
 
 		var t:Timer = new Timer();
-		t.start(_timelimit, _oncompletefunc);
+		t.start(_timelimit, _onCompletefunc);
 
 		return t;
 
 	}
 
-	public function schedule_from(_current_time:Float = 0, _timelimit:Float = 1, _oncompletefunc:()->Void = null):Timer {
+	public function scheduleFrom(_currentTime:Float = 0, _timelimit:Float = 1, _onCompletefunc:()->Void = null):Timer {
 
 		var t:Timer = new Timer();
-		t.start_from(_current_time, _timelimit, _oncompletefunc);
+		t.startFrom(_currentTime, _timelimit, _onCompletefunc);
 
 		return t;
 

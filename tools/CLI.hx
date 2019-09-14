@@ -7,15 +7,15 @@ import sys.FileSystem;
 class CLI {
 
 
-	public static var engine_name:String = 'clay2d';
-	public static var templates_path:String = 'templates';
-	public static var backend_path:String = 'backend';
-	public static var kha_path:String = 'Kha';
-	public static var khamake_path:String;
+	public static var engineName:String = 'clay2d';
+	public static var templatesPath:String = 'templates';
+	public static var backendPath:String = 'backend';
+	public static var khaPath:String = 'Kha';
+	public static var khamakePath:String;
 
-	public static var command_map:Map<String, Command>;
-	public static var user_dir:String;
-	public static var engine_dir:String;
+	public static var commandMap:Map<String, Command>;
+	public static var userDir:String;
+	public static var engineDir:String;
 
 	public static var targets:Array<String> = ['html5', 'windows', 'windows-hl', 'osx', 'linux', 'android-native', 'android-native-hl', 'ios', 'uwp'];
 
@@ -24,19 +24,19 @@ class CLI {
 
 		var args = Sys.args();
 
-		user_dir = args.pop();
-		engine_dir = FileSystem.absolutePath(Path.directory(neko.vm.Module.local().name));
-		khamake_path = Path.join([engine_dir, backend_path, kha_path, 'make']);
+		userDir = args.pop();
+		engineDir = FileSystem.absolutePath(Path.directory(neko.vm.Module.local().name));
+		khamakePath = Path.join([engineDir, backendPath, khaPath, 'make']);
 
 		init();
 
 		if(args.length == 0) {
-			for (c in command_map) {
+			for (c in commandMap) {
 				print('${c.name}\t ${c.usage}');
 			}
 			return;
 		}
-		process_args(args);
+		processArgs(args);
 
 	}
 
@@ -55,7 +55,7 @@ class CLI {
 	public static inline function execute(cmd:String, args:Array<String>):Int {
 
 		var cwd = Sys.getCwd();
-		Sys.setCwd(user_dir);
+		Sys.setCwd(userDir);
 
 		var ret = Sys.command(cmd, args);
 
@@ -65,16 +65,16 @@ class CLI {
 	    
 	}
 
-	static function process_args(args:Array<String>) {
+	static function processArgs(args:Array<String>) {
 
 		var cname = args.shift();
-		run_command(cname, args);
+		runCommand(cname, args);
 
 	}
 
-	static function run_command(cname:String, args:Array<String>) {
+	static function runCommand(cname:String, args:Array<String>) {
 
-		var cmd = command_map.get(cname);
+		var cmd = commandMap.get(cname);
 		if(cmd == null) {
 			print('Unknown command');
 			return;
@@ -85,15 +85,15 @@ class CLI {
 
 	static function init() {
 
-		command_map = new Map();
+		commandMap = new Map();
 
-		command_map.set('init', new commands.Init());
-		command_map.set('help', new commands.Help());
-		command_map.set('build', new commands.Build());
-		command_map.set('run', new commands.Run());
-		command_map.set('launch', new commands.Launch());
-		command_map.set('server', new commands.Server());
-		command_map.set('clear', new commands.Clear());
+		commandMap.set('init', new commands.Init());
+		commandMap.set('help', new commands.Help());
+		commandMap.set('build', new commands.Build());
+		commandMap.set('run', new commands.Run());
+		commandMap.set('launch', new commands.Launch());
+		commandMap.set('server', new commands.Server());
+		commandMap.set('clear', new commands.Clear());
 		
 	}
 	

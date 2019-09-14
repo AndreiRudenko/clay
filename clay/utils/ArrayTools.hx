@@ -28,7 +28,7 @@ class ArrayTools {
 
 	}
 
-	// public static function fast_remove<T>(array:Array<T>, ) {
+	// public static function fastRemove<T>(array:Array<T>, ) {
 
 	// 	var i:Int = a.length, j:Int, t:T;
 	// 	while (--i > 0) {
@@ -39,7 +39,7 @@ class ArrayTools {
 
 	// }
 
-	public static function insert_sorted_key<T>(list:Array<T>, key:T, compare:(a:T, b:T)->Int):Void {
+	public static function insertSortedKey<T>(list:Array<T>, key:T, compare:(a:T, b:T)->Int):Void {
 
 		var result:Int = 0;
 		var mid:Int = 0;
@@ -58,7 +58,7 @@ class ArrayTools {
 
 	}
 /*
-	public static function merge_sort<T>(a:Array<T>, l:Int, r:Int, compare:T->T->Int, ?aux:Array<T>) {
+	public static function mergeSort<T>(a:Array<T>, l:Int, r:Int, compare:T->T->Int, ?aux:Array<T>) {
 
 		if(aux == null) {
 			aux = [];

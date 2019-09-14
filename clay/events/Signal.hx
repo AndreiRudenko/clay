@@ -21,15 +21,15 @@ abstract Signal<T>(SignalBase<T>){
 
 	}
 
-	public inline function add_once(listener:T, order:Int = 0) {
+	public inline function addOnce(listener:T, order:Int = 0) {
 
-		this.add_once(listener, order);
+		this.addOnce(listener, order);
 
 	}
 
 	// public inline function queue(listener:T, order:Int = 0) {
 
-	// 	// this.add_once(listener, order);
+	// 	// this.addOnce(listener, order);
 
 	// }
 
@@ -221,28 +221,28 @@ class SignalBase<T> {
 	public var emit:T;
 	public var handlers:Array<SignalHandler<T>>;
 	public var processing:Bool;
-	var _to_remove:Array<T>;
-	var _to_add:Array<SignalHandler<T>>;
+	var _toRemove:Array<T>;
+	var _toAdd:Array<SignalHandler<T>>;
 
 
 	public function new() {
 		
 		handlers = [];
-		_to_remove = [];
-		_to_add = [];
+		_toRemove = [];
+		_toAdd = [];
 		processing = false;
 
 	}
 
-	public function add_once(listener:T, order:Int = 0) {
+	public function addOnce(listener:T, order:Int = 0) {
 
-		_try_add(listener, true, order);
+		_tryAdd(listener, true, order);
 
 	}
 
 	public function add(listener:T, order:Int = 0) {
 
-		_try_add(listener, false, order);
+		_tryAdd(listener, false, order);
 		
 	}
 
@@ -250,8 +250,8 @@ class SignalBase<T> {
 
 		if(has(listener)) {
 			if(processing) {
-				if(_to_remove.indexOf(listener) == -1) {
-					_to_remove.push(listener);
+				if(_toRemove.indexOf(listener) == -1) {
+					_toRemove.push(listener);
 				}
 			} else {
 				_remove(listener);
@@ -262,11 +262,11 @@ class SignalBase<T> {
 
 	public inline function has(listener:T):Bool {
 
-		return get_handler(listener) != null;
+		return getHandler(listener) != null;
 		
 	}
 
-	public function get_handler(listener:T):SignalHandler<T> {
+	public function getHandler(listener:T):SignalHandler<T> {
 		
 		for (h in handlers) {
 			if(h.listener == listener) {
@@ -281,12 +281,12 @@ class SignalBase<T> {
 	public inline function clear() {
 		
 		handlers = null;
-		_to_remove = null;
-		_to_add = null;
+		_toRemove = null;
+		_toAdd = null;
 
 		handlers = [];
-		_to_remove = [];
-		_to_add = [];
+		_toRemove = [];
+		_toAdd = [];
 
 	}
 
@@ -294,12 +294,12 @@ class SignalBase<T> {
 		
 		emit = null;
 		handlers = null;
-		_to_remove = null;
-		_to_add = null;
+		_toRemove = null;
+		_toAdd = null;
 
 	}
 
-	inline function _try_add(listener:T, once:Bool, order:Int) {
+	inline function _tryAdd(listener:T, once:Bool, order:Int) {
 
 		if(!has(listener)) {
 
@@ -307,14 +307,14 @@ class SignalBase<T> {
 
 			if(processing) {
 				var has = false;
-				for (s in _to_add) {
+				for (s in _toAdd) {
 					if(s.listener == listener) {
 						has = true;
 						break;
 					}
 				}
 				if(has) {
-					_to_add.push(handler);
+					_toAdd.push(handler);
 				}
 			} else {
 				_add(handler);
@@ -325,16 +325,16 @@ class SignalBase<T> {
 
 	function _add(handler:SignalHandler<T>) {
 
-		var at_pos:Int = handlers.length;
+		var atPos:Int = handlers.length;
 
 		for (i in 0...handlers.length) {
 			if (handler.order < handlers[i].order) {
-				at_pos = i;
+				atPos = i;
 				break;
 			}
 		}
 
-		handlers.insert(at_pos, handler);
+		handlers.insert(atPos, handler);
 
 	}
 
@@ -385,24 +385,24 @@ private class SignalMacro {
 			for (h in handlers){
 				h.listener($a{exprs});
 				if(h.once) {
-					_to_remove.push(h.listener);
+					_toRemove.push(h.listener);
 				}
 			}
 			
 			processing = false;
 			
-			if (_to_remove.length > 0){
-				for (l in _to_remove){
+			if (_toRemove.length > 0){
+				for (l in _toRemove){
 					_remove(l);
 				}
-				_to_remove.splice(0, _to_remove.length);
+				_toRemove.splice(0, _toRemove.length);
 			}
 
-			if (_to_add.length > 0){
-				for (h in _to_add){
+			if (_toAdd.length > 0){
+				for (h in _toAdd){
 					_add(h);
 				}
-				_to_add.splice(0, _to_add.length);
+				_toAdd.splice(0, _toAdd.length);
 			}
 		}
 

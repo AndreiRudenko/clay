@@ -24,28 +24,28 @@ import clay.events.MouseEvent;
 class AudioDebugView extends DebugView {
 
 
-	var items_list:Text;
+	var itemsList:Text;
 
-	var font_size:Int = 15;
-	var font_height:Float = 0;
-	var tab_width:Float = 0;
-	var bars_y:Float = 0;
-	var hide_ents:Bool = true;
-	var hide_comps:Bool = true;
-	var audio_stats:AudioStats;
+	var fontSize:Int = 15;
+	var fontHeight:Float = 0;
+	var tabWidth:Float = 0;
+	var barsY:Float = 0;
+	var hideEnts:Bool = true;
+	var hideComps:Bool = true;
+	var audioStats:AudioStats;
 	var bars:Array<ProgressBar>;
-	var bars_pool:Pool<ProgressBar>;
-	var _obj_index:Int = 0;
+	var barsPool:Pool<ProgressBar>;
+	var _objIndex:Int = 0;
 
 
 	public function new(_debug:Debug) {
 
 		super(_debug);
 
-		debug_name = "Audio";
+		debugName = "Audio";
 
 		bars = [];
-		bars_pool = new Pool<ProgressBar>(16, 0, 
+		barsPool = new Pool<ProgressBar>(16, 0, 
 			function() {
 				return new ProgressBar("", 0, 0, 1, 64, 10, 15);
 			}
@@ -53,83 +53,83 @@ class AudioDebugView extends DebugView {
 
 		var rect = debug.inspector.viewrect;
 
-		items_list = new Text(Clay.renderer.font);
-		items_list.size = font_size;
-		items_list.visible = false;
-		items_list.color = new Color().from_int(0xffa563);
-		items_list.transform.pos.set(rect.x, rect.y);
-		items_list.width = rect.w;
-		items_list.height = 0;
-		items_list.layer = debug.layer;
-		items_list.clip_rect = rect;
-		items_list.depth = 999.3;
+		itemsList = new Text(Clay.renderer.font);
+		itemsList.size = fontSize;
+		itemsList.visible = false;
+		itemsList.color = new Color().fromInt(0xffa563);
+		itemsList.transform.pos.set(rect.x, rect.y);
+		itemsList.width = rect.w;
+		itemsList.height = 0;
+		itemsList.layer = debug.layer;
+		itemsList.clipRect = rect;
+		itemsList.depth = 999.3;
 
-		var kravur = items_list.font.font._get(font_size);
-		font_height = kravur.getHeight();
-		tab_width = kravur.stringWidth("    ");
-		bars_y = rect.y + font_height * 3 - 10;
+		var kravur = itemsList.font.font._get(fontSize);
+		fontHeight = kravur.getHeight();
+		tabWidth = kravur.stringWidth("    ");
+		barsY = rect.y + fontHeight * 3 - 10;
 
-		audio_stats = new AudioStats();
+		audioStats = new AudioStats();
 
 		Clay.on(AppEvent.UPDATE, update);
-		Clay.on(KeyEvent.KEY_DOWN, onkeydown);
-		Clay.on(MouseEvent.MOUSE_WHEEL, onmousewheel);
+		Clay.on(KeyEvent.KEY_DOWN, onKeyDown);
+		Clay.on(MouseEvent.MOUSE_WHEEL, onMouseWheel);
 
 	}
 
-	// override function onremoved() {
+	// override function onRemoved() {
 
-	// 	items_list.destroy();
-	// 	items_list = null;
+	// 	itemsList.destroy();
+	// 	itemsList = null;
 
 	// }
 
-	override function onenabled() {
+	override function onEnabled() {
 
-		items_list.visible = true;
+		itemsList.visible = true;
 		refresh();
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
-		items_list.visible = false;
-		clear_bars();
-
-	}
-
-	function onkeydown(e:KeyEvent) {
-
-		if(e.key == Key.three) {
-			hide_ents = !hide_ents;
-			refresh();
-		}
-
-		if(e.key == Key.four) {
-			hide_comps = !hide_comps;
-			refresh();
-		}
+		itemsList.visible = false;
+		clearBars();
 
 	}
 
-	function onmousewheel(e:MouseEvent) {
+	function onKeyDown(e:KeyEvent) {
 
-		var h = items_list.text_height;
+		if(e.key == Key.Three) {
+			hideEnts = !hideEnts;
+			refresh();
+		}
+
+		if(e.key == Key.Four) {
+			hideComps = !hideComps;
+			refresh();
+		}
+
+	}
+
+	function onMouseWheel(e:MouseEvent) {
+
+		var h = itemsList.textHeight;
 		var vh = debug.inspector.size.y - debug.margin;
 		var diff = h - vh;
 
-		var new_y = items_list.transform.pos.y;
-		var max_y = debug.padding.y +(debug.margin*1.5);
-		var min_y = max_y;
+		var newY = itemsList.transform.pos.y;
+		var maxY = debug.padding.y +(debug.margin*1.5);
+		var minY = maxY;
 
 		if(diff > 0) {
-			min_y = (max_y - (diff+(debug.margin*2)));
+			minY = (maxY - (diff+(debug.margin*2)));
 		}
 
-		new_y -= (debug.margin/2) * e.wheel;
-		new_y = Mathf.clamp(new_y, min_y, max_y);
+		newY -= (debug.margin/2) * e.wheel;
+		newY = Mathf.clamp(newY, minY, maxY);
 
-		items_list.transform.pos.y = new_y;
+		itemsList.transform.pos.y = newY;
 
 	}
 
@@ -141,12 +141,12 @@ class AudioDebugView extends DebugView {
 
 	}
 
-	function clear_bars() {
+	function clearBars() {
 		
 		if(bars.length > 0) {
 			for (b in bars) {
-				if(bars_pool.size < bars_pool.size_limit) {
-					bars_pool.put(b);
+				if(barsPool.size < barsPool.sizeLimit) {
+					barsPool.put(b);
 					b.visible = false;
 				} else {
 					b.destroy();
@@ -157,84 +157,84 @@ class AudioDebugView extends DebugView {
 
 	}
 
-	inline function get_list() : String {
+	inline function getList() : String {
 
-		clear_bars();
+		clearBars();
 
-		audio_stats.reset();
-		audio_stats.get(Clay.audio);
+		audioStats.reset();
+		audioStats.get(Clay.audio);
 
-		_obj_index = 0;
+		_objIndex = 0;
 		var _result = new StringBuf();
 		// var _result = "";
-			_result.add("Output ( " + audio_stats.groups + " / " + audio_stats.sounds + " / " + audio_stats.effects + " ) Volume: " + Mathf.fixed(Clay.audio.gain, 4) + " \n \n ");
+			_result.add("Output ( " + audioStats.groups + " / " + audioStats.sounds + " / " + audioStats.effects + " ) Volume: " + Mathf.fixed(Clay.audio.gain, 4) + " \n \n ");
 
-			audio_stats.reset();
-			audio_stats.get(Clay.audio, false);
-			_result.add("Master ( " + audio_stats.groups + " / " + audio_stats.sounds + " / " + audio_stats.effects + " ) \n ");
+			audioStats.reset();
+			audioStats.get(Clay.audio, false);
+			_result.add("Master ( " + audioStats.groups + " / " + audioStats.sounds + " / " + audioStats.effects + " ) \n ");
 
-			list_effects(_result, Clay.audio);
-/*			for (i in 0...Clay.audio.channels_count) {
-				_result = list_channel(_result, Clay.audio.channels[i]);
+			listEffects(_result, Clay.audio);
+/*			for (i in 0...Clay.audio.channelsCount) {
+				_result = listChannel(_result, Clay.audio.channels[i]);
 			}
-			for (i in 0...Clay.audio.channels_count) {
-				_result = list_group(_result, Clay.audio.channels[i]);
+			for (i in 0...Clay.audio.channelsCount) {
+				_result = listGroup(_result, Clay.audio.channels[i]);
 			}*/
 
 		return _result.toString();
 
 	}
 
-	inline function list_group(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
+	inline function listGroup(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
 
 		if(Std.is(c, AudioGroup)) {
 			var g:AudioGroup = cast c;
-			_obj_index++;
-			audio_stats.reset();
-			audio_stats.get(g, false);
+			_objIndex++;
+			audioStats.reset();
+			audioStats.get(g, false);
 
-			_list.add(tabs(_depth) + "Group ( " + (audio_stats.groups-1) + " / " + audio_stats.sounds + " / " + audio_stats.effects + " ) \n ");
-			list_effects(_list, c, _depth+1);
-			for (i in 0...g.channels_count) {
-				list_channel(_list, g.channels[i], _depth+1);
+			_list.add(tabs(_depth) + "Group ( " + (audioStats.groups-1) + " / " + audioStats.sounds + " / " + audioStats.effects + " ) \n ");
+			listEffects(_list, c, _depth+1);
+			for (i in 0...g.channelsCount) {
+				listChannel(_list, g.channels[i], _depth+1);
 			} 			
-			for (i in 0...g.channels_count) {
-				list_group(_list, g.channels[i], _depth+1);
+			for (i in 0...g.channelsCount) {
+				listGroup(_list, g.channels[i], _depth+1);
 			} 
 		}
 
 	}
 
 
-	inline function list_channel(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
+	inline function listChannel(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
 
 
 		if(Std.is(c, Sound)) {
 			var s:Sound = cast c;
-			_obj_index++;
+			_objIndex++;
 			var lp = s.loop ? "* loop" : "";
 
-			var bar = bars_pool.get();
+			var bar = barsPool.get();
 			bar.visible = true;
 			bar.text = s.resource.id + " " + Mathf.fixed(s.time, 2) + " / " + Mathf.fixed(s.duration, 2) + " " + lp;
 			bar.max = s.duration;
 			bar.value = s.time;
-			bar.pos.set(_depth * tab_width + debug.inspector.viewrect.x, _obj_index * font_height + bars_y);
+			bar.pos.set(_depth * tabWidth + debug.inspector.viewrect.x, _objIndex * fontHeight + barsY);
 
 			bars.push(bar);
 
 			// _list += tabs(_depth) + '> " + s.resource.id} " + Mathf.fixed(s.time, 2)} / " + Mathf.fixed(s.duration, 2)} " + lp}\n';
 			_list.add(" \n ");
-			list_effects(_list, c, _depth+1);
+			listEffects(_list, c, _depth+1);
 		}
 
 	}
 
 
-	inline function list_effects(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
+	inline function listEffects(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
 
-		for (i in 0...c.effects_count) {
-			_obj_index++;
+		for (i in 0...c.effectsCount) {
+			_objIndex++;
 			// _list.add(tabs(_depth) + "fx: " + Type.getClassName(Type.getClass(c.effects[i])) + " \n ");
 			_list.add(tabs(_depth) + "fx: " + Type.getClassName(Type.getClass(c.effects[i])) + " \n ");
 		}
@@ -244,7 +244,7 @@ class AudioDebugView extends DebugView {
 
 	function refresh() {
 
-		items_list.text = get_list();
+		itemsList.text = getList();
 
 	}
 
@@ -262,10 +262,10 @@ class AudioDebugView extends DebugView {
 private class ProgressBar {
 
 
-	public var bar_geometry:Quad;
-	public var bg_geometry:Quad;
+	public var barGeometry:Quad;
+	public var bgGeometry:Quad;
 
-	public var text_item:Text;
+	public var textItem:Text;
 	public var name:String;
 
 	public var visible (default, set):Bool;
@@ -278,31 +278,31 @@ private class ProgressBar {
 	public var value (default, set):Float;
 
 
-	public function new(name:String, x:Float, y:Float, max:Float = 1, width:Float = 64, height:Float = 8, font_size:Int = 8, color:Color = null) {
+	public function new(name:String, x:Float, y:Float, max:Float = 1, width:Float = 64, height:Float = 8, fontSize:Int = 8, color:Color = null) {
 
 		this.name = name;
 		this.max = max;
 		this.width = width;
 		this.height = height;
 
-		text_item = new Text(Clay.renderer.font);
-		text_item.size = font_size;
-		text_item.color = new Color().from_int(0xffa563);
-		text_item.layer = Clay.debug.layer;
-		text_item.depth = 999.3;
+		textItem = new Text(Clay.renderer.font);
+		textItem.size = fontSize;
+		textItem.color = new Color().fromInt(0xffa563);
+		textItem.layer = Clay.debug.layer;
+		textItem.depth = 999.3;
 
-		bg_geometry = new Quad(width, height);
-		bg_geometry.color = new Color().from_int(0x090909);
-		bg_geometry.depth = 999.3;
-		bg_geometry.layer = Clay.debug.layer;
+		bgGeometry = new Quad(width, height);
+		bgGeometry.color = new Color().fromInt(0x090909);
+		bgGeometry.depth = 999.3;
+		bgGeometry.layer = Clay.debug.layer;
 
-		bar_geometry = new Quad(width-2, height-2);
-		bar_geometry.color = new Color().from_int(0xffa563);
-		bar_geometry.depth = 999.33;
-		bar_geometry.layer = Clay.debug.layer;
+		barGeometry = new Quad(width-2, height-2);
+		barGeometry.color = new Color().fromInt(0xffa563);
+		barGeometry.depth = 999.33;
+		barGeometry.layer = Clay.debug.layer;
 
 		pos = new VectorCallback();
-		pos.listen(pos_changed);
+		pos.listen(posChanged);
 		pos.set(x, y);
 
 		visible = false;
@@ -313,13 +313,21 @@ private class ProgressBar {
 
 		visible = false;
 
-		bar_geometry.drop();
-		bg_geometry.drop();
-		text_item.drop();
+		barGeometry.drop();
+		bgGeometry.drop();
+		textItem.drop();
 
-		bar_geometry = null;
-		bg_geometry = null;
-		text_item = null;
+		barGeometry = null;
+		bgGeometry = null;
+		textItem = null;
+
+	}
+
+	function posChanged(v) {
+
+		bgGeometry.transform.pos.copyFrom(pos);
+		barGeometry.transform.pos.set(pos.x+1, pos.y+1);
+		textItem.transform.pos.set(pos.x+width+10, pos.y - height/2);
 
 	}
 
@@ -330,26 +338,18 @@ private class ProgressBar {
 		p = Mathf.clamp(p, 0.005, 1);
 
 		var nx = p*(width-2)+1;
-		bar_geometry.size.set(nx, height-2);
+		barGeometry.size.set(nx, height-2);
 
 		return value = v;
-
-	}
-
-	function pos_changed(v) {
-
-		bg_geometry.transform.pos.copy_from(pos);
-		bar_geometry.transform.pos.set(pos.x+1, pos.y+1);
-		text_item.transform.pos.set(pos.x+width+10, pos.y - height/2);
 
 	}
 
 	function set_visible(v:Bool) {
 
 		visible = v;
-		bar_geometry.visible = v;
-		bg_geometry.visible = v;
-		text_item.visible = v;
+		barGeometry.visible = v;
+		bgGeometry.visible = v;
+		textItem.visible = v;
 
 		return v;
 
@@ -357,13 +357,13 @@ private class ProgressBar {
 
 	inline function get_text() {
 
-		return text_item.text;
+		return textItem.text;
 
 	}
 
 	inline function set_text(_t:String) {
 
-		return text_item.text = _t;
+		return textItem.text = _t;
 
 	}
 
@@ -381,13 +381,13 @@ private class AudioStats {
 
 	public function get(c:AudioChannel, cc:Bool = true) {
 
-		effects += c.effects_count;
+		effects += c.effectsCount;
 
 		if(Std.is(c, AudioGroup)) {
 			groups++;
 			if(cc) {
 				var g:AudioGroup = cast c;
-				for (i in 0...g.channels_count) {
+				for (i in 0...g.channelsCount) {
 					get(g.channels[i]);
 				}
 			}

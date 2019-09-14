@@ -36,7 +36,7 @@ class InputEvent implements IEvent {
 		
 	}
 
-	@:noCompletion public function set_mouse(name:String, mouse:MouseEvent) {
+	@:noCompletion public function setMouse(name:String, mouse:MouseEvent) {
 
 		this.name = name;
 		type = InputType.mouse;
@@ -44,7 +44,7 @@ class InputEvent implements IEvent {
 
 	}
 
-	@:noCompletion public function set_key(name:String, keyboard:KeyEvent) {
+	@:noCompletion public function setKey(name:String, keyboard:KeyEvent) {
 
 		this.name = name;
 		type = InputType.keyboard;
@@ -52,7 +52,7 @@ class InputEvent implements IEvent {
 
 	}
 
-	@:noCompletion public function set_gamepad(name:String, gamepad:GamepadEvent) {
+	@:noCompletion public function setGamepad(name:String, gamepad:GamepadEvent) {
 
 		this.name = name;
 		type = InputType.gamepad;
@@ -60,7 +60,7 @@ class InputEvent implements IEvent {
 
 	}
 
-	@:noCompletion public function set_touch(name:String, touch:TouchEvent) {
+	@:noCompletion public function setTouch(name:String, touch:TouchEvent) {
 
 		this.name = name;
 		type = InputType.touch;
@@ -68,7 +68,7 @@ class InputEvent implements IEvent {
 
 	}
 
-	@:noCompletion public function set_pen(name:String, pen:PenEvent) {
+	@:noCompletion public function setPen(name:String, pen:PenEvent) {
 
 		this.name = name;
 		type = InputType.pen;

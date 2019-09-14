@@ -18,14 +18,14 @@ import clay.utils.Log.*;
 class Audio extends AudioGroup {
 
 
-	public static inline function mutex_lock() {
+	public static inline function mutexLock() {
 
 	#if cpp
 		untyped __cpp__('kinc_mutex_lock(&mutex)');
 	#end
 
 	}
-	public static function mutex_unlock() {
+	public static function mutexUnlock() {
 
 	#if cpp
 		untyped __cpp__('kinc_mutex_unlock(&mutex)');
@@ -34,11 +34,11 @@ class Audio extends AudioGroup {
 	}
 
 
-	public var sample_rate(default, null): Int = 44100;
-	public var gain: Float;
+	public var sampleRate(default, null):Int = 44100;
+	public var gain:Float;
 
-	var data: Float32Array;
-	var last_allocation_count:Int = 0;
+	var data:Float32Array;
+	// var lastAllocationCount:Int = 0;
 
 	@:allow(clay.system.App)
 	function new() {
@@ -52,7 +52,7 @@ class Audio extends AudioGroup {
 		kha.audio2.Audio.audioCallback = mix;
 		data = new Float32Array(512);
 		gain = 0;
-		mutex_lock();
+		mutexLock();
 
 	}
 
@@ -75,10 +75,10 @@ class Audio extends AudioGroup {
 		
 	}
 
-	function mix(samplesbox:kha.internal.IntBox, buffer: Buffer) {
+	function mix(samplesbox:kha.internal.IntBox, buffer:Buffer) {
 
 		var samples = samplesbox.value;
-		sample_rate = buffer.samplesPerSecond;
+		sampleRate = buffer.samplesPerSecond;
 
 		if (data.length < samples) {
 			data = new Float32Array(samples);

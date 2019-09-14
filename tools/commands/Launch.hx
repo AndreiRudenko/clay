@@ -30,19 +30,19 @@ class Launch extends Command {
 			CLI.error('Unknown target, use: [${CLI.targets.join(",")}]');
 		}
 
-		launch_project(target);
+		launchProject(target);
 
 	}
 
-	function launch_project(target:String) {
+	function launchProject(target:String) {
 
 		var config:ConfigData = Config.get();
 
 		switch (target) {
 			case 'html5' : {
 				var port = 8080;
-				if(config.html5 != null && config.html5.server_port != null) {
-					port = config.html5.server_port;
+				if(config.html5 != null && config.html5.serverPort != null) {
+					port = config.html5.serverPort;
 				}
 				var url = 'http://localhost:$port/';
 				switch (Sys.systemName()) {
@@ -53,39 +53,39 @@ class Launch extends Command {
 				}
 			}
 			case 'windows' : {
-				var path = Path.join([CLI.user_dir, 'build/windows/${config.project.title}.exe']);
+				var path = Path.join([CLI.userDir, 'build/windows/${config.project.title}.exe']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
 				CLI.execute('start', ['cmd', "/c", '$path']); // todo: remove cmd ?
 			}
 			case 'windows-hl' : {
-				var path = Path.join([CLI.user_dir, 'build/windows-hl/${config.project.title}.exe']);
+				var path = Path.join([CLI.userDir, 'build/windows-hl/${config.project.title}.exe']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
 				CLI.execute('start', ['cmd', "/c", '$path']); // todo: remove cmd ?
 			}
 			case 'android-native-hl' : {
-				var path = Path.join([CLI.user_dir, 'build/android-native-hl-build/${config.project.title}/app/build/outputs/apk/debug/app-debug.apk']);
+				var path = Path.join([CLI.userDir, 'build/android-native-hl-build/${config.project.title}/app/build/outputs/apk/debug/app-debug.apk']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
-				var pkg = untyped __js__('config.android.package');
+				var pkg = Reflect.field(config.android, 'package'); //TODO: check for null
 				// CLI.execute('start', ['cmd', "/c", 'adb', 'uninstall', '$pkg']);
 				CLI.execute('start', ['cmd', "/c", 'adb', 'install', '-r', '$path']);
 				CLI.execute('start', ['cmd', "/c", 'adb', 'shell', 'am', 'start', '-n', '$pkg/tech.kode.kore.KoreActivity']);
 				CLI.execute('start', ['cmd', "/c", 'adb', 'logcat', '-s', 'kore', 'DEBUG', 'AndroidRuntime']);
 			}
 			case 'linux': {
-				var path = Path.join([CLI.user_dir, 'build/linux/${config.project.title}']);
+				var path = Path.join([CLI.userDir, 'build/linux/${config.project.title}']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
 				CLI.execute('xdg-open', ['$path']);
 			}
 			case 'osx' : {
-				var path = Path.join([CLI.user_dir, 'build/osx/${config.project.title}']);
+				var path = Path.join([CLI.userDir, 'build/osx/${config.project.title}']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}

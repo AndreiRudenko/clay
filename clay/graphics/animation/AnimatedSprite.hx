@@ -12,27 +12,27 @@ import clay.utils.Log.*;
 class AnimatedSprite extends Sprite {
 
 
-	public var active  	    (default, null):Bool;
-	public var paused  	    (default, null):Bool;
+	public var active(default, null):Bool;
+	public var paused(default, null):Bool;
 
-	public var anim_data	(default, null):Map<String, AnimationData>;
-	public var current  	(default, null):AnimationData;
-	public var frame  	    (get, set):Int;
-	public var speedscale  	(default, set):Float;
+	public var animData(default, null):Map<String, AnimationData>;
+	public var current(default, null):AnimationData;
+	public var frame(get, set):Int;
+	public var speedScale(default, set):Float;
 	public var reverse:Bool;
 	public var events:Events;
 
 	@:noCompletion public var time:Float;
-	@:noCompletion public var next_frame_time:Float = 0;
+	@:noCompletion public var nextFrameTime:Float = 0;
 
 
 	public function new() {
 
 		super();
 
-		anim_data = new Map();
+		animData = new Map();
 		time = 0;
-		speedscale = 1;
+		speedScale = 1;
 		paused = false;
 		active = false;
 		reverse = false;
@@ -49,14 +49,14 @@ class AnimatedSprite extends Sprite {
 		var end = false;
 		var f = frame;
 
-		time += dt * speedscale;
+		time += dt * speedScale;
 
-		if(time >= next_frame_time) {
-			next_frame_time = time + current.frame_time;
+		if(time >= nextFrameTime) {
+			nextFrameTime = time + current.frameTime;
 
 			if(!reverse) {
 				f += 1;
-				if(f >= current.frames_count) {
+				if(f >= current.framesCount) {
 					end = true;
 				}
 			} else {
@@ -73,12 +73,12 @@ class AnimatedSprite extends Sprite {
 					}
 					f = 0;
 					if(events != null) {
-						current.emit_event("loop");
+						current.emitEvent("loop");
 					}
 				} else {
 					stop();
 					if(events != null) {
-						current.emit_event("end");
+						current.emitEvent("end");
 					}
 					f = frame;
 				}
@@ -122,72 +122,72 @@ class AnimatedSprite extends Sprite {
 
 	}
 
-	public function set_animation(_name:String) {
+	public function setAnimation(_name:String) {
 		
-		current = anim_data.get(_name);
+		current = animData.get(_name);
 
 		if(current != null) {
-			next_frame_time = current.frame_time;
+			nextFrameTime = current.frameTime;
 			current.init();
 		}
 
 	}
 
-	public inline function get_animation(_name:String):AnimationData {
+	public inline function getAnimation(_name:String):AnimationData {
 		
-		return anim_data.get(_name);
+		return animData.get(_name);
 
 	}
 
-	public inline function add_animation(_anim:AnimationData) {
+	public inline function addAnimation(_anim:AnimationData) {
 		
-		anim_data.set(_anim.name, _anim);
+		animData.set(_anim.name, _anim);
 
 	}
 
-	public inline function remove_animation(_name:String) {
+	public inline function removeAnimation(_name:String) {
 		
-		anim_data.remove(_name);
+		animData.remove(_name);
 
 	}
 
-	public function from_grid(_name:String, _tpath:String, _row:Int, _col:Int, ?_frames:Array<Int>):AnimationDataGrid {
+	public function fromGrid(_name:String, _tpath:String, _row:Int, _col:Int, ?_frames:Array<Int>):AnimationDataGrid {
 
 		var a = new AnimationDataGrid(this, _name, _tpath, _row, _col, _frames);
-		anim_data.set(_name, a);
+		animData.set(_name, a);
 
 		return a;
 
 	}
 
-	public function from_textures(_name:String, _tpaths:Array<String>, ?_frames:Array<Int>):AnimationDataTextures {
+	public function fromTextures(_name:String, _tpaths:Array<String>, ?_frames:Array<Int>):AnimationDataTextures {
 
 		var a = new AnimationDataTextures(this, _name, _tpaths, _frames);
-		anim_data.set(_name, a);
+		animData.set(_name, a);
 
 		return a;
 
 	}
 
-	public function add_event(_anim:String, _frame:Int, _event_name:String) {
+	public function addEvent(_anim:String, _frame:Int, _eventName:String) {
 
-		var adata = get_animation(_anim);
+		var adata = getAnimation(_anim);
 		if(adata == null) {
 			log("can`t add event to " + _anim + " Animation");
 			return;
 		}
-		adata.add_event(_frame, _event_name);
+		adata.addEvent(_frame, _eventName);
 		
 	}
 
-	public function remove_event(_anim:String, _frame:Int, _event_name:String) {
+	public function removeEvent(_anim:String, _frame:Int, _eventName:String) {
 
-		var adata = get_animation(_anim);
+		var adata = getAnimation(_anim);
 		if(adata == null) {
 			log("can`t remove event to " + _anim + " Animation");
 			return;
 		}
-		adata.remove_event(_frame, _event_name);
+		adata.removeEvent(_frame, _eventName);
 
 	}
 
@@ -213,9 +213,9 @@ class AnimatedSprite extends Sprite {
 
 	}
 
-	function set_speedscale(v:Float):Float {
+	function set_speedScale(v:Float):Float {
 		
-		return speedscale = v;
+		return speedScale = v;
 
 	}
 
@@ -234,7 +234,7 @@ class AnimationDataGrid extends AnimationData {
 
 	public function new(_anim:AnimatedSprite, _name:String, _tpath:String, _row:Int, _col:Int, ?_frames:Array<Int>) {
 
-		set_texture(_tpath);
+		setTexture(_tpath);
 
 		super(_anim, _name, _frames);
 
@@ -243,7 +243,7 @@ class AnimationDataGrid extends AnimationData {
 
 	}
 
-	public function set_texture(_p:String):AnimationData {
+	public function setTexture(_p:String):AnimationData {
 
 		texture = Clay.resources.texture(_p);
 
@@ -265,19 +265,19 @@ class AnimationDataGrid extends AnimationData {
 
 	}
 
-	override function set_all():AnimationData {
+	override function setAll():AnimationData {
 
 		frameset = [];
 
 		for (i in 0...row*col) {
-			frameset.push(create_frame(i));
+			frameset.push(createFrame(i));
 		}
 
 		return this;
 		
 	}
 
-	override function update_geometry() {
+	override function updateGeometry() {
 
 		if(texture == null) {
 			log("failed to update geometry, no texture");
@@ -290,7 +290,7 @@ class AnimationDataGrid extends AnimationData {
 			var tlx = (frame % row) * szx;
 			var tly = Math.floor(frame / col) * szy;
 
-			anim.set_uv(tlx, tly, szx, szy);
+			anim.setUv(tlx, tly, szx, szy);
 		}
 
 	}
@@ -308,11 +308,11 @@ class AnimationDataTextures extends AnimationData {
 
 		super(_anim, _name, _frames);
 
-		set_textures(_tpath);
+		setTextures(_tpath);
 		
 	}
 
-	public function set_textures(_tpath:Array<String>):AnimationData {
+	public function setTextures(_tpath:Array<String>):AnimationData {
 
 		textures = [];
 
@@ -330,12 +330,12 @@ class AnimationDataTextures extends AnimationData {
 		
 	}
 
-	override function set_all():AnimationData {
+	override function setAll():AnimationData {
 
 		frameset = [];
 
 		for (i in 0...textures.length) {
-			frameset.push(create_frame(i));
+			frameset.push(createFrame(i));
 		}
 
 		return this;
@@ -343,7 +343,7 @@ class AnimationDataTextures extends AnimationData {
 	}
 
 	@:access(clay.graphics.Mesh)
-	override function update_geometry() {
+	override function updateGeometry() {
 		
 		if(anim != null) {
 			var t = textures[frame];
@@ -368,22 +368,22 @@ class AnimationDataTextures extends AnimationData {
 class AnimationData {
 
 
-	public var name      		(default, null):String;
-	public var anim      		(default, null):AnimatedSprite;
+	public var name(default, null):String;
+	public var anim(default, null):AnimatedSprite;
 
-	public var frame	 		(default, set):Int;
-	public var current_frame	(default, null):AnimationFrame;
+	public var frame(default, set):Int;
+	public var currentFrame(default, null):AnimationFrame;
 
-	public var frameset 	 	(default, null):Array<AnimationFrame>;
-	public var speed        	(default, null):Float;
-	public var frame_time		(default, null):Float;
+	public var frameset(default, null):Array<AnimationFrame>;
+	public var speed(default, null):Float;
+	public var frameTime(default, null):Float;
 
-	public var frames_count 	(get, never):Int;
+	public var framesCount(get, never):Int;
 
 	@:noCompletion public var _loop:Int;
-	@:noCompletion public var _oncomplete:()->Void;
+	@:noCompletion public var _onComplete:()->Void;
 
-	var _last_frame:Int;
+	var _lastFrame:Int;
 
 
 	public function new(_anim:AnimatedSprite, _name:String, ?_frames:Array<Int>) {
@@ -391,11 +391,11 @@ class AnimationData {
 		anim = _anim;
 		name = _name;
 		frameset = [];
-		_last_frame = 0;
+		_lastFrame = 0;
 		_loop = 0;
 		speed = 1;
 		frame = 0;
-		frame_time = 1;
+		frameTime = 1;
 
 		if(_frames != null) {
 			set(_frames);
@@ -407,16 +407,16 @@ class AnimationData {
 
 		if(_frames.length > 0) {
 			for (f in _frames) {
-				frameset.push(create_frame(f));
+				frameset.push(createFrame(f));
 			}
-			_last_frame = _frames[_frames.length-1];
+			_lastFrame = _frames[_frames.length-1];
 		}
 
 		return this;
 		
 	}
 	
-	public function set_range(_from:Int, _to:Int):AnimationData {
+	public function setRange(_from:Int, _to:Int):AnimationData {
 
 		var min:Int = _from;
 		var max:Int = _to;
@@ -427,16 +427,16 @@ class AnimationData {
 		}
 
 		for (i in min...max+1) {
-			frameset.push(create_frame(i));
+			frameset.push(createFrame(i));
 		}
 
-		_last_frame = max;
+		_lastFrame = max;
 
 		return this;
 		
 	}
 	
-	public function set_all():AnimationData {
+	public function setAll():AnimationData {
 
 		return this;
 
@@ -445,18 +445,18 @@ class AnimationData {
 	public function hold(_f:Int):AnimationData {
 
 		for (i in 0..._f) {
-			frameset.push(create_frame(_last_frame));
+			frameset.push(createFrame(_lastFrame));
 		}
 
 		return this;
 		
 	}
 
-	public function set_speed(_v:Float):AnimationData {
+	public function setSpeed(_v:Float):AnimationData {
 
 		if(_v > 0) {
 			speed = _v;
-			frame_time = 1 / speed;
+			frameTime = 1 / speed;
 		}
 
 		return this;
@@ -473,21 +473,21 @@ class AnimationData {
 
 	public function event(_frame:Int, _name:String):AnimationData {
 
-		add_event(_frame, _name);
+		addEvent(_frame, _name);
 
 		return this;
 		
 	}
 
-	public function oncomplete(_fn:()->Void):AnimationData {
+	public function onComplete(_fn:()->Void):AnimationData {
 
-		_oncomplete = _fn;
+		_onComplete = _fn;
 
 		return this;
 		
 	}
 
-	@:noCompletion public function emit_event(_name:String) {
+	@:noCompletion public function emitEvent(_name:String) {
 
 		var ev:AnimationEventData = {
 			animation: name,
@@ -507,9 +507,9 @@ class AnimationData {
 	function stop(_complete:Bool) {
 
 		if(_complete) {
-			frame = frames_count-1;
-			if(_oncomplete != null) {
-				_oncomplete();
+			frame = framesCount-1;
+			if(_onComplete != null) {
+				_onComplete();
 			}
 		}
 
@@ -517,63 +517,63 @@ class AnimationData {
 
 	function init() {
 
-		update_geometry();
+		updateGeometry();
 
 	}
 
-	function emit_frame_events() {
+	function emitFrameEvents() {
 
 		if(anim.events != null) {
-			for (ename in current_frame.events) {
-				emit_event(ename);
+			for (ename in currentFrame.events) {
+				emitEvent(ename);
 			}
 		}
 
 	}
 
-	function update_geometry() {}
+	function updateGeometry() {}
 
 	function set_frame(idx:Int):Int {
 
 		frame = idx;
-		current_frame = frameset[frame];
+		currentFrame = frameset[frame];
 
-		if(current_frame != null) {
-			emit_frame_events();
-			update_geometry();
+		if(currentFrame != null) {
+			emitFrameEvents();
+			updateGeometry();
 		}
 
 		return frame;
 
 	}
 
-	function add_event(iframe:Int, event:String) {
+	function addEvent(iframe:Int, event:String) {
 
 		for (f in frameset) {
-			if(f.image_frame == iframe && f.events.indexOf(event) == -1) {
+			if(f.imageFrame == iframe && f.events.indexOf(event) == -1) {
 				f.events.push(event);
 			}
 		}
 
 	}
 
-	function remove_event(iframe:Int, event:String) {
+	function removeEvent(iframe:Int, event:String) {
 		
 		for (f in frameset) {
-			if(f.image_frame == iframe) {
+			if(f.imageFrame == iframe) {
 				f.events.remove(event);
 			}
 		}
 		
 	}
 
-	inline function create_frame(v:Int):AnimationFrame {
+	inline function createFrame(v:Int):AnimationFrame {
 
 		return new AnimationFrame(v);
 
 	}
 
-	inline function get_frames_count():Int {
+	inline function getFramesCount():Int {
 		
 		return frameset.length;
 
@@ -586,13 +586,13 @@ class AnimationData {
 class AnimationFrame {
 
 
-	public var image_frame(default, null):Int;
+	public var imageFrame(default, null):Int;
 	public var events(default, null):Array<String>;
 
 
 	public function new(_frame:Int) {
 
-		image_frame = _frame;
+		imageFrame = _frame;
 		events = [];
 
 	}

@@ -56,13 +56,13 @@ abstract BitVector(IntArray) from IntArray {
 	
 	}
 
-	public inline function is_false(index:Int):Bool {
+	public inline function isFalse(index:Int):Bool {
 
 		return (this[address(index)] & mask(index)) == 0;
 	
 	}
 
-	public inline function enable_if_not(index:Int):Bool {
+	public inline function enableIfNot(index:Int):Bool {
 	
 		var a = address(index);
 		var m = mask(index);
@@ -75,7 +75,7 @@ abstract BitVector(IntArray) from IntArray {
 	
 	}
 
-	public inline function enable_all() {
+	public inline function enableAll() {
 
 		for (i in 0...this.length) {
 			this[i] = -1;
@@ -83,7 +83,7 @@ abstract BitVector(IntArray) from IntArray {
 	
 	}
 	
-	public function disable_all() {
+	public function disableAll() {
 
 		for (i in 0...this.length) {
 			this[i] = 0;
@@ -91,7 +91,7 @@ abstract BitVector(IntArray) from IntArray {
 		
 	}
 
-	public function for_each(cb:(b:Int)->Void) {
+	public function forEach(cb:(b:Int)->Void) {
 
 		var p:Int = 0;
 		var bitset:Int = 0;

@@ -12,66 +12,67 @@ using clay.graphics.particles.utils.VectorExtender;
 class VelocityModule extends ParticleModule {
 
 
-	public var initial_velocity(default, null):Vector;
-	public var initial_velocity_max:Vector; // variance?
-	public var velocity_random:Vector;
+	public var initialVelocity(default, null):Vector;
+	public var initialVelocityMax:Vector; // variance?
+	public var velocityRandom:Vector;
 
-	var vel_comps:Components<Velocity>;
+	var _velComps:Components<Velocity>;
 
 
 	public function new(_options:VelocityModuleOptions) {
 
 		super(_options);
 
-		initial_velocity = _options.initial_velocity != null ? _options.initial_velocity : new Vector();
-		initial_velocity_max = _options.initial_velocity_max;
-		velocity_random = _options.velocity_random;
+		initialVelocity = _options.initialVelocity != null ? _options.initialVelocity : new Vector();
+		initialVelocityMax = _options.initialVelocityMax;
+		velocityRandom = _options.velocityRandom;
 
 	}
 
 	override function init() {
 
-		vel_comps = emitter.components.get(Velocity);
+		_velComps = emitter.components.get(Velocity);
 
 	}
 
-	override function onremoved() {
+	override function onRemoved() {
 
-		vel_comps = null;
+		_velComps = null;
 		
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
-		particles.for_each(
+		particles.forEach(
 			function(p) {
-				vel_comps.get(p.id).set(0,0);
+				_velComps.get(p.id).set(0,0);
 			}
 		);
 		
 	}
 	
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
-		var v:Velocity = vel_comps.get(p.id);
-		if(initial_velocity_max != null) {
-			v.x = emitter.random_float(initial_velocity.x, initial_velocity_max.x);
-			v.y = emitter.random_float(initial_velocity.y, initial_velocity_max.y);
+		var v:Velocity = _velComps.get(p.id);
+		if(initialVelocityMax != null) {
+			v.x = emitter.randomFloat(initialVelocity.x, initialVelocityMax.x);
+			v.y = emitter.randomFloat(initialVelocity.y, initialVelocityMax.y);
 		} else {
-			v.x = initial_velocity.x;
-			v.y = initial_velocity.y;
+			v.x = initialVelocity.x;
+			v.y = initialVelocity.y;
 		}
 
 	}
 
 	override function update(dt:Float) {
 
-		if(velocity_random != null) {
+		if(velocityRandom != null) {
 			var v:Velocity;
 			for (p in particles) {
-				v = vel_comps.get(p.id);
-				v.x += velocity_random.x * emitter.random_1_to_1();
-				v.y += velocity_random.y * emitter.random_1_to_1();
+				v = _velComps.get(p.id);
+				v.x += velocityRandom.x * emitter.random1To1();
+				v.y += velocityRandom.y * emitter.random1To1();
+				// update position
 			}
 		}
 
@@ -80,42 +81,42 @@ class VelocityModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		initial_velocity.from_json(d.initial_velocity);
+		initialVelocity.fromJson(d.initialVelocity);
 
-		if(d.initial_velocity_max != null) {
-			if(initial_velocity_max == null) {
-				initial_velocity_max = new Vector();
+		if(d.initialVelocityMax != null) {
+			if(initialVelocityMax == null) {
+				initialVelocityMax = new Vector();
 			}
-			initial_velocity_max.from_json(d.initial_velocity_max);
+			initialVelocityMax.fromJson(d.initialVelocityMax);
 		}
 		
-		if(d.velocity_random != null) {
-			if(velocity_random == null) {
-				velocity_random = new Vector();
+		if(d.velocityRandom != null) {
+			if(velocityRandom == null) {
+				velocityRandom = new Vector();
 			}
-			velocity_random.from_json(d.velocity_random);
+			velocityRandom.fromJson(d.velocityRandom);
 		}
 
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.initial_velocity = initial_velocity.to_json();
+		d.initialVelocity = initialVelocity.toJson();
 
-		if(initial_velocity_max != null) {
-			d.initial_velocity_max = initial_velocity_max.to_json();
+		if(initialVelocityMax != null) {
+			d.initialVelocityMax = initialVelocityMax.toJson();
 		}
 
-		if(velocity_random != null) {
-			d.velocity_random = velocity_random.to_json();
+		if(velocityRandom != null) {
+			d.velocityRandom = velocityRandom.toJson();
 		}
 
 		return d;
@@ -130,9 +131,9 @@ typedef VelocityModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initial_velocity : Vector;
-	@:optional var initial_velocity_max : Vector;
-	@:optional var velocity_random : Vector;
+	@:optional var initialVelocity : Vector;
+	@:optional var initialVelocityMax : Vector;
+	@:optional var velocityRandom : Vector;
 
 }
 

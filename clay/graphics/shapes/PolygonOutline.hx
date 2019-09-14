@@ -12,9 +12,9 @@ import clay.graphics.Mesh;
 class PolygonOutline extends Mesh {
 
 
-	public var weight (get, set):Float;
-	public var points (get, set):Array<Vector>;
-	public var align (get, set):StrokeAlign;
+	public var weight(get, set):Float;
+	public var points(get, set):Array<Vector>;
+	public var align(get, set):StrokeAlign;
 
 	var _weight:Float;
 	var _points:Array<Vector>;
@@ -43,26 +43,26 @@ class PolygonOutline extends Mesh {
 			vertices.push(new Vertex());
 		}
 
-		var total_verts = len * 2;
+		var totalVerts = len * 2;
 		var indices = [];
 		for (i in 0...len) {
 			indices.push(i*2);
 			indices.push(i*2+1);
-			indices.push((i*2+2) % total_verts);
+			indices.push((i*2+2) % totalVerts);
 
-			indices.push((i*2+2) % total_verts);
-			indices.push((i*2+3) % total_verts);
+			indices.push((i*2+2) % totalVerts);
+			indices.push((i*2+3) % totalVerts);
 			indices.push(i*2+1);
 		}
 
 		super(vertices, indices, null);
 
-		update_points();
-		update_tcoords();
+		updatePoints();
+		updateTcoords();
 
 	}
 
-	public function update_points() {
+	public function updatePoints() {
 
 		if(_points.length < 3) {
 			return;
@@ -88,9 +88,9 @@ class PolygonOutline extends Mesh {
 	        var p1 = _points[i % len];
 	        var p2 = _points[(i+1) % len];
 
-			_line.copy_from(p1).subtract(p0).normalize();
-			_line1.copy_from(p2).subtract(p1).normalize();
-			_tangent.copy_from(_line1.add(_line)).normalize();
+			_line.copyFrom(p1).subtract(p0).normalize();
+			_line1.copyFrom(p2).subtract(p1).normalize();
+			_tangent.copyFrom(_line1.add(_line)).normalize();
 
 			var tmp = _line.x;
 			var normal = _line.set(-_line.y, tmp).normalize();
@@ -111,7 +111,7 @@ class PolygonOutline extends Mesh {
 		
 	}
 
-	function update_tcoords() {
+	function updateTcoords() {
 
 		var len = _points.length+1;
 		for (i in 0...len) {
@@ -131,8 +131,8 @@ class PolygonOutline extends Mesh {
 
 		_points = v;
 
-		update_points();
-		update_tcoords();
+		updatePoints();
+		updateTcoords();
 
 		return v;
 
@@ -148,7 +148,7 @@ class PolygonOutline extends Mesh {
 
 		_weight = v;
 
-		update_points();
+		updatePoints();
 
 		return v;
 
@@ -165,7 +165,7 @@ class PolygonOutline extends Mesh {
 
 		_align = v;
 
-		update_points();
+		updatePoints();
 
 		return v;
 

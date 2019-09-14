@@ -8,16 +8,16 @@ import clay.graphics.particles.core.Components;
 class ScaleModule extends ParticleModule {
 
 
-	public var initial_scale:Float;
-	public var initial_scale_max:Float;
+	public var initialScale:Float;
+	public var initialScaleMax:Float;
 
 
 	public function new(_options:ScaleModuleOptions) {
 
 		super(_options);
 
-		initial_scale = _options.initial_scale != null ? _options.initial_scale : 1;
-		initial_scale_max = _options.initial_scale_max != null ? _options.initial_scale_max : 0;
+		initialScale = _options.initialScale != null ? _options.initialScale : 1;
+		initialScaleMax = _options.initialScaleMax != null ? _options.initialScaleMax : 0;
 
 	}
 
@@ -25,7 +25,7 @@ class ScaleModule extends ParticleModule {
 
 	}
 
-	override function ondisabled() {
+	override function onDisabled() {
 
 		for (p in particles) {
 			p.s = 1;
@@ -33,12 +33,12 @@ class ScaleModule extends ParticleModule {
 		
 	}
 
-	override function onspawn(p:Particle) {
+	override function onSpawn(p:Particle) {
 
-		if(initial_scale_max > initial_scale) {
-			p.s = emitter.random_float(initial_scale, initial_scale_max);
+		if(initialScaleMax > initialScale) {
+			p.s = emitter.randomFloat(initialScale, initialScaleMax);
 		} else {
-			p.s = initial_scale;
+			p.s = initialScale;
 		}
 
 	}
@@ -46,23 +46,23 @@ class ScaleModule extends ParticleModule {
 
 // import/export
 
-	override function from_json(d:Dynamic) {
+	override function fromJson(d:Dynamic) {
 
-		super.from_json(d);
+		super.fromJson(d);
 
-		initial_scale = d.initial_scale;
-		initial_scale_max = d.initial_scale_max;
+		initialScale = d.initialScale;
+		initialScaleMax = d.initialScaleMax;
 		
 		return this;
 	    
 	}
 
-	override function to_json():Dynamic {
+	override function toJson():Dynamic {
 
-		var d = super.to_json();
+		var d = super.toJson();
 
-		d.initial_scale = initial_scale;
-		d.initial_scale_max = initial_scale_max;
+		d.initialScale = initialScale;
+		d.initialScaleMax = initialScaleMax;
 
 		return d;
 	    
@@ -76,8 +76,8 @@ typedef ScaleModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initial_scale : Float;
-	@:optional var initial_scale_max : Float;
+	@:optional var initialScale : Float;
+	@:optional var initialScaleMax : Float;
 
 }
 

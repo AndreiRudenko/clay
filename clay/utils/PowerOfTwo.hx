@@ -48,13 +48,13 @@ class PowerOfTwo {
 
 	}
 
-    public inline static function to_pow_of2(num:Int):Int{
+    public inline static function toPowOf2(num:Int):Int{
 
         return Math.round(Math.log(num)/Math.log(2));
 
     }
 
-    public inline static function from_pow_of2(num:Int):Int{
+    public inline static function fromPowOf2(num:Int):Int{
 
         return 1 << num;
 
