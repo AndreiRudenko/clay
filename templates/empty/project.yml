@@ -27,8 +27,8 @@ html5:
   script: 'game'
   width: 800
   height: 600
-  server_port: 8080
-  html_file: ''
+  serverPort: 8080
+  htmlFile: ''
   favicon: ''
   minify: false
 
