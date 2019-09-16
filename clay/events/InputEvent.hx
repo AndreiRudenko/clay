@@ -9,14 +9,14 @@ class InputEvent implements IEvent {
 	public static inline var INPUT_DOWN:EventType<InputEvent>;
 
 
-	public var name (default, null):String;
-	public var type (default, null):InputType;
+	public var name(default, null):String;
+	public var type(default, null):InputType;
 
-	public var mouse (default, null):MouseEvent;
-	public var keyboard (default, null):KeyEvent;
-	public var gamepad (default, null):GamepadEvent;
-	public var touch (default, null):TouchEvent;
-	public var pen (default, null):PenEvent;
+	public var mouse(default, null):MouseEvent;
+	public var keyboard(default, null):KeyEvent;
+	public var gamepad(default, null):GamepadEvent;
+	public var touch(default, null):TouchEvent;
+	public var pen(default, null):PenEvent;
 
 
 	function new() {

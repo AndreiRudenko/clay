@@ -28,7 +28,7 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 		return compare(a, b) <= 0;
 	}
 
-	private static inline function compare( a : SortKey, b : SortKey ) : Float {
+	private static inline function compare(a:SortKey, b:SortKey):Float {
 
 		var v:Float = a.depth - b.depth;
 
@@ -48,9 +48,9 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 	@:noCompletion public var other(get, set):UInt;
 
 
-	public inline function new(_depth:Float, _other:UInt) {
+	public inline function new(depth:Float, other:UInt) {
 
-		this = new __SortKey(_depth, _other);
+		this = new __SortKey(depth, other);
 
 	}
 

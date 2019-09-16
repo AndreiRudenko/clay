@@ -12,8 +12,8 @@ import clay.utils.Log.*;
 class CameraManager {
 
 
-	public var oncameracreate    (default, null):Signal<Camera->Void>;
-	public var oncameradestroy	(default, null):Signal<Camera->Void>;
+	public var onCameraCreate(default, null):Signal<Camera->Void>;
+	public var onCameraDestroy(default, null):Signal<Camera->Void>;
 
 	public var length(default, null):Int;
 
@@ -27,8 +27,8 @@ class CameraManager {
 		cameras = new Map();
 		length = 0;
 
-		oncameracreate = new Signal();
-		oncameradestroy = new Signal();
+		onCameraCreate = new Signal();
+		onCameraDestroy = new Signal();
 
 	}
 
@@ -44,7 +44,7 @@ class CameraManager {
 			enable(camera);
 		}
 
-		oncameracreate.emit(camera);
+		onCameraCreate.emit(camera);
 
 		return camera;
 
@@ -60,7 +60,7 @@ class CameraManager {
 			log('can`t remove camera: "${camera.name}" , already removed?');
 		}
 
-		oncameradestroy.emit(camera);
+		onCameraDestroy.emit(camera);
 
 		camera.destroy();
 

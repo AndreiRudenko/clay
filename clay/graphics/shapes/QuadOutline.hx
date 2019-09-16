@@ -11,9 +11,9 @@ import clay.graphics.Mesh;
 class QuadOutline extends Mesh {
 
 
-	public var size  (default, null):VectorCallback;
-	public var weight (get, set):Float;
-	public var align (get, set):StrokeAlign;
+	public var size(default, null):VectorCallback;
+	public var weight(get, set):Float;
+	public var align(get, set):StrokeAlign;
 
 	var _weight:Float;
 	var _align:StrokeAlign;

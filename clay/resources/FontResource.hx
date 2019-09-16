@@ -8,7 +8,7 @@ class FontResource extends Resource {
 
 
 	@:noCompletion public var font:kha.Font;
-	public var textures (default, null):Map<Int, Texture>;
+	public var textures(default, null):Map<Int, Texture>;
 
 
 	public function new(_font:kha.Font) {

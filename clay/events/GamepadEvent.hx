@@ -12,14 +12,14 @@ class GamepadEvent implements IEvent {
 	public static inline var DEVICE_REMOVED:EventType<GamepadEvent>;
 
 
-	public var id (default, null):String;
-	public var gamepad (default, null):Int;
+	public var id(default, null):String;
+	public var gamepad(default, null):Int;
 
-	public var button (default, null):Int;
-	public var axis (default, null):Int;
-	public var value (default, null):Float;
+	public var button(default, null):Int;
+	public var axis(default, null):Int;
+	public var value(default, null):Float;
 
-	public var state (default, null):EventType<GamepadEvent>;
+	public var state(default, null):EventType<GamepadEvent>;
 
 
 	function new() {}

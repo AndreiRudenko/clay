@@ -18,14 +18,14 @@ class DisplayObject {
 
 	public var transform:Transform;
 
-	public var layer         	(get, set):Layer;
-	public var depth         	(default, set):Float;
+	public var layer(get, set):Layer;
+	public var depth(default, set):Float;
 
-	public var shader        	(default, set):Shader;
-	public var clipRect     	(default, set):Rectangle;
+	public var shader(default, set):Shader;
+	public var clipRect(default, set):Rectangle;
 
-	public var sortKey      	(default, null):SortKey;
-	public var shaderDefault	(default, null):Shader;
+	public var sortKey(default, null):SortKey;
+	public var shaderDefault(default, null):Shader;
 
 	var _layer:Layer;
 

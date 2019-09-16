@@ -13,20 +13,20 @@ import clay.utils.Log.*;
 class Sound extends AudioChannel {
 
 
-	public var resource     (default, set):AudioResource;
+	public var resource(default, set):AudioResource;
 
-	public var pitch        (default, set):Float;
+	public var pitch(default, set):Float;
 
-	public var time         (get, set):Float;
-	public var duration     (get, never):Float;
-	public var position     (default, set):Int;
-	public var length       (get, never):Int;
+	public var time(get, set):Float;
+	public var duration(get, never):Float;
+	public var position(default, set):Int;
+	public var length(get, never):Int;
 
-	public var paused       (default, null):Bool;
-	public var playing      (get, never):Bool;
-	public var finished     (default, null):Bool;
-	public var stream       (default, set):Bool;
-	public var channels     (get, never):Int;
+	public var paused(default, null):Bool;
+	public var playing(get, never):Bool;
+	public var finished(default, null):Bool;
+	public var stream(default, set):Bool;
+	public var channels(get, never):Int;
 
 	public var loop:Bool;
 
@@ -342,9 +342,6 @@ class Sound extends AudioChannel {
 		return 0;
 
 	}
-
-
-
 
 
 }

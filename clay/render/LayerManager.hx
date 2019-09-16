@@ -27,9 +27,9 @@ class LayerManager {
 	var _layerIds:IntRingBuffer;
 
 
-	public function new(_capacity:Int) {
+	public function new(capacity:Int) {
 
-		capacity = _capacity;
+		this.capacity = capacity;
 		used = 0;
 		
 		_activeLayers = [];

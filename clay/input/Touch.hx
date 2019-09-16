@@ -14,7 +14,7 @@ class Touch extends Input {
 
 	public var count(default, null):Int = 0;
 
-	var touches:Array<TouchEvent>;
+	var _touches:Array<TouchEvent>;
 
 
 	override function enable() {
@@ -25,10 +25,10 @@ class Touch extends Input {
 
 		_debug('enable');
 
-		touches = [];
+		_touches = [];
 
 		for (i in 0...10) {
-			touches.push(new TouchEvent(i));
+			_touches.push(new TouchEvent(i));
 		}
 
 		#if use_touch_input
@@ -61,7 +61,7 @@ class Touch extends Input {
 		
 		#end
 
-		touches = null;
+		_touches = null;
 
 		super.disable();
 
@@ -77,7 +77,7 @@ class Touch extends Input {
 
 		count++;
 
-		var t = touches[id];
+		var t = _touches[id];
 		t.set(x, y, 0, 0, TouchEvent.TOUCH_DOWN);
 
 		_app.emitter.emit(TouchEvent.TOUCH_DOWN, t);
@@ -90,7 +90,7 @@ class Touch extends Input {
 
 		count--;
 
-		var t = touches[id];
+		var t = _touches[id];
 		t.set(x, y, 0, 0, TouchEvent.TOUCH_UP);
 
 		_app.emitter.emit(TouchEvent.TOUCH_UP, t);
@@ -101,7 +101,7 @@ class Touch extends Input {
 
 		_verboser('onMove id:$id, x:$x, y$y');
 
-		var t = touches[id];
+		var t = _touches[id];
 		t.set(x, y, x - t.x, y - t.y, TouchEvent.TOUCH_MOVE);
 
 		_app.emitter.emit(TouchEvent.TOUCH_MOVE, t);

@@ -29,7 +29,7 @@ class Screen {
 	public var antialiasing(get, set):Int;
 
 	var _antialiasing:Int = 1;
-	var window:kha.Window; // todo, multiple windows ?
+	var _window:kha.Window; // todo, multiple windows ?
 
 
 	@:allow(clay.system.App)
@@ -38,8 +38,8 @@ class Screen {
 		_antialiasing = _antial;
 
 		cursor = new Cursor();
-		window = kha.Window.get(0);
-		mid = new Vector(window.width*0.5, window.height*0.5);
+		_window = kha.Window.get(0);
+		mid = new Vector(_window.width*0.5, _window.height*0.5);
 
 	}
 
@@ -56,7 +56,7 @@ class Screen {
 			throw('you cant resize screen while rendering');
 		}
 
-		window.resize(_w, _h);
+		_window.resize(_w, _h);
 		updateBuffer();
 
 	}
@@ -81,7 +81,7 @@ class Screen {
 		buffer.id = 'frontbuffer';
 		Clay.resources.add(buffer);
 		
-		mid.set(window.width*0.5, window.height*0.5);
+		mid.set(_window.width*0.5, _window.height*0.5);
 
 	}
 
@@ -99,19 +99,19 @@ class Screen {
 
 	function get_width():Int {
 
-		return window.width;
+		return _window.width;
 		
 	}
 
 	function get_height():Int {
 
-		return window.height;
+		return _window.height;
 		
 	}
 
 	function get_fullscreen():Bool {
 
-		return window.mode == WindowMode.Fullscreen;
+		return _window.mode == WindowMode.Fullscreen;
 		
 	}
 
@@ -119,10 +119,10 @@ class Screen {
 
 		if(v) {
 			if(!fullscreen) {
-				window.mode = WindowMode.Fullscreen;
+				_window.mode = WindowMode.Fullscreen;
 			}
 		} else if(fullscreen) {
-			window.mode = WindowMode.Windowed;
+			_window.mode = WindowMode.Windowed;
 		}
 
 		return v;

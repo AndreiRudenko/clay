@@ -76,8 +76,8 @@ class StatsDebugView extends DebugView {
 		resourceListText.clipRect = rect;
 		resourceListText.depth = 999.3;
 
-		Clay.renderer.cameras.oncameracreate.add(cameraAdded);
-		Clay.renderer.cameras.oncameradestroy.add(cameraRemoved);
+		Clay.renderer.cameras.onCameraCreate.add(cameraAdded);
+		Clay.renderer.cameras.onCameraDestroy.add(cameraRemoved);
 
 		for (c in Clay.renderer.cameras) {
 			cameraAdded(c);
@@ -98,8 +98,8 @@ class StatsDebugView extends DebugView {
 	// 	resourceListText.destroy();
 	// 	resourceListText = null;
 
-	// 	Clay.renderer.cameras.oncameracreate.remove(cameraAdded);
-	// 	Clay.renderer.cameras.oncameradestroy.remove(cameraRemoved);
+	// 	Clay.renderer.cameras.onCameraCreate.remove(cameraAdded);
+	// 	Clay.renderer.cameras.onCameraDestroy.remove(cameraRemoved);
 
 	// }
 

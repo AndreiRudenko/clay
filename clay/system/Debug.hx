@@ -23,22 +23,22 @@ class Debug {
 	static var tracing:Bool = false;
 	static var haxeTrace:(v:Dynamic, ?p:haxe.PosInfos)->Void;
 
-	static function internalTrace(_value:Dynamic, ?_info:haxe.PosInfos) {
+	static function internalTrace(value:Dynamic, ?info:haxe.PosInfos) {
 
 		assert(tracing == false, 'clay.Debug: calling trace from a trace callback is an infinite loop!');
 		tracing = true;
 
-		var _out = '$_value';
+		var _out = '$value';
 
-		if(_info != null && _info.customParams != null) {
-			_out += ' ' + _info.customParams.join(' ');
+		if(info != null && info.customParams != null) {
+			_out += ' ' + info.customParams.join(' ');
 		}
 
-		haxeTrace(_value, _info);
+		haxeTrace(value, info);
 
 		if(!shutDown) {
 			for(_callback in traceCallbacks) {
-				_callback(_value, _info);
+				_callback(value, info);
 			}
 		}
 
@@ -58,8 +58,6 @@ class Debug {
 	var engine:App;
 	#end
 
-	// var currentViewIndex = 0;
-	// var lastViewIndex = 0;
 
 	function new(_engine:App) {
 
@@ -70,24 +68,23 @@ class Debug {
 		#end
 	}
 
-	@:noCompletion public function addView(_view:DebugView) {
+	@:noCompletion public function addView(view:DebugView) {
 
 		#if !no_debug_console
 
-		_view.index = views.length;
-		inspector.addTab(_view.debugName);
-		views.push(_view);
-		// world.processors.add(_view, null, false);
+		view.index = views.length;
+		inspector.addTab(view.debugName);
+		views.push(view);
 
 		#end
 	}
 
-	// public function getView<T>(_name:String):T {
+	// @:noCompletion public function getView<T>(name:String):T {
 
-	// 	#if !noDebugConsole
+	// 	#if !no_debug_console
 
 	// 	for(view in views) {
-	// 		if(view.name == _name) {
+	// 		if(view.name == name) {
 	// 			return cast view;
 	// 		}
 	// 	}
@@ -104,17 +101,12 @@ class Debug {
 
 		// log('switchView');
 
-		// currentViewIndex = _next ? currentViewIndex + 1 : currentViewIndex - 1;
-
 		if(index < 0) {
 			index = views.length-1;
 		} else if(index > views.length-1) {
 			index = 0;
 		}
 
-		// lastViewIndex = index;
-
-		// views[lastViewIndex].disable();
 		if(currentView != null) {
 			currentView.active = false;
 		}
@@ -136,7 +128,7 @@ class Debug {
 		c.showLayers(['debugLayer']);
 		Clay.camera.hideLayers(['debugLayer']);
 
-		Clay.cameras.oncameracreate.add(function(c) {
+		Clay.cameras.onCameraCreate.add(function(c) {
 			c.hideLayers(['debugLayer']);
 		});
 		

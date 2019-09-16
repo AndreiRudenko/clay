@@ -24,22 +24,22 @@ import clay.ds.IntRingBuffer;
 class Renderer {
 
 
-	@:noCompletion public var batchSize   (default, null):Int = 8192; // 8192 // 16384 // 32768 // 65535
-	@:noCompletion public var sortOptions (default, null):SortOptions;
+	@:noCompletion public var batchSize(default, null):Int = 8192; // 8192 // 16384 // 32768 // 65535
+	@:noCompletion public var sortOptions(default, null):SortOptions;
 
-	public var rendering        (default, null):Bool = false;
+	public var rendering(default, null):Bool = false;
 
-	public var target           (default, set):Texture;
+	public var target(default, set):Texture;
 
-	public var painter 	  	    (default, null):Painter;
-	public var frontbuffer	  	(default, null):FrontBuffer;
+	public var painter(default, null):Painter;
+	public var frontbuffer(default, null):FrontBuffer;
 
-	public var cameras	        (default, null):CameraManager;
-	public var layers 	        (default, null):LayerManager;
-	public var shaders    	  	(default, null):Map<String, Shader>;
+	public var cameras(default, null):CameraManager;
+	public var layers(default, null):LayerManager;
+	public var shaders(default, null):Map<String, Shader>;
 
-	public var shaderTextured	(default, null):Shader;
-	public var shaderText    	(default, null):Shader;
+	public var shaderTextured(default, null):Shader;
+	public var shaderText(default, null):Shader;
 
 	public var camera:Camera;
 	public var layer:Layer;
@@ -54,15 +54,15 @@ class Renderer {
 	var _texturesUsed:Int = 0;
 
 
-	public function new(_options:RendererOptions) {
+	public function new(options:RendererOptions) {
 
-		if(_options.batchSize != null) {
-			batchSize = _options.batchSize;
+		if(options.batchSize != null) {
+			batchSize = options.batchSize;
 		}
 
-		var layersMax = def(_options.layersMax, 64);
+		var layersMax = def(options.layersMax, 64);
 
-		sortOptions = new SortOptions(_options.shaderBits, _options.textureBits);
+		sortOptions = new SortOptions(options.shaderBits, options.textureBits);
 		cameras = new CameraManager();
 		layers = new LayerManager(layersMax);
 		clearColor = new Color(0.1,0.1,0.1,1);
@@ -110,13 +110,13 @@ class Renderer {
 
 	}
 
-	public function registerShader(_name:String, _shader:Shader) {
+	public function registerShader(name:String, shader:Shader) {
 
-		if(shaders.exists(_name)) {
-			log("shader: " + _name + " already exists, this will overwrite to new shader");
+		if(shaders.exists(name)) {
+			log("shader: " + name + " already exists, this will overwrite to new shader");
 		}
 
-		shaders.set(_name, _shader);
+		shaders.set(name, shader);
 		
 	}
 
@@ -131,10 +131,10 @@ class Renderer {
 
 	}
 
-	@:noCompletion public function pushTextureID(_id:Int) {
+	@:noCompletion public function pushTextureID(id:Int) {
 
 		--_texturesUsed;
-		_textureIds.push(_id);
+		_textureIds.push(id);
 
 	}
 

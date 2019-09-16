@@ -14,13 +14,13 @@ import clay.system.App;
 class InputManager {
 
 
-	public var binding      (default, null):Bindings;
+	public var binding(default, null):Bindings;
 
-	public var mouse   		(default, null):Mouse;
-	public var keyboard		(default, null):Keyboard;
-	public var touch   		(default, null):Touch;
-	public var gamepad 		(default, null):Gamepads;
-	public var pen     		(default, null):Pen;
+	public var mouse(default, null):Mouse;
+	public var keyboard(default, null):Keyboard;
+	public var touch(default, null):Touch;
+	public var gamepad(default, null):Gamepads;
+	public var pen(default, null):Pen;
 
 	var _app:App;
 

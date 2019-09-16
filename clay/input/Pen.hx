@@ -18,11 +18,11 @@ class Pen extends Input {
 	public var dy(default, null):Int = 0;
 	public var pressure(default, null):Float = 0;
 
-	var penPressed:Bool = false;
-	var penReleased:Bool = false;
-	var penDown:Bool = false;
+	var _penPressed:Bool = false;
+	var _penReleased:Bool = false;
+	var _penDown:Bool = false;
 
-	var penEvent:PenEvent;
+	var _penEvent:PenEvent;
 
 
 	override function enable() {
@@ -31,7 +31,7 @@ class Pen extends Input {
 			return;
 		}
 
-		penEvent = new PenEvent();
+		_penEvent = new PenEvent();
 		
 		#if use_pen_input
 
@@ -61,7 +61,7 @@ class Pen extends Input {
 		
 		#end
 
-		penEvent = null;
+		_penEvent = null;
 
 		super.disable();
 
@@ -71,8 +71,8 @@ class Pen extends Input {
 
 		#if use_pen_input
 		
-		penPressed = false;
-		penReleased = false;
+		_penPressed = false;
+		_penReleased = false;
 		dx = 0;
 		dy = 0;
 
@@ -80,55 +80,55 @@ class Pen extends Input {
 
 	}
 
-	function onPressed(_x:Int, _y:Int, _pressure:Float) {
+	function onPressed(x:Int, y:Int, pressure:Float) {
 
-		_debug('onPressed x:$_x, y$_y, button:$_pressure');
+		_debug('onPressed x:$x, y$y, button:$pressure');
 
-		x = _x;
-		y = _y;
-		pressure = _pressure;
+		this.x = x;
+		this.y = y;
+		this.pressure = pressure;
 
-		penPressed = true;
-		penReleased = false;
-		penDown = true;
+		_penPressed = true;
+		_penReleased = false;
+		_penDown = true;
 
-		penEvent.set(x, y, 0, 0, PenEvent.PEN_DOWN, pressure);
+		_penEvent.set(x, y, 0, 0, PenEvent.PEN_DOWN, pressure);
 
-		_app.emitter.emit(PenEvent.PEN_DOWN, penEvent);
-
-	}
-
-	function onReleased(_x:Int, _y:Int, _pressure:Float) {
-
-		_debug('onPressed x:$_x, y$_y, button:$_pressure');
-
-		x = _x;
-		y = _y;
-		pressure = _pressure;
-
-		penPressed = false;
-		penReleased = true;
-		penDown = false;
-
-		penEvent.set(x, y, 0, 0, PenEvent.PEN_UP, pressure);
-
-		_app.emitter.emit(PenEvent.PEN_UP, penEvent);
+		_app.emitter.emit(PenEvent.PEN_DOWN, _penEvent);
 
 	}
 
-	function onMove(_x:Int, _y:Int, _pressure:Float) {
+	function onReleased(x:Int, y:Int, pressure:Float) {
 
-		_verboser('onMove x:$_x, y$_y, dx:$_dx, dy:$_dy');
+		_debug('onReleased x:$x, y$y, button:$pressure');
 
-		dx = _x - x;
-		dy = _y - y;
-		x = _x;
-		y = _y;
-		pressure = _pressure;
+		this.x = x;
+		this.y = y;
+		this.pressure = pressure;
 
-		penEvent.set(x, y, dx, dy, PenEvent.PEN_MOVE, pressure);
+		_penPressed = false;
+		_penReleased = true;
+		_penDown = false;
 
-		_app.emitter.emit(PenEvent.PEN_MOVE, penEvent);
+		_penEvent.set(x, y, 0, 0, PenEvent.PEN_UP, pressure);
+
+		_app.emitter.emit(PenEvent.PEN_UP, _penEvent);
+
+	}
+
+	function onMove(x:Int, y:Int, pressure:Float) {
+
+		dx = x - this.x;
+		dy = y - this.y;
+		this.x = x;
+		this.y = y;
+		this.pressure = pressure;
+
+		_verboser('onMove x:$x, y$y, dx:$dx, dy:$dy');
+
+		_penEvent.set(x, y, dx, dy, PenEvent.PEN_MOVE, pressure);
+
+		_app.emitter.emit(PenEvent.PEN_MOVE, _penEvent);
 
 	}
 

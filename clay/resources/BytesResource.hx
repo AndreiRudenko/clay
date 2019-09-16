@@ -15,9 +15,9 @@ class BytesResource extends Resource {
 
 	}
 
-	public static function createFromBytes(_bytes:Bytes):BytesResource {
+	public static function createFromBytes(bytes:Bytes):BytesResource {
 		
-		var b = kha.Blob.fromBytes(_bytes);
+		var b = kha.Blob.fromBytes(bytes);
 		return new BytesResource(b);
 
 	}
@@ -26,9 +26,9 @@ class BytesResource extends Resource {
 	public var blob:kha.Blob;
 
 
-	public function new(_blob:kha.Blob) {
+	public function new(blob:kha.Blob) {
 
-		blob = _blob;
+		this.blob = blob;
 
 		resourceType = ResourceType.bytes;
 		

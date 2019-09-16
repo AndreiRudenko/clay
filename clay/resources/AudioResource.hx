@@ -18,13 +18,13 @@ class AudioResource extends Resource {
 	public var uncompressedData(get, set):kha.arrays.Float32Array;
 
 
-	public function new(?_sound:kha.Sound) {
+	public function new(?sound:kha.Sound) {
 
-		if(_sound == null) {
-			_sound = new kha.Sound();
+		if(sound == null) {
+			sound = new kha.Sound();
 		}
 
-		sound = _sound;
+		this.sound = sound;
 
 		resourceType = ResourceType.audio;
 		

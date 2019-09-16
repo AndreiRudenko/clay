@@ -10,7 +10,7 @@ class KeyEvent implements IEvent {
 	public static inline var TEXT_INPUT:EventType<String>;
 
 
-    public var key (default, null):Int;
+    public var key(default, null):Int;
 	public var state(default, null):EventType<KeyEvent> = KeyEvent.KEY_UP;
 
 

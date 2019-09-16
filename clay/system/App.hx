@@ -68,35 +68,35 @@ class App {
 
 	public var fixedFrameTime(default, set):Float = 1/60;
 
-	var frameMaxDelta:Float = 0.25;
-	var deltaSmoothing:Int = 10;
-	var deltaIndex:Int = 0;
-	var deltas:Array<Float>;
+	var _frameMaxDelta:Float = 0.25;
+	var _deltaSmoothing:Int = 10;
+	var _deltaIndex:Int = 0;
+	var _deltas:Array<Float>;
 
-	var fixedOverflow:Float = 0;
-	var lastTime:Float = 0;
+	var _fixedOverflow:Float = 0;
+	var _lastTime:Float = 0;
 
-	var options:ClayOptions;
+	var _options:ClayOptions;
 
-	var inited:Bool = false;
+	var _inited:Bool = false;
 
-	var nextQueue:Array<()->Void> = [];
-	var deferQueue:Array<()->Void> = [];
+	var _nextQueue:Array<()->Void> = [];
+	var _deferQueue:Array<()->Void> = [];
 
 	var _appEvent:AppEvent;
 	var _renderEvent:RenderEvent;
 
 
-	public function new(_options:ClayOptions, _onready:()->Void) {
+	public function new(options:ClayOptions, onReady:()->Void) {
 
 		_debug("creating app");
 
-		var _khaOpt = parseOptions(_options);
+		var _khaOpt = parseOptions(options);
 
 		System.start(
 			_khaOpt, 
 			function(_) {
-				ready(_onready);
+				ready(onReady);
 			}
 		);
 		
@@ -113,18 +113,18 @@ class App {
 		useful for async calls in a sync context, allowing the sync function to return safely before the onload is fired. */
 	public inline function next(func:()->Void) {
 
-		if(func != null) nextQueue.push(func);
+		if(func != null) _nextQueue.push(func);
 
 	}
 
 		/** Call a function at the end of the current frame */
 	public inline function defer(func:()->Void) {
 
-		if(func != null) deferQueue.push(func);
+		if(func != null) _deferQueue.push(func);
 
 	}
 
-	function ready(_onready:()->Void) {
+	function ready(onReady:()->Void) {
 		
 		_debug("ready");
 
@@ -137,12 +137,12 @@ class App {
 		events = new Events();
 		
 		tween = new TweenManager();
-		random = new Random(options.randomSeed);
+		random = new Random(_options.randomSeed);
 		timer = new TimerManager();
 
-		renderer = new Renderer(options.renderer);
+		renderer = new Renderer(_options.renderer);
 		draw = new Draw();
-		screen = new Screen(options.antialiasing);
+		screen = new Screen(_options.antialiasing);
 		audio = new Audio();
 		
 		input = new InputManager(this);
@@ -151,7 +151,7 @@ class App {
 		debug = new Debug(this);
 
 
-		if(options.noDefaultFont != true) {
+		if(_options.noDefaultFont != true) {
 			
 			Clay.resources.loadAll(
 				[
@@ -161,8 +161,8 @@ class App {
 				function() {
 
 					init();
-					_debug("onready");
-					_onready();
+					_debug("onReady");
+					onReady();
 
 				}
 			);
@@ -170,8 +170,8 @@ class App {
 		} else {
 
 			init();
-			_debug("onready");
-			_onready();
+			_debug("onReady");
+			onReady();
 		}
 
 	}
@@ -181,11 +181,11 @@ class App {
 		_debug("init");
 
 		time = kha.System.time;
-		lastTime = time;
+		_lastTime = time;
 
-		deltas = [];
-		for (i in 0...deltaSmoothing) {
-			deltas.push(1/60);
+		_deltas = [];
+		for (i in 0..._deltaSmoothing) {
+			_deltas.push(1/60);
 		}
 
 		input.init();
@@ -194,7 +194,7 @@ class App {
 
 		screen.init();
 		renderer.init();
-		inited = true;
+		_inited = true;
 		
 		debug.init();
 
@@ -225,44 +225,44 @@ class App {
 		timer = null;
 		tween = null;
 		// signals = null;
-		nextQueue = null;
-		deferQueue = null;
+		_nextQueue = null;
+		_deferQueue = null;
 
 	}
 
-	function parseOptions(_options:ClayOptions):SystemOptions {
+	function parseOptions(options:ClayOptions):SystemOptions {
 
-		_debug("parsing options: " + _options);
+		_debug("parsing options: " + options);
 
-		options = {};
-		options.title = def(_options.title, "clay game");
-		options.width = def(_options.width, 800);
-		options.height = def(_options.height, 600);
-		options.vsync = def(_options.vsync, false);
-		options.antialiasing = def(_options.antialiasing, 1);
-		options.window = def(_options.window, {});
-		options.renderer = def(_options.renderer, {});
+		_options = {};
+		_options.title = def(options.title, "clay game");
+		_options.width = def(options.width, 800);
+		_options.height = def(options.height, 600);
+		_options.vsync = def(options.vsync, false);
+		_options.antialiasing = def(options.antialiasing, 1);
+		_options.window = def(options.window, {});
+		_options.renderer = def(options.renderer, {});
 
 		var features:WindowFeatures = None;
-		if (options.window.resizable) features |= WindowFeatures.FeatureResizable;
-		if (options.window.maximizable) features |= WindowFeatures.FeatureMaximizable;
-		if (options.window.minimizable) features |= WindowFeatures.FeatureMinimizable;
-		if (options.window.borderless) features |= WindowFeatures.FeatureBorderless;
-		if (options.window.ontop) features |= WindowFeatures.FeatureOnTop;
+		if (_options.window.resizable) features |= WindowFeatures.FeatureResizable;
+		if (_options.window.maximizable) features |= WindowFeatures.FeatureMaximizable;
+		if (_options.window.minimizable) features |= WindowFeatures.FeatureMinimizable;
+		if (_options.window.borderless) features |= WindowFeatures.FeatureBorderless;
+		if (_options.window.ontop) features |= WindowFeatures.FeatureOnTop;
 
 		var _khaOpt: SystemOptions = {
-			title: options.title,
-			width: options.width,
-			height: options.height,
+			title: _options.title,
+			width: _options.width,
+			height: _options.height,
 			window: {
-				x: options.window.x,
-				y: options.window.y,
-				mode: options.window.mode,
+				x: _options.window.x,
+				y: _options.window.y,
+				mode: _options.window.mode,
 				windowFeatures: features
 			},
 			framebuffer: {
-				samplesPerPixel: options.antialiasing,
-				verticalSync: options.vsync
+				samplesPerPixel: _options.antialiasing,
+				verticalSync: _options.vsync
 			}
 		};
 
@@ -299,42 +299,42 @@ class App {
 		tickstart();
 
 		time = kha.System.time;
-		frameDelta = time - lastTime;
+		frameDelta = time - _lastTime;
 
-		if(frameDelta > frameMaxDelta) {
+		if(frameDelta > _frameMaxDelta) {
 			frameDelta = 1/60;
 		}
 
 		// Smooth out the delta over the previous X frames
-		deltas[deltaIndex] = frameDelta;
+		_deltas[_deltaIndex] = frameDelta;
 		
-		deltaIndex++;
+		_deltaIndex++;
 
-		if(deltaIndex > deltaSmoothing) {
-			deltaIndex = 0;
+		if(_deltaIndex > _deltaSmoothing) {
+			_deltaIndex = 0;
 		}
 
 		dt = 0;
 
-		for (i in 0...deltaSmoothing) {
-			dt += deltas[i];
+		for (i in 0..._deltaSmoothing) {
+			dt += _deltas[i];
 		}
 
-		dt /= deltaSmoothing;
+		dt /= _deltaSmoothing;
 
 		tick();
 
-		fixedOverflow += frameDelta;
-		while(fixedOverflow >= fixedFrameTime) {
+		_fixedOverflow += frameDelta;
+		while(_fixedOverflow >= fixedFrameTime) {
 			emitter.emit(AppEvent.FIXEDUPDATE, fixedFrameTime);
-			fixedOverflow -= fixedFrameTime;
+			_fixedOverflow -= fixedFrameTime;
 		}
 
 		emitter.emit(AppEvent.UPDATE, dt);
 		
 		renderer.update(dt);
 
-		lastTime = time;
+		_lastTime = time;
 
 		tickend();
 
@@ -430,10 +430,10 @@ class App {
 
 	inline function cycleNextQueue() {
 
-		var count = nextQueue.length;
+		var count = _nextQueue.length;
 		var i = 0;
 		while(i < count) {
-			(nextQueue.shift())();
+			(_nextQueue.shift())();
 			++i;
 		}
 
@@ -441,10 +441,10 @@ class App {
 
 	inline function cycleDeferQueue() {
 
-		var count = deferQueue.length;
+		var count = _deferQueue.length;
 		var i = 0;
 		while(i < count) {
-			(deferQueue.shift())();
+			(_deferQueue.shift())();
 			++i;
 		}
 

@@ -5,6 +5,4 @@ package clay.events;
 @:autoBuild(clay.utils.macro.EventMacro.build())
 #end
 
-interface IEvent {
-
-}
+interface IEvent {}

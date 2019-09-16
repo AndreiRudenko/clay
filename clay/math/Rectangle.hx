@@ -10,99 +10,99 @@ class Rectangle {
     public var h(default, set):Float;
 
 
-    public function new(_x:Float = 0, _y:Float = 0, _w:Float = 0, _h:Float = 0) {
+    public function new(x:Float = 0, y:Float = 0, w:Float = 0, h:Float = 0) {
         
-        x = _x;
-        y = _y;
-        w = _w;
-        h = _h;
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
 
     }
 
-    public function set(_x:Float, _y:Float, _w:Float, _h:Float):Rectangle {
+    public function set(x:Float, y:Float, w:Float, h:Float):Rectangle {
         
-        x = _x;
-        y = _y;
-        w = _w;
-        h = _h;
-        
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+
         return this;
 
     }
     
-    public function pointInside(_p:Vector) {
+    public function pointInside(point:Vector) {
 
-        if(_p.x < x) return false;
-        if(_p.y < y) return false;
-        if(_p.x > x+w) return false;
-        if(_p.y > y+h) return false;
+        if(point.x < x) return false;
+        if(point.y < y) return false;
+        if(point.x > x+w) return false;
+        if(point.y > y+h) return false;
 
         return true;
 
     }
 
-    public function overlaps(_other:Rectangle) {
+    public function overlaps(other:Rectangle) {
 
-        if( x < (_other.x + _other.w) &&
-            y < (_other.y + _other.h) &&
-            (x + w) > _other.x        &&
-            (y + h) > _other.y ) {
+        if( x < (other.x + other.w) &&
+            y < (other.y + other.h) &&
+            (x + w) > other.x        &&
+            (y + h) > other.y ) {
             return true;
         }
 
         return false;
     }
 
-    public function equals(_other:Rectangle):Bool {
+    public function equals(other:Rectangle):Bool {
 
-        if(_other == null) {
+        if(other == null) {
             return false;
         }
         
-        return x == _other.x && 
-            y == _other.y && 
-            w == _other.w && 
-            h == _other.h;
+        return x == other.x && 
+            y == other.y && 
+            w == other.w && 
+            h == other.h;
 
     }
 
     public function clone():Rectangle {
 
-        return new Rectangle(x,y,w,h);
+        return new Rectangle(x, y, w, h);
 
     }
 
-    public function copyFrom(_rect:Rectangle):Rectangle {
+    public function copyFrom(other:Rectangle):Rectangle {
 
-        x = _rect.x;
-        y = _rect.y;
-        w = _rect.w;
-        h = _rect.h;
+        x = other.x;
+        y = other.y;
+        w = other.w;
+        h = other.h;
 
         return this;
 
     }
 
-    function set_x(_v:Float) {
+    function set_x(v:Float) {
 
-        return x = _v;
-
-    }
-
-    function set_y(_v:Float) {
-
-        return y = _v;
-
-    }
-    function set_w(_v:Float) {
-
-        return w = _v;
+        return x = v;
 
     }
 
-    function set_h(_v:Float) {
+    function set_y(v:Float) {
 
-        return h = _v;
+        return y = v;
+
+    }
+    function set_w(v:Float) {
+
+        return w = v;
+
+    }
+
+    function set_h(v:Float) {
+
+        return h = v;
 
     }
 

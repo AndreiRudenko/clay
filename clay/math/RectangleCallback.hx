@@ -12,9 +12,9 @@ class RectangleCallback extends Rectangle {
 	@:isVar public var listenH:(v:Float)->Void;
 
 
-	public function new(_x:Float = 0, _y:Float = 0, _w:Float = 0, _h:Float = 0) {
+	public function new(x:Float = 0, y:Float = 0, w:Float = 0, h:Float = 0) {
 		
-		super(_x, _y, _w, _h);
+		super(x, y, w, h);
 
 	}
 

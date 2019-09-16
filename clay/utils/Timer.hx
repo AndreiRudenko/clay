@@ -7,13 +7,13 @@ class Timer {
 	
 
 		/** How much time the timer was set for. */
-	public var timeLimit	(default, set):Float = 0;
+	public var timeLimit(default, set):Float = 0;
 		/** How many loops the timer was set for. 0 means "looping forever". */
 	public var loops:Int = 0;
 		/** Pauses or checks the pause state of the timer. */
-	public var active  	 	(default, set):Bool = false;
+	public var active(default, set):Bool = false;
 		/** Read-only: check to see if the timer is finished. */
-	public var finished	 	(default, null):Bool = false;
+	public var finished(default, null):Bool = false;
 		/** Use timescale for timer. */
 	public var timescaled:Bool = false;
 		/** Manual update */
@@ -41,9 +41,9 @@ class Timer {
 	public var _added:Bool = false;
 
 
-	@:noCompletion public function new(_manualUpdate:Bool = false) {
+	@:noCompletion public function new(manualUpdate:Bool = false) {
 
-		manualUpdate = _manualUpdate;
+		this.manualUpdate = manualUpdate;
 
 	}
 
@@ -58,13 +58,13 @@ class Timer {
 
 	}
 
-	public inline function start(_timelimit:Float, _onCompletefunc:()->Void = null):Timer {
+	public inline function start(timelimit:Float, onComplete:()->Void = null):Timer {
 
-		return startFrom(0, _timelimit, _onCompletefunc);
+		return startFrom(0, timelimit, onComplete);
 
 	}
 
-	public function startFrom(_currentTime:Float, _timelimit:Float, _onCompletefunc:()->Void = null):Timer {
+	public function startFrom(currentTime:Float, timelimit:Float, onComplete:()->Void = null):Timer {
 
 		stop(false); // here we remove from timers array
 
@@ -73,13 +73,13 @@ class Timer {
 		active = true;
 		finished = false;
 
-		if(_onCompletefunc != null){
-			_onComplete = _onCompletefunc;
+		if(onComplete != null){
+			_onComplete = onComplete;
 		}
 
-		time = _currentTime;
+		time = currentTime;
 
-		timeLimit = _timelimit;
+		this.timeLimit = timelimit;
 		
 		loops = 1;
 		_loopsCounter = 0;
@@ -88,10 +88,10 @@ class Timer {
 
 	}
 
-	public function reset(_newtime:Float = -1):Timer {
+	public function reset(newtime:Float = -1):Timer {
 
-		if (_newtime >= 0) {
-			timeLimit = _newtime;
+		if (newtime >= 0) {
+			timeLimit = newtime;
 		}
 
 		if(!_added) {
@@ -108,19 +108,19 @@ class Timer {
 
 	}
 
-	public function repeat(_times:Int = 0):Timer {
+	public function repeat(times:Int = 0):Timer {
 
-		if (_times < 0) {
-			_times *= -1;
+		if (times < 0) {
+			times *= -1;
 		}
 
-		loops = _times;
+		loops = times;
 
 		return this;
 
 	}
 
-	public function stop(_finish:Bool = true):Void {
+	public function stop(finish:Bool = true):Void {
 
 		if(!finished) {
 			finished = true;
@@ -130,7 +130,7 @@ class Timer {
 				Clay.timer.remove(this);
 			}
 			
-			if (_finish && _onComplete != null) {
+			if (finish && _onComplete != null) {
 				_onComplete();
 			}
 
@@ -138,32 +138,32 @@ class Timer {
 
 	}
 
-	public inline function elapsed(_t:Float):Bool {
+	public inline function elapsed(t:Float):Bool {
 
-		return _t > time;
+		return t > time;
 
 	}
 
 
-	public function onComplete(?_onCompletefunc:()->Void):Timer {
+	public function onComplete(?onComplete:()->Void):Timer {
 
-		_onComplete = _onCompletefunc;
+		_onComplete = onComplete;
 
 		return this;
 
 	}
 
-	public function onRepeat(?_onRepeatfunc:()->Void):Timer {
+	public function onRepeat(?onRepeat:()->Void):Timer {
 
-		_onRepeat = _onRepeatfunc;
+		_onRepeat = onRepeat;
 
 		return this;
 
 	}
 
-	public function onUpdate(?_onUpdatefunc:()->Void):Timer {
+	public function onUpdate(?onUpdate:()->Void):Timer {
 
-		_onUpdate = _onUpdatefunc;
+		_onUpdate = onUpdate;
 
 		return this;
 

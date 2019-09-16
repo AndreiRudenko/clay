@@ -14,12 +14,12 @@ class Pool<T> {
 	public var size:Int;
 
 
-	public function new(_initSize:Int, _sizeLimit:Int = 0, createCallback:()->T){
+	public function new(initSize:Int, sizeLimit:Int = 0, createCallback:()->T){
 
-		sizeLimit = _initSize > _sizeLimit ? _initSize : _sizeLimit;
-		size = _initSize;
+		this.sizeLimit = initSize > sizeLimit ? initSize : sizeLimit;
+		size = initSize;
 
-		items = new Vector(sizeLimit);
+		items = new Vector(this.sizeLimit);
 
 		createFunc = createCallback;
 

@@ -22,9 +22,9 @@ class Matrix {
 	public var ty:Float;
 
 
-	public function new(_a:Float = 1, _b:Float = 0, _c:Float = 0, _d:Float = 1, _tx:Float = 0, _ty:Float = 0) {
+	public function new(a:Float = 1, b:Float = 0, c:Float = 0, d:Float = 1, tx:Float = 0, ty:Float = 0) {
 
-		set(_a, _b, _c, _d, _tx, _ty);
+		set(a, b, c, d, tx, ty);
 		
 	}
 
@@ -54,14 +54,14 @@ class Matrix {
 	 * @param  _ty  Matrix component
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public inline function set(_a:Float, _b:Float, _c:Float, _d:Float, _tx:Float, _ty:Float):Matrix {
+	public inline function set(a:Float, b:Float, c:Float, d:Float, tx:Float, ty:Float):Matrix {
 		
-		a = _a;
-		b = _b;
-		c = _c;
-		d = _d;
-		tx = _tx;
-		ty = _ty;
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.d = d;
+		this.tx = tx;
+		this.ty = ty;
 
 		return this;
 
@@ -74,19 +74,19 @@ class Matrix {
 	 * @param _y How much to translate y by
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public inline function translate(_x:Float, _y:Float):Matrix {
+	public inline function translate(x:Float, y:Float):Matrix {
 		
-		tx += _x;
-		ty += _y;
+		tx += x;
+		ty += y;
 
 		return this;
 
 	}    
 
-	public inline function apply(_x:Float, _y:Float):Matrix {
+	public inline function apply(x:Float, y:Float):Matrix {
 		
-		tx = a * _x + c * _y + tx;
-		ty = b * _x + d * _y + ty;
+		tx = a * x + c * y + tx;
+		ty = b * x + d * y + ty;
 
 		return this;
 
@@ -100,12 +100,12 @@ class Matrix {
 	 * @param _y The amount to scale vertically
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public inline function scale(_x:Float, _y:Float):Matrix {
+	public inline function scale(x:Float, y:Float):Matrix {
 		
-		a *= _x;
-		b *= _x;
-		c *= _y;
-		d *= _y;
+		a *= x;
+		b *= x;
+		c *= y;
+		d *= y;
 
 		return this;
 		
@@ -114,23 +114,23 @@ class Matrix {
 	/**
 	 * Applies a rotation transformation to the matrix.
 	 *
-	 * @param _angle The angle in radians.
+	 * @param angle The angle in radians.
 	 * @return This matrix. Good for chaining method calls.
 	 */
-	public inline function rotate(_angle:Float):Matrix {
+	public inline function rotate(angle:Float):Matrix {
 		
-		var _sin:Float = Math.sin(_angle);
-		var _cos:Float = Math.cos(_angle);
+		var sin:Float = Math.sin(angle);
+		var cos:Float = Math.cos(angle);
 
-		var _a:Float = a;
-		var _b:Float = b;
-		var _c:Float = c;
-		var _d:Float = d;
+		var a1:Float = a;
+		var b1:Float = b;
+		var c1:Float = c;
+		var d1:Float = d;
 
-		a = _a *  _cos + _b * _sin;
-		b = _a * -_sin + _b * _cos;
-		c = _c *  _cos + _d * _sin;
-		d = _c * -_sin + _d * _cos;
+		a = a1 *  cos + b1 * sin;
+		b = a1 * -sin + b1 * cos;
+		c = c1 *  cos + d1 * sin;
+		d = c1 * -sin + d1 * cos;
 
 		return this;
 		
@@ -161,7 +161,7 @@ class Matrix {
 
 	}
 
-	public inline function orto(left:Float, right:Float,  bottom:Float, top:Float):Matrix {
+	public inline function orto(left:Float, right:Float, bottom:Float, top:Float):Matrix {
 
 		var sx:Float = 1.0 / (right - left);
 		var sy:Float = 1.0 / (top - bottom);

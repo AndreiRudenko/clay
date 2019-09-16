@@ -12,7 +12,7 @@ class UUID {
 			val = Std.random(0x7fffffff);
 		}
 
-		function toChar(value:Int) : String {
+		function toChar(value:Int):String {
 			if (value > 9) {
 				var ascii = (65 + (value - 10));
 				if (ascii > 90) { ascii += 6; }

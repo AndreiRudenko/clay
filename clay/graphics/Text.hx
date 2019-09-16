@@ -24,19 +24,19 @@ import clay.utils.ArrayTools;
 class Text extends Mesh {
 
 
-	public var text          	(default, set):String;
-	public var font          	(default, set):FontResource;
-	public var size          	(default, set):Int; // expensive
-	public var align         	(default, set):TextAlign;
-	public var alignVertical	(default, set):TextAlign;
+	public var text(default, set):String;
+	public var font(default, set):FontResource;
+	public var size(default, set):Int; // expensive
+	public var align(default, set):TextAlign;
+	public var alignVertical(default, set):TextAlign;
 
-	public var width         	(default, set):Float;
-	public var height        	(default, set):Float;
-	public var lineSpacing  	(default, set):Float;
-	public var letterSpacing	(default, set):Float;
+	public var width(default, set):Float;
+	public var height(default, set):Float;
+	public var lineSpacing(default, set):Float;
+	public var letterSpacing(default, set):Float;
 
-	public var textWidth 		(default, null):Float = 0;
-	public var textHeight		(default, null):Float = 0;
+	public var textWidth(default, null):Float = 0;
+	public var textHeight(default, null):Float = 0;
 
 	public var textColors:Array<Color>;
 
@@ -75,14 +75,14 @@ class Text extends Mesh {
 
 	}
 
-	public function addText(_text:String, ?_color:Color) {
+	public function addText(t:String, ?c:Color) {
 
 		var start = text.length;
 
-		for (i in 0..._text.length) {
-			textColors[start + i] = _color;
+		for (i in 0...t.length) {
+			textColors[start + i] = c;
 		}
-		text += _text;
+		text += t;
 		
 	}
 

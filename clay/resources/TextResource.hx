@@ -10,9 +10,9 @@ class TextResource extends Resource {
 	public var text:String;
 
 
-	public function new(_text:String) {
+	public function new(text:String) {
 
-		text = _text;
+		this.text = text;
 		
 		resourceType = ResourceType.text;
 		

@@ -17,7 +17,7 @@ class EventMacro {
 
 		var fields = Context.getBuildFields();
 
-		function get_event_name(field:Field):String { 
+		function getEventName(field:Field):String { 
 
 			var name:String;
 
@@ -53,7 +53,7 @@ class EventMacro {
 								if(e != null) {
 									Context.error("Remove initializer, EventType id will be created at compile-time", field.pos);
 								}
-								var name = get_event_name(field);
+								var name = getEventName(field);
 								var id:Int = 0;
 								if(eventMap.exists(name)) {
 									id = eventMap.get(name);

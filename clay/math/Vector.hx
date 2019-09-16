@@ -4,210 +4,210 @@ package clay.math;
 class Vector {
 
 
-    public var x(default, set):Float;
-    public var y(default, set):Float;
+	public var x(default, set):Float;
+	public var y(default, set):Float;
 
-    public var length(get, set):Float;
-    public var lengthSq(get, never):Float;
+	public var length(get, set):Float;
+	public var lengthSq(get, never):Float;
 
 
-    public function new(_x:Float = 0, _y:Float = 0) {
+	public function new(x:Float = 0, y:Float = 0) {
 
-        x = _x;
-        y = _y;
-        
-    }
+		this.x = x;
+		this.y = y;
+		
+	}
 
-    public inline function set(_x:Float, _y:Float) {
+	public inline function set(x:Float, y:Float) {
 
-        x = _x;
-        y = _y;
+		this.x = x;
+		this.y = y;
+		
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function copyFrom(other:Vector) {
 
-    public inline function copyFrom(_other:Vector) {
+		x = other.x;
+		y = other.y;
 
-        x = _other.x;
-        y = _other.y;
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function equals(other:Vector):Bool {
 
-    public inline function equals(_other:Vector):Bool {
+		return x == other.x && y == other.y;
+		
+	}
 
-        return x == _other.x && y == _other.y;
-        
-    }
+	public inline function clone() {
 
-    public inline function clone() {
+		return new Vector(x, y);
+		
+	}
 
-        return new Vector(x, y);
-        
-    }
+	public inline function normalize() {
 
-    public inline function normalize() {
+		return divideScalar(length);
+		
+	}
 
-        return divideScalar(length);
-        
-    }
+	public inline function dot(other:Vector) {
 
-    public inline function dot(_other:Vector) {
+		return x * other.x + y * other.y;
 
-        return x * _other.x + y * _other.y;
+	}
 
-    }
+	public inline function distance(other:Vector) {
 
-    public inline function distance(_other:Vector) {
+		return Math.sqrt((other.y - y) * (other.y - y) + (other.x - x) * (other.x - x));
 
-        return Math.sqrt((_other.y - y) * (_other.y - y) + (_other.x - x) * (_other.x - x));
+	}
 
-    }
+	public inline function invert() {
 
-    public inline function invert() {
+		set(-x, -y);
 
-        set(-x, -y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function add(other:Vector) {
 
-    public inline function add(_other:Vector) {
+		set(x + other.x, y + other.y);
 
-        set(x + _other.x, y + _other.y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function addXY(x:Float, y:Float) {
 
-    public inline function addXY(_x:Float, _y:Float) {
+		set(this.x + x, this.y + y);
 
-        set(x + _x, y + _y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function addScalar(v:Float) {
 
-    public inline function addScalar(_v:Float) {
+		set(x + v, y + v);
 
-        set(x + _v, y + _v);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function subtract(other:Vector) {
 
-    public inline function subtract(_other:Vector) {
+		set(x - other.x, y - other.y);
 
-        set(x - _other.x, y - _other.y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function subtractXY(_x:Float, _y:Float) {
 
-    public inline function subtractXY(_x:Float, _y:Float) {
+		set(this.x - x, this.y - y);
 
-        set(x - _x, y - _y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function subtractScalar(v:Float) {
 
-    public inline function subtractScalar(_v:Float) {
+		set(x - v, y - v);
 
-        set(x - _v, y - _v);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function multiply(other:Vector) {
 
-    public inline function multiply(_other:Vector) {
+		set(x * other.x, y * other.y);
 
-        set(x * _other.x, y * _other.y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function multiplyXY(_x:Float, _y:Float) {
 
-    public inline function multiplyXY(_x:Float, _y:Float) {
+		set(this.x * x, this.y * y);
 
-        set(x * _x, y * _y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function multiplyScalar(v:Float) {
 
-    public inline function multiplyScalar(_v:Float) {
+		set(x * v, y * v);
 
-        set(x * _v, y * _v);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function divide(other:Vector) {
 
-    public inline function divide(_other:Vector) {
+		set(x / other.x, y / other.y);
 
-        set(x / _other.x, y / _other.y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function divideXY(_x:Float, _y:Float) {
 
-    public inline function divideXY(_x:Float, _y:Float) {
+		set(this.x / x, this.y / y);
 
-        set(x / _x, y / _y);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function divideScalar(v:Float) {
 
-    public inline function divideScalar(_v:Float) {
+		set(x / v, y / v);
 
-        set(x / _v, y / _v);
+		return this;
+		
+	}
 
-        return this;
-        
-    }
+	public inline function transform(m:Matrix) {
 
-    public inline function transform(_m:Matrix) {
+		set(m.a * x + m.c * y + m.tx, m.b * x + m.d * y + m.ty);
 
-        set(_m.a * x + _m.c * y + _m.tx, _m.b * x + _m.d * y + _m.ty);
+		return this;
+		
+	}
+	
+	inline function get_lengthSq() {
 
-        return this;
-        
-    }
-    
-    inline function get_lengthSq() {
+		return x * x + y * y;
 
-        return x * x + y * y;
+	}
 
-    }
+	inline function get_length() {
 
-    inline function get_length() {
+		return Math.sqrt(x * x + y * y);
 
-        return Math.sqrt(x * x + y * y);
+	}
 
-    }
+	inline function set_length(v:Float) {
 
-    inline function set_length(_v:Float) {
+		normalize().multiplyScalar(v);
+		return v;
 
-        normalize().multiplyScalar(_v);
-        return _v;
+	}
 
-    }
+	function set_x(v:Float) {
 
-    function set_x(_v:Float) {
+		return x = v;
 
-        return x = _v;
+	}
 
-    }
+	function set_y(v:Float) {
 
-    function set_y(_v:Float) {
+		return y = v;
 
-        return y = _v;
-
-    }
+	}
 
 
 }

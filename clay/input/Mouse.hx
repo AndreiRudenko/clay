@@ -25,9 +25,9 @@ class Mouse extends Input {
 	var _binding:Bindings;
 
 
-	function new(_app:App) {
+	function new(app:App) {
 		
-		super(_app);
+		super(app);
 
 		_mouseBindings = new Map();
 		_binding = Clay.input.binding;

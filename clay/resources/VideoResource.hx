@@ -9,9 +9,9 @@ class VideoResource extends Resource {
 	@:noCompletion public var video:kha.Video;
 
 
-	public function new(_video:kha.Video) {
+	public function new(video:kha.Video) {
 
-		video = _video;
+		this.video = video;
 		resourceType = ResourceType.video;
 		
 	}

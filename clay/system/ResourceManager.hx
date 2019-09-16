@@ -23,19 +23,19 @@ class ResourceManager {
 	public var cache(default, null):Map<String, Resource>;
 	public var stats:ResourceStats;
 
-	var textureExt:Array<String>;
-	var audioExt:Array<String>;
-	var fontExt:Array<String>;
-	var videoExt:Array<String>;
+	var _textureExt:Array<String>;
+	var _audioExt:Array<String>;
+	var _fontExt:Array<String>;
+	var _videoExt:Array<String>;
 	
 
 	function new() {
 		
-		textureExt = kha.Assets.imageFormats;
-		audioExt = kha.Assets.soundFormats;
-		videoExt = [];
-		// videoExt = kha.Assets.videoFormats; // todo: bug on hl
-		fontExt = kha.Assets.fontFormats;
+		_textureExt = kha.Assets.imageFormats;
+		_audioExt = kha.Assets.soundFormats;
+		_videoExt = [];
+		// _videoExt = kha.Assets.videoFormats; // todo: bug on hl
+		_fontExt = kha.Assets.fontFormats;
 
 		cache = new Map();
 
@@ -111,16 +111,16 @@ class ResourceManager {
 		var ext = Path.extension(id);
 
 		switch (ext) {
-			case e if (textureExt.indexOf(e) != -1):{
+			case e if (_textureExt.indexOf(e) != -1):{
 				loadTexture(id, onComplete);
 			}
-			case e if (fontExt.indexOf(e) != -1):{
+			case e if (_fontExt.indexOf(e) != -1):{
 				loadFont(id, onComplete);
 			}
-			case e if (audioExt.indexOf(e) != -1):{
+			case e if (_audioExt.indexOf(e) != -1):{
 				loadAudio(id, onComplete);
 			}
-			case e if (videoExt.indexOf(e) != -1):{
+			case e if (_videoExt.indexOf(e) != -1):{
 				loadVideo(id, onComplete);
 			}
 			case "json":{

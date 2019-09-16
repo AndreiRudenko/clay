@@ -10,9 +10,9 @@ class VectorCallback extends Vector {
     @:isVar public var listenY(default,default):(v:Float)->Void;
 
 
-    public function new(_x:Float = 0, _y:Float = 0) {
+    public function new(x:Float = 0, y:Float = 0) {
 
-        super(_x, _y);
+        super(x, y);
         
     }
 

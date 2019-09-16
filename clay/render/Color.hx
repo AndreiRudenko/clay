@@ -10,31 +10,31 @@ class Color {
 	public var a:Float;
 
 
-	public function new(_r:Float = 1, _g:Float = 1, _b:Float = 1, _a:Float = 1) {
+	public function new(r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1) {
 		
-		r = _r;
-		g = _g;
-		b = _b;
-		a = _a;
+		this.r = r;
+		this.g = g;
+		this.b = b;
+		this.a = a;
 
 	}
 
-	public function set(?_r:Float, ?_g:Float, ?_b:Float, ?_a:Float):Color {
+	public function set(?r:Float, ?g:Float, ?b:Float, ?a:Float):Color {
 
-		if(_r != null) {
-			r = _r;
+		if(r != null) {
+			this.r = r;
 		}
 
-		if(_g != null) {
-			g = _g;
+		if(g != null) {
+			this.g = g;
 		}
 
-		if(_b != null) {
-			b = _b;
+		if(b != null) {
+			this.b = b;
 		}
 
-		if(_a != null) {
-			a = _a;
+		if(a != null) {
+			this.a = a;
 		}
 
 		return this;
@@ -52,17 +52,17 @@ class Color {
 		
 	}
 
-	public function fromInt(_i:Int):Color {
+	public function fromInt(i:Int):Color {
 
-		// var _a = _i >> 24;
-		var _r = _i >> 16;
-		var _g = _i >> 8 & 0xFF;
-		var _b = _i & 0xFF;
+		// var _a = i >> 24;
+		var r1 = i >> 16;
+		var g1 = i >> 8 & 0xFF;
+		var b1 = i & 0xFF;
 
 			//convert to 0-1
-		r = _r / 255;
-		g = _g / 255;
-		b = _b / 255;
+		r = r1 / 255;
+		g = g1 / 255;
+		b = b1 / 255;
 
 		return this;
 		
@@ -80,9 +80,9 @@ class Color {
 		
 	}
 
-	public static function random(?_includeAlpha:Bool=false) : Color {
+	public static function random(?includeAlpha:Bool = false) : Color {
 
-		return new Color(Math.random(), Math.random(), Math.random(), _includeAlpha ? Math.random() : 1.0 );
+		return new Color(Math.random(), Math.random(), Math.random(), includeAlpha ? Math.random() : 1.0 );
 		
 	}
 

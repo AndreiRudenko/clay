@@ -7,57 +7,57 @@ import clay.utils.Timer;
 class TimerManager {
 
 
-	var timers:Array<Timer>;
+	var _timers:Array<Timer>;
 
 
 	@:noCompletion public function new() {
 
-		timers = [];
+		_timers = [];
 
 	}
 
 
 	@:allow(clay.utils.Timer) 
-	inline function add(_timer:Timer) {
+	inline function add(timer:Timer) {
 
-		if(!_timer.manualUpdate) {
-			timers.push(_timer);
-			_timer._added = true;
+		if(!timer.manualUpdate) {
+			_timers.push(timer);
+			timer._added = true;
 		}
 
 	}
 
 	@:allow(clay.utils.Timer) 
-	inline function remove(_timer:Timer) {
+	inline function remove(timer:Timer) {
 		
-		if(!_timer.manualUpdate) {
-			timers.remove(_timer);
-			_timer._added = false;
+		if(!timer.manualUpdate) {
+			_timers.remove(timer);
+			timer._added = false;
 		}
 
 	}
 
 	public function reset() {
 
-		for (t in timers) {
+		for (t in _timers) {
 			t.stop();
 		}
 
 	}
 	
-	public function schedule(_timelimit:Float = 1, _onCompletefunc:()->Void = null):Timer {
+	public function schedule(timelimit:Float = 1, onCompletefunc:()->Void = null):Timer {
 
 		var t:Timer = new Timer();
-		t.start(_timelimit, _onCompletefunc);
+		t.start(timelimit, onCompletefunc);
 
 		return t;
 
 	}
 
-	public function scheduleFrom(_currentTime:Float = 0, _timelimit:Float = 1, _onCompletefunc:()->Void = null):Timer {
+	public function scheduleFrom(currentTime:Float = 0, timelimit:Float = 1, onCompletefunc:()->Void = null):Timer {
 
 		var t:Timer = new Timer();
-		t.startFrom(_currentTime, _timelimit, _onCompletefunc);
+		t.startFrom(currentTime, timelimit, onCompletefunc);
 
 		return t;
 
@@ -71,7 +71,7 @@ class TimerManager {
 	
 	@:noCompletion public function update(dt:Float) {
 
-		for (t in timers) {
+		for (t in _timers) {
 			t.update(dt);
 		}
 
@@ -79,7 +79,7 @@ class TimerManager {
 
 	inline function toString() {
 
-		return 'timers: ${timers.length}';
+		return 'timers: ${_timers.length}';
 
 	}
 

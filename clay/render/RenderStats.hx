@@ -25,14 +25,14 @@ class RenderStats {
 
 	}
 
-	public function add(_stats:RenderStats) {
+	public function add(stats:RenderStats) {
 		
-		geometry += _stats.geometry;
-		visibleGeometry += _stats.visibleGeometry;
-		vertices += _stats.vertices;
-		indices += _stats.indices;
-		locked += _stats.locked;
-		drawCalls += _stats.drawCalls;
+		geometry += stats.geometry;
+		visibleGeometry += stats.visibleGeometry;
+		vertices += stats.vertices;
+		indices += stats.indices;
+		locked += stats.locked;
+		drawCalls += stats.drawCalls;
 
 	}
 	

@@ -25,16 +25,16 @@ using clay.render.utils.FastMatrix3Extender;
 class Camera {
 
 
-	public var name (default, null):String;
-	public var active (get, set):Bool;
+	public var name(default, null):String;
+	public var active(get, set):Bool;
 	public var viewport:Rectangle;
 	public var roundPixels:Bool;
 
 	public var bounds:Rectangle;
 	public var priority(default, null):Int;
 
-	public var onpreRender  (default, null):Signal<(c:Camera)->Void>;
-	public var onpostRender	(default, null):Signal<(c:Camera)->Void>;
+	public var onpreRender(default, null):Signal<(c:Camera)->Void>;
+	public var onpostRender(default, null):Signal<(c:Camera)->Void>;
 
 	@:noCompletion public var transform:Transform;
 	@:noCompletion public var projectionMatrix:Matrix;
@@ -52,7 +52,6 @@ class Camera {
 	var _visibleLayersMask:BitVector;
 	var _manager:CameraManager;
 
-	// var _viewMatrix:Matrix;
 	var _viewMatrixInverted:Matrix;
 	
 
@@ -79,7 +78,6 @@ class Camera {
 			this.viewport.copyFrom(viewport);
 		}
 
-		// _viewMatrix = new Matrix();
 		_viewMatrixInverted = new Matrix();
 		projectionMatrix = new Matrix();
 
@@ -229,7 +227,6 @@ class Camera {
 		onpreRender = null;
 		onpostRender = null;
 		transform = null;
-		// _viewMatrix = null;
 		_viewMatrixInverted = null;
 		projectionMatrix = null;
 		_visibleLayersMask = null;

@@ -13,29 +13,29 @@ class Gamepads extends Input {
 
 
 	// need to figure how gamepad is stored, and change map to array maybe
-	var gamepads:Map<Int, Gamepad>;
-	var gamepadEvent:GamepadEvent;
+	var _gamepads:Map<Int, Gamepad>;
+	var _gamepadEvent:GamepadEvent;
 
-	var gamepadBindings:Map<String, Map<Int, Int>>;
-	var binding:Bindings;
+	var _gamepadBindings:Map<String, Map<Int, Int>>;
+	var _binding:Bindings;
 
 
 	function new(app:App) {
 		
 		super(app);
 
-		gamepadBindings = new Map();
-		binding = Clay.input.binding;
+		_gamepadBindings = new Map();
+		_binding = Clay.input.binding;
 
 	}
 
-	public function get(_gamepad:Int):Gamepad {
+	public function get(gamepad:Int):Gamepad {
 
 		if(!active) {
 			return null;
 		}
 
-		return gamepads.get(_gamepad);
+		return _gamepads.get(gamepad);
 
 	}
 
@@ -45,7 +45,7 @@ class Gamepads extends Input {
 			return;
 		}
 
-		gamepads = new Map();
+		_gamepads = new Map();
 
 		#if use_gamepad_input
 		
@@ -53,7 +53,7 @@ class Gamepads extends Input {
 
 		#end 
 
-		gamepadEvent = new GamepadEvent();
+		_gamepadEvent = new GamepadEvent();
 
 		super.enable();
 
@@ -68,112 +68,112 @@ class Gamepads extends Input {
 		#if use_gamepad_input
 
 		kha.input.Gamepad.removeConnect(onconnect, ondisconnect);
-		for (g in gamepads) {
+		for (g in _gamepads) {
 			g.unlistenEvents();
 		}
 
 		#end 
 
-		gamepads = null;
-		gamepadEvent = null;
+		_gamepads = null;
+		_gamepadEvent = null;
 
 		super.disable();
 
 	}
 
-	public function pressed(_gamepad:Int, _button:Int):Bool {
+	public function pressed(gamepad:Int, button:Int):Bool {
 
-		var g = gamepads.get(_gamepad);
+		var g = _gamepads.get(gamepad);
 		if(g != null) {
-			return g.pressed(_button);
+			return g.pressed(button);
 		}
 
 		return false;
 
 	}
 
-	public function released(_gamepad:Int, _button:Int):Bool {
+	public function released(gamepad:Int, button:Int):Bool {
 
-		var g = gamepads.get(_gamepad);
+		var g = _gamepads.get(gamepad);
 		if(g != null) {
-			return g.released(_button);
+			return g.released(button);
 		}
 
 		return false;
 
 	}
 
-	public function down(_gamepad:Int, _button:Int):Bool {
+	public function down(gamepad:Int, button:Int):Bool {
 
-		var g = gamepads.get(_gamepad);
+		var g = _gamepads.get(gamepad);
 		if(g != null) {
-			return g.down(_button);
+			return g.down(button);
 		}
 
 		return false;
 
 	}
 
-	public function axis(_gamepad:Int, _axis:Int):Float {
+	public function axis(gamepad:Int, axis:Int):Float {
 
-		var g = gamepads.get(_gamepad);
+		var g = _gamepads.get(gamepad);
 		if(g != null) {
-			return g.axis(_axis);
+			return g.axis(axis);
 		}
 
 		return 0;
 
 	}
 
-    public function bind(_name:String, _gamepad:Int, _button:Int) {
+	public function bind(name:String, gamepad:Int, button:Int) {
 
-    	var b = gamepadBindings.get(_name);
+		var b = _gamepadBindings.get(name);
 
-    	if(b == null) {
-    		b = new Map();
-    		gamepadBindings.set(_name, b);
-    	}
+		if(b == null) {
+			b = new Map();
+			_gamepadBindings.set(name, b);
+		}
 
-    	b.set(_gamepad, _button);
+		b.set(gamepad, button);
 
-    }
+	}
 
-    public function unbind(_name:String) {
+	public function unbind(name:String) {
 
-    	if(gamepadBindings.exists(_name)) {
-    		gamepadBindings.remove(_name);
-    		binding.removeAll(_name);
-    	}
+		if(_gamepadBindings.exists(name)) {
+			_gamepadBindings.remove(name);
+			_binding.removeAll(name);
+		}
 
-    }
+	}
 
-    function checkBinding(_gamepad:Int, _button:Int, _pressed:Bool) {
+	function checkBinding(gamepad:Int, button:Int, pressed:Bool) {
 
-    	for (k in gamepadBindings.keys()) { // todo: using this is broke hashlink build, ftw?
-    		var g = gamepadBindings.get(k);
-    		if(g != null) {
-    			if(g.exists(_gamepad)) {
-    				var n = g.get(_gamepad);
-		    		if(Bits.check(n, _button)) {
-			    		binding.inputEvent.setGamepad(k, gamepadEvent);
-				    	if(_pressed) {
-				    		binding.inputPressed();
-				    	} else {
-							binding.inputReleased();
-				    	}
-				    	return;
-		    		}
-    			}
-    		}
-    	}
+		for (k in _gamepadBindings.keys()) { // todo: using this is broke hashlink build, ftw?
+			var g = _gamepadBindings.get(k);
+			if(g != null) {
+				if(g.exists(gamepad)) {
+					var n = g.get(gamepad);
+					if(Bits.check(n, button)) {
+						_binding.inputEvent.setGamepad(k, _gamepadEvent);
+						if(pressed) {
+							_binding.inputPressed();
+						} else {
+							_binding.inputReleased();
+						}
+						return;
+					}
+				}
+			}
+		}
 
-    }
+	}
 
 	function reset() {
 
 		#if use_gamepad_input
 		
-		for (g in gamepads) {
+		for (g in _gamepads) {
 			g.clear();
 		}
 
@@ -181,33 +181,33 @@ class Gamepads extends Input {
 
 	}
 
-	function onconnect(_gamepad:Int) {
+	function onconnect(gamepad:Int) {
 		
-		_debug('onconnect gamepad:$_gamepad');
-		assert(!gamepads.exists(_gamepad), 'trying to add gamepad that already exists');
+		_debug('onconnect gamepad:$gamepad');
+		assert(!_gamepads.exists(gamepad), 'trying to add gamepad that already exists');
 
-		var g = new Gamepad(_gamepad, this);
+		var g = new Gamepad(gamepad, this);
 		g.listenEvents();
-		gamepads.set(_gamepad, g);
+		_gamepads.set(gamepad, g);
 
-		gamepadEvent.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_ADDED);
+		_gamepadEvent.set(gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_ADDED);
 
-		_app.emitter.emit(GamepadEvent.DEVICE_ADDED, gamepadEvent);
+		_app.emitter.emit(GamepadEvent.DEVICE_ADDED, _gamepadEvent);
 
 	}
 
-	function ondisconnect(_gamepad:Int) {
+	function ondisconnect(gamepad:Int) {
 		
-		_debug('ondisconnect gamepad:$_gamepad');
-		assert(gamepads.exists(_gamepad), 'trying to remove gamepad that not exists');
+		_debug('ondisconnect gamepad:$gamepad');
+		assert(_gamepads.exists(gamepad), 'trying to remove gamepad that not exists');
 
-		var g = gamepads.get(_gamepad);
+		var g = _gamepads.get(gamepad);
 		g.unlistenEvents();
-		gamepads.remove(_gamepad);
+		_gamepads.remove(gamepad);
 
-		gamepadEvent.set(_gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_REMOVED);
+		_gamepadEvent.set(gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_REMOVED);
 		
-		_app.emitter.emit(GamepadEvent.DEVICE_REMOVED, gamepadEvent);
+		_app.emitter.emit(GamepadEvent.DEVICE_REMOVED, _gamepadEvent);
 
 	}
 
@@ -222,48 +222,48 @@ class Gamepad {
 	public var gamepad(default, null):Int;
 	public var deadzone:Float = 0.15;
 
-	var buttonsPressed:UInt = 0;
-	var buttonsReleased:UInt = 0;
-	var buttonsDown:UInt = 0;
+	var _buttonsPressed:UInt = 0;
+	var _buttonsReleased:UInt = 0;
+	var _buttonsDown:UInt = 0;
 
-	var axisID:Int = -1;
-	var axisValue:Float = 0;
+	var _axisID:Int = -1;
+	var _axisValue:Float = 0;
 
-	var gamepadEvent:GamepadEvent;
-	var gamepads:Gamepads;
+	var _gamepadEvent:GamepadEvent;
+	var _gamepads:Gamepads;
 
 
-	function new(_g:Int, _gamepads:Gamepads) {
+	function new(gamepad:Int, gamepads:Gamepads) {
 
-		gamepad = _g;
-		gamepads = _gamepads;
-		id = kha.input.Gamepad.get(gamepad).id;
-		gamepadEvent = new GamepadEvent();
-
-	}
-
-	public inline function pressed(_b:Int):Bool {
-
-		return Bits.check(buttonsPressed, _b);
+		this.gamepad = gamepad;
+		_gamepads = gamepads;
+		id = kha.input.Gamepad.get(this.gamepad).id;
+		_gamepadEvent = new GamepadEvent();
 
 	}
 
-	public inline function released(_b:Int):Bool {
+	public inline function pressed(b:Int):Bool {
 
-		return Bits.check(buttonsReleased, _b);
-
-	}
-
-	public inline function down(_b:Int):Bool {
-
-		return Bits.check(buttonsDown, _b);
+		return Bits.check(_buttonsPressed, b);
 
 	}
 
-	public inline function axis(_a:Int):Float {
+	public inline function released(b:Int):Bool {
 
-		if(_a == axisID) {
-			return axisValue;
+		return Bits.check(_buttonsReleased, b);
+
+	}
+
+	public inline function down(b:Int):Bool {
+
+		return Bits.check(_buttonsDown, b);
+
+	}
+
+	public inline function axis(a:Int):Float {
+
+		if(a == _axisID) {
+			return _axisValue;
 		}
 
 		return 0;
@@ -284,70 +284,68 @@ class Gamepad {
 
 	function clear() {
 
-		buttonsPressed = 0;
-		buttonsReleased = 0;
-		axisID = -1;
-		axisValue = 0;
+		_buttonsPressed = 0;
+		_buttonsReleased = 0;
+		_axisID = -1;
+		_axisValue = 0;
 
 	}
 
-	function onAxis(_a:Int, _v:Float) {
+	function onAxis(a:Int, v:Float) {
 
-		if(Math.abs(_v) < deadzone) {
+		if(Math.abs(v) < deadzone) {
 			return;
 		}
 		
-		_debug('onAxis gamepad:$gamepad, axis:$_a, value:$value');
+		_debug('onAxis gamepad:$gamepad, axis:$a, value:$v');
 
-		axisID = _a;
-		axisValue = _v;
+		_axisID = a;
+		_axisValue = v;
 
-		gamepadEvent.set(gamepad, id, -1, axisID, axisValue, GamepadEvent.AXIS);
+		_gamepadEvent.set(gamepad, id, -1, _axisID, _axisValue, GamepadEvent.AXIS);
 
-		gamepads._app.emitter.emit(GamepadEvent.AXIS, gamepadEvent);
+		_gamepads._app.emitter.emit(GamepadEvent.AXIS, _gamepadEvent);
 
 	}
 
-	function onButton(_b:Int, _v:Float) {
+	function onButton(b:Int, v:Float) {
 		
-		_debug('onButton gamepad:$gamepad, button:$_b, value:$_v');
+		_debug('onButton gamepad:$gamepad, button:$b, value:$v');
 
-		if(_v > 0.5) {
-			onPressed(_b);
+		if(v > 0.5) {
+			onPressed(b);
 		} else {
-			onReleased(_b);
+			onReleased(b);
 		}
 
 	}
 
-	inline function onPressed(_b:Int) {
+	inline function onPressed(b:Int) {
 
-		_debug('onPressed gamepad:$gamepad, button:$_b');
+		_debug('onPressed gamepad:$gamepad, button:$b');
 
-		buttonsPressed = Bits.set(buttonsPressed, _b);
-		buttonsDown = Bits.set(buttonsDown, _b);
+		_buttonsPressed = Bits.set(_buttonsPressed, b);
+		_buttonsDown = Bits.set(_buttonsDown, b);
 
-		gamepadEvent.set(gamepad, id, _b, -1, 0, GamepadEvent.BUTTON_DOWN);
+		_gamepadEvent.set(gamepad, id, b, -1, 0, GamepadEvent.BUTTON_DOWN);
 
-		gamepads.checkBinding(gamepad, _b, true);
-
-		gamepads._app.emitter.emit(GamepadEvent.BUTTON_DOWN, gamepadEvent);
+		_gamepads.checkBinding(gamepad, b, true);
+		_gamepads._app.emitter.emit(GamepadEvent.BUTTON_DOWN, _gamepadEvent);
 
 	}
 
-	inline function onReleased(_b:Int) {
+	inline function onReleased(b:Int) {
 
-		_debug('onReleased gamepad:$gamepad, button:$_b');
+		_debug('onReleased gamepad:$gamepad, button:$b');
 
-		buttonsPressed = Bits.clear(buttonsPressed, _b);
-		buttonsDown = Bits.clear(buttonsDown, _b);
-		buttonsReleased = Bits.set(buttonsReleased, _b);
+		_buttonsPressed = Bits.clear(_buttonsPressed, b);
+		_buttonsDown = Bits.clear(_buttonsDown, b);
+		_buttonsReleased = Bits.set(_buttonsReleased, b);
 
-		gamepadEvent.set(gamepad, id, _b, -1, 0, GamepadEvent.BUTTON_UP);
+		_gamepadEvent.set(gamepad, id, b, -1, 0, GamepadEvent.BUTTON_UP);
 
-		gamepads.checkBinding(gamepad, _b, false);
-
-		gamepads._app.emitter.emit(GamepadEvent.BUTTON_UP, gamepadEvent);
+		_gamepads.checkBinding(gamepad, b, false);
+		_gamepads._app.emitter.emit(GamepadEvent.BUTTON_UP, _gamepadEvent);
 
 	}
 

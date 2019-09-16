@@ -8,44 +8,44 @@ class Clay {
 
 
 	@:allow(clay.system.App)
-	public static var app      	(default, null):clay.system.App;
-	public static var debug      	(get, never):clay.system.Debug;
+	public static var app(default, null):clay.system.App;
+	public static var debug(get, never):clay.system.Debug;
 
-	public static var screen      	(get, never):clay.system.Screen;
-	public static var renderer 	    (get, never):clay.render.Renderer;
-	public static var camera 	    (get, never):clay.render.Camera;
-	public static var cameras 	    (get, never):clay.render.CameraManager;
-	public static var layer 	    (get, never):clay.render.Layer;
-	public static var layers 	    (get, never):clay.render.LayerManager;
-	public static var draw     	    (get, never):clay.render.Draw;
+	public static var screen(get, never):clay.system.Screen;
+	public static var renderer(get, never):clay.render.Renderer;
+	public static var camera(get, never):clay.render.Camera;
+	public static var cameras(get, never):clay.render.CameraManager;
+	public static var layer(get, never):clay.render.Layer;
+	public static var layers(get, never):clay.render.LayerManager;
+	public static var draw(get, never):clay.render.Draw;
 
-	public static var input    	    (get, never):clay.system.InputManager;
-	public static var resources	    (get, never):clay.system.ResourceManager;
+	public static var input(get, never):clay.system.InputManager;
+	public static var resources(get, never):clay.system.ResourceManager;
 
-	public static var audio 	    (get, never):clay.system.Audio;
-	public static var timer    	    (get, never):clay.system.TimerManager;
-	public static var events    	(get, never):clay.events.Events;
-	public static var tween    	    (get, never):clay.tween.TweenManager;
+	public static var audio(get, never):clay.system.Audio;
+	public static var timer(get, never):clay.system.TimerManager;
+	public static var events(get, never):clay.events.Events;
+	public static var tween(get, never):clay.tween.TweenManager;
 	
-	public static var random    	(get, never):clay.utils.Random;
+	public static var random(get, never):clay.utils.Random;
 
-	public static var dt	        (get, never):Float;
-	public static var time	        (get, never):Float;
-	public static var timescale	    (get, set):Float;
+	public static var dt(get, never):Float;
+	public static var time(get, never):Float;
+	public static var timescale(get, set):Float;
 
-	// public static var io       	(default, null):clay.IO;
+	// public static var io(default, null):clay.IO;
 
 
 	static var inited:Bool = false;
 
 
-	public static function init(_options:ClayOptions, _onready:()->Void) {
+	public static function init(options:ClayOptions, onReady:()->Void) {
 
 		assert(!inited, "app already inited");
 
 		inited = true;
 
-		new clay.system.App(_options, _onready);
+		new clay.system.App(options, onReady);
 
 	}
 
