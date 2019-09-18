@@ -24,8 +24,8 @@ class Tween<T> {
 
 	var _onStart:()->Void;
 	var _onStop:()->Void;
-	var _onpause:()->Void;
-	var _onresume:()->Void;
+	var _onPause:()->Void;
+	var _onResume:()->Void;
 	var _onUpdate:()->Void;
 	var _onRepeat:()->Void;
 	var _onComplete:()->Void;
@@ -235,12 +235,12 @@ class Tween<T> {
 		
 		if(v != paused) {
 			if(paused) {
-				if(_onresume != null) {
-					_onresume();
+				if(_onResume != null) {
+					_onResume();
 				}
 			} else {
-				if(_onpause != null) {
-					_onpause();
+				if(_onPause != null) {
+					_onPause();
 				}
 			}
 		}
