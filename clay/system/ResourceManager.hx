@@ -395,16 +395,16 @@ class ResourceManager {
 	inline function updateStats(_res:Resource, _offset:Int) {
 
 		switch(_res.resourceType) {
-			case ResourceType.unknown:          stats.unknown   += _offset;
-			case ResourceType.bytes:            stats.bytes     += _offset;
-			case ResourceType.text:             stats.texts     += _offset;
-			case ResourceType.json:             stats.jsons     += _offset;
-			case ResourceType.texture:          stats.textures  += _offset;
-			case ResourceType.renderTexture:   stats.rtt       += _offset;
-			case ResourceType.font:             stats.fonts     += _offset;
-			// case ResourceType.shader:           stats.shaders   += _offset;
-			case ResourceType.audio:            stats.audios    += _offset;
-			case ResourceType.video:            stats.videos    += _offset;
+			case ResourceType.UNKNOWN:          stats.unknown   += _offset;
+			case ResourceType.BYTES:            stats.bytes     += _offset;
+			case ResourceType.TEXT:             stats.texts     += _offset;
+			case ResourceType.JSON:             stats.jsons     += _offset;
+			case ResourceType.TEXTURE:          stats.textures  += _offset;
+			case ResourceType.RENDERTEXTURE:    stats.rtt       += _offset;
+			case ResourceType.FONT:             stats.fonts     += _offset;
+			// case ResourceType.SHADER:           stats.shaders   += _offset;
+			case ResourceType.AUDIO:            stats.audios    += _offset;
+			case ResourceType.VIDEO:            stats.videos    += _offset;
 		}
 
 		stats.total += _offset;
@@ -478,15 +478,15 @@ class ResourceStats {
 
 @:enum abstract ResourceType(Int) from Int to Int {
 
-	var unknown         = 0;
-	var text            = 1;
-	var json            = 2;
-	var bytes           = 3;
-	var texture         = 4;
-	var renderTexture   = 5;
-	var font            = 6;
-	var shader          = 7;
-	var audio           = 8;
-	var video           = 9;
+	var UNKNOWN         = 0;
+	var TEXT            = 1;
+	var JSON            = 2;
+	var BYTES           = 3;
+	var TEXTURE         = 4;
+	var RENDERTEXTURE   = 5;
+	var FONT            = 6;
+	var SHADER          = 7;
+	var AUDIO           = 8;
+	var VIDEO           = 9;
 
 }

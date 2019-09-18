@@ -13,7 +13,7 @@ class JsonResource extends Resource {
 	public function new(json:Dynamic) {
 
 		this.json = json;
-		resourceType = ResourceType.json;
+		resourceType = ResourceType.JSON;
 		
 	}
 

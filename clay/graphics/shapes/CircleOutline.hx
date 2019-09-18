@@ -21,7 +21,7 @@ class CircleOutline extends Circle {
 	public function new(radius:Float, weight:Float = 4, ?segments:Int) {
 
 		_weight = weight;
-		_align = StrokeAlign.center;
+		_align = StrokeAlign.CENTER;
 
 		super(radius, segments);
 
@@ -39,12 +39,12 @@ class CircleOutline extends Circle {
 		var r2:Float = r;
 
 		switch (_align) {
-			case StrokeAlign.center:
+			case StrokeAlign.CENTER:
 				r1 += weight * 0.5;
 				r2 -= weight * 0.5;
-			case StrokeAlign.inside:
+			case StrokeAlign.INSIDE:
 				r2 -= weight;
-			case StrokeAlign.outside:
+			case StrokeAlign.OUTSIDE:
 				r1 += weight;
 		}
 
@@ -84,12 +84,12 @@ class CircleOutline extends Circle {
 		var r2:Float = r;
 
 		switch (_align) {
-			case StrokeAlign.center:
+			case StrokeAlign.CENTER:
 				r1 += weight * 0.5;
 				r2 -= weight * 0.5;
-			case StrokeAlign.inside:
+			case StrokeAlign.INSIDE:
 				r2 -= weight;
-			case StrokeAlign.outside:
+			case StrokeAlign.OUTSIDE:
 				r1 += weight;
 		}
 

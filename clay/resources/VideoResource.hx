@@ -12,7 +12,7 @@ class VideoResource extends Resource {
 	public function new(video:kha.Video) {
 
 		this.video = video;
-		resourceType = ResourceType.video;
+		resourceType = ResourceType.VIDEO;
 		
 	}
 

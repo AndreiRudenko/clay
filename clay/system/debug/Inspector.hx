@@ -63,7 +63,7 @@ class Inspector {
 		overlay.layer = debug.layer;
 
 		fpsText = new Text(Clay.resources.font("assets/Muli-Regular.ttf"));
-		fpsText.align = TextAlign.left;
+		fpsText.align = TextAlign.LEFT;
 		fpsText.size = 15;
 		fpsText.visible = false;
 		fpsText.color = new Color().fromInt(0xffa563);
@@ -144,14 +144,14 @@ class Inspector {
 
 	function onKeyDown(e:KeyEvent) {
 
-		if(e.key == Key.BackQuote || e.key == Key.F1) {
+		if(e.key == Key.BACKQUOTE || e.key == Key.F1) {
 			visible = !visible;
 		}
 
 		if(visible) {
-			if(e.key == Key.One) {
+			if(e.key == Key.ONE) {
 				debug.switchView(Clay.debug.currentView.index - 1);
-			} else if(e.key == Key.Two) {
+			} else if(e.key == Key.TWO) {
 				debug.switchView(Clay.debug.currentView.index + 1);
 			}
 		}
@@ -217,7 +217,7 @@ private class InspectorTab {
 		title = new Text(Clay.resources.font("assets/Muli-Bold.ttf"));
 		title.text = name;
 		title.size = size;
-		title.align = TextAlign.left;
+		title.align = TextAlign.LEFT;
 		title.visible = false;
 		title.color = new Color().fromInt(0xffa563);
 		title.transform.pos.set(Clay.debug.padding.x+14, Clay.debug.padding.y+6);

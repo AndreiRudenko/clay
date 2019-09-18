@@ -1,5 +1,6 @@
 package;
 
+import clay.Clay;
 
 class Game {
 

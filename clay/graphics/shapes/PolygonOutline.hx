@@ -29,7 +29,7 @@ class PolygonOutline extends Mesh {
 
 		_weight = weight;
 		_points = points;
-		_align = StrokeAlign.center;
+		_align = StrokeAlign.CENTER;
 
 		// tmp values
 		_line = new Vector();
@@ -72,10 +72,10 @@ class PolygonOutline extends Mesh {
 		var l1:Float = 1;
 
 		switch (_align) {
-			case StrokeAlign.inside:
+			case StrokeAlign.INSIDE:
 				l0 = 2;
 				l1 = 0;
-			case StrokeAlign.outside:
+			case StrokeAlign.OUTSIDE:
 				l0 = 0;
 				l1 = 2;
 			case _:

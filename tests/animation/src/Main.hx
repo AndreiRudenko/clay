@@ -17,12 +17,12 @@ class Main {
 					resizable: false
 				}
 			}, 
-			onready
+			onReady
 		);
 
 	}
 
-	static function onready() {
+	static function onReady() {
 
 		new Game();
 

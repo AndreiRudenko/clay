@@ -66,7 +66,7 @@ class StatsDebugView extends DebugView {
 
 		resourceListText = new Text(Clay.renderer.font);
 		resourceListText.size = fontSize;
-		resourceListText.align = TextAlign.right;
+		resourceListText.align = TextAlign.RIGHT;
 		resourceListText.visible = false;
 		resourceListText.color = new Color().fromInt(0xffa563);
 		resourceListText.transform.pos.set(rect.x, rect.y);
@@ -120,7 +120,7 @@ class StatsDebugView extends DebugView {
 
 	function onKeyDown(e:KeyEvent) {
 
-		if(e.key == Key.Three) {
+		if(e.key == Key.THREE) {
 			hideLayers = !hideLayers;
 			refresh();
 		}
@@ -255,7 +255,7 @@ class StatsDebugView extends DebugView {
 		}
 
 		inline function _tex(res:Texture) {
-			if(res.resourceType == ResourceType.renderTexture) {
+			if(res.resourceType == ResourceType.RENDERTEXTURE) {
 				_totalRtt += res.memoryUse();
 			} else {
 				_totalTex += res.memoryUse();
@@ -275,15 +275,15 @@ class StatsDebugView extends DebugView {
 
 		for(res in Clay.resources.cache) {
 			switch(res.resourceType) {
-				case ResourceType.bytes:            bytesLists.add(_bts(cast res));
-				case ResourceType.text:             textLists.add(_txt(cast res));
-				case ResourceType.json:             jsonLists.add(_res(res));
-				case ResourceType.texture:          textureLists.add(_tex(cast res));
-				case ResourceType.renderTexture:   rttLists.add(_tex(cast res));
-				case ResourceType.font:             fontLists.add(_fnt(cast res));
-				// case ResourceType.shader:           shaderLists.add(_shd(cast res));
-				case ResourceType.audio:            audioLists.add(_snd(cast res));
-				case ResourceType.video:            videoLists.add(_vid(cast res));
+				case ResourceType.BYTES:            bytesLists.add(_bts(cast res));
+				case ResourceType.TEXT:             textLists.add(_txt(cast res));
+				case ResourceType.JSON:             jsonLists.add(_res(res));
+				case ResourceType.TEXTURE:          textureLists.add(_tex(cast res));
+				case ResourceType.RENDERTEXTURE:   rttLists.add(_tex(cast res));
+				case ResourceType.FONT:             fontLists.add(_fnt(cast res));
+				// case ResourceType.SHADER:           shaderLists.add(_shd(cast res));
+				case ResourceType.AUDIO:            audioLists.add(_snd(cast res));
+				case ResourceType.VIDEO:            videoLists.add(_vid(cast res));
 				default:
 			}
 		}

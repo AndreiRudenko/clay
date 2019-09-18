@@ -26,7 +26,7 @@ class AudioResource extends Resource {
 
 		this.sound = sound;
 
-		resourceType = ResourceType.audio;
+		resourceType = ResourceType.AUDIO;
 		
 	}
 

@@ -100,12 +100,12 @@ class AudioDebugView extends DebugView {
 
 	function onKeyDown(e:KeyEvent) {
 
-		if(e.key == Key.Three) {
+		if(e.key == Key.THREE) {
 			hideEnts = !hideEnts;
 			refresh();
 		}
 
-		if(e.key == Key.Four) {
+		if(e.key == Key.FOUR) {
 			hideComps = !hideComps;
 			refresh();
 		}

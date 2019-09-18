@@ -25,8 +25,8 @@ class FrontBuffer {
 
 	// public var shader:Shader;
 
-	var _vertexbuffer:VertexBuffer;
-	var _indexbuffer:IndexBuffer;
+	var _vertexBuffer:VertexBuffer;
+	var _indexBuffer:IndexBuffer;
 	var _textureLoc:TextureUnit;
 
 	var _renderer:Renderer;
@@ -40,8 +40,8 @@ class FrontBuffer {
 		
 		_projectionMatrix = FastMatrix3.identity();
 
-    	_vertexbuffer = new VertexBuffer(4, shader.pipeline.inputLayout[0], Usage.StaticUsage);
-		var vertices = _vertexbuffer.lock();
+    	_vertexBuffer = new VertexBuffer(4, shader.pipeline.inputLayout[0], Usage.StaticUsage);
+		var vertices = _vertexBuffer.lock();
 
 		// colors
 		var index:Int = 0;
@@ -53,10 +53,10 @@ class FrontBuffer {
 			vertices.set(index + 5, 1);
 		}
 
-		_vertexbuffer.unlock();
+		_vertexBuffer.unlock();
 
-		_indexbuffer = new IndexBuffer(6, Usage.StaticUsage);
-		var indices = _indexbuffer.lock();
+		_indexBuffer = new IndexBuffer(6, Usage.StaticUsage);
+		var indices = _indexBuffer.lock();
 
 		indices[0] = 0;
 		indices[1] = 1;
@@ -65,13 +65,13 @@ class FrontBuffer {
 		indices[4] = 2;
 		indices[5] = 3;
 		
-		_indexbuffer.unlock();
+		_indexBuffer.unlock();
 
 	}
 
 	function setVertices(texture:Texture, transformation:FastMatrix3) {
 
-		var vertices = _vertexbuffer.lock();
+		var vertices = _vertexBuffer.lock();
 
 		var x = 0;
 		var y = 0;
@@ -108,7 +108,7 @@ class FrontBuffer {
 		vertices.set(index + 6, 0);
 		vertices.set(index + 7, hr);
 
-		_vertexbuffer.unlock();
+		_vertexBuffer.unlock();
 
 	}
 
@@ -128,8 +128,8 @@ class FrontBuffer {
 		shader.use(g);
 		shader.apply(g);
 
-		g.setVertexBuffer(_vertexbuffer);
-		g.setIndexBuffer(_indexbuffer);
+		g.setVertexBuffer(_vertexBuffer);
+		g.setIndexBuffer(_indexBuffer);
 
 		g.drawIndexedVertices();
 

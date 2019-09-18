@@ -185,9 +185,9 @@ class Mouse extends Input {
 		
 		_debug('_onWheel delta:$d');
 
-		_mouseEvent.set(x, y, 0, 0, d, MouseEvent.MOUSE_WHEEL, MouseButton.none);
+		_mouseEvent.set(x, y, 0, 0, d, MouseEvent.MOUSE_WHEEL, MouseButton.NONE);
 
-		checkBinding(MouseButton.none, false); // todo: check this
+		checkBinding(MouseButton.NONE, false); // todo: check this
 
 		_app.emitter.emit(MouseEvent.MOUSE_WHEEL, _mouseEvent);
 
@@ -200,7 +200,7 @@ class Mouse extends Input {
 		this.x = x;
 		this.y = y;
 
-		_mouseEvent.set(x, y, xRel, yRel, 0, MouseEvent.MOUSE_MOVE, MouseButton.none);
+		_mouseEvent.set(x, y, xRel, yRel, 0, MouseEvent.MOUSE_MOVE, MouseButton.NONE);
 
 		_app.emitter.emit(MouseEvent.MOUSE_MOVE, _mouseEvent);
 

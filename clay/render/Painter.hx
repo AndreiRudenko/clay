@@ -54,8 +54,8 @@ class Painter {
 	var _clipRect:Rectangle;
 	var _clipRectDefault:Rectangle;
 
-	var _vertexbuffer:VertexBuffer;
-	var _indexbuffer:IndexBuffer;
+	var _vertexBuffer:VertexBuffer;
+	var _indexBuffer:IndexBuffer;
 
 	var _vertices:Float32Array;
 	var _indices:Uint32Array;
@@ -79,19 +79,19 @@ class Painter {
 		indicesMax = Std.int(verticesMax / 4) * 6; // adjusted for quads
 
 		var shader = _renderer.shaders.get('textured');
-		_vertexbuffer = new VertexBuffer(
+		_vertexBuffer = new VertexBuffer(
 			verticesMax,
 			shader.pipeline.inputLayout[0],
 			Usage.DynamicUsage
 		);
 
-		_indexbuffer = new IndexBuffer(
+		_indexBuffer = new IndexBuffer(
 			indicesMax,
 			Usage.DynamicUsage
 		);
 		
-		_vertices = _vertexbuffer.lock();
-		_indices = _indexbuffer.lock();
+		_vertices = _vertexBuffer.lock();
+		_indices = _indexBuffer.lock();
 
 		_clipRectDefault = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
 		_projectionMatrix = FastMatrix3.identity();
@@ -251,14 +251,13 @@ class Painter {
 			return;
 		}
 
-		_vertexbuffer.unlock(_vertsDraw);
-		_indexbuffer.unlock(_indicesDraw);
-		// _indexbuffer.unlock();
+		_vertexBuffer.unlock(_vertsDraw);
+		_indexBuffer.unlock(_indicesDraw);
 
-		draw(_vertexbuffer, _indexbuffer, _indicesDraw);
+		draw(_vertexBuffer, _indexBuffer, _indicesDraw);
 
-		_vertices = _vertexbuffer.lock();
-		_indices = _indexbuffer.lock();
+		_vertices = _vertexBuffer.lock();
+		_indices = _indexBuffer.lock();
 
 		_vertexIdx = 0;
 

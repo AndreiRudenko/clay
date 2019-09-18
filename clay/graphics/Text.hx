@@ -61,8 +61,8 @@ class Text extends Mesh {
 
 		text = "";
 		size = 12;
-		align = TextAlign.left;
-		alignVertical = TextAlign.top;
+		align = TextAlign.LEFT;
+		alignVertical = TextAlign.TOP;
 		width = 0;
 		height = 0;
 		lineSpacing = 0;
@@ -107,7 +107,7 @@ class Text extends Mesh {
 				#if !noDebugConsole
 				p.stats.locked++;
 				#end
-				p.drawFromBuffers(_vertexbuffer, _indexbuffer); // render to texture instead
+				p.drawFromBuffers(_vertexBuffer, _indexBuffer); // render to texture instead
 			} else {
 
 				var v:Vertex;
@@ -344,10 +344,10 @@ class Text extends Mesh {
 			var hRatio:Float = img.height / img.realHeight;
 
 			switch (alignVertical) {
-				case TextAlign.bottom:{
+				case TextAlign.BOTTOM:{
 					yoffset = height - textHeight;
 				}
-				case TextAlign.center:{
+				case TextAlign.CENTER:{
 					yoffset = height*0.5 - textHeight/2;
 				}
 				default:{
@@ -371,10 +371,10 @@ class Text extends Mesh {
 					var xpos:Float = 0;
 
 					switch (align) {
-						case TextAlign.right:{
+						case TextAlign.RIGHT:{
 							xoffset = width-_textWidth;
 						}
-						case TextAlign.center:{
+						case TextAlign.CENTER:{
 							xoffset = width*0.5-_textWidth/2;
 						}
 						default:{
@@ -588,10 +588,10 @@ class Text extends Mesh {
 
 @:enum abstract TextAlign(Int) from Int to Int {
 
-	var left = 0;
-	var right = 1;
-	var center = 2;
-	var top = 3;
-	var bottom = 4;
+	var LEFT = 0;
+	var RIGHT = 1;
+	var CENTER = 2;
+	var TOP = 3;
+	var BOTTOM = 4;
 
 }

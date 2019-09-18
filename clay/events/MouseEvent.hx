@@ -18,7 +18,7 @@ class MouseEvent implements IEvent {
 	public var yrel(default, null):Int = 0;
 	public var wheel(default, null):Int = 0;
 
-	public var button(default, null):MouseButton = MouseButton.none;
+	public var button(default, null):MouseButton = MouseButton.NONE;
 	public var state(default, null):EventType<MouseEvent> = MouseEvent.MOUSE_UP;
 
 	
@@ -40,13 +40,13 @@ class MouseEvent implements IEvent {
 
 @:enum abstract MouseButton(Int) from Int to Int {
 
-    var none   	= -1;
-    var left   	= 0;
-    var right  	= 1;
-    var middle 	= 2;
-    var extra1 	= 3;
-    var extra2 	= 4;
-    var extra3 	= 5;
-    var extra4 	= 6;
+    var NONE   	= -1;
+    var LEFT   	= 0;
+    var RIGHT  	= 1;
+    var MIDDLE 	= 2;
+    var EXTRA1 	= 3;
+    var EXTRA2 	= 4;
+    var EXTRA3 	= 5;
+    var EXTRA4 	= 6;
 
 }

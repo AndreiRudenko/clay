@@ -22,7 +22,7 @@ class QuadOutline extends Mesh {
 	public function new(w:Float = 32, h:Float = 32, weight:Float = 4) {
 
 		_weight = weight;
-		_align = StrokeAlign.center;
+		_align = StrokeAlign.CENTER;
 
 		size = new VectorCallback(w, h);
 		size.listen(sizeChanged);
@@ -58,12 +58,12 @@ class QuadOutline extends Mesh {
 		var h:Float = size.y;
 
 		switch (_align) {
-			case StrokeAlign.center:
+			case StrokeAlign.CENTER:
 				sw -= _weight * 0.5;
 				sw2 += _weight * 0.5;
-			case StrokeAlign.inside:
+			case StrokeAlign.INSIDE:
 				sw2 += _weight;
-			case StrokeAlign.outside:
+			case StrokeAlign.OUTSIDE:
 				sw -= _weight;
 		}
 

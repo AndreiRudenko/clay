@@ -16,7 +16,7 @@ class FontResource extends Resource {
 		font = _font;
 		textures = new Map();
 		
-		resourceType = ResourceType.font;
+		resourceType = ResourceType.FONT;
 		
 	}
 

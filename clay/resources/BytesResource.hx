@@ -30,7 +30,7 @@ class BytesResource extends Resource {
 
 		this.blob = blob;
 
-		resourceType = ResourceType.bytes;
+		resourceType = ResourceType.BYTES;
 		
 	}
 

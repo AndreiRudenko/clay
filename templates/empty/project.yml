@@ -18,9 +18,22 @@ input:
 
 app:
   name: app_name
-  package: com.package.name
   icon: ''
   
+android:
+  package: com.package.name
+  orientation: sensor
+  permissions: []
+  version_code: 1
+  installLocation: internalOnly
+  arch: arm7
+
+ios:
+  bundle: tech.kode.$(PRODUCT_NAME:rfc1034identifier)
+  build: 1
+  organizationName: ''
+  developmentTeam: ''
+
 html5:
   webgl: true
   canvas: 'kanvas'

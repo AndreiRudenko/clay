@@ -43,8 +43,8 @@ class Mesh extends DisplayObject {
 	public var alphaBlendOp:BlendEquation;
 
 	var _texture:Texture;
-	var _vertexbuffer:VertexBuffer;
-	var _indexbuffer:IndexBuffer;
+	var _vertexBuffer:VertexBuffer;
+	var _indexBuffer:IndexBuffer;
 	var _regionScaled:Rectangle;
 
 
@@ -100,7 +100,7 @@ class Mesh extends DisplayObject {
 				#if !noDebugConsole
 				p.stats.locked++;
 				#end
-				p.drawFromBuffers(_vertexbuffer, _indexbuffer);
+				p.drawFromBuffers(_vertexBuffer, _indexBuffer);
 			} else {
 				updateRegionScaled();
 
@@ -129,7 +129,7 @@ class Mesh extends DisplayObject {
 	public function updateLocked() {
 
 		if(locked) {
-			if(_vertexbuffer.count() != vertices.length * 8) {
+			if(_vertexBuffer.count() != vertices.length * 8) {
 				clearBuffers();
 				setupLockedBuffers();
 			}
@@ -155,13 +155,13 @@ class Mesh extends DisplayObject {
 
 		var sh = shader != null ? shader : shaderDefault;
 
-		_vertexbuffer = new VertexBuffer(
+		_vertexBuffer = new VertexBuffer(
 			vertices.length,
 			sh.pipeline.inputLayout[0],
 			Usage.StaticUsage
 		);
 
-		_indexbuffer = new IndexBuffer(
+		_indexBuffer = new IndexBuffer(
 			indices.length,
 			Usage.StaticUsage
 		);
@@ -174,7 +174,7 @@ class Mesh extends DisplayObject {
 
 		transform.update();
 
-		var data = _vertexbuffer.lock();
+		var data = _vertexBuffer.lock();
 		var m = transform.world.matrix;
 		var n:Int = 0;
 		for (v in vertices) {
@@ -189,27 +189,27 @@ class Mesh extends DisplayObject {
 			data.set(n++, v.tcoord.x * _regionScaled.w + _regionScaled.x);
 			data.set(n++, v.tcoord.y * _regionScaled.h + _regionScaled.y);
 		}
-		_vertexbuffer.unlock();
+		_vertexBuffer.unlock();
 
-		var idata = _indexbuffer.lock();
+		var idata = _indexBuffer.lock();
 		for (i in 0...indices.length) {
 			idata.set(i, indices[i]);
 		}
 
-		_indexbuffer.unlock();
+		_indexBuffer.unlock();
 
 	}
 
 	function clearBuffers() {
 
-		if(_vertexbuffer != null) {
-			_vertexbuffer.delete();
-			_vertexbuffer = null;
+		if(_vertexBuffer != null) {
+			_vertexBuffer.delete();
+			_vertexBuffer = null;
 		}
 
-		if(_indexbuffer != null) {
-			_indexbuffer.delete();
-			_indexbuffer = null;
+		if(_indexBuffer != null) {
+			_indexBuffer.delete();
+			_indexBuffer = null;
 		}
 
 	}

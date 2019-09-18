@@ -27,8 +27,8 @@ class TraceDebugView extends DebugView {
 
 		lines = new Text(Clay.renderer.font);
 		lines.size = 14;
-		lines.align = TextAlign.left;
-		lines.alignVertical = TextAlign.bottom;
+		lines.align = TextAlign.LEFT;
+		lines.alignVertical = TextAlign.BOTTOM;
 		lines.visible = false;
 		lines.color = new Color().fromInt(0x888888);
 		lines.transform.pos.set(debug.padding.x+20, debug.padding.y+40);

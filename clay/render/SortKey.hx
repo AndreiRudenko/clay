@@ -166,30 +166,30 @@ private class __SortKey {
 class SortOptions {
 
 
-	public var clipBits      	(default, null):Int;
-	public var textureBits   	(default, null):Int;
-	public var shaderBits    	(default, null):Int;
+	public var clipBits(default, null):Int;
+	public var textureBits(default, null):Int;
+	public var shaderBits(default, null):Int;
 
-	public var clipOffset    	(default, null):Int;
-	public var textureOffset 	(default, null):Int;
-	public var shaderOffset  	(default, null):Int;
+	public var clipOffset(default, null):Int;
+	public var textureOffset(default, null):Int;
+	public var shaderOffset(default, null):Int;
 
-	public var textureMax    	(default, null):Int;
-	public var shaderMax     	(default, null):Int;
+	public var textureMax(default, null):Int;
+	public var shaderMax(default, null):Int;
 
 
-	public function new(_shaderBits:Int = 10, _textureBits:Int = 19) {
+	public function new(shaderBits:Int = 10, textureBits:Int = 19) {
 		
-		shaderBits = _shaderBits;
-		textureBits = _textureBits;
+		this.shaderBits = shaderBits;
+		this.textureBits = textureBits;
 		clipBits = 1;
 
 		clipOffset = 0;
 		textureOffset = clipBits;
-		shaderOffset = clipBits + textureBits;
+		shaderOffset = clipBits + this.textureBits;
 
-		textureMax = Bits.countSinged(textureBits);
-		shaderMax = Bits.countSinged(shaderBits);
+		textureMax = Bits.countSinged(this.textureBits);
+		shaderMax = Bits.countSinged(this.shaderBits);
 
 	}
 

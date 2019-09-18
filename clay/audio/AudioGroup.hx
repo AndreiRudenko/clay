@@ -17,7 +17,6 @@ class AudioGroup extends AudioChannel {
 
 
 	public var channels:Vector<AudioChannel>;
-
 	public var channelsCount(default, null):Int;
 
 	var _maxChannels:Int;
@@ -25,6 +24,7 @@ class AudioGroup extends AudioChannel {
 
 	var _internalChannels:Vector<AudioChannel>;
 	var _toRemove:Array<AudioChannel>;
+
 
 	public function new(maxChannels:Int = 32) {
 

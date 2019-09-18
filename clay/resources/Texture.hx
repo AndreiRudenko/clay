@@ -34,7 +34,7 @@ class Texture extends clay.resources.Resource {
 		
 		var img = kha.Image.createRenderTarget(width, height, format, depthStencil, antialiasing, contextID);
 		var t = new Texture(img, noID);
-		t.resourceType = ResourceType.renderTexture;
+		t.resourceType = ResourceType.RENDERTEXTURE;
 		return t;
 
 	}
@@ -79,7 +79,7 @@ class Texture extends clay.resources.Resource {
 		uAddressing = TextureAddressing.Clamp;
 		vAddressing = TextureAddressing.Clamp;
 
-		resourceType = ResourceType.texture;
+		resourceType = ResourceType.TEXTURE;
 
 	}
 

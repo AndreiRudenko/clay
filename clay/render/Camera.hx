@@ -91,7 +91,7 @@ class Camera {
 		onpreRender = new Signal();
 		onpostRender = new Signal();
 
-		sizeMode = SizeMode.fit;
+		sizeMode = SizeMode.FIT;
 
 		updatePos(0);
 
@@ -295,13 +295,13 @@ class Camera {
 		var longest = Math.min(rx, ry);
 
 		switch(sizeMode) {
-			case SizeMode.fit:{
+			case SizeMode.FIT:{
 				rx = ry = longest;
 			}
-			case SizeMode.cover: {
+			case SizeMode.COVER: {
 				rx = ry = shortest;
 			}
-			case SizeMode.contain: {
+			case SizeMode.CONTAIN: {
 				//use actual size
 			}
 		}
@@ -364,10 +364,10 @@ class Camera {
 @:enum abstract SizeMode(Int) from Int to Int {
 
 		/** fit the size into the camera viewport (possible letter/pillar box) */
-	var fit = 0;
+	var FIT = 0;
 		/** cover the viewport with the size (possible cropping) */
-	var cover = 1;
+	var COVER = 1;
 		/** contain the size (stretch to fit the viewport)*/
-	var contain = 2;
+	var CONTAIN = 2;
 
 }

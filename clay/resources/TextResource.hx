@@ -14,7 +14,7 @@ class TextResource extends Resource {
 
 		this.text = text;
 		
-		resourceType = ResourceType.text;
+		resourceType = ResourceType.TEXT;
 		
 	}
 

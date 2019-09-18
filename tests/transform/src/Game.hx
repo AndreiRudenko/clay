@@ -13,7 +13,7 @@ class Game {
 
 	public function new() {
 
-		Clay.on(MouseEvent.MOUSE_MOVE, mouseMove);
+		Clay.on(MouseEvent.MOUSE_MOVE, onMouseMove);
 
 		sprite = new Sprite();
 		sprite.size.set(128,128);
@@ -55,7 +55,7 @@ class Game {
 
 	}
 
-	function mouseMove(e:MouseEvent) {
+	function onMouseMove(e:MouseEvent) {
 
 		sprite.transform.pos.set(e.x, e.y);
 		

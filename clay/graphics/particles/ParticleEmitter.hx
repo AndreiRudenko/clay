@@ -153,7 +153,7 @@ class ParticleEmitter {
 		sortFunc = options.sortFunc;
 		
 		cacheWrap = options.cacheWrap != null ? options.cacheWrap : false;
-		sortmode = options.sortmode != null ? options.sortmode : ParticlesSortMode.none;
+		sortmode = options.sortmode != null ? options.sortmode : ParticlesSortMode.NONE;
 		
 		blendSrc = options.blendSrc != null ? options.blendSrc : BlendMode.BlendOne;
 		blendDst = options.blendDst != null ? options.blendDst : BlendMode.InverseSourceAlpha;
@@ -432,10 +432,10 @@ class ParticleEmitter {
 	public function getSortedParticles():haxe.ds.Vector<Particle> {
 		
 		switch (sortmode) {
-			case ParticlesSortMode.lifetime: return particles.sort(lifetimeSort);
-			case ParticlesSortMode.youngest: return particles.sort(youngestSort);
-			case ParticlesSortMode.oldest: return particles.sort(oldestSort);
-			case ParticlesSortMode.custom: return particles.sort(sortFunc);
+			case ParticlesSortMode.LIFETIME: return particles.sort(lifetimeSort);
+			case ParticlesSortMode.YOUNGEST: return particles.sort(youngestSort);
+			case ParticlesSortMode.OLDEST: return particles.sort(oldestSort);
+			case ParticlesSortMode.CUSTOM: return particles.sort(sortFunc);
 			default: return particles.buffer;
 		}
 	}
@@ -751,10 +751,10 @@ typedef ParticleEmitterOptions = {
 
 @:enum abstract ParticlesSortMode(UInt) from UInt to UInt {
 	
-	var none              = 0;
-	var lifetime          = 1;
-	var youngest          = 2;
-	var oldest            = 3;
-	var custom            = 4;
+	var NONE              = 0;
+	var LIFETIME          = 1;
+	var YOUNGEST          = 2;
+	var OLDEST            = 3;
+	var CUSTOM            = 4;
 
 }
