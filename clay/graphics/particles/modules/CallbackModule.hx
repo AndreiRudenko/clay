@@ -3,7 +3,7 @@ package clay.graphics.particles.modules;
 
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.ParticleModule;
-import particles.ParticleEmitter;
+import clay.graphics.particles.ParticleEmitter;
 
 
 class CallbackModule extends ParticleModule {
@@ -11,14 +11,16 @@ class CallbackModule extends ParticleModule {
 
 	public var onSpawnCallback:(p:Particle, pe:ParticleEmitter)->Void;
 	public var onUnSpawnCallback:(p:Particle, pe:ParticleEmitter)->Void;
+	public var onUpdateCallback:(dt:Float, pe:ParticleEmitter)->Void;
 
 
-	public function new(_options:ForceModuleOptions) {
+	public function new(options:CallbackModuleOptions) {
 
 		super();
 
-		onSpawnCallback = _options.onSpawnCallback;
-		onUnSpawnCallback = _options.onUnSpawnCallback;
+		onSpawnCallback = options.onSpawn;
+		onUnSpawnCallback = options.onUnSpawn;
+		onUpdateCallback = options.onUpdate;
 
 	}
 
@@ -28,6 +30,14 @@ class CallbackModule extends ParticleModule {
 			onSpawnCallback(p, emitter);
 		}
 
+	}
+
+	override function update(dt:Float) {
+		
+		if(onUpdateCallback != null) {
+			onUpdateCallback(dt, emitter);
+		}
+	    
 	}
 
 	override function onUnSpawn(p:Particle) {
@@ -42,10 +52,11 @@ class CallbackModule extends ParticleModule {
 }
 
 
-typedef ForceModuleOptions = {
+typedef CallbackModuleOptions = {
 
-	@:optional var onSpawnCallback:(p:Particle, pe:ParticleEmitter)->Void;
-	@:optional var onUnSpawnCallback:(p:Particle, pe:ParticleEmitter)->Void;
+	@:optional var onSpawn:(p:Particle, pe:ParticleEmitter)->Void;
+	@:optional var onUnSpawn:(p:Particle, pe:ParticleEmitter)->Void;
+	@:optional var onUpdate:(dt:Float, pe:ParticleEmitter)->Void;
 
 }
 

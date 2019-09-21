@@ -11,6 +11,8 @@ class BurstModule extends ParticleModule {
 
 	public var bursts:Array<Burst>;
 
+	public var onBurstCallback:(pe:ParticleEmitter)->Void;
+
 
 	public function new(options:BurstModuleOptions) {
 
@@ -25,6 +27,8 @@ class BurstModule extends ParticleModule {
 				addBurst(b);
 			}	
 		}
+
+		onBurstCallback = options.onBurst;
 
 	}
 
@@ -57,7 +61,7 @@ class BurstModule extends ParticleModule {
 		var interval:Float = options.interval != null ? options.interval : 1; 
 		var intervalMax:Float = options.intervalMax != null ? options.intervalMax : 0; 
 
-		var b = new Burst(delay, delayMax, count, countMax, cycles, cyclesMax, interval, intervalMax);
+		var b = new Burst(this, delay, delayMax, count, countMax, cycles, cyclesMax, interval, intervalMax);
 		bursts.push(b);
 
 		return b;
@@ -118,6 +122,7 @@ private class Burst {
 	public var active(default,null):Bool = true;
 
 	public var emitter:ParticleEmitter;
+	public var module:BurstModule;
 
 	public var delay:Float;
 	public var delayMax:Float;
@@ -134,8 +139,9 @@ private class Burst {
 	var _started:Bool = false;
 
 
-	public function new(_d:Float, _dm:Float, _c:Int, _cm:Int, _cc:Int, _ccm:Int, _i:Float, _im:Float) {
+	public function new(module:BurstModule, _d:Float, _dm:Float, _c:Int, _cm:Int, _cc:Int, _ccm:Int, _i:Float, _im:Float) {
 
+		this.module = module;
 		delay = _d;
 		delayMax = _dm;
 		count = _c;
@@ -166,6 +172,10 @@ private class Burst {
 
 		if(countMax > count) {
 			_count = emitter.randomInt(count,countMax);
+		}
+
+		if(module.onBurstCallback != null) {
+			module.onBurstCallback(emitter);
 		}
 
 		for (_ in 0..._count) {
@@ -222,6 +232,7 @@ typedef BurstModuleOptions = {
 	>ParticleModuleOptions,
 
 	@:optional var bursts:Array<BurstOptions>;
+	@:optional var onBurst:(pe:ParticleEmitter)->Void;
 
 }
 
