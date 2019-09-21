@@ -12,16 +12,16 @@ class BurstModule extends ParticleModule {
 	public var bursts:Array<Burst>;
 
 
-	public function new(_options:BurstModuleOptions) {
+	public function new(options:BurstModuleOptions) {
 
-		super(_options);
+		super(options);
 
 		_priority = -1000;
 
 		bursts = [];
 
-		if(_options.bursts != null) {
-			for (b in _options.bursts) {
+		if(options.bursts != null) {
+			for (b in options.bursts) {
 				addBurst(b);
 			}	
 		}
@@ -46,19 +46,27 @@ class BurstModule extends ParticleModule {
 
 	}
 
-	function addBurst(_options:BurstOptions) {
+	public function addBurst(options:BurstOptions):Burst {
 		
-		var delay:Float = _options.delay != null ? _options.delay : 0; 
-		var delayMax:Float = _options.delayMax != null ? _options.delayMax : 0; 
-		var count:Int = _options.count != null ? _options.count : 16; 
-		var countMax:Int = _options.countMax != null ? _options.countMax : 0; 
-		var cycles:Int = _options.cycles != null ? _options.cycles : -1; 
-		var cyclesMax:Int = _options.cyclesMax != null ? _options.cyclesMax : 0; 
-		var interval:Float = _options.interval != null ? _options.interval : 1; 
-		var intervalMax:Float = _options.intervalMax != null ? _options.intervalMax : 0; 
+		var delay:Float = options.delay != null ? options.delay : 0; 
+		var delayMax:Float = options.delayMax != null ? options.delayMax : 0; 
+		var count:Int = options.count != null ? options.count : 16; 
+		var countMax:Int = options.countMax != null ? options.countMax : 0; 
+		var cycles:Int = options.cycles != null ? options.cycles : -1; 
+		var cyclesMax:Int = options.cyclesMax != null ? options.cyclesMax : 0; 
+		var interval:Float = options.interval != null ? options.interval : 1; 
+		var intervalMax:Float = options.intervalMax != null ? options.intervalMax : 0; 
 
 		var b = new Burst(delay, delayMax, count, countMax, cycles, cyclesMax, interval, intervalMax);
 		bursts.push(b);
+
+		return b;
+
+	}
+
+	public function removeBurst(b:Burst):Bool {
+		
+		return bursts.remove(b);
 
 	}
 
@@ -66,8 +74,8 @@ class BurstModule extends ParticleModule {
 
 		super.fromJson(d);
 
-		var _brsts:Array<BurstOptions> = d.bursts;
-		for (b in _brsts) {
+		var brsts:Array<BurstOptions> = d.bursts;
+		for (b in brsts) {
 			addBurst(b);
 		}
 
@@ -219,8 +227,6 @@ typedef BurstModuleOptions = {
 
 
 typedef BurstOptions = {
-
-	>ParticleModuleOptions,
 
 	@:optional var delay:Float;
 	@:optional var delayMax:Float;
