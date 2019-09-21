@@ -1,5 +1,6 @@
 package clay.graphics.particles.components;
 
 
-class SizeDelta extends clay.math.Vector {}
+class Color extends clay.render.Color {}
+
 

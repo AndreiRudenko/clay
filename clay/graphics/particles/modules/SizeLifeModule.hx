@@ -3,6 +3,7 @@ package clay.graphics.particles.modules;
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.Components;
+import clay.graphics.particles.components.Size;
 import clay.graphics.particles.components.SizeDelta;
 import clay.math.Vector;
 import clay.utils.Mathf;
@@ -18,6 +19,7 @@ class SizeLifeModule extends ParticleModule {
 	public var initialSizeMax:Vector;
 	public var endSizeMax:Vector;
 
+	var _size:Components<Size>;
 	var _sizeDelta:Components<SizeDelta>;
 
 
@@ -34,6 +36,7 @@ class SizeLifeModule extends ParticleModule {
 
 	override function init() {
 
+		_size = emitter.components.get(Size);
 		_sizeDelta = emitter.components.get(SizeDelta);
 		
 	}
@@ -41,22 +44,23 @@ class SizeLifeModule extends ParticleModule {
 	override function onSpawn(pd:Particle) {
 
 		var szd:Vector = _sizeDelta.get(pd.id);
+		var sz:Vector = _size.get(pd.id);
 		var lf:Float = pd.lifetime;
 
 		if(initialSizeMax != null) {
-			pd.w = emitter.randomFloat(initialSize.x, initialSizeMax.x);
-			pd.h = emitter.randomFloat(initialSize.y, initialSizeMax.y);
+			sz.x = emitter.randomFloat(initialSize.x, initialSizeMax.x);
+			sz.y = emitter.randomFloat(initialSize.y, initialSizeMax.y);
 		} else {
-			pd.w = initialSize.x;
-			pd.h = initialSize.y;
+			sz.x = initialSize.x;
+			sz.y = initialSize.y;
 		}
 		
 		if(endSizeMax != null) {
-			szd.x = emitter.randomFloat(endSize.x, endSizeMax.x) - pd.w;
-			szd.y = emitter.randomFloat(endSize.y, endSizeMax.y) - pd.h;
+			szd.x = emitter.randomFloat(endSize.x, endSizeMax.x) - sz.x;
+			szd.y = emitter.randomFloat(endSize.y, endSizeMax.y) - sz.y;
 		} else {
-			szd.x = endSize.x - pd.w;
-			szd.y = endSize.y - pd.h;
+			szd.x = endSize.x - sz.x;
+			szd.y = endSize.y - sz.y;
 		}
 
 		if(szd.x != 0) {
@@ -72,10 +76,11 @@ class SizeLifeModule extends ParticleModule {
 	override function update(dt:Float) {
 
 		var szd:Vector;
+		var sz:Vector;
 		for (p in particles) {
 			szd = _sizeDelta.get(p.id);
-			p.w = Mathf.clampBottom(p.w + szd.x * dt, 0);
-			p.h = Mathf.clampBottom(p.h + szd.y * dt, 0);
+			sz = _size.get(p.id);
+			sz.set(Mathf.clampBottom(sz.x + szd.x * dt, 0), Mathf.clampBottom(sz.y + szd.y * dt, 0));
 		}
 
 	}

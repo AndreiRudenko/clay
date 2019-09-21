@@ -8,6 +8,11 @@ import clay.graphics.particles.components.ColorDelta;
 import clay.render.Color;
 import clay.utils.Mathf;
 
+typedef INT = Int;
+typedef FL = Float;
+typedef BL = Bool;
+typedef STR = String;
+
 
 class ColorLifeModule extends ParticleModule {
 
@@ -17,7 +22,8 @@ class ColorLifeModule extends ParticleModule {
 	public var initialColorMax:Color;
 	public var endColorMax:Color;
 
-	var colorDelta:Components<ColorDelta>;
+	var _colorDelta:Components<ColorDelta>;
+	var _color:Components<Color>;
 
 
 	public function new(_options:ColorLifeModuleOptions) {
@@ -33,15 +39,21 @@ class ColorLifeModule extends ParticleModule {
 
 	override function init() {
 
-		colorDelta = emitter.components.get(ColorDelta);
+		_colorDelta = emitter.components.get(ColorDelta);
+		_color = emitter.components.get(Color);
+		
+		var nt = emitter.components.get(INT);
+		var fl = emitter.components.get(FL);
+		var bl = emitter.components.get(BL);
+		var str = emitter.components.get(STR);
 	    
 	}
 
-	override function onSpawn(pd:Particle) {
+	override function onSpawn(p:Particle) {
 
-		var cd:Color = colorDelta.get(pd.id);
-		var lf:Float = pd.lifetime;
-		var pcolor:Color = pd.color;
+		var cd:Color = _colorDelta.get(p.id);
+		var pcolor:Color = _color.get(p.id);
+		var lf:Float = p.lifetime;
 
 		if(initialColorMax != null) {
 			pcolor.r = emitter.randomFloat(initialColor.r, initialColorMax.r);
@@ -79,8 +91,8 @@ class ColorLifeModule extends ParticleModule {
 		var cd:Color;
 		var pcolor:Color;
 		for (p in particles) {
-			cd = colorDelta.get(p.id);
-			pcolor = p.color;
+			cd = _colorDelta.get(p.id);
+			pcolor = _color.get(p.id);
 			pcolor.r = Mathf.clamp(pcolor.r + cd.r * dt, 0, 1);
 			pcolor.g = Mathf.clamp(pcolor.g + cd.g * dt, 0, 1);
 			pcolor.b = Mathf.clamp(pcolor.b + cd.b * dt, 0, 1);

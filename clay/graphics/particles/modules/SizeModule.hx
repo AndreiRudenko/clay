@@ -3,6 +3,7 @@ package clay.graphics.particles.modules;
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.Components;
+import clay.graphics.particles.components.Size;
 import clay.math.Vector;
 
 using clay.graphics.particles.utils.VectorExtender;
@@ -13,6 +14,8 @@ class SizeModule extends ParticleModule {
 
 	public var initialSize	(default, null):Vector;
 	public var initialSizeMax:Vector;
+
+	var _size:Components<Size>;
 
 
 	public function new(_options:SizeModuleOptions) {
@@ -26,16 +29,20 @@ class SizeModule extends ParticleModule {
 
 	override function init() {
 
+		_size = emitter.components.get(Size);
+
 	}
 
 	override function onSpawn(pd:Particle) {
+		
+		var sz:Vector = _size.get(pd.id);
 
 		if(initialSizeMax != null) {
-			pd.w = emitter.randomFloat(initialSize.x, initialSizeMax.x);
-			pd.h = emitter.randomFloat(initialSize.y, initialSizeMax.y);
+			sz.x = emitter.randomFloat(initialSize.x, initialSizeMax.x);
+			sz.y = emitter.randomFloat(initialSize.y, initialSizeMax.y);
 		} else {
-			pd.w = initialSize.x;
-			pd.h = initialSize.y;
+			sz.x = initialSize.x;
+			sz.y = initialSize.y;
 		}
 		
 	}

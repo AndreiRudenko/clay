@@ -1,6 +1,9 @@
 package clay.utils;
 
 
+import haxe.ds.Vector;
+
+
 class ArrayTools {
 
 
@@ -28,17 +31,6 @@ class ArrayTools {
 
 	}
 
-	// public static function fastRemove<T>(array:Array<T>, ) {
-
-	// 	var i:Int = a.length, j:Int, t:T;
-	// 	while (--i > 0) {
-	// 		t = a[i];
-	// 		a[i] = a[j = Clay.random.int(i + 1)];
-	// 		a[j] = t;
-	// 	}
-
-	// }
-
 	public static function insertSortedKey<T>(list:Array<T>, key:T, compare:(a:T, b:T)->Int):Void {
 
 		var result:Int = 0;
@@ -57,50 +49,6 @@ class ArrayTools {
 		list.insert(result > 0 ? mid : mid + 1, key);
 
 	}
-/*
-	public static function mergeSort<T>(a:Array<T>, l:Int, r:Int, compare:T->T->Int, ?aux:Array<T>) {
 
-		if(aux == null) {
-			aux = [];
-		}
-		
-		sort(a, aux, l, r);
-		
-	}
-	
-	static function sort<T>(a:Array<T>, aux:Array<T>, l:Int, r:Int) { 
-		
-		if (l < r) {
-			
-			var m = Std.int(l + (r - l) / 2);
-			_sort(a, aux, l, m);
-			_sort(a, aux, m + 1, r);
-			_merge(a, aux, l, m, r);
-
-		}
-
-	}
-
-	inline static function merge<T>(a:Array<T>, aux:Array<T>, l:Int, m:Int, r:Int, compare:T->T->Int) { 
-
-		var k = l;
-		while (k <= r) {
-			aux[k] = a[k];
-			k++;
-		}
-
-		k = l;
-		var i = l;
-		var j = m + 1;
-		while (k <= r) {
-			if (i > m) a[k] = aux[j++];
-			else if (j > r) a[k] = aux[i++];
-			else if (compare(aux[j], aux[i]) < 0) a[k] = aux[j++];
-			else a[k] = aux[i++];
-			k++;
-		}
-		
-	}
-*/
 
 }

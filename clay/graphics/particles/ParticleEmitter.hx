@@ -8,12 +8,9 @@ import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.ParticleVector;
 import clay.graphics.particles.utils.ModulesFactory;
 import clay.math.Vector;
-import clay.math.Rectangle;
-import clay.render.types.BlendMode;
-import clay.render.types.BlendEquation;
 import clay.render.Painter;
-import clay.render.types.BlendEquation;
-import clay.resources.Texture;
+// import clay.math.Rectangle;
+// import clay.resources.Texture;
 
 
 class ParticleEmitter {
@@ -47,8 +44,7 @@ class ParticleEmitter {
 
 		/** lifetime for particles */
 	public var lifetime:Float;
-		/** max lifetime for particles, if > 0, 
-			particle lifetime is random between lifetime and lifetimeMax */
+		/** max lifetime for particles, if > 0, particle lifetime is random between lifetime and lifetimeMax */
 	public var lifetimeMax:Float;
 
 		/** emitter rate, particles per sec */
@@ -70,21 +66,8 @@ class ParticleEmitter {
 		/** emitter random function */
 	public var random:()->Float;
 
-		/** blending src */
-	public var blendSrc:BlendMode;
-		/** blending dest */
-	public var blendDst:BlendMode;
-		/** blending equation */
-	public var blendEq:BlendEquation;
-		/** alpha blending src */
-	public var alphaBlendSrc:BlendMode;
-		/** alpha blending dest */
-	public var alphaBlendDst:BlendMode;
-		/** alpha blending equation */
-	public var alphaBlendEq:BlendEquation;
-
 		/** emitter particles sort mode */
-	public var sortmode:ParticlesSortMode;
+	public var sortMode:ParticlesSortMode;
 		/** custom particles sort function */
 	public var sortFunc:(p1:Particle, p2:Particle)->Int;
 
@@ -102,9 +85,9 @@ class ParticleEmitter {
 	var _needReset:Bool = true;
 
 
-	public function new(_options:ParticleEmitterOptions) {
+	public function new(options:ParticleEmitterOptions) {
 
-		options = _options;
+		this.options = options;
 
 		name = options.name != null ? options.name : 'emitter.${Math.random()}';
 
@@ -153,15 +136,7 @@ class ParticleEmitter {
 		sortFunc = options.sortFunc;
 		
 		cacheWrap = options.cacheWrap != null ? options.cacheWrap : false;
-		sortmode = options.sortmode != null ? options.sortmode : ParticlesSortMode.NONE;
-		
-		blendSrc = options.blendSrc != null ? options.blendSrc : BlendMode.BlendOne;
-		blendDst = options.blendDst != null ? options.blendDst : BlendMode.InverseSourceAlpha;
-		blendEq = options.blendEq != null ? options.blendEq : BlendEquation.Add;
-
-		alphaBlendSrc = options.alphaBlendSrc != null ? options.alphaBlendSrc : BlendMode.BlendOne;
-		alphaBlendDst = options.alphaBlendDst != null ? options.alphaBlendDst : BlendMode.InverseSourceAlpha;
-		alphaBlendEq = options.alphaBlendEq != null ? options.alphaBlendEq : BlendEquation.Add;
+		sortMode = options.sortMode != null ? options.sortMode : ParticlesSortMode.NONE;
 
 		if(options.modules != null) {
 			for (m in options.modules) {
@@ -208,82 +183,82 @@ class ParticleEmitter {
 
 	}
 
-	public function addModule(_module:ParticleModule):ParticleEmitter {
+	public function addModule(module:ParticleModule):ParticleEmitter {
 
-		var cname:String = Type.getClassName(Type.getClass(_module));
+		var cname:String = Type.getClassName(Type.getClass(module));
 
 		if(modules.exists(cname)) {
 			throw('particle module: $cname already exists');
 		}
 
-		modules.set(cname, _module);
-		_module._onAdded(this);
+		modules.set(cname, module);
+		module._onAdded(this);
 
-		if(_module.enabled) {
-			_enableM(_module);
+		if(module.enabled) {
+			_enableModule(module);
 		}
 
 		if(inited) {
-			_module._init();
+			module._init();
 		}
 
 		return this;
 
 	}
 
-	public function getModule<T:ParticleModule>(_moduleClass:Class<T>):T {
+	public function getModule<T:ParticleModule>(moduleClass:Class<T>):T {
 
-		return cast modules.get(Type.getClassName(_moduleClass));
+		return cast modules.get(Type.getClassName(moduleClass));
 		
 	}
 
-	public function removeModule<T:ParticleModule>(_moduleClass:Class<T>):T {
+	public function removeModule<T:ParticleModule>(moduleClass:Class<T>):T {
 
-		var cname:String = Type.getClassName(_moduleClass);
+		var cname:String = Type.getClassName(moduleClass);
 
-		var _module:T = cast modules.get(cname);
+		var module:T = cast modules.get(cname);
 
-		if(_module != null) {
-			if(_module.enabled) {
-				_disableM(_module);
+		if(module != null) {
+			if(module.enabled) {
+				_disableModule(module);
 			}
 
 			modules.remove(cname);
-			_module._onRemoved();
+			module._onRemoved();
 
 			if(_needReset) {
 				resetModules();
 			}
 		}
 
-		return _module;
+		return module;
 		
 	}
 
-	public function enableModule(_moduleClass:Class<Dynamic>) {
+	public function enableModule(moduleClass:Class<Dynamic>) {
 		
-		var cname:String = Type.getClassName(_moduleClass);
+		var cname:String = Type.getClassName(moduleClass);
 		var m = modules.get(cname);
 		if(m == null) {
 			throw('module: $cname doesnt exists');
 		}
 
 		if(!m.enabled) {
-			_enableM(m);
+			_enableModule(m);
 		}
 
 	}
 
-	public function disableModule(_moduleClass:Class<Dynamic>) {
+	public function disableModule(moduleClass:Class<Dynamic>) {
 		
-		var cname:String = Type.getClassName(_moduleClass);
+		var cname:String = Type.getClassName(moduleClass);
 		var m = modules.get(cname);
 		if(m == null) {
 			throw('module: $cname doesnt exists');
 		}
 
 		if(m.enabled) {
-			_disableM(m);
+			_disableModule(m);
 		}
 
 	}
@@ -357,8 +332,6 @@ class ParticleEmitter {
 
 	public function render(p:Painter) {
 
-		p.setBlendMode(blendSrc, blendDst, blendEq, alphaBlendSrc, alphaBlendDst, alphaBlendEq);
-
 		for (m in activeModules) {
 			m.render(p);
 		}
@@ -371,7 +344,7 @@ class ParticleEmitter {
 
 	}
 	
-	public function start(?_dur:Float) {
+	public function start(?duration:Float) {
 
 		enabled = true;
 		_time = 0;
@@ -379,21 +352,21 @@ class ParticleEmitter {
 
 		_preprocess = preprocess;
 
-		if(_dur == null) {
+		if(duration == null) {
 			calcDuration();
 		} else {
-			_duration = _dur;
+			_duration = duration;
 		}
 
 	}
 
-	public function stop(_kill:Bool = false) {
+	public function stop(kill:Bool = false) {
 
 		enabled = false;
 		_time = 0;
 		_frameTime = 0;
 
-		if(_kill) {
+		if(kill) {
 			unspawnAll();
 		}
 
@@ -429,21 +402,38 @@ class ParticleEmitter {
 		
 	}
 
-	public function getSortedParticles():haxe.ds.Vector<Particle> {
+
+	public function getSortModeFunc():(p1:Particle, p2:Particle)->Int {
 		
-		switch (sortmode) {
-			case ParticlesSortMode.LIFETIME: return particles.sort(lifetimeSort);
-			case ParticlesSortMode.YOUNGEST: return particles.sort(youngestSort);
-			case ParticlesSortMode.OLDEST: return particles.sort(oldestSort);
-			case ParticlesSortMode.CUSTOM: return particles.sort(sortFunc);
-			default: return particles.buffer;
+		switch (sortMode) {
+			case ParticlesSortMode.LIFETIME: return lifetimeSort;
+			case ParticlesSortMode.LIFETIME_INV: return lifetimeInvSort;
+			case ParticlesSortMode.YOUNGEST: return youngestSort;
+			case ParticlesSortMode.OLDEST: return oldestSort;
+			case ParticlesSortMode.CUSTOM: return sortFunc;
+			default: return null;
 		}
+
 	}
 
-	@:allow(clay.graphics.particles.ParticleSystem)
-	function init(_ps:ParticleSystem) {
 
-		system = _ps;
+	// public function getSortedParticles():haxe.ds.Vector<Particle> {
+		
+	// 	switch (sortMode) {
+	// 		case ParticlesSortMode.LIFETIME: return particles.sort(lifetimeSort);
+	// 		case ParticlesSortMode.LIFETIME_INV: return particles.sort(lifetimeInvSort);
+	// 		case ParticlesSortMode.YOUNGEST: return particles.sort(youngestSort);
+	// 		case ParticlesSortMode.OLDEST: return particles.sort(oldestSort);
+	// 		case ParticlesSortMode.CUSTOM: return particles.sort(sortFunc);
+	// 		default: return particles.buffer;
+	// 	}
+
+	// }
+
+	@:allow(clay.graphics.particles.ParticleSystem)
+	function init(ps:ParticleSystem) {
+
+		system = ps;
 		inited = true;
 
 		for (m in modules) {
@@ -498,31 +488,31 @@ class ParticleEmitter {
 
 	}
 
-	inline function _enableM(m:ParticleModule) {
+	inline function _enableModule(module:ParticleModule) {
 		
 		var added:Bool = false;
 		var am:ParticleModule = null;
 		for (i in 0...activeModules.length) {
 			am = activeModules[i];
-			if (m.priority <= am.priority) {
-				activeModules.insert(i,m);
+			if (module.priority <= am.priority) {
+				activeModules.insert(i,module);
 				added = true;
 				break;
 			}
 		}
 		
 		if(!added) {
-			activeModules.push(m);
+			activeModules.push(module);
 		}
 
-		m.onEnabled();
+		module.onEnabled();
 
 	}
 
-	inline function _disableM(m:ParticleModule) {
+	inline function _disableModule(module:ParticleModule) {
 
-		m.onDisabled();
-		activeModules.remove(m);
+		module.onDisabled();
+		activeModules.remove(module);
 		
 	}
 
@@ -612,24 +602,6 @@ class ParticleEmitter {
 		
 	}
 
-	function lifetimeSort(a:Particle, b:Particle):Int {
-
-		return a.lifetime < b.lifetime ? -1 : 1;
-		
-	}
-
-	function youngestSort(a:Particle, b:Particle):Int {
-
-		return a.age > b.age ? -1 : 1;
-
-	}
-
-	function oldestSort(a:Particle, b:Particle):Int {
-
-		return a.age < b.age ? -1 : 1;
-
-	}
-
 	function set_rate(value:Float):Float {
 
 		if(value > 0) {
@@ -699,13 +671,38 @@ class ParticleEmitter {
 			duration : duration, 
 			durationMax : durationMax, 
 			// imagePath : imagePath, 
-			blendSrc : blendSrc, 
-			blendDst : blendDst, 
+			// blendSrc : blendSrc, 
+			// blendDst : blendDst, 
 			modulesData : _modules,
-			sortmode : sortmode
+			sortMode : sortMode
 		};
 		
 	}
+
+	function lifetimeSort(a:Particle, b:Particle):Int {
+
+		return a.lifetime < b.lifetime ? -1 : 1;
+		
+	}
+
+	function lifetimeInvSort(a:Particle, b:Particle):Int {
+
+		return a.lifetime > b.lifetime ? -1 : 1;
+		
+	}
+
+	function youngestSort(a:Particle, b:Particle):Int {
+
+		return a.age > b.age ? -1 : 1;
+
+	}
+
+	function oldestSort(a:Particle, b:Particle):Int {
+
+		return a.age < b.age ? -1 : 1;
+
+	}
+
 
 }
 
@@ -733,18 +730,12 @@ typedef ParticleEmitterOptions = {
 	// @:optional var texture:Texture;
 	// @:optional var region:Rectangle;
 
-	@:optional var blendSrc:BlendMode;
-	@:optional var blendDst:BlendMode;
-	@:optional var blendEq:BlendEquation;
-	@:optional var alphaBlendSrc:BlendMode;
-	@:optional var alphaBlendDst:BlendMode;
-	@:optional var alphaBlendEq:BlendEquation;
 	@:optional var modules:Array<ParticleModule>;
 
 	@:optional var modulesData:Array<Dynamic>; // used for json import
 	@:optional var random:()->Float;
 	@:optional var options:Dynamic;
-	@:optional var sortmode:ParticlesSortMode;
+	@:optional var sortMode:ParticlesSortMode;
 	@:optional var sortFunc:(p1:Particle, p2:Particle)->Int;
 
 }
@@ -753,8 +744,9 @@ typedef ParticleEmitterOptions = {
 	
 	var NONE              = 0;
 	var LIFETIME          = 1;
-	var YOUNGEST          = 2;
-	var OLDEST            = 3;
-	var CUSTOM            = 4;
+	var LIFETIME_INV      = 2;
+	var YOUNGEST          = 3;
+	var OLDEST            = 4;
+	var CUSTOM            = 5;
 
 }

@@ -72,7 +72,6 @@ class VelocityModule extends ParticleModule {
 				v = _velComps.get(p.id);
 				v.x += velocityRandom.x * emitter.random1To1();
 				v.y += velocityRandom.y * emitter.random1To1();
-				// update position
 			}
 		}
 

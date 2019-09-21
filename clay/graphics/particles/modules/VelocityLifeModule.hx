@@ -70,14 +70,12 @@ class VelocityLifeModule extends VelocityModule {
 				v = _velComps.get(p.id);
 				v.x += _velocityDelta.get(p.id).x * dt + velocityRandom.x * emitter.random1To1();
 				v.y += _velocityDelta.get(p.id).y * dt + velocityRandom.y * emitter.random1To1();
-				// update position
 			}
 		} else {
 			for (p in particles) {
 				v = _velComps.get(p.id);
 				v.x += _velocityDelta.get(p.id).x * dt;
 				v.y += _velocityDelta.get(p.id).y * dt;
-				// update position
 			}
 		}
 

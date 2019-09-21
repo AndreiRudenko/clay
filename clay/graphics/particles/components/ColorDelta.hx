@@ -1,8 +1,6 @@
 package clay.graphics.particles.components;
 
 
-import clay.render.Color;
-
-class ColorDelta extends Color {}
+class ColorDelta extends clay.render.Color {}
 
 

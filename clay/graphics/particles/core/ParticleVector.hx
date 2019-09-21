@@ -14,12 +14,12 @@ class ParticleVector {
 	public var capacity(default, null):Int;
 
 	public var buffer(default, null):Vector<Particle>;
+	public var dirtySort(default, null):Bool;
 
 	var _sorted:Vector<Particle>;
 	var _sortTmp:Vector<Particle>;
 	var _components:ComponentManager;
 	var _wrapIndex:Int = 0;
-	var _needSort:Bool = true;
 
 
 	public inline function new(components:ComponentManager, _capacity:Int) {
@@ -47,7 +47,7 @@ class ParticleVector {
 
 	public inline function ensure():Particle {
 
-		_needSort = true;
+		dirtySort = true;
 
 		return buffer[length++];
 
@@ -55,7 +55,7 @@ class ParticleVector {
 
 	public inline function wrap():Particle {
 
-		_needSort = true;
+		dirtySort = true;
 
 		_wrapIndex %= length - 1;
 		var lastIdx:Int = length - 1;
@@ -68,7 +68,7 @@ class ParticleVector {
 
 	public inline function remove(p:Particle) {
 
-		_needSort = true;
+		dirtySort = true;
 
 		var idx:Int = p.id;
 
@@ -83,7 +83,7 @@ class ParticleVector {
 
 	public inline function reset() {
 
-		_needSort = true;
+		dirtySort = true;
 
 		for (i in 0...capacity) {
 			buffer[i].id = i;
@@ -104,13 +104,13 @@ class ParticleVector {
 
 	public function sort(compare:(p1:Particle, p2:Particle)->Int):Vector<Particle> {
 
-		if(_needSort) {
+		if(dirtySort) {
 			for (i in 0...length) {
 				_sorted[i] = buffer[i];
 			}
 
 			_sort(_sorted, _sortTmp, 0, length-1, compare);
-			_needSort = false;
+			dirtySort = false;
 		}
 
 		return _sorted;

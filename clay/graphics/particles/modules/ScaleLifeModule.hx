@@ -3,6 +3,7 @@ package clay.graphics.particles.modules;
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.Components;
+import clay.graphics.particles.components.Scale;
 import clay.graphics.particles.components.ScaleDelta;
 import clay.utils.Mathf;
 
@@ -15,6 +16,7 @@ class ScaleLifeModule extends ParticleModule {
 	public var endScale:Float;
 	public var endScaleMax:Float;
 
+	var _scale:Components<Scale>;
 	var _scaleDelta:Components<ScaleDelta>;
 
 
@@ -31,43 +33,54 @@ class ScaleLifeModule extends ParticleModule {
 
 	override function init() {
 
+		_scale = emitter.components.get(Scale);
 		_scaleDelta = emitter.components.get(ScaleDelta);
 
 	}
 
 	override function onDisabled() {
 
-		for (pd in particles) {
-			pd.s = 1;
+		for (p in particles) {
+			_scale.set(p.id, 1);
 		}
 		
 	}
 
 	override function onSpawn(p:Particle) {
 
+		var s = _scale.get(p.id);
+		var sd = _scaleDelta.get(p.id);
+
 		if(initialScaleMax > initialScale) {
-			p.s = emitter.randomFloat(initialScale, initialScaleMax);
+			s = emitter.randomFloat(initialScale, initialScaleMax);
 		} else {
-			p.s = initialScale;
+			s = initialScale;
 		}
 
 		if(endScaleMax > endScale) {
-			_scaleDelta.get(p.id).value = emitter.randomFloat(endScale, endScaleMax) - p.s;
+			sd = emitter.randomFloat(endScale, endScaleMax) - s;
 		} else {
-			_scaleDelta.get(p.id).value = endScale - p.s;
+			sd = endScale - s;
 		}
 
-		if(_scaleDelta.get(p.id).value != 0) {
-			_scaleDelta.get(p.id).value /= p.lifetime;
+		if(sd != 0) {
+			sd /= p.lifetime;
 		}
 
+		_scale.set(p.id, s);
+		_scaleDelta.set(p.id, sd);
 	}
 
 	override function update(dt:Float) {
 
+		var s:Float;
+		var sd:Float;
 		for (p in particles) {
-			if(_scaleDelta.get(p.id).value != 0) {
-				p.s = Mathf.clampBottom(p.s + _scaleDelta.get(p.id).value * dt, 0);
+			sd = _scaleDelta.get(p.id);
+			if(sd != 0) {
+				s = _scale.get(p.id);
+				s = Mathf.clampBottom(s + sd * dt, 0);
+				_scale.set(p.id, s);
 			}
 		}
 

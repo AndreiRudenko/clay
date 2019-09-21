@@ -44,6 +44,8 @@ class ParticleModule {
 	public function init() {}
        /** called when the emitter starts or is reset */
 	public function onReset() {}
+        /** called when the module is destroyed */
+	public function onDestroy() {}
 
         /** called when the module is attached to an emitter */
 	public function onAdded() {}
@@ -65,9 +67,6 @@ class ParticleModule {
 
         /** called once per frame */
 	public function render(p:Painter) {}
-
-        /** called when the module is destroyed */
-	public function onDestroy() {}
 
         /** save settings to json */
 	public function toJson():Dynamic {
@@ -138,9 +137,9 @@ class ParticleModule {
 
 		if(enabled != value && emitter != null) {
 			if(value) {
-				emitter._enableM(this);
+				emitter._enableModule(this);
 			} else {
-				emitter._disableM(this);
+				emitter._disableModule(this);
 			}
 		}
 

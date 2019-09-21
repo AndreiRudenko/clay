@@ -3,6 +3,7 @@ package clay.graphics.particles.modules;
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.Components;
+import clay.graphics.particles.components.Rotation;
 import clay.graphics.particles.components.RotationDelta;
 
 
@@ -15,6 +16,7 @@ class RotationModule extends ParticleModule {
 	public var angularVelocityMax:Float;
 	public var rotationRandom:Float;
 
+	var _rotation:Components<Rotation>;
 	var _rotationDelta:Components<RotationDelta>;
 
 
@@ -32,6 +34,7 @@ class RotationModule extends ParticleModule {
 
 	override function init() {
 
+		_rotation = emitter.components.get(Rotation);
 		_rotationDelta = emitter.components.get(RotationDelta);
 	    
 	}
@@ -39,7 +42,7 @@ class RotationModule extends ParticleModule {
 	override function onDisabled() {
 		
 		for (p in particles) {
-			p.r = 0;
+			_rotation.set(p.id, 0);
 		}
 
 	}
@@ -47,32 +50,40 @@ class RotationModule extends ParticleModule {
 	override function onSpawn(p:Particle) {
 
 		if(initialRotationMax != 0) {
-			p.r = emitter.randomFloat(initialRotation, initialRotationMax);
+			_rotation.set(p.id, emitter.randomFloat(initialRotation, initialRotationMax));
 		} else {
-			p.r = initialRotation;
+			_rotation.set(p.id, initialRotation);
 		}
 
 		if(angularVelocityMax != 0) {
-			_rotationDelta.get(p.id).value = emitter.randomFloat(angularVelocity, angularVelocityMax) * 360;
+			_rotationDelta.set(p.id, emitter.randomFloat(angularVelocity, angularVelocityMax) * 360);
 		} else {
-			_rotationDelta.get(p.id).value = angularVelocity * 360;
+			_rotationDelta.set(p.id, angularVelocity * 360);
 		}
 
 	}
 	
 	override function update(dt:Float) {
 
+		var rd:Float;
+		var r:Float;
 		if(rotationRandom > 0) {
 			for (p in particles) {
-				if(_rotationDelta.get(p.id).value != 0) {
-					p.r += _rotationDelta.get(p.id).value * dt;
+				r = _rotation.get(p.id);
+				rd = _rotationDelta.get(p.id);
+				if(rd != 0) {
+					r += rd * dt;
 				}
-				p.r += rotationRandom * 360 * emitter.random1To1() * dt;
+				r += rotationRandom * 360 * emitter.random1To1() * dt;
+				_rotation.set(p.id, r);
 			}
 		} else {
 			for (p in particles) {
-				if(_rotationDelta.get(p.id).value != 0) {
-					p.r += _rotationDelta.get(p.id).value * dt;
+				rd = _rotationDelta.get(p.id);
+				if(rd != 0) {
+					r = _rotation.get(p.id);
+					r += rd * dt;
+					_rotation.set(p.id, r);
 				}
 			}
 		}

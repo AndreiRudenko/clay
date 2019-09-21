@@ -1,8 +1,5 @@
 package clay.graphics.particles.components;
 
 
-import clay.math.Vector;
-
-
-class VelocityDelta extends Vector {}
+class VelocityDelta extends clay.math.Vector {}
 

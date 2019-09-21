@@ -3,6 +3,7 @@ package clay.graphics.particles.modules;
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.Components;
+import clay.graphics.particles.components.Scale;
 
 
 class ScaleModule extends ParticleModule {
@@ -10,6 +11,8 @@ class ScaleModule extends ParticleModule {
 
 	public var initialScale:Float;
 	public var initialScaleMax:Float;
+
+	var _scale:Components<Scale>;
 
 
 	public function new(_options:ScaleModuleOptions) {
@@ -23,12 +26,14 @@ class ScaleModule extends ParticleModule {
 
 	override function init() {
 
+		_scale = emitter.components.get(Scale);
+
 	}
 
 	override function onDisabled() {
 
 		for (p in particles) {
-			p.s = 1;
+			_scale.set(p.id, 1);
 		}
 		
 	}
@@ -36,9 +41,9 @@ class ScaleModule extends ParticleModule {
 	override function onSpawn(p:Particle) {
 
 		if(initialScaleMax > initialScale) {
-			p.s = emitter.randomFloat(initialScale, initialScaleMax);
+			_scale.set(p.id, emitter.randomFloat(initialScale, initialScaleMax));
 		} else {
-			p.s = initialScale;
+			_scale.set(p.id, initialScale);
 		}
 
 	}

@@ -6,7 +6,6 @@ import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.render.DisplayObject;
 import clay.render.Painter;
-import clay.render.Camera;
 import clay.math.Vector;
 
 
@@ -41,6 +40,19 @@ class ParticleSystem extends DisplayObject {
 
 		_init();
 
+	}
+	
+		/** update the system */
+	override function update(dt:Float) {
+
+		super.update(dt);
+
+		if(active) {
+			for (e in emitters) {
+				e.update(dt);
+			}
+		}
+		
 	}
 
 	override function render(p:Painter) {
@@ -147,19 +159,6 @@ class ParticleSystem extends DisplayObject {
 		pos = null;
 		emitters = null;
 
-	}
-
-		/** update the system */
-	override function update(dt:Float) {
-
-		super.update(dt);
-
-		if(active) {
-			for (e in emitters) {
-				e.update(dt);
-			}
-		}
-		
 	}
 
 	function _init() {

@@ -13,6 +13,8 @@ class ColorModule extends ParticleModule {
 	public var initialColor(default, null):Color;
 	public var initialColorMax:Color;
 
+	var _color:Components<Color>;
+
 
 	public function new(_options:ColorModuleOptions) {
 
@@ -23,9 +25,15 @@ class ColorModule extends ParticleModule {
 
 	}
 
+	override function init() {
+
+		_color = emitter.components.get(Color);
+	    
+	}
+
 	override function onSpawn(p:Particle) {
 
-		var pcolor:Color = p.color;
+		var pcolor:Color = _color.get(p.id);
 
 		if(initialColorMax != null) {
 			pcolor.r = initialColorMax.r > initialColor.r ? emitter.randomFloat(initialColor.r, initialColorMax.r) : initialColor.r;
