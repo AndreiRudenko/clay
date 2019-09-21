@@ -14,10 +14,7 @@ class ParticleVector {
 	public var capacity(default, null):Int;
 
 	public var buffer(default, null):Vector<Particle>;
-	public var dirtySort(default, null):Bool;
 
-	var _sorted:Vector<Particle>;
-	var _sortTmp:Vector<Particle>;
 	var _components:ComponentManager;
 	var _wrapIndex:Int = 0;
 
@@ -29,9 +26,6 @@ class ParticleVector {
 		_components = components;
 		
 		buffer = new Vector(capacity);
-		_sorted = new Vector(capacity);
-
-		_sortTmp = new Vector(capacity);
 
 		for (i in 0...capacity) {
 			buffer[i] = new Particle(i);
@@ -47,15 +41,11 @@ class ParticleVector {
 
 	public inline function ensure():Particle {
 
-		dirtySort = true;
-
 		return buffer[length++];
 
 	}
 
 	public inline function wrap():Particle {
-
-		dirtySort = true;
 
 		_wrapIndex %= length - 1;
 		var lastIdx:Int = length - 1;
@@ -67,8 +57,6 @@ class ParticleVector {
 	}
 
 	public inline function remove(p:Particle) {
-
-		dirtySort = true;
 
 		var idx:Int = p.id;
 
@@ -82,8 +70,6 @@ class ParticleVector {
 	}
 
 	public inline function reset() {
-
-		dirtySort = true;
 
 		for (i in 0...capacity) {
 			buffer[i].id = i;
@@ -100,54 +86,6 @@ class ParticleVector {
 			f(p);
 		}
 
-	}
-
-	public function sort(compare:(p1:Particle, p2:Particle)->Int):Vector<Particle> {
-
-		if(dirtySort) {
-			for (i in 0...length) {
-				_sorted[i] = buffer[i];
-			}
-
-			_sort(_sorted, _sortTmp, 0, length-1, compare);
-			dirtySort = false;
-		}
-
-		return _sorted;
-
-	}
-	
-	// merge sort
-	function _sort(a:Vector<Particle>, aux:Vector<Particle>, l:Int, r:Int, compare:(p1:Particle, p2:Particle)->Int) { 
-		
-		if (l < r) {
-			var m = Std.int(l + (r - l) / 2);
-			_sort(a, aux, l, m, compare);
-			_sort(a, aux, m + 1, r, compare);
-			_merge(a, aux, l, m, r, compare);
-		}
-
-	}
-
-	inline function _merge(a:Vector<Particle>, aux:Vector<Particle>, l:Int, m:Int, r:Int, compare:(p1:Particle, p2:Particle)->Int) { 
-
-		var k = l;
-		while (k <= r) {
-			aux[k] = a[k];
-			k++;
-		}
-
-		k = l;
-		var i = l;
-		var j = m + 1;
-		while (k <= r) {
-			if (i > m) a[k] = aux[j++];
-			else if (j > r) a[k] = aux[i++];
-			else if (compare(aux[j], aux[i]) < 0) a[k] = aux[j++];
-			else a[k] = aux[i++];
-			k++;
-		}
-		
 	}
 
 	inline function swap(a:Int, b:Int) {
