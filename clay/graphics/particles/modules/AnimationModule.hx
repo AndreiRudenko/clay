@@ -229,7 +229,7 @@ class AnimationModule extends ParticleModule {
 		loops = d.loops;
 		rows = d.rows;
 		columns = d.columns;
-		frames = d.frames;
+		setFrames(d.frames);
 
 		return this;
 	    
@@ -243,7 +243,7 @@ class AnimationModule extends ParticleModule {
 		d.loops = loops;
 		d.rows = rows;
 		d.columns = columns;
-		d.frames = frames;
+		d.frames = _frames;
 
 		return d;
 	    
