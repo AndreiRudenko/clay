@@ -7,6 +7,7 @@ import clay.graphics.particles.components.Size;
 import clay.graphics.particles.components.Scale;
 import clay.graphics.particles.components.Rotation;
 import clay.graphics.particles.components.Origin;
+import clay.graphics.particles.components.Region;
 import clay.graphics.particles.ParticleEmitter;
 import clay.graphics.Sprite;
 import clay.graphics.shapes.Quad;
@@ -28,8 +29,8 @@ import clay.render.types.BlendEquation;
 class SpriteRenderModule extends ParticleModule {
 
 
-	public var texture:Texture;
-	public var region:Rectangle;
+	public var texture(default, set):Texture;
+	public var region(default, set):Rectangle;
 
 	public var blendSrc:BlendMode;
 	public var blendDst:BlendMode;
@@ -40,6 +41,7 @@ class SpriteRenderModule extends ParticleModule {
 
 	var _matrix:Matrix;
 	var _regionScaled:Rectangle;
+	var _regionTmp:Rectangle;
 	var _count:Int;
 
 	var _size:Components<Size>;
@@ -47,6 +49,13 @@ class SpriteRenderModule extends ParticleModule {
 	var _color:Components<Color>;
 	var _rotation:Components<Rotation>;
 	var _origin:Components<Origin>;
+	var _region:Components<Region>;
+
+	var _sizeDefault:Size;
+	var _scaleDefault:Scale;
+	var _colorDefault:Color;
+	var _rotationDefault:Rotation;
+	var _originDefault:Origin;
 	
 	var _pSortTmp:haxe.ds.Vector<ParticleSprite>;
 	var _particleSprites:haxe.ds.Vector<ParticleSprite>;
@@ -56,8 +65,13 @@ class SpriteRenderModule extends ParticleModule {
 
 		super({});
 
-		texture = options.texture;
+		_count = 0;
+		_matrix = new Matrix();
+		_regionScaled = new Rectangle();
+		_regionTmp = new Rectangle();
+
 		region = options.region;
+		texture = options.texture;
 
 		blendSrc = options.blendSrc != null ? options.blendSrc : BlendMode.BlendOne;
 		blendDst = options.blendDst != null ? options.blendDst : BlendMode.InverseSourceAlpha;
@@ -67,25 +81,45 @@ class SpriteRenderModule extends ParticleModule {
 		alphaBlendDst = options.alphaBlendDst != null ? options.alphaBlendDst : BlendMode.InverseSourceAlpha;
 		alphaBlendEq = options.alphaBlendEq != null ? options.alphaBlendEq : BlendEquation.Add;
 
-		_count = 0;
-		_matrix = new Matrix();
-		_regionScaled = new Rectangle();
-
-		
 	}
 
 	override function init() {
 
-		_size = emitter.components.get(Size);
-		_scale = emitter.components.get(Scale);
-		_color = emitter.components.get(Color);
-		_rotation = emitter.components.get(Rotation);
-		_origin = emitter.components.get(Origin);
+		_size = emitter.components.get(Size, false);
+		_scale = emitter.components.get(Scale, false);
+		_color = emitter.components.get(Color, false);
+		_rotation = emitter.components.get(Rotation, false);
+		_origin = emitter.components.get(Origin, false);
+		_region = emitter.components.get(Region, false);
 
-		for (i in 0...emitter.particles.capacity) {
-			_size.get(i).set(32,32);
-			_origin.get(i).set(0.5,0.5);
-			_scale.set(i, 1);
+		_sizeDefault = new Size(32, 32);
+		_scaleDefault = 1;
+		_colorDefault = new Color(1,1,1,1);
+		_rotationDefault = 0;
+		_originDefault = new Origin(0.5, 0.5);
+
+		if(_size != null) {
+			for (i in 0...emitter.particles.capacity) {
+				_size.get(i).copyFrom(_sizeDefault);
+			}
+		}
+
+		if(_origin != null) {
+			for (i in 0...emitter.particles.capacity) {
+				_origin.get(i).copyFrom(_originDefault);
+			}
+		}
+
+		if(_scale != null) {
+			for (i in 0...emitter.particles.capacity) {
+				_scale.set(i, _scaleDefault);
+			}
+		}
+
+		if(_region != null) {
+			for (i in 0...emitter.particles.capacity) {
+				_region.get(i).set(0,0,1,1);
+			}
 		}
 
 		_particleSprites = new haxe.ds.Vector(emitter.particles.capacity);
@@ -103,7 +137,6 @@ class SpriteRenderModule extends ParticleModule {
 
 		g.setBlendMode(blendSrc, blendDst, blendEq, alphaBlendSrc, alphaBlendDst, alphaBlendEq);
 		g.setTexture(texture);
-		updateRegionScaled();
 
 		var sortMode = emitter.getSortModeFunc();
 
@@ -117,11 +150,12 @@ class SpriteRenderModule extends ParticleModule {
 				p = emitter.particles.get(i);
 				ps = _particleSprites[i];
 				ps.particleData = p;
-				ps.size = _size.get(p.id);
-				ps.origin = _origin.get(p.id);
-				ps.rotation = _rotation.get(p.id);
-				ps.scale = _scale.get(p.id);
-				ps.color = _color.get(p.id);
+				ps.size = _size != null ? _size.get(p.id) : _sizeDefault;
+				ps.origin = _origin != null ? _origin.get(p.id) : _originDefault;
+				ps.rotation = _rotation != null ? _rotation.get(p.id) : _rotationDefault;
+				ps.scale = _scale != null ? _scale.get(p.id) : _scaleDefault;
+				ps.color = _color != null ? _color.get(p.id) : _colorDefault;
+				ps.region = _region != null ? getRegionScaled(_region.get(p.id)) : _regionScaled;
 			}
 
 			_sort(_particleSprites, _pSortTmp, 0, _count-1, sortMode);
@@ -136,7 +170,8 @@ class SpriteRenderModule extends ParticleModule {
 					ps.origin,
 					ps.rotation,
 					ps.scale,
-					ps.color
+					ps.color,
+					ps.region
 				);
 			}
 		} else {
@@ -145,19 +180,30 @@ class SpriteRenderModule extends ParticleModule {
 					g, 
 					emitter.system.transform.world.matrix,
 					p,
-					_size.get(p.id),
-					_origin.get(p.id),
-					_rotation.get(p.id),
-					_scale.get(p.id),
-					_color.get(p.id)
+					_size != null ? _size.get(p.id) : _sizeDefault,
+					_origin != null ? _origin.get(p.id) : _originDefault,
+					_rotation != null ? _rotation.get(p.id) : _rotationDefault,
+					_scale != null ? _scale.get(p.id) : _scaleDefault,
+					_color != null ? _color.get(p.id) : _colorDefault,
+					_region != null ? getRegionScaled(_region.get(p.id)) : _regionScaled
 				);
 			}
 		}
 
 	}
 
-	inline function renderParticle(g:Painter, emitterMatrix:Matrix, particle:Particle, size:Size, origin:Origin, rotation:Float, scale:Float, color:Color):Void {
-
+	inline function renderParticle(
+		g:Painter, 
+		emitterMatrix:Matrix, 
+		particle:Particle, 
+		size:Size, 
+		origin:Origin, 
+		rotation:Float, 
+		scale:Float, 
+		color:Color, 
+		reg:Rectangle
+	) {
+		// trace('render: ${particle.id}, region: ${reg}');
 		g.ensure(4, 6);
 
 		_matrix.copy(emitterMatrix)
@@ -176,32 +222,32 @@ class SpriteRenderModule extends ParticleModule {
 		g.addVertex(
 			_matrix.tx, 
 			_matrix.ty, 
-			_regionScaled.x,
-			_regionScaled.y,
+			reg.x,
+			reg.y,
 			color
 		);
 
 		g.addVertex(
 			_matrix.a * size.x + _matrix.tx, 
 			_matrix.b * size.x + _matrix.ty, 
-			_regionScaled.x + _regionScaled.w,
-			_regionScaled.y,
+			reg.x + reg.w,
+			reg.y,
 			color
 		);
 
 		g.addVertex(
 			_matrix.a * size.x + _matrix.c * size.y + _matrix.tx, 
 			_matrix.b * size.x + _matrix.d * size.y + _matrix.ty, 
-			_regionScaled.x + _regionScaled.w,
-			_regionScaled.y + _regionScaled.h,
+			reg.x + reg.w,
+			reg.y + reg.h,
 			color
 		);
 
 		g.addVertex(
 			_matrix.c * size.y + _matrix.tx, 
 			_matrix.d * size.y + _matrix.ty, 
-			_regionScaled.x,
-			_regionScaled.y + _regionScaled.h,
+			reg.x,
+			reg.y + reg.h,
 			color
 		);
 		
@@ -240,18 +286,51 @@ class SpriteRenderModule extends ParticleModule {
 		
 	}
 
-	inline function updateRegionScaled() {
+	inline function getRegionScaled(r:Rectangle) {
 		
-		if(region == null || texture == null) {
-			_regionScaled.set(0, 0, 1, 1);
-		} else {
+		_regionTmp.set(
+			_regionScaled.x + r.x,
+			_regionScaled.y + r.y,
+			r.w, 
+			r.h
+		);
+
+		return _regionTmp;
+
+	}
+
+	function updateRegionScaled() {
+		
+		if(region != null && texture != null) {
 			_regionScaled.set(
-				_regionScaled.x = region.x / texture.widthActual,
-				_regionScaled.y = region.y / texture.heightActual,
-				_regionScaled.w = region.w / texture.widthActual,
-				_regionScaled.h = region.h / texture.heightActual
+				region.x / texture.widthActual,
+				region.y / texture.heightActual,
+				region.w / texture.widthActual,
+				region.h / texture.heightActual
 			);
+		} else {
+			_regionScaled.set(0, 0, 1, 1);
 		}
+
+	}
+
+	function set_texture(v:Texture):Texture {
+
+		texture = v;
+
+		updateRegionScaled();
+
+		return texture;
+
+	}
+
+	function set_region(v:Rectangle):Rectangle {
+
+		region = v;
+
+		updateRegionScaled();
+
+		return region;
 
 	}
 
@@ -268,6 +347,7 @@ private class ParticleSprite {
 	public var origin:Origin;
 	public var rotation:Float;
 	public var color:Color;
+	public var region:Region;
 
 
 	public function new() {}

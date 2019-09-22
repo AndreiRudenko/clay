@@ -25,7 +25,7 @@ class ComponentManager {
 
 	}
 
-	public macro function get<T>(self:Expr, componentClass:Expr):ExprOf<Components<T>> {
+	public macro function get<T>(self:Expr, componentClass:Expr, create:Bool = true):ExprOf<Components<T>> {
 
 		var type = Context.typeof(componentClass);
 
@@ -57,57 +57,77 @@ class ComponentManager {
 
 		switch (typeName) {
 			case 'Bool': 
-				return macro {
-					var comps = $self._getBool($v{cname});
-					if(comps != null) {
-						comps;
-					} else {
-						$self._setBool(particles, $v{cname}, function() {return false;});
+				if(create) {
+					return macro {
+						var comps = $self._getBool($v{cname});
+						if(comps != null) {
+							comps;
+						} else {
+							$self._setBool(particles, $v{cname}, function() {return false;});
+						}
 					}
+				} else {
+					return macro $self._getBool($v{cname});
 				}
 			case 'Int': 
-				return macro {
-					var comps = $self._getInt($v{cname});
-					if(comps != null) {
-						comps;
-					} else {
-						$self._setInt(particles, $v{cname}, function() {return 0;});
+				if(create) {
+					return macro {
+						var comps = $self._getInt($v{cname});
+						if(comps != null) {
+							comps;
+						} else {
+							$self._setInt(particles, $v{cname}, function() {return 0;});
+						}
 					}
+				} else {
+					return macro $self._getInt($v{cname});
 				}
 			case 'Float': 
-				return macro {
-					var comps = $self._getFloat($v{cname});
-					if(comps != null) {
-						comps;
-					} else {
-						$self._setFloat(particles, $v{cname}, function() {return 0;});
+				if(create) {
+					return macro {
+						var comps = $self._getFloat($v{cname});
+						if(comps != null) {
+							comps;
+						} else {
+							$self._setFloat(particles, $v{cname}, function() {return 0;});
+						}
 					}
+				} else {
+					return macro $self._getFloat($v{cname});
 				}
 			case 'String': 
-				return macro {
-					var comps = $self._getString($v{cname});
-					if(comps != null) {
-						comps;
-					} else {
-						$self._setString(particles, $v{cname}, function() {return '';});
+				if(create) {
+					return macro {
+						var comps = $self._getString($v{cname});
+						if(comps != null) {
+							comps;
+						} else {
+							$self._setString(particles, $v{cname}, function() {return '';});
+						}
 					}
+				} else {
+					return macro $self._getString($v{cname});
 				}
 			default: 
-	    		var tp = MacroUtils.getClassTypePath(type);
-				return macro {
-					var comps = $self._getClass($v{cname}, $componentClass);
-					if(comps != null) {
-						comps;
-					} else {
-						$self._setClass(
-							particles, 
-							$v{cname}, 
-							$componentClass, 
-							function() {
-								return new $tp();
-							}
-						);
+				if(create) {
+		    		var tp = MacroUtils.getClassTypePath(type);
+					return macro {
+						var comps = $self._getClass($v{cname}, $componentClass);
+						if(comps != null) {
+							comps;
+						} else {
+							$self._setClass(
+								particles, 
+								$v{cname}, 
+								$componentClass, 
+								function() {
+									return new $tp();
+								}
+							);
+						}
 					}
+				} else {
+					return macro $self._getClass($v{cname}, $componentClass);
 				}
 		}
 

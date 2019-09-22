@@ -1,6 +1,6 @@
 package clay.graphics.particles.components;
 
 
-class ColorDelta extends clay.render.Color {}
+typedef ColorDelta = clay.render.Color;
 
 

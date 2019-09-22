@@ -1,5 +1,5 @@
 package clay.graphics.particles.components;
 
 
-class VelocityDelta extends clay.math.Vector {}
+typedef VelocityDelta = clay.math.Vector;
 

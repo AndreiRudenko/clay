@@ -1,5 +1,5 @@
 package clay.graphics.particles.components;
 
 
-class Origin extends clay.math.Vector {}
+typedef Origin = clay.math.Vector;
 
