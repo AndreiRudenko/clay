@@ -288,7 +288,7 @@ class AnimationDataGrid extends AnimationData {
 			var szx = 1 / row;
 			var szy = 1 / col;
 			var tlx = (frame % row) * szx;
-			var tly = Math.floor(frame / col) * szy;
+			var tly = Math.floor(frame / (col+1)) * szy;
 
 			anim.setUv(tlx, tly, szx, szy);
 		}
