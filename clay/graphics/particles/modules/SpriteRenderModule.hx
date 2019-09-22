@@ -8,22 +8,16 @@ import clay.graphics.particles.components.Scale;
 import clay.graphics.particles.components.Rotation;
 import clay.graphics.particles.components.Origin;
 import clay.graphics.particles.components.Region;
-import clay.graphics.particles.ParticleEmitter;
-import clay.graphics.Sprite;
-import clay.graphics.shapes.Quad;
 import clay.utils.Mathf;
 import clay.math.Vector;
 import clay.render.Color;
 import clay.render.Vertex;
 import clay.math.Rectangle;
-import clay.math.Transform;
 import clay.math.Matrix;
 import clay.render.Painter;
 import clay.resources.Texture;
-import clay.render.types.BlendMode;
-import clay.render.types.BlendEquation;
-
-// import haxe.ds.Vector;
+import clay.render.types.BlendFactor;
+import clay.render.types.BlendOperation;
 
 
 class SpriteRenderModule extends ParticleModule {
@@ -32,12 +26,17 @@ class SpriteRenderModule extends ParticleModule {
 	public var texture(default, set):Texture;
 	public var region(default, set):Rectangle;
 
-	public var blendSrc:BlendMode;
-	public var blendDst:BlendMode;
-	public var blendEq:BlendEquation;
-	public var alphaBlendSrc:BlendMode;
-	public var alphaBlendDst:BlendMode;
-	public var alphaBlendEq:BlendEquation;
+	public var blendMode(default, set):BlendMode;
+	public var premultipliedAlpha(get, set):Bool;
+
+	var _blendSrc:BlendFactor;
+	var _blendDst:BlendFactor;
+	var _blendOp:BlendOperation;
+	var _alphaBlendSrc:BlendFactor;
+	var _alphaBlendDst:BlendFactor;
+	var _alphaBlendOp:BlendOperation;
+
+	var _premultipliedAlpha:Bool;
 
 	var _matrix:Matrix;
 	var _regionScaled:Rectangle;
@@ -65,6 +64,7 @@ class SpriteRenderModule extends ParticleModule {
 
 		super({});
 
+		_premultipliedAlpha = true;
 		_count = 0;
 		_matrix = new Matrix();
 		_regionScaled = new Rectangle();
@@ -73,13 +73,19 @@ class SpriteRenderModule extends ParticleModule {
 		region = options.region;
 		texture = options.texture;
 
-		blendSrc = options.blendSrc != null ? options.blendSrc : BlendMode.BlendOne;
-		blendDst = options.blendDst != null ? options.blendDst : BlendMode.InverseSourceAlpha;
-		blendEq = options.blendEq != null ? options.blendEq : BlendEquation.Add;
+		_blendSrc = options.blendSrc != null ? options.blendSrc : BlendFactor.BlendOne;
+		_blendDst = options.blendDst != null ? options.blendDst : BlendFactor.InverseSourceAlpha;
+		_blendOp = options.blendOp != null ? options.blendOp : BlendOperation.Add;
 
-		alphaBlendSrc = options.alphaBlendSrc != null ? options.alphaBlendSrc : BlendMode.BlendOne;
-		alphaBlendDst = options.alphaBlendDst != null ? options.alphaBlendDst : BlendMode.InverseSourceAlpha;
-		alphaBlendEq = options.alphaBlendEq != null ? options.alphaBlendEq : BlendEquation.Add;
+		_alphaBlendSrc = options.alphaBlendSrc != null ? options.alphaBlendSrc : BlendFactor.BlendOne;
+		_alphaBlendDst = options.alphaBlendDst != null ? options.alphaBlendDst : BlendFactor.InverseSourceAlpha;
+		_alphaBlendOp = options.alphaBlendOp != null ? options.alphaBlendOp : BlendOperation.Add;
+
+		blendMode = options.blendMode != null ? options.blendMode : BlendMode.NORMAL;
+
+		if(options.premultipliedAlpha != null) {
+			premultipliedAlpha = options.premultipliedAlpha;
+		}
 
 	}
 
@@ -135,7 +141,7 @@ class SpriteRenderModule extends ParticleModule {
 
 	override function render(g:Painter) {
 
-		g.setBlendMode(blendSrc, blendDst, blendEq, alphaBlendSrc, alphaBlendDst, alphaBlendEq);
+		g.setBlending(_blendSrc, _blendDst, _blendOp, _alphaBlendSrc, _alphaBlendDst, _alphaBlendOp);
 		g.setTexture(texture);
 
 		var sortMode = emitter.getSortModeFunc();
@@ -203,7 +209,7 @@ class SpriteRenderModule extends ParticleModule {
 		color:Color, 
 		reg:Rectangle
 	) {
-		// trace('render: ${particle.id}, region: ${reg}');
+
 		g.ensure(4, 6);
 
 		_matrix.copy(emitterMatrix)
@@ -251,6 +257,25 @@ class SpriteRenderModule extends ParticleModule {
 			color
 		);
 		
+	}	
+
+	public function setBlending(
+		blendSrc:BlendFactor, 
+		blendDst:BlendFactor, 
+		?blendOp:BlendOperation, 
+		?alphaBlendSrc:BlendFactor, 
+		?alphaBlendDst:BlendFactor, 
+		?alphaBlendOp:BlendOperation
+	) {
+		
+		_blendSrc = blendSrc;
+		_blendDst = blendDst;
+		_blendOp = blendOp != null ? blendOp : BlendOperation.Add;	
+
+		_alphaBlendSrc = alphaBlendSrc != null ? alphaBlendSrc : blendSrc;
+		_alphaBlendDst = alphaBlendDst != null ? alphaBlendDst : blendDst;
+		_alphaBlendOp = alphaBlendOp != null ? alphaBlendOp : blendOp;	
+
 	}
 
 	// merge sort
@@ -314,6 +339,34 @@ class SpriteRenderModule extends ParticleModule {
 
 	}
 
+	function updateBlending() {
+
+		if(_premultipliedAlpha) {
+			switch (blendMode) {
+				case BlendMode.NONE: setBlending(BlendFactor.BlendOne, BlendFactor.BlendZero);
+				case BlendMode.NORMAL: setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha);
+				case BlendMode.ADD: setBlending(BlendFactor.BlendOne, BlendFactor.BlendOne);
+				case BlendMode.MULTIPLY: setBlending(BlendFactor.DestinationColor, BlendFactor.InverseSourceAlpha);
+				case BlendMode.SCREEN: setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceColor);
+				case BlendMode.ERASE: setBlending(BlendFactor.BlendZero, BlendFactor.InverseSourceAlpha);
+				case BlendMode.MASK: setBlending(BlendFactor.BlendZero, BlendFactor.SourceAlpha); //TODO: test this
+				case BlendMode.BELOW: setBlending(BlendFactor.InverseDestinationAlpha, BlendFactor.DestinationAlpha); //TODO: test this
+			}
+		} else {
+			switch (blendMode) {
+				case BlendMode.NONE: setBlending(BlendFactor.BlendOne, BlendFactor.BlendZero);
+				case BlendMode.NORMAL: setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha);
+				case BlendMode.ADD: setBlending(BlendFactor.SourceAlpha, BlendFactor.DestinationAlpha);
+				case BlendMode.MULTIPLY: setBlending(BlendFactor.DestinationColor, BlendFactor.InverseSourceAlpha);
+				case BlendMode.SCREEN: setBlending(BlendFactor.SourceAlpha, BlendFactor.BlendOne);
+				case BlendMode.ERASE: setBlending(BlendFactor.BlendZero, BlendFactor.InverseSourceAlpha);
+				case BlendMode.MASK: setBlending(BlendFactor.BlendZero, BlendFactor.SourceAlpha); //TODO: test this
+				case BlendMode.BELOW: setBlending(BlendFactor.InverseDestinationAlpha, BlendFactor.DestinationAlpha); //TODO: test this
+			}
+		}
+		
+	}
+
 	function set_texture(v:Texture):Texture {
 
 		texture = v;
@@ -332,6 +385,30 @@ class SpriteRenderModule extends ParticleModule {
 
 		return region;
 
+	}
+
+	function set_blendMode(v:BlendMode):BlendMode {
+
+		blendMode = v;
+		updateBlending();
+
+		return blendMode;
+		
+	}
+
+	inline function get_premultipliedAlpha():Bool {
+
+		return _premultipliedAlpha;
+		
+	}
+
+	function set_premultipliedAlpha(v:Bool):Bool {
+
+		_premultipliedAlpha = v;
+		updateBlending();
+
+		return _premultipliedAlpha;
+		
 	}
 
 
@@ -363,12 +440,16 @@ typedef SpriteRenderModuleOptions = {
 	@:optional var texture:Texture;
 	@:optional var region:Rectangle;
 
-	@:optional var blendSrc:BlendMode;
-	@:optional var blendDst:BlendMode;
-	@:optional var blendEq:BlendEquation;
-	@:optional var alphaBlendSrc:BlendMode;
-	@:optional var alphaBlendDst:BlendMode;
-	@:optional var alphaBlendEq:BlendEquation;
+	@:optional var premultipliedAlpha:Bool;
+	@:optional var blendMode:BlendMode;
+
+	// custom blending
+	@:optional var blendSrc:BlendFactor;
+	@:optional var blendDst:BlendFactor;
+	@:optional var blendOp:BlendOperation;
+	@:optional var alphaBlendSrc:BlendFactor;
+	@:optional var alphaBlendDst:BlendFactor;
+	@:optional var alphaBlendOp:BlendOperation;
 
 }
 

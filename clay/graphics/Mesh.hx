@@ -13,8 +13,8 @@ import clay.render.Vertex;
 import clay.render.DisplayObject;
 import clay.render.Painter;
 import clay.render.Camera;
-import clay.render.types.BlendMode;
-import clay.render.types.BlendEquation;
+import clay.render.types.BlendFactor;
+import clay.render.types.BlendOperation;
 import clay.render.types.Usage;
 import clay.resources.Texture;
 import clay.utils.Log.*;
@@ -34,18 +34,22 @@ class Mesh extends DisplayObject {
 
 	public var blendDisabled:Bool = false;
 
-	public var blendSrc:BlendMode;
-	public var blendDst:BlendMode;
-	public var blendOp:BlendEquation;
+	public var blendMode(default, set):BlendMode;
+	public var premultipliedAlpha(get, set):Bool;
 
-	public var alphaBlendDst:BlendMode;
-	public var alphaBlendSrc:BlendMode;
-	public var alphaBlendOp:BlendEquation;
+	var _blendSrc:BlendFactor;
+	var _blendDst:BlendFactor;
+	var _blendOp:BlendOperation;
+
+	var _alphaBlendDst:BlendFactor;
+	var _alphaBlendSrc:BlendFactor;
+	var _alphaBlendOp:BlendOperation;
 
 	var _texture:Texture;
 	var _vertexBuffer:VertexBuffer;
 	var _indexBuffer:IndexBuffer;
 	var _regionScaled:Rectangle;
+	var _premultipliedAlpha:Bool;
 
 
 	public function new(?vertices:Array<Vertex>, ?indices:Array<Int>, ?texture:Texture) {
@@ -53,6 +57,7 @@ class Mesh extends DisplayObject {
 		super();
 
 		locked = false;
+		_premultipliedAlpha = true;
 
     	this.vertices = vertices != null ? vertices : [];
 		this.indices = indices != null ? indices : [];
@@ -61,7 +66,7 @@ class Mesh extends DisplayObject {
 
 		color = new Color();
 
-		setBlendMode(BlendMode.BlendOne, BlendMode.InverseSourceAlpha, BlendEquation.Add);
+		blendMode = BlendMode.NORMAL;
 
 	}
 
@@ -85,16 +90,7 @@ class Mesh extends DisplayObject {
 			p.setShader(shader != null ? shader : shaderDefault);
 			p.clip(clipRect);
 			p.setTexture(texture);
-
-			if(blendDisabled) {
-				var sh = shader != null ? shader : shaderDefault;
-				p.setBlendMode(
-					sh._blendSrcDefault, sh._blendDstDefault, sh._blendOpDefault, 
-					sh._alphaBlendSrcDefault, sh._alphaBlendDstDefault, sh._alphaBlendOpDefault
-				);
-			} else {
-				p.setBlendMode(blendSrc, blendDst, blendOp, alphaBlendSrc, alphaBlendDst, alphaBlendOp);
-			}
+			p.setBlending(_blendSrc, _blendDst, _blendOp, _alphaBlendSrc, _alphaBlendDst, _alphaBlendOp);
 
 			if(locked) {
 				#if !noDebugConsole
@@ -139,15 +135,22 @@ class Mesh extends DisplayObject {
 		
 	}
 
-	public function setBlendMode(blendSrc:BlendMode, blendDst:BlendMode, ?blendOp:BlendEquation, ?alphaBlendSrc:BlendMode, ?alphaBlendDst:BlendMode, ?alphaBlendOp:BlendEquation) {
+	public function setBlending(
+		blendSrc:BlendFactor, 
+		blendDst:BlendFactor, 
+		?blendOp:BlendOperation, 
+		?alphaBlendSrc:BlendFactor, 
+		?alphaBlendDst:BlendFactor, 
+		?alphaBlendOp:BlendOperation
+	) {
 		
-		this.blendSrc = blendSrc;
-		this.blendDst = blendDst;
-		this.blendOp = blendOp != null ? blendOp : BlendEquation.Add;	
+		_blendSrc = blendSrc;
+		_blendDst = blendDst;
+		_blendOp = blendOp != null ? blendOp : BlendOperation.Add;	
 
-		this.alphaBlendSrc = alphaBlendSrc != null ? alphaBlendSrc : blendSrc;
-		this.alphaBlendDst = alphaBlendDst != null ? alphaBlendDst : blendDst;
-		this.alphaBlendOp = alphaBlendOp != null ? alphaBlendOp : blendOp;	
+		_alphaBlendSrc = alphaBlendSrc != null ? alphaBlendSrc : blendSrc;
+		_alphaBlendDst = alphaBlendDst != null ? alphaBlendDst : blendDst;
+		_alphaBlendOp = alphaBlendOp != null ? alphaBlendOp : blendOp;	
 
 	}
 
@@ -220,10 +223,10 @@ class Mesh extends DisplayObject {
 			_regionScaled.set(0, 0, 1, 1);
 		} else {
 			_regionScaled.set(
-				_regionScaled.x = region.x / _texture.widthActual,
-				_regionScaled.y = region.y / _texture.heightActual,
-				_regionScaled.w = region.w / _texture.widthActual,
-				_regionScaled.h = region.h / _texture.heightActual
+				region.x / _texture.widthActual,
+				region.y / _texture.heightActual,
+				region.w / _texture.widthActual,
+				region.h / _texture.heightActual
 			);
 		}
 
@@ -276,5 +279,56 @@ class Mesh extends DisplayObject {
 
 	}
 
+	function set_blendMode(v:BlendMode):BlendMode {
+
+		blendMode = v;
+		updateBlending();
+
+		return blendMode;
+		
+	}
+
+	inline function get_premultipliedAlpha():Bool {
+
+		return _premultipliedAlpha;
+		
+	}
+
+	function set_premultipliedAlpha(v:Bool):Bool {
+
+		_premultipliedAlpha = v;
+		updateBlending();
+
+		return _premultipliedAlpha;
+		
+	}
+
+	function updateBlending() {
+
+		if(_premultipliedAlpha) {
+			switch (blendMode) {
+				case BlendMode.NONE: setBlending(BlendFactor.BlendOne, BlendFactor.BlendZero);
+				case BlendMode.NORMAL: setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha);
+				case BlendMode.ADD: setBlending(BlendFactor.BlendOne, BlendFactor.BlendOne);
+				case BlendMode.MULTIPLY: setBlending(BlendFactor.DestinationColor, BlendFactor.InverseSourceAlpha);
+				case BlendMode.SCREEN: setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceColor);
+				case BlendMode.ERASE: setBlending(BlendFactor.BlendZero, BlendFactor.InverseSourceAlpha);
+				case BlendMode.MASK: setBlending(BlendFactor.BlendZero, BlendFactor.SourceAlpha); //TODO: test this
+				case BlendMode.BELOW: setBlending(BlendFactor.InverseDestinationAlpha, BlendFactor.DestinationAlpha); //TODO: test this
+			}
+		} else {
+			switch (blendMode) {
+				case BlendMode.NONE: setBlending(BlendFactor.BlendOne, BlendFactor.BlendZero);
+				case BlendMode.NORMAL: setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha);
+				case BlendMode.ADD: setBlending(BlendFactor.SourceAlpha, BlendFactor.DestinationAlpha);
+				case BlendMode.MULTIPLY: setBlending(BlendFactor.DestinationColor, BlendFactor.InverseSourceAlpha);
+				case BlendMode.SCREEN: setBlending(BlendFactor.SourceAlpha, BlendFactor.BlendOne);
+				case BlendMode.ERASE: setBlending(BlendFactor.BlendZero, BlendFactor.InverseSourceAlpha);
+				case BlendMode.MASK: setBlending(BlendFactor.BlendZero, BlendFactor.SourceAlpha); //TODO: test this
+				case BlendMode.BELOW: setBlending(BlendFactor.InverseDestinationAlpha, BlendFactor.DestinationAlpha); //TODO: test this
+			}
+		}
+		
+	}
 
 }

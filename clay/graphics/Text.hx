@@ -11,8 +11,8 @@ import clay.render.Color;
 import clay.render.Shader;
 import clay.render.Vertex;
 import clay.render.Camera;
-import clay.render.types.BlendMode;
-import clay.render.types.BlendEquation;
+import clay.render.types.BlendFactor;
+import clay.render.types.BlendOperation;
 import clay.render.Painter;
 import clay.resources.FontResource;
 import clay.resources.Texture;
@@ -69,8 +69,8 @@ class Text extends Mesh {
 		letterSpacing = 0;
 
 		_setup = false;
+		premultipliedAlpha = false;
 
-		setBlendMode(BlendMode.SourceAlpha, BlendMode.InverseSourceAlpha, BlendEquation.Add);
 		updateText();
 
 	}
@@ -92,22 +92,13 @@ class Text extends Mesh {
 			p.setShader(shader != null ? shader : shaderDefault);
 			p.clip(clipRect);
 			p.setTexture(texture);
-
-			if(blendDisabled) {
-				var sh = shader != null ? shader : shaderDefault;
-				p.setBlendMode(
-					sh._blendSrcDefault, sh._blendDstDefault, sh._blendOpDefault, 
-					sh._alphaBlendSrcDefault, sh._alphaBlendDstDefault, sh._alphaBlendOpDefault
-				);
-			} else {
-				p.setBlendMode(blendSrc, blendDst, blendOp, alphaBlendSrc, alphaBlendDst, alphaBlendOp);
-			}
+			p.setBlending(_blendSrc, _blendDst, _blendOp, _alphaBlendSrc, _alphaBlendDst, _alphaBlendOp);
 
 			if(locked) {
 				#if !noDebugConsole
 				p.stats.locked++;
 				#end
-				p.drawFromBuffers(_vertexBuffer, _indexBuffer); // render to texture instead
+				p.drawFromBuffers(_vertexBuffer, _indexBuffer); //TODO: render to texture instead?
 			} else {
 
 				var v:Vertex;

@@ -22,8 +22,8 @@ import clay.render.Camera;
 import clay.render.RenderStats;
 import clay.resources.Texture;
 import clay.render.Shader;
-import clay.render.types.BlendMode;
-import clay.render.types.BlendEquation;
+import clay.render.types.BlendFactor;
+import clay.render.types.BlendOperation;
 import clay.math.Matrix;
 import clay.math.Rectangle;
 import clay.utils.Mathf;
@@ -60,13 +60,13 @@ class Painter {
 	var _vertices:Float32Array;
 	var _indices:Uint32Array;
 
-	var _blendSrc:BlendMode;
-	var _blendDst:BlendMode;
-	var _blendOp:BlendEquation;
+	var _blendSrc:BlendFactor;
+	var _blendDst:BlendFactor;
+	var _blendOp:BlendOperation;
 
-	var _alphaBlendDst:BlendMode;
-	var _alphaBlendSrc:BlendMode;
-	var _alphaBlendOp:BlendEquation;
+	var _alphaBlendDst:BlendFactor;
+	var _alphaBlendSrc:BlendFactor;
+	var _alphaBlendOp:BlendOperation;
 
 	var _projectionMatrix:FastMatrix3;
 
@@ -158,9 +158,9 @@ class Painter {
 
 	}
 
-	public function setBlendMode(
-		blendSrc:BlendMode, blendDst:BlendMode, ?blendOp:BlendEquation, 
-		?alphaBlendSrc:BlendMode, ?alphaBlendDst:BlendMode, ?alphaBlendOp:BlendEquation
+	public function setBlending(
+		blendSrc:BlendFactor, blendDst:BlendFactor, ?blendOp:BlendOperation, 
+		?alphaBlendSrc:BlendFactor, ?alphaBlendDst:BlendFactor, ?alphaBlendOp:BlendOperation
 	) {
 
 		if(_blendSrc != blendSrc 
@@ -281,7 +281,7 @@ class Painter {
 		var textureLoc = _shader.setTexture('tex', _texture).location;
 		_shader.setMatrix3('mvpMatrix', _projectionMatrix);
 
-		_shader.setBlendMode(
+		_shader.setBlending(
 			_blendSrc, _blendDst, _blendOp, 
 			_alphaBlendSrc, _alphaBlendDst, _alphaBlendOp
 		);

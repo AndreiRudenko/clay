@@ -3,8 +3,8 @@ package clay.render;
 
 import kha.graphics4.Graphics;
 
-import clay.render.types.BlendMode;
-import clay.render.types.BlendEquation;
+import clay.render.types.BlendFactor;
+import clay.render.types.BlendOperation;
 import clay.render.DisplayObject;
 import clay.render.Camera;
 import clay.resources.Texture;
@@ -35,9 +35,9 @@ class Layer {
 	public var onpreRender(default, null):Signal<()->Void>;
 	public var onpostRender(default, null):Signal<()->Void>;
 
-	public var blendSrc:BlendMode;
-	public var blendDst:BlendMode;
-	public var blendEq:BlendEquation;
+	public var blendSrc:BlendFactor;
+	public var blendDst:BlendFactor;
+	public var blendOp:BlendOperation;
 
 	#if !no_debug_console
 	public var stats(default, null):RenderStats;
@@ -64,9 +64,9 @@ class Layer {
 		onpreRender = new Signal();
 		onpostRender = new Signal();
 
-		blendSrc = BlendMode.Undefined;
-		blendDst = BlendMode.Undefined;
-		blendEq = BlendEquation.Add;
+		blendSrc = BlendFactor.Undefined;
+		blendDst = BlendFactor.Undefined;
+		blendOp = BlendOperation.Add;
 
 		#if !no_debug_console
 		stats = new RenderStats();

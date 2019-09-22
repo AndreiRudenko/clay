@@ -6,8 +6,6 @@ import kha.Shaders;
 import kha.graphics4.VertexStructure;
 import kha.graphics4.VertexData;
 import kha.graphics4.Graphics;
-import kha.graphics4.BlendingFactor;
-import kha.graphics4.BlendingOperation;
 
 import clay.render.Camera;
 import clay.resources.Texture;
@@ -15,6 +13,8 @@ import clay.resources.FontResource;
 import clay.render.Layer;
 import clay.render.SortKey;
 import clay.render.Color;
+import clay.render.types.BlendFactor;
+import clay.render.types.BlendOperation;
 import clay.utils.Bits;
 import clay.utils.Log.*;
 import clay.ds.IntRingBuffer;
@@ -169,13 +169,14 @@ class Renderer {
 
 	// textured
 		shaderTextured = new Shader([structure], Shaders.textured_vert, Shaders.textured_frag);
-		shaderTextured.setBlendMode(BlendingFactor.BlendOne, BlendingFactor.InverseSourceAlpha, BlendingOperation.Add);
+		shaderTextured.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
 		shaderTextured.compile();
 		registerShader("textured", shaderTextured);
 
 	// text
+		//TODO: make fonts use premultiplied alpha
 		shaderText = new Shader([structure], Shaders.textured_vert, Shaders.text_frag);
-		shaderText.setBlendMode(BlendingFactor.SourceAlpha, BlendingFactor.InverseSourceAlpha, BlendingOperation.Add);
+		shaderText.setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
 		shaderText.compile();
 		registerShader("text", shaderText);
 

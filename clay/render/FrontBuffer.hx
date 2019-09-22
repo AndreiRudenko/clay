@@ -124,7 +124,7 @@ class FrontBuffer {
 		_textureLoc = shader.setTexture('tex', source).location;
 		shader.setMatrix3('mvpMatrix', _projectionMatrix);
 
-		shader.resetBlendModes();
+		shader.resetBlending();
 		shader.use(g);
 		shader.apply(g);
 

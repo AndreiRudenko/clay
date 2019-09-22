@@ -18,8 +18,8 @@ import kha.arrays.Float32Array;
 
 import clay.resources.Texture;
 import clay.resources.VideoResource;
-import clay.render.types.BlendMode;
-import clay.render.types.BlendEquation;
+import clay.render.types.BlendFactor;
+import clay.render.types.BlendOperation;
 
 
 @:access(clay.render.Renderer)
@@ -32,13 +32,13 @@ class Shader {
 	public var uniforms(default,null):Uniforms;
 	public var pipeline(default,null):PipelineState;
 
-	@:noCompletion public var _blendSrcDefault:BlendMode;
-	@:noCompletion public var _blendDstDefault:BlendMode;
-	@:noCompletion public var _blendOpDefault:BlendEquation;
+	@:noCompletion public var _blendSrcDefault:BlendFactor;
+	@:noCompletion public var _blendDstDefault:BlendFactor;
+	@:noCompletion public var _blendOpDefault:BlendOperation;
 
-	@:noCompletion public var _alphaBlendDstDefault:BlendMode;
-	@:noCompletion public var _alphaBlendSrcDefault:BlendMode;
-	@:noCompletion public var _alphaBlendOpDefault:BlendEquation;
+	@:noCompletion public var _alphaBlendDstDefault:BlendFactor;
+	@:noCompletion public var _alphaBlendSrcDefault:BlendFactor;
+	@:noCompletion public var _alphaBlendOpDefault:BlendOperation;
 
 
 	public function new(inputLayout:Array<VertexStructure>, vertexShader:VertexShader, fragmentShader:FragmentShader) {
@@ -71,11 +71,11 @@ class Shader {
 
 	}
 
-	public function setBlendMode(blendSrc:BlendMode, blendDst:BlendMode, ?blendOp:BlendEquation, ?alphaBlendSrc:BlendMode, ?alphaBlendDst:BlendMode, ?alphaBlendOp:BlendEquation) {
+	public function setBlending(blendSrc:BlendFactor, blendDst:BlendFactor, ?blendOp:BlendOperation, ?alphaBlendSrc:BlendFactor, ?alphaBlendDst:BlendFactor, ?alphaBlendOp:BlendOperation) {
 		
 		pipeline.blendSource = blendSrc;
 		pipeline.blendDestination = blendDst;
-		pipeline.blendOperation = blendOp != null ? blendOp : BlendEquation.Add;	
+		pipeline.blendOperation = blendOp != null ? blendOp : BlendOperation.Add;	
 
 		pipeline.alphaBlendSource = alphaBlendSrc != null ? alphaBlendSrc : blendSrc;
 		pipeline.alphaBlendDestination = alphaBlendDst != null ? alphaBlendDst : blendDst;
@@ -113,7 +113,7 @@ class Shader {
 
 	}
 
-	public function resetBlendModes() {
+	public function resetBlending() {
 		
 		pipeline.blendSource = _blendSrcDefault;
 		pipeline.blendDestination = _blendDstDefault;
