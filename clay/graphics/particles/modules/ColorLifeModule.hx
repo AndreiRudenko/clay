@@ -8,11 +8,6 @@ import clay.graphics.particles.components.ColorDelta;
 import clay.render.Color;
 import clay.utils.Mathf;
 
-typedef INT = Int;
-typedef FL = Float;
-typedef BL = Bool;
-typedef STR = String;
-
 
 class ColorLifeModule extends ParticleModule {
 
@@ -41,11 +36,6 @@ class ColorLifeModule extends ParticleModule {
 
 		_colorDelta = emitter.components.get(ColorDelta);
 		_color = emitter.components.get(Color);
-		
-		var nt = emitter.components.get(INT);
-		var fl = emitter.components.get(FL);
-		var bl = emitter.components.get(BL);
-		var str = emitter.components.get(STR);
 	    
 	}
 

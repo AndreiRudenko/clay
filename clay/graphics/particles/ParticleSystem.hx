@@ -67,14 +67,14 @@ class ParticleSystem extends DisplayObject {
 	}
 	
 		/** add emitter to the system */
-	public function add(_emitter:ParticleEmitter):ParticleSystem {
+	public function add(emitter:ParticleEmitter):ParticleSystem {
 
-		emitters.push(_emitter);
+		emitters.push(emitter);
 
-		_emitter.index = _activeEmitters;
+		emitter.index = _activeEmitters;
 
 		if(inited) {
-			_emitter.init(this);
+			emitter.init(this);
 		}
 
 		_activeEmitters++;
@@ -84,11 +84,11 @@ class ParticleSystem extends DisplayObject {
 	}
 
 		/** remove a emitter from the system */
-	public function remove(_emitter:ParticleEmitter) {
+	public function remove(emitter:ParticleEmitter) {
 		
 		var i:Int = 0;
 		while(_activeEmitters > i) {
-			if(emitters[i] == _emitter) {
+			if(emitters[i] == emitter) {
 				emitters.splice(i, 1);
 				_activeEmitters--;
 			}
@@ -117,10 +117,10 @@ class ParticleSystem extends DisplayObject {
 	}
 
 		/** stop update emitters */
-	public function stop(_kill:Bool = false) {
+	public function stop(kill:Bool = false) {
 		
 		for (i in 0..._activeEmitters) {
-			emitters[i].stop(_kill);
+			emitters[i].stop(kill);
 		}
 
 	}

@@ -38,7 +38,7 @@ class ParticleEmitter {
 	public var system(default, null):ParticleSystem;
 
 		/** number of particles per emit */
-	public var count:Int; // todo: if cacheSize < count
+	public var count:Int;
 		/** number of particles per emit max */
 	public var countMax:Int;
 
