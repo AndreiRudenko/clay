@@ -12,11 +12,19 @@ class Mathf {
 
 	}
 
-	public static inline function lerp(value:Float, target:Float, t:Float):Float {
+	public static inline function lerp(start:Float, end:Float, t:Float):Float {
 
 		t = clamp(t, 0, 1);
 
-		return (value + t * (target - value));
+		return (start + t * (end - start));
+
+	}
+
+	public static inline function inverseLerp(start:Float, end:Float, value:Float):Float {
+
+		value = clamp(value, start, end);
+
+		return (value - start) / (end - start);
 
 	}
 
