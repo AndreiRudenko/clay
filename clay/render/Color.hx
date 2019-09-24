@@ -1,5 +1,6 @@
 package clay.render;
 
+import clay.utils.Mathf;
 
 class Color {
 
@@ -39,6 +40,19 @@ class Color {
 
 		return this;
 
+	}
+
+	public function lerp(to:Color, t:Float):Color {
+
+		t = Mathf.clamp(t, 0, 1);
+
+		r = (r + t * (to.r - r));
+		g = (g + t * (to.g - g));
+		b = (b + t * (to.b - b));
+		a = (a + t * (to.a - a));
+
+		return this;
+		
 	}
 
 	public function copyFrom(other:Color):Color {
