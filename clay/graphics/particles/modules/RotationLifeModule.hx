@@ -26,7 +26,7 @@ class RotationLifeModule extends ParticleModule {
 
 		initialRotation = _options.initialRotation != null ? _options.initialRotation : 0;
 		initialRotationMax = _options.initialRotationMax != null ? _options.initialRotationMax : 0;
-		endRotation = _options.endRotation != null ? _options.endRotation : 1;
+		endRotation = _options.endRotation != null ? _options.endRotation : 180;
 		endRotationMax = _options.endRotationMax != null ? _options.endRotationMax : 0;
 		rotationRandom = _options.rotationRandom != null ? _options.rotationRandom : 0;
 
@@ -53,15 +53,15 @@ class RotationLifeModule extends ParticleModule {
 		var rd = _rotationDelta.get(p.id);
 
 		if(initialRotationMax != 0) {
-			r = emitter.randomFloat(initialRotation, initialRotationMax) * 360;
+			r = emitter.randomFloat(initialRotation, initialRotationMax);
 		} else {
-			r = initialRotation * 360;
+			r = initialRotation;
 		}
 
 		if(endRotationMax != 0) {
-			rd = emitter.randomFloat(endRotation, endRotationMax) * 360 - r;
+			rd = emitter.randomFloat(endRotation, endRotationMax) - r;
 		} else {
-			rd = endRotation * 360 - r;
+			rd = endRotation - r;
 		}
 
 		if(rd != 0) {
@@ -84,7 +84,7 @@ class RotationLifeModule extends ParticleModule {
 				if(rd != 0) {
 					r += rd * dt;
 				}
-				r += rotationRandom * 360 * emitter.random1To1() * dt;
+				r += rotationRandom * emitter.random1To1() * dt;
 				_rotation.set(p.id, r);
 			}
 		} else {

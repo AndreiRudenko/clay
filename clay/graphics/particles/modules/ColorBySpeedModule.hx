@@ -14,8 +14,8 @@ import clay.utils.Mathf;
 class ColorBySpeedModule extends ParticleModule {
 
 
-	public var minColor	(default, null):Color;
-	public var maxColor    	(default, null):Color;
+	public var minColor(default, null):Color;
+	public var maxColor(default, null):Color;
 	public var minColorMax:Color; // TODO: that name...
 	public var maxColorMax:Color; // TODO: that name...
 

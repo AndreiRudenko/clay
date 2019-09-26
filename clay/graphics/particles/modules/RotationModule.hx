@@ -26,7 +26,7 @@ class RotationModule extends ParticleModule {
 
 		initialRotation = _options.initialRotation != null ? _options.initialRotation : 0;
 		initialRotationMax = _options.initialRotationMax != null ? _options.initialRotationMax : 0;
-		angularVelocity = _options.angularVelocity != null ? _options.angularVelocity : 1;
+		angularVelocity = _options.angularVelocity != null ? _options.angularVelocity : 180;
 		angularVelocityMax = _options.angularVelocityMax != null ? _options.angularVelocityMax : 0;
 		rotationRandom = _options.rotationRandom != null ? _options.rotationRandom : 0;
 
@@ -56,9 +56,9 @@ class RotationModule extends ParticleModule {
 		}
 
 		if(angularVelocityMax != 0) {
-			_rotationDelta.set(p.id, emitter.randomFloat(angularVelocity, angularVelocityMax) * 360);
+			_rotationDelta.set(p.id, emitter.randomFloat(angularVelocity, angularVelocityMax));
 		} else {
-			_rotationDelta.set(p.id, angularVelocity * 360);
+			_rotationDelta.set(p.id, angularVelocity);
 		}
 
 	}
@@ -74,7 +74,7 @@ class RotationModule extends ParticleModule {
 				if(rd != 0) {
 					r += rd * dt;
 				}
-				r += rotationRandom * 360 * emitter.random1To1() * dt;
+				r += rotationRandom * emitter.random1To1() * dt;
 				_rotation.set(p.id, r);
 			}
 		} else {
