@@ -5,7 +5,7 @@ package clay.utils;
 class Mathf {
 
 
-	public static inline function fixed( value:Float, precision:Int ):Float {
+	public static inline function fixed(value:Float, precision:Int):Float {
 
 		var n = Math.pow( 10, precision );
 		return ( Std.int(value * n) / n );
@@ -22,9 +22,7 @@ class Mathf {
 
 	public static inline function inverseLerp(start:Float, end:Float, value:Float):Float {
 
-		value = clamp(value, start, end);
-
-		return (value - start) / (end - start);
+		return clamp((value - start) / (end - start), 0, 1);
 
 	}
 
