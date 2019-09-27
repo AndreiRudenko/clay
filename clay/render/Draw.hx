@@ -415,6 +415,7 @@ class Draw {
 		geom.transform.origin.set(ox,oy);
 		geom.transform.rotation = angle;
 		geom.color = color;
+		geom.size = size;
 		geom.text = options.text;
 
 		if(options.depth != null) {
