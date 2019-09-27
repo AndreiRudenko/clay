@@ -125,7 +125,7 @@ class Build extends Command {
 					}
 				}
 			}
-			case 'android-native', 'android-native-hl': {
+			case 'android-native', 'android-hl': {
 				var arch = 'arm7';
 				if(config.android != null) {
 					if(config.android.arch != null) {

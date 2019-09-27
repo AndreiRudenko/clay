@@ -17,7 +17,7 @@ class CLI {
 	public static var userDir:String;
 	public static var engineDir:String;
 
-	public static var targets:Array<String> = ['html5', 'windows', 'windows-hl', 'osx', 'linux', 'android-native', 'android-native-hl', 'ios', 'uwp'];
+	public static var targets:Array<String> = ['html5', 'windows', 'windows-hl', 'osx', 'linux', 'android-native', 'android-hl', 'ios', 'uwp'];
 
 
 	static function main() {

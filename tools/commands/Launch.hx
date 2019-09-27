@@ -66,8 +66,8 @@ class Launch extends Command {
 				}
 				CLI.execute('start', ['cmd', "/c", '$path']); // todo: remove cmd ?
 			}
-			case 'android-native-hl' : {
-				var path = Path.join([CLI.userDir, 'build/android-native-hl-build/${config.project.title}/app/build/outputs/apk/debug/app-debug.apk']);
+			case 'android-hl' : {
+				var path = Path.join([CLI.userDir, 'build/android-hl-build/${config.project.title}/app/build/outputs/apk/debug/app-debug.apk']);
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
