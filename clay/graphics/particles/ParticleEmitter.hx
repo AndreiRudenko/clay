@@ -31,7 +31,7 @@ class ParticleEmitter {
 		/** particles components */
 	public var components(default, null):ComponentManager;
 		/** emitter modules */
-	public var modules(default, null):Map<String, ParticleModule>;
+	public var modules(default, null):Array<ParticleModule>;
 		/** active emitter modules */
 	public var activeModules(default, null):Array<ParticleModule>;
 		/** reference to system */
@@ -91,7 +91,7 @@ class ParticleEmitter {
 
 		name = options.name != null ? options.name : 'emitter.${Math.random()}';
 
-		modules = new Map();
+		modules = [];
 		activeModules = [];
 
 		_time = 0;
@@ -187,11 +187,11 @@ class ParticleEmitter {
 
 		var cname:String = Type.getClassName(Type.getClass(module));
 
-		if(modules.exists(cname)) {
+		if(_hasModule(cname)) {
 			throw('particle module: $cname already exists');
 		}
 
-		modules.set(cname, module);
+		modules.push(module);
 		module._onAdded(this);
 
 		if(module.enabled) {
@@ -208,7 +208,7 @@ class ParticleEmitter {
 
 	public function getModule<T:ParticleModule>(moduleClass:Class<T>):T {
 
-		return cast modules.get(Type.getClassName(moduleClass));
+		return cast _getModule(Type.getClassName(moduleClass));
 		
 	}
 
@@ -216,14 +216,20 @@ class ParticleEmitter {
 
 		var cname:String = Type.getClassName(moduleClass);
 
-		var module:T = cast modules.get(cname);
+		var module:T = cast _getModule(cname);
 
 		if(module != null) {
 			if(module.enabled) {
 				_disableModule(module);
 			}
 
-			modules.remove(cname);
+			for (i in 0...modules.length) {
+				if(modules[i].name == cname) {
+					modules.splice(i, 1);
+					break;
+				}
+			}
+
 			module._onRemoved();
 
 			if(_needReset) {
@@ -238,7 +244,7 @@ class ParticleEmitter {
 	public function enableModule(moduleClass:Class<Dynamic>) {
 		
 		var cname:String = Type.getClassName(moduleClass);
-		var m = modules.get(cname);
+		var m = _getModule(cname);
 		if(m == null) {
 			throw('module: $cname doesnt exists');
 		}
@@ -252,7 +258,7 @@ class ParticleEmitter {
 	public function disableModule(moduleClass:Class<Dynamic>) {
 		
 		var cname:String = Type.getClassName(moduleClass);
-		var m = modules.get(cname);
+		var m = _getModule(cname);
 		if(m == null) {
 			throw('module: $cname doesnt exists');
 		}
@@ -416,20 +422,6 @@ class ParticleEmitter {
 
 	}
 
-
-	// public function getSortedParticles():haxe.ds.Vector<Particle> {
-		
-	// 	switch (sortMode) {
-	// 		case ParticlesSortMode.LIFETIME: return particles.sort(lifetimeSort);
-	// 		case ParticlesSortMode.LIFETIME_INV: return particles.sort(lifetimeInvSort);
-	// 		case ParticlesSortMode.YOUNGEST: return particles.sort(youngestSort);
-	// 		case ParticlesSortMode.OLDEST: return particles.sort(oldestSort);
-	// 		case ParticlesSortMode.CUSTOM: return particles.sort(sortFunc);
-	// 		default: return particles.buffer;
-	// 	}
-
-	// }
-
 	@:allow(clay.graphics.particles.ParticleSystem)
 	function init(ps:ParticleSystem) {
 
@@ -488,7 +480,7 @@ class ParticleEmitter {
 
 	}
 
-	inline function _enableModule(module:ParticleModule) {
+	function _enableModule(module:ParticleModule) {
 		
 		var added:Bool = false;
 		var am:ParticleModule = null;
@@ -509,11 +501,35 @@ class ParticleEmitter {
 
 	}
 
-	inline function _disableModule(module:ParticleModule) {
+	function _disableModule(module:ParticleModule) {
 
 		module.onDisabled();
 		activeModules.remove(module);
 		
+	}
+
+	function _getModule(name:String):ParticleModule {
+
+		for (m in modules) {
+			if(m.name == name) {
+				return m;
+			}
+		}
+		
+		return null;
+
+
+	}
+	function _hasModule(name:String):Bool {
+
+		for (m in modules) {
+			if(m.name == name) {
+				return true;
+			}
+		}
+		
+		return false;
+
 	}
 
 	inline function _sortActive() {
