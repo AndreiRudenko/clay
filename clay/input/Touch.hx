@@ -13,6 +13,7 @@ class Touch extends Input {
 
 
 	public var count(default, null):Int = 0;
+	public var touches(default, null):Array<TouchEvent>;
 
 	var _touches:Array<TouchEvent>;
 
@@ -26,6 +27,7 @@ class Touch extends Input {
 		_debug('enable');
 
 		_touches = [];
+		touches = [];
 
 		for (i in 0...10) {
 			_touches.push(new TouchEvent(i));
@@ -79,8 +81,11 @@ class Touch extends Input {
 
 		var t = _touches[id];
 		t.set(x, y, 0, 0, TouchEvent.TOUCH_DOWN);
+		
+		touches.push(t);
 
 		_app.emitter.emit(TouchEvent.TOUCH_DOWN, t);
+
 
 	}
 
@@ -94,6 +99,8 @@ class Touch extends Input {
 		t.set(x, y, 0, 0, TouchEvent.TOUCH_UP);
 
 		_app.emitter.emit(TouchEvent.TOUCH_UP, t);
+
+		touches.remove(t);
 
 	}
 
