@@ -49,6 +49,7 @@ class CLI {
 	public static inline function error(msg:String) {
 
 		Sys.println("error: " + msg);
+		Sys.exit(1);
 		
 	}
 

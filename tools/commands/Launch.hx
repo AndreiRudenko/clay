@@ -71,11 +71,16 @@ class Launch extends Command {
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
-				var pkg = Reflect.field(config.android, 'package'); //TODO: check for null
+				var pkg = Reflect.field(config.android, 'package');
+
+				if(pkg == null) {
+					CLI.print('Can`t find android package settings, use tech.kode.kha');
+					pkg = 'tech.kode.kha';
+				}
 				// CLI.execute('start', ['cmd', "/c", 'adb', 'uninstall', '$pkg']);
 				CLI.execute('start', ['cmd', "/c", 'adb', 'install', '-r', '$path']);
+				CLI.execute('start', ['cmd', "/c", 'adb', 'logcat', '-s', 'Kinc', 'DEBUG', 'AndroidRuntime']);
 				CLI.execute('start', ['cmd', "/c", 'adb', 'shell', 'am', 'start', '-n', '$pkg/tech.kode.kore.KoreActivity']);
-				CLI.execute('start', ['cmd', "/c", 'adb', 'logcat', '-s', 'kore', 'DEBUG', 'AndroidRuntime']);
 			}
 			case 'linux': {
 				var path = Path.join([CLI.userDir, 'build/linux/${config.project.title}']);
