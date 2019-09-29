@@ -238,7 +238,10 @@ class AudioChannel {
 	function get_effects():Array<AudioEffect> {
 
 		clay.system.Audio.mutexLock();
-		var v = _effects.toArray();
+		var v = [];
+		for (i in 0..._effectsCount) {
+			v.push(_effects[i]);
+		}
 		clay.system.Audio.mutexUnlock();
 
 		return v;

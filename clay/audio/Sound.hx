@@ -285,7 +285,8 @@ class Sound extends AudioChannel {
 	function get_time():Float {
 
 		clay.system.Audio.mutexLock();
-		var v = _positionIdx / Clay.audio._sampleRate / _getChannels();
+		// var v = _positionIdx / Clay.audio._sampleRate / _getChannels();
+		var v = _positionIdx / Clay.audio._sampleRate / 2;
 		clay.system.Audio.mutexUnlock();
 
 		return v;
@@ -360,7 +361,7 @@ class Sound extends AudioChannel {
 		var v = _getChannels();
 		clay.system.Audio.mutexUnlock();
 
-		return 0;
+		return v;
 
 	}
 
@@ -370,7 +371,7 @@ class Sound extends AudioChannel {
 		var v = _getDuration();
 		clay.system.Audio.mutexUnlock();
 
-		return 0;
+		return v;
 
 	}
 
@@ -397,7 +398,8 @@ class Sound extends AudioChannel {
 	function _getDuration():Float {
 		
 		if(_resource != null) {
-			return _resource.uncompressedData.length / Clay.audio._sampleRate / _resource.channels;
+			// return _resource.uncompressedData.length / Clay.audio._sampleRate / _resource.channels;
+			return _resource.uncompressedData.length / Clay.audio._sampleRate / 2; // kha uses 2 channels by default
 		}
 
 		return 0;

@@ -174,12 +174,16 @@ class AudioDebugView extends DebugView {
 			_result.add("Master ( " + audioStats.groups + " / " + audioStats.sounds + " / " + audioStats.effects + " ) \n ");
 
 			listEffects(_result, Clay.audio);
-/*			for (i in 0...Clay.audio.channelsCount) {
-				_result = listChannel(_result, Clay.audio.channels[i]);
+
+			var channels = Clay.audio.channels;
+			var channelsCount = Clay.audio.channelsCount;
+
+			for (i in 0...channelsCount) {
+				listChannel(_result, channels[i]);
 			}
-			for (i in 0...Clay.audio.channelsCount) {
-				_result = listGroup(_result, Clay.audio.channels[i]);
-			}*/
+			for (i in 0...channelsCount) {
+				listGroup(_result, channels[i]);
+			}
 
 		return _result.toString();
 

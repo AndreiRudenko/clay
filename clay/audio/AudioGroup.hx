@@ -151,7 +151,10 @@ class AudioGroup extends AudioChannel {
 	function get_channels():Array<AudioChannel> {
 
 		clay.system.Audio.mutexLock();
-		var v = _channels.toArray();
+		var v = [];
+		for (i in 0..._channelsCount) {
+			v.push(_channels[i]);
+		}
 		clay.system.Audio.mutexUnlock();
 
 		return v;
