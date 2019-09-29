@@ -25,7 +25,7 @@ class Audio extends AudioGroup {
 	#end
 
 	}
-	public static function mutexUnlock() {
+	public static inline function mutexUnlock() {
 
 	#if cpp
 		untyped __cpp__('kinc_mutex_unlock(&mutex)');
@@ -33,12 +33,13 @@ class Audio extends AudioGroup {
 
 	}
 
+	public var sampleRate(get, null):Int;
+	public var gain(get, null):Float;
 
-	public var sampleRate(default, null):Int = 44100;
-	public var gain:Float;
+	@:noCompletion public var _sampleRate:Int;
+	var _gain:Float;
+	var _data:Float32Array;
 
-	var data:Float32Array;
-	// var lastAllocationCount:Int = 0;
 
 	@:allow(clay.system.App)
 	function new() {
@@ -49,10 +50,11 @@ class Audio extends AudioGroup {
 		untyped __cpp__('kinc_mutex_init(&mutex)');
 		#end
 
+		_gain = 0;
+		_sampleRate = 44100;
+		_data = new Float32Array(512);
+
 		kha.audio2.Audio.audioCallback = mix;
-		data = new Float32Array(512);
-		gain = 0;
-		mutexLock();
 
 	}
 
@@ -65,36 +67,28 @@ class Audio extends AudioGroup {
 		
 	}
 
-	public function stream(res:AudioResource, output:AudioGroup = null):Sound {
-
-		var sound = new Sound(res, output);
-		sound.stream = true;
-		sound.play();
-
-		return sound;
-		
-	}
-
 	function mix(samplesbox:kha.internal.IntBox, buffer:Buffer) {
 
 		var samples = samplesbox.value;
-		sampleRate = buffer.samplesPerSecond;
+		_sampleRate = buffer.samplesPerSecond;
 
-		if (data.length < samples) {
-			data = new Float32Array(samples);
+		if (_data.length < samples) {
+			_data = new Float32Array(samples);
 		}
 
 		for (i in 0...samples) {
-			data[i] = 0;
+			_data[i] = 0;
 		}
 
-		process(data, samples);
+		if(!_mute) {
+			process(_data, samples);
+		}
 
-		gain = 0;
+		_gain = 0;
 		for (i in 0...samples) {
-			buffer.data.set(buffer.writeLocation, Mathf.clamp(data[i], -1.0, 1.0) * volume);
-			if(gain < data[i]) {
-				gain = data[i]; // todo: remove this
+			buffer.data.set(buffer.writeLocation, Mathf.clamp(_data[i], -1.0, 1.0) * _volume);
+			if(_gain < _data[i]) {
+				_gain = _data[i]; // TODO: remove this
 			}
 			buffer.writeLocation += 1;
 			if (buffer.writeLocation >= buffer.size) {
@@ -102,6 +96,26 @@ class Audio extends AudioGroup {
 			}
 		}
 
+	}
+
+	function get_sampleRate():Int {
+		
+		clay.system.Audio.mutexLock();
+		var v = _sampleRate;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+		
+	}
+
+	function get_gain():Float {
+		
+		clay.system.Audio.mutexLock();
+		var v = _gain;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+		
 	}
 
 

@@ -14,154 +14,247 @@ class AudioChannel {
 
 	static inline var maxEffects:Int = 8;
 
-	public var mute:Bool = false;
+	public var mute(get, set):Bool;
+	public var volume(get, set):Float;
+	public var pan(get, set):Float;
+	public var output(get, null):AudioGroup;
+	// public var outputs:Array<Int>;
 
-	public var volume(default, set):Float;
-	public var pan(default, set):Float;
-	public var output(default, set):AudioGroup;
+	public var effects(get, null):Array<AudioEffect>;
+	public var effectsCount(get, null):Int;
 
-	public var effects(default, null):Vector<AudioEffect>;
-	public var effectsCount(default, null):Int;
+	var _mute:Bool;
+	var _volume:Float;
+	var _pan:Float;
+	var _output:AudioGroup;
 
-	var _internalEffects:Vector<AudioEffect>;
+	var _l:Float;
+	var _r:Float;
+
+	var _effectsCount:Int;
 	var _maxEffects:Int;
+	var _dirtyEffects:Bool;
 
-	var l:Float;
-	var r:Float;
+	var _effects:Vector<AudioEffect>;
+	var _effectsInternal:Vector<AudioEffect>;
+	var _effectsToRemove:Array<AudioEffect>;
 
 
 	public function new(maxEffects:Int = 8) {
 		
-		l = 1;
-		r = 1;
+		_mute = false;
+		_volume = 1;
+		_pan = 0;
 
-		volume = 1;
-		pan = 0;
-		effectsCount = 0;
+		_l = 0.7071;
+		_r = 0.7071;
+
+		_effectsCount = 0;
 		_maxEffects = maxEffects;
+		_dirtyEffects = true;
 
-		effects = new Vector(_maxEffects);
-		_internalEffects = new Vector(_maxEffects);
+		_effects = new Vector(_maxEffects);
+		_effectsInternal = new Vector(_maxEffects);
+		_effectsToRemove = [];
 
 	}
 
 	public function addEffect(effect:AudioEffect) {
 		
-		if(effectsCount >= _maxEffects) {
+		clay.system.Audio.mutexLock();
+
+		if(_effectsCount >= _maxEffects) {
 			log("cant add effect, max effects: " + _maxEffects);
 			return;
 		}
 
-		if(effect.parent != null) {
+		if(effect._parent != null) {
 			log("audio effect already in another channel");
 			return;
 		}
 
-		effect.parent = this;
-
-		clay.system.Audio.mutexLock();
-
-		effects[effectsCount++] = effect;
+		effect._parent = this;
+		_effects[_effectsCount++] = effect;
+		_dirtyEffects = true;
 
 		clay.system.Audio.mutexUnlock();
 
 	}
 
 	public function removeEffect(effect:AudioEffect) {
-		
-		if(effect.parent == this) {
-			effect.parent = null;
 
-			clay.system.Audio.mutexLock();
+		clay.system.Audio.mutexLock();
 
-			for (i in 0...effectsCount) {
-				if(effects[i] == effect) { // todo: remove rest from effectsCount and effect
-					effects[i] = effects[--effectsCount];
-					break;
-				}
-			}
+		_effectsToRemove.push(effect);
+		_dirtyEffects = true;
 
-			clay.system.Audio.mutexUnlock();
-
-		} else {
-			log("cant remove effect from channel");
-		}
+		clay.system.Audio.mutexUnlock();
 
 	}
 
 	public function removeAllEffects() {
-		
+
 		clay.system.Audio.mutexLock();
 
-		for (i in 0...effectsCount) {
-			effects[i] = null;
-			_internalEffects[i] = null;
+		for (i in 0..._effectsCount) {
+			_effectsToRemove.push(_effects[i]);
 		}
+		_dirtyEffects = true;
 
 		clay.system.Audio.mutexUnlock();
 
-		effectsCount = 0;
-
 	}
 
+	@:noCompletion public function updateProps() {}
 	@:noCompletion public function process(data:Float32Array, samples:Int) {}
-
 
 	inline function processEffects(data:Float32Array, samples:Int) {
 
 		clay.system.Audio.mutexLock();
 
-		for (i in 0...effectsCount) {
-			_internalEffects[i] = effects[i];
+		if(_dirtyEffects) {
+			if(_effectsToRemove.length > 0) {
+				for (effect in _effectsToRemove) {
+					for (i in 0..._effectsCount) {
+						if(_effects[i] == effect) { // todo: remove rest from _effectsCount and effect
+							_effects[i] = _effects[--_effectsCount];
+							break;
+						}
+					}
+				}
+				ArrayTools.clear(_effectsToRemove);
+			}
+			for (i in 0..._effectsCount) {
+				_effectsInternal[i] = _effects[i];
+			}
+			_dirtyEffects = false;
 		}
+		var count = _effectsCount;
 
 		clay.system.Audio.mutexUnlock();
 
 		var e:AudioEffect;
-		for (i in 0...effectsCount) {
-			e = _internalEffects[i];
-			if(!e.mute) {
-				e.process(samples, data, Clay.audio.sampleRate);
+		for (i in 0...count) {
+			e = _effectsInternal[i];
+			if(!e._mute) {
+				e.process(samples, data, Clay.audio._sampleRate);
 			}
 		}
 		
 	}
 
-	function set_volume(v:Float):Float {
+	function get_mute():Bool {
 
-		volume = Mathf.clamp(v, 0, 1);
+		clay.system.Audio.mutexLock();
+		var v = _mute;
+		clay.system.Audio.mutexUnlock();
 
-		return volume;
+		return v;
+		
+	}
+
+	function set_mute(v:Bool):Bool {
+
+		clay.system.Audio.mutexLock();
+		_mute = v;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
 
 	}
 
-	function set_output(v:AudioGroup):AudioGroup {
+	function get_volume():Float {
 
-		if(output != null) {
-			output.remove(this);
-		}
+		clay.system.Audio.mutexLock();
+		var v = _volume;
+		clay.system.Audio.mutexUnlock();
 
-		output = v;
+		return v;
 
-		if(output != null) {
-			output.add(this);
-		}
+	}
 
-		return output;
+	function set_volume(v:Float):Float {
+
+		clay.system.Audio.mutexLock();
+		_volume = Mathf.clamp(v, 0, 1);
+		v = _volume;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+
+	}
+
+	function get_pan():Float {
+
+		clay.system.Audio.mutexLock();
+		var v = _pan;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
 
 	}
 
 	function set_pan(v:Float):Float {
 
-		pan = Mathf.clamp(v, -1, 1);
-		var angle = pan * (Math.PI/4);
+		clay.system.Audio.mutexLock();
 
-		l = Math.sqrt(2) / 2 * (Math.cos(angle) - Math.sin(angle));
-		r = Math.sqrt(2) / 2 * (Math.cos(angle) + Math.sin(angle));
+		_pan = Mathf.clamp(v, -1, 1);
+		_l = Math.cos((_pan + 1) * Math.PI / 4);
+		_r = Math.sin((_pan + 1) * Math.PI / 4);
+		v = _pan;
 
-		return pan;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
 
 	}
+
+	function get_output():AudioGroup {
+
+		clay.system.Audio.mutexLock();
+		var v = _output;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+
+	}
+
+	// function set_output(v:AudioGroup):AudioGroup {
+
+	// 	if(_output != null) {
+	// 		_output.remove(this);
+	// 	}
+
+	// 	_output = v;
+
+	// 	if(_output != null) {
+	// 		_output.add(this);
+	// 	}
+
+	// 	return _output;
+
+	// }
+
+	function get_effects():Array<AudioEffect> {
+
+		clay.system.Audio.mutexLock();
+		var v = _effects.toArray();
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+		
+	}
+
+	function get_effectsCount():Int {
+
+		clay.system.Audio.mutexLock();
+		var v = _effectsCount;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+		
+	}
+
 
 }
 

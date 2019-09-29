@@ -189,6 +189,7 @@ class AudioDebugView extends DebugView {
 
 		if(Std.is(c, AudioGroup)) {
 			var g:AudioGroup = cast c;
+			var channels = g.channels;
 			_objIndex++;
 			audioStats.reset();
 			audioStats.get(g, false);
@@ -196,18 +197,16 @@ class AudioDebugView extends DebugView {
 			_list.add(tabs(_depth) + "Group ( " + (audioStats.groups-1) + " / " + audioStats.sounds + " / " + audioStats.effects + " ) \n ");
 			listEffects(_list, c, _depth+1);
 			for (i in 0...g.channelsCount) {
-				listChannel(_list, g.channels[i], _depth+1);
+				listChannel(_list, channels[i], _depth+1);
 			} 			
 			for (i in 0...g.channelsCount) {
-				listGroup(_list, g.channels[i], _depth+1);
+				listGroup(_list, channels[i], _depth+1);
 			} 
 		}
 
 	}
 
-
 	inline function listChannel(_list:StringBuf, c:AudioChannel, _depth:Int = 1) {
-
 
 		if(Std.is(c, Sound)) {
 			var s:Sound = cast c;
@@ -387,8 +386,9 @@ private class AudioStats {
 			groups++;
 			if(cc) {
 				var g:AudioGroup = cast c;
+				var channels = g.channels;
 				for (i in 0...g.channelsCount) {
-					get(g.channels[i]);
+					get(channels[i]);
 				}
 			}
 		} else {
