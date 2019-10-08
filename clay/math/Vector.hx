@@ -106,7 +106,7 @@ class Vector {
 		
 	}
 
-	public inline function subtractXY(_x:Float, _y:Float) {
+	public inline function subtractXY(x:Float, y:Float) {
 
 		set(this.x - x, this.y - y);
 
@@ -130,7 +130,7 @@ class Vector {
 		
 	}
 
-	public inline function multiplyXY(_x:Float, _y:Float) {
+	public inline function multiplyXY(x:Float, y:Float) {
 
 		set(this.x * x, this.y * y);
 
@@ -154,7 +154,7 @@ class Vector {
 		
 	}
 
-	public inline function divideXY(_x:Float, _y:Float) {
+	public inline function divideXY(x:Float, y:Float) {
 
 		set(this.x / x, this.y / y);
 
