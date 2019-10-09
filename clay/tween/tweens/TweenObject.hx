@@ -151,9 +151,9 @@ class TweenObject<T> extends Tween<T> implements ITween {
 
 		if(isTargetArray || propFields.length > 1) {
 
-			function handleGetset(props:Array<String>, st:Array<Expr>, set:Bool, ta:Bool) {
+			function handleGetSet(props:Array<String>, startValues:Array<Expr>, get:Bool, targetArray:Bool) {
 
-				var hs = st.length > 0;
+				var hasStartValues = startValues.length > 0;
 				var ret:Expr;
 				var exprs:Array<Expr> = [];
 
@@ -163,37 +163,38 @@ class TweenObject<T> extends Tween<T> implements ITween {
 				for (j in 0...len) {
 					fname = props[j];
 					exprs.push(
-						if(ta) {
-							if(set) {
-								macro v[i * $v{len} + $v{j}] = t[i].$fname;
-							} else {
-								if(hs) {
-									macro t[i].$fname = ${st[j]};
+						if(targetArray) {
+							if(get) {
+								if(hasStartValues) {
+									macro v[i * $v{len} + $v{j}] = ${startValues[j]};
 								} else {
-									macro t[i].$fname = v[i * $v{len} + $v{j}];
+									macro v[i * $v{len} + $v{j}] = t[i].$fname;
 								}
+							} else {
+								macro t[i].$fname = v[i * $v{len} + $v{j}];
 							}
 						} else {
-							if(set) {
-								macro v[$v{j}] = t.$fname;
-							} else {
-								if(hs) {
-									macro t.$fname = ${st[j]};
+							if(get) {
+								if(hasStartValues) {
+									macro v[$v{j}] = ${startValues[j]};
 								} else {
-									macro t.$fname = v[$v{j}];
+									macro v[$v{j}] = t.$fname;
 								}
+							} else {
+								macro t.$fname = v[$v{j}];
 							}
 						}
 					);
 				}
 
-				ret = if(ta) {
+				ret = if(targetArray) {
 					macro {for (i in 0...t.length) {$a{exprs}}};
 				} else {
 					macro $a{exprs};
 				}
 
 				return ret;
+				
 			}
 
 			return macro {
