@@ -8,14 +8,21 @@ import clay.utils.Log.*;
 class Compressor extends AudioEffect {
 
 
-	public var ratio(default, set):Float;
+	public var ratio(get, set):Float;
 
-	public var threshold:Float;
-	public var attackTime(default, set):Float; // sec
-	public var releaseTime(default, set):Float; // sec
+	public var threshold(get, set):Float;
+	public var attackTime(get, set):Float; // sec
+	public var releaseTime(get, set):Float; // sec
 
-	public var preGain(default, set):Float;
-	public var postGain(default, set):Float;
+	public var preGain(get, set):Float;
+	public var postGain(get, set):Float;
+
+	var _ratio:Float;
+	var _threshold:Float;
+	var _attackTime:Float;
+	var _releaseTime:Float;
+	var _preGain:Float;
+	var _postGain:Float;
 
 	var _slope:Float = 0;
 
@@ -38,6 +45,8 @@ class Compressor extends AudioEffect {
 
 	public function new(ratio:Float = 3, threshold:Float = -2, attack:Float = 0, release:Float = 0.5, preGain:Float = 0, postGain:Float = 0) {
 
+		super();
+
 		_sampleRate = Clay.audio.sampleRate;
 		
 		var n = Std.int(_lookaheadTime * _sampleRate);
@@ -59,13 +68,13 @@ class Compressor extends AudioEffect {
 		_preGainAmp = 0;
 		_postGainAmp = 0;
 
-		this.threshold = threshold;
-		this.attackTime = attack;
-		this.releaseTime = release;
-		this.ratio = ratio;
+		_threshold = threshold;
+		_attackTime = _setAttackTime(attack);
+		_releaseTime = _setReleaseTime(release);
+		_ratio = _setRatio(ratio);
 		
-		this.preGain = preGain;
-		this.postGain = postGain;
+		_preGain = _setPreGain(preGain);
+		_postGain = _setPostGain(postGain);
 
 	}
 
@@ -94,7 +103,7 @@ class Compressor extends AudioEffect {
 		}
 		
 		for (i in 0...len) {
-			var gainDb = _slope * (threshold - ampToDb(envelopeData[i]));
+			var gainDb = _slope * (_threshold - ampToDb(envelopeData[i]));
 			//is gain below zero?
 			gainDb = Math.min(0, gainDb);
 			var gain = dbToAmp(gainDb);
@@ -130,47 +139,170 @@ class Compressor extends AudioEffect {
 
 	}
 
+	function get_ratio():Float {
+
+		clay.system.Audio.mutexLock();
+		var v = _ratio;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+
+	}
+
 	function set_ratio(v:Float):Float {
 
-		ratio = Mathf.clampBottom(v, 1);
+		clay.system.Audio.mutexLock();
+		v = _setRatio(v);
+		clay.system.Audio.mutexUnlock();
 
-		_slope = 1 - (1/ratio);
+		return v;
 
-		return ratio;
+	}
+
+	function get_threshold():Float {
+
+		clay.system.Audio.mutexLock();
+		var v = _threshold;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+
+	}
+
+	function set_threshold(v:Float):Float {
+
+		clay.system.Audio.mutexLock();
+		_threshold = v;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
+
+	}
+
+	function get_preGain():Float {
+
+		clay.system.Audio.mutexLock();
+		var v = _preGain;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
 
 	}
 
 	function set_preGain(v:Float):Float {
 
-		_preGainAmp = dbToAmp(v);
+		clay.system.Audio.mutexLock();
+		v = _setPreGain(v);
+		clay.system.Audio.mutexUnlock();
 
-		return preGain = v;
+		return v;
+
+	}
+
+	function get_postGain():Float {
+
+		clay.system.Audio.mutexLock();
+		var v = _postGain;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
 
 	}
 
 	function set_postGain(v:Float):Float {
 
-		_postGainAmp = dbToAmp(v);
+		clay.system.Audio.mutexLock();
+		v = _setPostGain(v);
+		clay.system.Audio.mutexUnlock();
 
-		return postGain = v;
+		return v;
+
+	}
+
+	function get_attackTime():Float {
+
+		clay.system.Audio.mutexLock();
+		var v = _attackTime;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
 
 	}
 
 	function set_attackTime(v:Float):Float {
 
 		//attack in milliseconds
-		_attackGain = Math.exp(-1 / (_sampleRate * v));
+		clay.system.Audio.mutexLock();
+		v = _setAttackTime(v);
+		clay.system.Audio.mutexUnlock();
 
-		return attackTime = v;
+		return v;
+
+	}
+
+	function get_releaseTime():Float {
+
+		clay.system.Audio.mutexLock();
+		var v = _releaseTime;
+		clay.system.Audio.mutexUnlock();
+
+		return v;
 
 	}
 
 	function set_releaseTime(v:Float):Float {
 
 		//release in milliseconds
-		_releaseGain = Math.exp(-1 / (_sampleRate * v));	
+		clay.system.Audio.mutexLock();
+		v = _setReleaseTime(v);
+		clay.system.Audio.mutexUnlock();
 
-		return releaseTime = v;
+		return v;
+
+	}
+
+	function _setRatio(v:Float) {
+		
+		_ratio = Mathf.clampBottom(v, 1);
+		_slope = 1 - (1/_ratio);
+
+		return _ratio;
+
+	}
+
+	function _setPreGain(v:Float) {
+		
+		_preGain = v;
+		_preGainAmp = dbToAmp(_preGain);
+
+		return _preGain;
+
+	}
+
+	function _setPostGain(v:Float) {
+		
+		_postGain = v;
+		_postGainAmp = dbToAmp(_postGain);
+
+		return _postGain;
+
+	}
+
+	function _setAttackTime(v:Float) {
+
+		_attackTime = v;
+		_attackGain = Math.exp(-1 / (_sampleRate * _attackTime));
+
+		return _attackTime;
+
+	}
+
+	function _setReleaseTime(v:Float) {
+		
+		_releaseTime = v;
+		_releaseGain = Math.exp(-1 / (_sampleRate * _releaseTime));	
+
+		return _releaseTime;
 
 	}
 

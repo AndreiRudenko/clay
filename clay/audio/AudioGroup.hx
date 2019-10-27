@@ -29,7 +29,7 @@ class AudioGroup extends AudioChannel {
 	var _cache:Float32Array;
 
 	var _channelsInternal:Vector<AudioChannel>;
-	var _channelsToRemove:Array<AudioChannel>;
+	// var _channelsToRemove:Array<AudioChannel>;
 
 
 	public function new(maxChannels:Int = 32) {
@@ -44,7 +44,7 @@ class AudioGroup extends AudioChannel {
 		_channels = new Vector(_maxChannels);
 		// channelsVolume = new Float32Array(_maxChannels);
 		_channelsInternal = new Vector(_maxChannels);
-		_channelsToRemove = [];
+		// _channelsToRemove = [];
 
 	}
 
@@ -88,41 +88,54 @@ class AudioGroup extends AudioChannel {
 
 		if(channel._output == this) {
 			channel._output = null;
-			_channelsToRemove.push(channel);
+			// _channelsToRemove.push(channel);
+			var found = false;
+			for (i in 0..._channelsCount) {
+				if(_channels[i] == channel) { // todo: remove rest from _channelsInternal and channels
+					_channels[i] = _channels[--_channelsCount];
+					found = true;
+					break;
+				}
+			}
+			if(!found) {
+				log('can`t remove channel ?');
+			}
 			_dirtyChannels = true;
 		} else {
-			log('cant remove channel, it not belong to this group');
+			log('can`t remove channel, it not belong to this group');
 		}
 
 		clay.system.Audio.mutexUnlock();
 
 	}
 
-	override function process(data:Float32Array, samples:Int) {
+	override function process(data:Float32Array, bufferSamples:Int) {
 	    
-		if (_cache.length < samples) {
-			log('Allocation request in audio thread. cache: ${_cache.length}, samples: $samples');
-			_cache = new Float32Array(samples);
+		if (_cache.length < bufferSamples) {
+			clay.system.Audio.mutexLock();
+			log('Allocation request in audio thread. cache: ${_cache.length}, samples: $bufferSamples');
+			clay.system.Audio.mutexUnlock();
+			_cache = new Float32Array(bufferSamples);
 		}
 
-		for (i in 0...samples) {
+		for (i in 0...bufferSamples) {
 			_cache[i] = 0;
 		}
 
 		clay.system.Audio.mutexLock();
 
 		if(_dirtyChannels) {
-			if(_channelsToRemove.length > 0) {
-				for (c in _channelsToRemove) {
-					for (i in 0..._channelsCount) {
-						if(_channels[i] == c) { // todo: remove rest from _channelsInternal and channels
-							_channels[i] = _channels[--_channelsCount];
-							break;
-						}
-					}
-				}
-				ArrayTools.clear(_channelsToRemove);
-			}
+			// if(_channelsToRemove.length > 0) {
+			// 	for (c in _channelsToRemove) {
+			// 		for (i in 0..._channelsCount) {
+			// 			if(_channels[i] == c) { // todo: remove rest from _channelsInternal and channels
+			// 				_channels[i] = _channels[--_channelsCount];
+			// 				break;
+			// 			}
+			// 		}
+			// 	}
+			// 	ArrayTools.clear(_channelsToRemove);
+			// }
 			for (i in 0..._channelsCount) {
 				_channelsInternal[i] = _channels[i];
 			}
@@ -135,15 +148,17 @@ class AudioGroup extends AudioChannel {
 
 		for (i in 0...count) {
 			if(!_channelsInternal[i]._mute) {
-				_channelsInternal[i].process(_cache, samples);
+				_channelsInternal[i].process(_cache, bufferSamples);
 			}
 		}
 
-		processEffects(_cache, samples);
+		processEffects(_cache, bufferSamples);
 
-		for (i in 0...Std.int(samples/2)) {
-			data[i*2] += _cache[i*2] * _volume * _l;
-			data[i*2+1] += _cache[i*2+1] * _volume * _r;
+		var bufferIdx = 0;
+		while(bufferIdx < bufferSamples) {
+			data[bufferIdx] += _cache[bufferIdx] * _volume * _l;
+			data[bufferIdx+1] += _cache[bufferIdx+1] * _volume * _r;
+			bufferIdx +=2;
 		}
 
 	}

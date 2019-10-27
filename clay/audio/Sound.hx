@@ -32,8 +32,8 @@ class Sound extends AudioChannel {
 	var _resource:AudioResource;
 	var _paused:Bool;
 	var _pitch:Float;
-	var _positionIdx:Int;
-	var _position:Float;
+	var _position:Int;
+	var _positionRaw:Float;
 	var _loop:Bool;
 	var _finished:Bool;
 
@@ -49,8 +49,8 @@ class Sound extends AudioChannel {
 		_outputToPlay = output != null ? output : Clay.audio;
 
 		_pitch = 1;
-		_positionIdx = 0;
 		_position = 0;
+		_positionRaw = 0;
 
 		_paused = false;
 		_loop = false;
@@ -61,18 +61,14 @@ class Sound extends AudioChannel {
 		
 	}
 
-	override function process(data:Float32Array, samples:Int) {
+	override function process(data:Float32Array, bufferSamples:Int) {
 
 		if(_resource == null) {
 			return;
 		}
 	    
-		if (_cache.length < samples) {
-			_cache = new Float32Array(samples);
-		}
-
-		for (i in 0...samples) {
-			_cache[i] = 0;
+		if (_cache.length < bufferSamples) {
+			_cache = new Float32Array(bufferSamples);
 		}
 
 		if(_finished) {
@@ -82,47 +78,49 @@ class Sound extends AudioChannel {
 		}
 
 		var soundData = _resource.uncompressedData;
-		var wPtr = 0;
-		var chkPtr = 0;
-		while (wPtr < samples) {
-			// compute one chunk to render
-			var addressableData = soundData.length - _positionIdx;
-			var nextChunk = addressableData < (samples - wPtr) ? addressableData : (samples - wPtr);
-			while (chkPtr < nextChunk) {
-				_cache[wPtr] = soundData[_positionIdx];
-				_position += _pitch;
-				_positionIdx = Math.floor(_position);
-				// ++_positionIdx;
-				++chkPtr;
-				++wPtr;
+		var bufferIdx = 0;
+		var chunkIdx = 0;
+		var chunkLen = 0;
+		while (bufferIdx < bufferSamples) {
+
+			chunkLen = Math.floor((soundData.length - _position) / _pitch);
+			if(chunkLen > (bufferSamples - bufferIdx)) {
+				chunkLen = (bufferSamples - bufferIdx);
 			}
-			// loop to next chunk if applicable
+			
+			while (chunkIdx++ < chunkLen) {
+				_cache[bufferIdx++] = soundData[_position];
+				_positionRaw += _pitch;
+				_position = Math.floor(_positionRaw);
+			}
+
 			if (!_loop) {
+				if (_position >= soundData.length) {
+					_finished = true;
+				}
 				break;
 			} else { 
-				chkPtr = 0;
-				if (_positionIdx >= soundData.length) {
-					_positionIdx = 0;
+				if (_position >= soundData.length) {
 					_position = 0;
+					_positionRaw = 0;
 				}
 			}
-		}
-		// fill empty
-		while (wPtr < samples) {
-			_cache[wPtr] = 0;
-			++wPtr;
+			chunkIdx = 0;
 		}
 
-		processEffects(_cache, samples);
-
-		for (i in 0...Std.int(samples/2)) {
-			data[i*2] += _cache[i*2] * _volume * _l;
-			data[i*2+1] += _cache[i*2+1] * _volume * _r;
+		while (bufferIdx < bufferSamples) {
+			_cache[bufferIdx++] = 0;
 		}
 
-		if (_positionIdx >= soundData.length) {
-			_finished = true;
+		processEffects(_cache, bufferSamples);
+
+		bufferIdx = 0;
+		while(bufferIdx < bufferSamples) {
+			data[bufferIdx] += _cache[bufferIdx] * _volume * _l;
+			data[bufferIdx+1] += _cache[bufferIdx+1] * _volume * _r;
+			bufferIdx +=2;
 		}
+		
 	}
 
 	public function play():Sound {
@@ -131,8 +129,8 @@ class Sound extends AudioChannel {
 
 		_finished = false;
 		_paused = false;
+		_positionRaw = 0;
 		_position = 0;
-		_positionIdx = 0;
 
 		if(_resource != null) {
 			if(_outputToPlay != null) {
@@ -159,7 +157,7 @@ class Sound extends AudioChannel {
 
 		if(_resource != null) {
 			if(_outputToPlay != null) {
-				if(!_added) {
+				if(_added) {
 					_outputToPlay.remove(this);
 					_added = false;
 				}
@@ -285,8 +283,8 @@ class Sound extends AudioChannel {
 	function get_time():Float {
 
 		clay.system.Audio.mutexLock();
-		// var v = _positionIdx / Clay.audio._sampleRate / _getChannels();
-		var v = _positionIdx / Clay.audio._sampleRate / 2;
+		// var v = _position / Clay.audio._sampleRate / _getChannels();
+		var v = _position / Clay.audio._sampleRate / 2;
 		clay.system.Audio.mutexUnlock();
 
 		return v;
@@ -296,8 +294,8 @@ class Sound extends AudioChannel {
 	function set_time(v:Float):Float { // TODO: implement this
 
 		// clay.system.Audio.mutexLock();
-		// _positionIdx = Std.int(v * Clay.audio._sampleRate * _getChannels())
-		// _position = _positionIdx;
+		// _position = Std.int(v * Clay.audio._sampleRate * _getChannels())
+		// _positionRaw = _position;
 		// clay.system.Audio.mutexUnlock();
 
 		return v;
@@ -307,7 +305,7 @@ class Sound extends AudioChannel {
 	function get_finished():Bool { 
 
 		clay.system.Audio.mutexLock();
-		// var v = _positionIdx >= _getLength();
+		// var v = _position >= _getLength();
 		var v = _finished;
 		clay.system.Audio.mutexUnlock();
 
@@ -328,7 +326,7 @@ class Sound extends AudioChannel {
 	function get_position():Int {
 
 		clay.system.Audio.mutexLock();
-		var v = _positionIdx;
+		var v = _position;
 		clay.system.Audio.mutexUnlock();
 
 		return v;
@@ -338,7 +336,7 @@ class Sound extends AudioChannel {
 	function set_position(v:Int):Int {
 
 		clay.system.Audio.mutexLock();
-		_positionIdx = v;
+		_position = v;
 		clay.system.Audio.mutexUnlock();
 
 		return v;

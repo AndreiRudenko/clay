@@ -37,7 +37,7 @@ class AudioChannel {
 
 	var _effects:Vector<AudioEffect>;
 	var _effectsInternal:Vector<AudioEffect>;
-	var _effectsToRemove:Array<AudioEffect>;
+	// var _effectsToRemove:Array<AudioEffect>;
 
 
 	public function new(maxEffects:Int = 8) {
@@ -55,7 +55,7 @@ class AudioChannel {
 
 		_effects = new Vector(_maxEffects);
 		_effectsInternal = new Vector(_maxEffects);
-		_effectsToRemove = [];
+		// _effectsToRemove = [];
 
 	}
 
@@ -85,7 +85,13 @@ class AudioChannel {
 
 		clay.system.Audio.mutexLock();
 
-		_effectsToRemove.push(effect);
+		// _effectsToRemove.push(effect);
+		for (i in 0..._effectsCount) {
+			if(_effects[i] == effect) { // todo: remove rest from _effectsCount and effect
+				_effects[i] = _effects[--_effectsCount];
+				break;
+			}
+		}
 		_dirtyEffects = true;
 
 		clay.system.Audio.mutexUnlock();
@@ -96,9 +102,10 @@ class AudioChannel {
 
 		clay.system.Audio.mutexLock();
 
-		for (i in 0..._effectsCount) {
-			_effectsToRemove.push(_effects[i]);
-		}
+		// for (i in 0..._effectsCount) {
+		// 	_effectsToRemove.push(_effects[i]);
+		// }
+		_effectsCount = 0;
 		_dirtyEffects = true;
 
 		clay.system.Audio.mutexUnlock();
@@ -113,17 +120,17 @@ class AudioChannel {
 		clay.system.Audio.mutexLock();
 
 		if(_dirtyEffects) {
-			if(_effectsToRemove.length > 0) {
-				for (effect in _effectsToRemove) {
-					for (i in 0..._effectsCount) {
-						if(_effects[i] == effect) { // todo: remove rest from _effectsCount and effect
-							_effects[i] = _effects[--_effectsCount];
-							break;
-						}
-					}
-				}
-				ArrayTools.clear(_effectsToRemove);
-			}
+			// if(_effectsToRemove.length > 0) {
+			// 	for (effect in _effectsToRemove) {
+			// 		for (i in 0..._effectsCount) {
+			// 			if(_effects[i] == effect) { // todo: remove rest from _effectsCount and effect
+			// 				_effects[i] = _effects[--_effectsCount];
+			// 				break;
+			// 			}
+			// 		}
+			// 	}
+			// 	ArrayTools.clear(_effectsToRemove);
+			// }
 			for (i in 0..._effectsCount) {
 				_effectsInternal[i] = _effects[i];
 			}

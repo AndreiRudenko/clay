@@ -38,7 +38,7 @@ class AudioResource extends Resource {
 
 	override function memoryUse() {
 		
-        return sound.uncompressedData.length * sound.channels;
+        return sound.uncompressedData.length;
         
 	}
 

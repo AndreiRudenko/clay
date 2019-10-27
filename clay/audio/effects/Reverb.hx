@@ -1,223 +1,342 @@
 package clay.audio.effects;
 
 
-import clay.utils.Mathf;
+import clay.Clay;
 import clay.utils.Log.*;
-import clay.Sound;
+import clay.audio.AudioEffect;
 import kha.arrays.Float32Array;
-import kha.arrays.Uint32Array;
+import clay.utils.Mathf;
+import clay.utils.DSP;
+import clay.audio.dsp.AllPassFilter;
+import clay.audio.dsp.CombFilter;
+import clay.audio.dsp.Delay;
+import clay.audio.dsp.HighPassFilter;
+import clay.audio.dsp.LowPassFilter;
 
-// https://github.com/DeerMichel/reverb
-// basic variant of the Jot's FDN Late Reverberator using a Hadamard matrix as feedback matrix
+// based on FreeVerb3
 
 class Reverb extends AudioEffect {
 
-	// amount of dry signal fed into main line
-	public var dry:Float;
-	// amount of wet signal fed from delay lines into main line
-	public var wet(default, set):Float;
-	// amount of dry signal fed into delay lines
-	public var feedDryIn(default, set):Float;
-	// amount of decay of delay lines
-	public var decay(default, set):Float;
-	// set max delay tap time in ms
-	public var delayTapTime(default, set):Int;
 
-	// order of reverb (number of delay lines)
-	var order:Int;
-	// max number of samples passed for processing
-	var maxSamples:Int;
+	static var FIXED_GAIN:Float = 0.05; // 0.015
 
-	// input buffer holding the last and current input samples
-	var inputBufferL:CircularBuffer;
-	var inputBufferR:CircularBuffer;
-	// delay buffers holding the last and current calculated samples of delay lines
-	var delayBufferL:Array<CircularBuffer>;
-	var delayBufferR:Array<CircularBuffer>;
-	// feedback matrix used for reverb
-	var feedbackMatrix:Array<Float32Array>;
+	static var SCALE_WET:Float = 3.0;
+	static var SCALE_DAMPING:Float = 0.4;
+	static var SCALE_ROOM:Float = 0.28;
+	static var OFFSET_ROOM:Float = 0.7;
 
-	var delayTaps:Uint32Array;
-	var decayArr:Float32Array;
+	static var STEREO_SPREAD:Float = 0.5215419501133786848073; // ms, 23 samples in 44100
+	static var ALLPASS_FEEDBACK:Float = 0.5;
+	static var CROSS_DELAY_L:Float = 37;
+	static var CROSS_DELAY_R:Float = 58;
+
+	static var COMBS:Int = 8;
+	static var ALLPASSES:Int = 4;
+	static var ALLPASSES_CROSS:Int = 4;
+	static var SCALE:Float = 1; // TODO
+	static var CROSSFEED:Float = 0.4;
+
+	// in ms
+	static var COMB_TUNING:Array<Float> = [
+		25.30612244897959183674,
+		26.93877551020408163265,
+		28.95691609977324263039,
+		30.74829931972789115646,
+		32.24489795918367346939,
+		33.80952380952380952381,
+		35.30612244897959183674,
+		36.66666666666666666667
+	];
+
+	static var ALLPASS_TUNING:Array<Float> = [
+		12.60770975056689342404, 
+		10, 
+		7.732426303854875283447, 
+		5.102040816326530612245
+	];
 
 
-	public function new(_options:ReverbOptions) {
+	public var dry(default, set):Float;
+	public var wet(get, set):Float;
+	public var preDelay(default, set):Float;
+	public var damping(get, set):Float;
+	public var roomSize(get, set):Float;
+	public var highCut(default, set):Float;
+	public var lowCut(default, set):Float;
+	public var width(default, set):Float;
+	public var frozen(default, set):Bool;
 
-		order = def(_options.order, 8);
-		maxSamples = def(_options.maxSamples, 512);
-		dry = def(_options.dry, 1);
+	var _wet:Float;
+	var _damping:Float;
+	var _roomSize:Float;
+	var _wet0:Float;
+	var _wet1:Float;
 
-		// set default parameters (and dynamic allocation)
-		inputBufferL = new CircularBuffer(maxSamples);
-		inputBufferR = new CircularBuffer(maxSamples);
-		delayBufferL = [];
-		delayBufferR = [];
-		feedbackMatrix = [];
-		delayTaps = new Uint32Array(order);
-		decayArr = new Float32Array(order);
+	var _combsL:Array<CombFilter>;
+	var _combsR:Array<CombFilter>;
 
-		for (i in 0...order) {
-			delayBufferL[i] = new CircularBuffer(maxSamples);
-			delayBufferR[i] = new CircularBuffer(maxSamples);
-			feedbackMatrix[i] = new Float32Array(order);
+	var _allpassesL:Array<AllPassFilter>;
+	var _allpassesR:Array<AllPassFilter>;
+
+	var _preDelayLR:Delay;
+
+	var _crossDelayL:Delay;
+	var _crossDelayR:Delay;
+
+	var _lowPassL:LowPassFilter;
+	var _lowPassR:LowPassFilter;
+	var _highPassL:HighPassFilter;
+	var _highPassR:HighPassFilter;
+
+
+	public function new(options:ReverbOptions) {
+
+		super();
+
+		_combsL = [];
+		_combsR = [];
+		_allpassesL = [];
+		_allpassesR = [];
+
+		for (i in 0...COMBS) {
+			_combsL.push(new CombFilter(toSamples(COMB_TUNING[i] * SCALE)));
+			_combsR.push(new CombFilter(toSamples((COMB_TUNING[i] + STEREO_SPREAD) * SCALE)));
 		}
 
-		// feedback matrix is a hadamard matrix (for now)
-		generateHadamardMatrix(order, 1 / Math.sqrt(order), feedbackMatrix);
+		for (i in 0...ALLPASSES) {
+			_allpassesL.push(new AllPassFilter(toSamples(ALLPASS_TUNING[i] * SCALE), ALLPASS_FEEDBACK));
+			_allpassesR.push(new AllPassFilter(toSamples((ALLPASS_TUNING[i] + STEREO_SPREAD) * SCALE), ALLPASS_FEEDBACK));
+		}
 
-		feedDryIn = def(_options.feedDryIn, 0.2);
-		wet = def(_options.wet, 0.2);
-		decay = def(_options.decay, 0.95);
-		delayTapTime = def(_options.delayTapTime, 4096);
+		_crossDelayL = new Delay(toSamples(CROSS_DELAY_L * SCALE), 1);
+		_crossDelayR = new Delay(toSamples(CROSS_DELAY_R * SCALE), 1);
+		_lowPassL = new LowPassFilter(0, Clay.audio.sampleRate);
+		_lowPassR = new LowPassFilter(0, Clay.audio.sampleRate);
+		_highPassL = new HighPassFilter(0, Clay.audio.sampleRate);
+		_highPassR = new HighPassFilter(0, Clay.audio.sampleRate);
+
+		wet = def(options.wet, 0.5);
+		dry = def(options.dry, 1);
+		preDelay = def(options.preDelay, 10);
+		width = def(options.width, 0.5);
+		highCut = def(options.highCut, 0);
+		lowCut = def(options.highCut, 0);
+		damping = def(options.damping, 0.5);
+		roomSize = def(options.roomSize, 0.5);
+		frozen = def(options.frozen, false);
 
 	}
 
 	override function process(samples:Int, buffer:Float32Array, sampleRate:Int) {
 
-		// for (i in 0...Std.int(samples/2)) {
-
-		var len:Int = Std.int(samples/2);
-
-		// var b = new Float32Array(len);
-		// var b2 = new Float32Array(len);
-
-		// update buffers
-		// for (i in 0...len) {
-
-		// 	inputBufferL.insertOne(buffer[i*2]);
-		// 	inputBufferR.insertOne(buffer[i*2+1]);
-		// 	// b[i] = buffer[i*2];
-		// 	// b2[i] = buffer[i*2+1];
-		// }
-
-		inputBufferL.insertShift(buffer, len, 0);
-		inputBufferR.insertShift(buffer, len, 1);
-
-		for (n in 0...order) {
-			delayBufferL[n].shift(len);
-			delayBufferR[n].shift(len);
-		}
-
-		// process samples
-
 		var inL:Float;
 		var inR:Float;
-
 		var outL:Float;
 		var outR:Float;
+		var earlyL:Float;
+		var earlyR:Float;
 
-		var res:Float;
+		var fL:Float;
+		var fR:Float;
 
-		for (i in 0...len) {
-
-			inL = buffer[i*2];
-			inR = buffer[i*2+1];
+		var i:Int = 0;
+		var j:Int = 0;
+		while(i < samples) {
+			inL = buffer[i];
+			inR = buffer[i+1];
 
 			outL = 0;
 			outR = 0;
 
-			outL = dry * inputBufferL.get(i);
-			outR = dry * inputBufferR.get(i);
+			fL = inL;
+			fR = inR;
 
-			for (n in 0...order) {
-				// left
-				res = feedDryIn * inputBufferL.get(i - delayTaps[n]);
-				for (j in 0...order) {
-					res += feedbackMatrix[n][j] * delayBufferL[j].get(i - delayTaps[n]) * decayArr[j];
-				}
-				delayBufferL[n].set(i, res);
-
-				outL += wet * res;
-
-				// right
-				res = feedDryIn * inputBufferR.get(i - delayTaps[n]);
-				for (j in 0...order) {
-					res += feedbackMatrix[n][j] * delayBufferR[j].get(i - delayTaps[n]) * decayArr[j];
-				}
-				delayBufferR[n].set(i, res);
-
-				outR += wet * res;
+			if(highCut > 0) {
+				fL = _lowPassL.process(fL);
+				fR = _lowPassR.process(fR);
 			}
 
-			buffer[i*2] = outL;
-			buffer[i*2+1] = outR;
-		}
-
-	}
-
-	function generateHadamardMatrix(order:Int, value:Float, result:Array<Float32Array>) {
-
-		// set initial value
-		result[0][0] = value; 
-
-		var n:Int = 2;
-		var i:Int = 0;
-		var j:Int = 0;
-		var a:Int = 0;
-		var b:Int = 0;
-
-		// expand recursively according to hadamard rules
-		while(n <= order) {
-			i = 0;
-			while(i < n / 2) {
-				j = 0;
-				while(j < n / 2) {
-					a = Math.floor(j + n / 2);
-					b = Math.floor(i + n / 2);
-			        result[i][a] = result[i][j];
-			        result[b][j] = result[i][j];
-			        result[b][a] = -result[i][j];
-					j++;
-				}
-				i++;
+			if(lowCut > 0) {
+				fL = _highPassL.process(fL);
+				fR = _highPassR.process(fR);
 			}
-			n *= 2;
+
+			// input LR crossfeed
+			earlyL = _crossDelayL.process(fL);
+			earlyR = _crossDelayR.process(fR);
+
+			earlyL = (fL + CROSSFEED * earlyR) * FIXED_GAIN;
+			earlyR = (fR + CROSSFEED * earlyL) * FIXED_GAIN;
+
+			// accumulate comb filters in parallel
+			j = 0;
+			while(j < COMBS) {
+				outL += _combsL[j].process(earlyL);
+				outR += _combsR[j].process(earlyR);
+				j++;
+			}
+
+			// feed through allpasses in series
+			j = 0;
+			while(j < ALLPASSES) {
+				outL = _allpassesL[j].process(outL);
+				outR = _allpassesR[j].process(outR);
+				j++;
+			}
+
+			// pre delay
+			outL = _preDelayLR.process(outL);
+			outR = _preDelayLR.process(outR);
+
+
+			buffer[i] = outL * _wet0 + outR * _wet1 + inL * dry;
+			buffer[i+1] = outR * _wet0 + outL * _wet1 + inR * dry;
+
+			i += 2;
 		}
 
 	}
 
-	function set_decay(v:Float):Float {
+	function toSamples(ms:Float):Int {
 
-		decay = Mathf.clamp(v, 0, 1);
-
-		for (i in 0...order) {
-			decayArr.set(i, decay);
-		}
-
-		return decay;
+		return DSP.toSamples(ms, Clay.audio.sampleRate);
 
 	}
 
-	function set_feedDryIn(v:Float):Float {
+	function updateWetGains() {
 
-		return feedDryIn = v;
+		_wet0 = _wet * SCALE_WET * (width / 2.0 + 0.5);
+		_wet1 = _wet * SCALE_WET * ((1.0 - width) / 2.0);
+
+	}
+
+	function updateFeedback() {
+
+		var feed = frozen ? 1 : _roomSize * SCALE_ROOM + OFFSET_ROOM;
+
+		for (i in 0...COMBS) {
+			_combsL[i].feedback = feed;
+			_combsR[i].feedback = feed;
+		}
+
+	}
+
+	function updateDamping() {
+
+		var damp = frozen ? 0 : _damping * SCALE_DAMPING;
+
+		for (i in 0...COMBS) {
+			_combsL[i].damping = damp;
+			_combsR[i].damping = damp;
+		}
+
+	}
+
+	function get_wet():Float {
+
+		return _wet;
 
 	}
 
 	function set_wet(v:Float):Float {
-		
-		return wet = v;
+
+		_wet = Mathf.clamp(v, 0, 1);
+
+		updateWetGains();
+
+		return _wet;
 
 	}
 
-	function set_delayTapTime(v:Int):Int {
-		
-  		// distribute delay taps exponentially over time
-  		var distribution = Math.log(v) / order;
-		for (i in 0...order) {
-			delayTaps.set(i, Math.floor(Math.exp(distribution * (i + 1))));
-		}
+	function set_dry(v:Float):Float {
 
-		// update buffer sizes
-		// TODO:no need for reconstruction -> variable buffer size
-		inputBufferL = new CircularBuffer(maxSamples + v);
-		inputBufferR = new CircularBuffer(maxSamples + v);
-		for (i in 0...order) {
-			delayBufferL[i] = new CircularBuffer(maxSamples + v);
-			delayBufferR[i] = new CircularBuffer(maxSamples + v);
-		}
+		dry = Mathf.clamp(v, 0, 1);
 
-		return delayTapTime = v;
+		return dry;
+
+	}
+
+	function set_preDelay(v:Float):Float {
+
+		preDelay = Mathf.clampBottom(v, 1);
+		_preDelayLR = new Delay(toSamples(preDelay) * 2, 1);
+
+		return preDelay;
+
+	}
+
+	function set_width(v:Float):Float {
+
+		width = Mathf.clamp(v, 0, 1);
+
+		updateWetGains();
+
+		return width;
+
+	}
+
+	function set_highCut(v:Float):Float {
+
+		highCut = Mathf.clamp(v, 0, 20000);
+
+		_lowPassL.freq = highCut;
+		_lowPassR.freq = highCut;
+
+		return highCut;
+
+	}
+
+	function set_lowCut(v:Float):Float {
+
+		lowCut = Mathf.clamp(v, 0, 20000);
+
+		_highPassL.freq = lowCut;
+		_highPassR.freq = lowCut;
+
+		return lowCut;
+
+	}
+
+	function get_damping():Float {
+
+		return _damping;
+
+	}
+
+	function set_damping(v:Float):Float {
+
+		_damping = v;
+
+		updateDamping();
+
+		return _damping;
+
+	}
+
+	function get_roomSize():Float {
+
+		return _roomSize;
+
+	}
+
+	function set_roomSize(v:Float):Float {
+
+		_roomSize = Mathf.clamp(v, 0, 1);
+
+		updateFeedback();
+
+		return _roomSize;
+
+	}
+
+	function set_frozen(v:Bool):Bool {
+
+		frozen = v;
+
+		updateFeedback();
+		updateDamping();
+
+		return v;
 
 	}
 
@@ -227,101 +346,13 @@ class Reverb extends AudioEffect {
 
 typedef ReverbOptions = {
 
-	@:optional var dry:Float;
-	@:optional var feedDryIn:Float;
 	@:optional var wet:Float;
-	@:optional var decay:Float;
-	@:optional var delayTapTime:Int;
-	@:optional var order:Int;
-	@:optional var maxSamples:Int;
-
-}
-
-
-private class CircularBuffer {
-
-
-	public var buffer:Float32Array;
-	public var length(get, never):Int;
-
-	var offset:Int;
-	var recentNumValues:Int;
-
-	public inline function new(size:Int) {
-	
-		buffer = new Float32Array(size);
-		offset = 0;
-		recentNumValues = 0;
-	
-	}
-
-	public function insert(values:Float32Array, num:Int) {
-
-		if(num < 0 && num > length) {
-			throw('CircularBuffer cant insert values');
-		}
-
-		for (i in 0...num) {
-			buffer[mod(i + offset, length)] = values[i];
-		}
-
-		shift(num);
-
-	}
-
-	public function insertShift(values:Float32Array, num:Int, _shift:Int) {
-
-		if(num < 0 && num > length) {
-			throw('CircularBuffer cant insert values');
-		}
-
-		for (i in 0...num) {
-			// buffer[mod(i + offset, length)] = (values[i*2] + values[i*2+1]) * 0.5;
-			buffer[mod(i + offset, length)] = values[i*2+_shift];
-			// buffer[mod(i + offset, length)] = values[i*2+(1-_shift)] * 0.3 + values[i*2+_shift] * 0.7;
-		}
-
-		shift(num);
-
-	}
-
-	public inline function insertOne(v:Float) {
-
-		buffer[offset] = v;
-
-		shift(1);
-
-	}
-
-	public inline function shift(num:Int) {
-
-		offset = (offset + num) % length;
-		recentNumValues = num;
-
-	}
-
-	public function get(i:Int):Float {
-
-		return buffer[mod((offset - recentNumValues) + i, length)];
-	
-	}
-
-	public function set(i:Int, v:Float) {
-
-		return buffer.set(mod((offset - recentNumValues) + i, length),  v);
-	
-	}
-
-	inline function get_length():Int {
-		
-		return buffer.length;
-
-	}
-
-	inline function mod(i:Int, n:Int):Int {
-		
-		return return (i % n + n) % n;
-
-	}
+	@:optional var width:Float;
+	@:optional var dry:Float;
+	@:optional var preDelay:Float;
+	@:optional var damping:Float;
+	@:optional var roomSize:Float;
+	@:optional var highCut:Float;
+	@:optional var frozen:Bool;
 
 }
