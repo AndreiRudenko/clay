@@ -28,7 +28,7 @@ class Log {
 		return macro $v{ ${clay.utils.Log._exclude} };
 	}
 
-	macro static function level( __level:Int ) : haxe.macro.Expr {
+	macro public static function level( __level:Int ) : haxe.macro.Expr {
 
 		_level = __level;
 
