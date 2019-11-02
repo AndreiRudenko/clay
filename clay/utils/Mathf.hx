@@ -163,9 +163,15 @@ class Mathf {
 	}
 
 	/** Checks if value is power of two **/
-	public inline static function checkPow2(x:Int):Bool {
+	public static inline function checkPow2(x:Int):Bool {
 
 		return x != 0 && (x & (x - 1)) == 0;
+
+	}
+
+	public static inline function mod(i:Int, n:Int):Int {
+		
+		return (i % n + n) % n;
 
 	}
 
