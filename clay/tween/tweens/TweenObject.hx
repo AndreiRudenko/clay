@@ -200,10 +200,10 @@ class TweenObject<T> extends Tween<T> implements ITween {
 			return macro {
 				$self._propMult(
 					function(t,v){
-						${handleGetset(propFields, fromValues, true, isTargetArray)};
+						${handleGetSet(propFields, fromValues, true, isTargetArray)};
 					},
 					function(t,v){
-						${handleGetset(propFields, fromValues, false, isTargetArray)};
+						${handleGetSet(propFields, fromValues, false, isTargetArray)};
 					},
 					$a{toValues},
 					$duration,
