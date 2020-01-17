@@ -13,7 +13,6 @@ class DisplayObject {
 	static var ID:Int = 0; // for debug
 
 	public var visible:Bool;
-	public var renderable:Bool;
 	public var name:String;
 
 	public var transform:Transform;
@@ -33,7 +32,6 @@ class DisplayObject {
 	public function new() {
 		
 		visible = true;
-		renderable = true;
 		name = 'displayObject.${ID++}';
 		transform = new Transform();
 		sortKey = new SortKey(0,0);
@@ -57,6 +55,9 @@ class DisplayObject {
 	}
 	
 	public function render(p:Painter) {}
+
+	function onAdded(l:Layer) {}
+	function onRemoved(l:Layer) {}
 
 	inline function get_layer():Layer {
 

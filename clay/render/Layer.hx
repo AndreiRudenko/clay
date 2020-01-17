@@ -32,8 +32,8 @@ class Layer {
 	public var depthSort:Bool = true;
 	public var dirtySort:Bool = true;
 
-	public var onpreRender(default, null):Signal<()->Void>;
-	public var onpostRender(default, null):Signal<()->Void>;
+	public var onPreRender(default, null):Signal<()->Void>;
+	public var onPostRender(default, null):Signal<()->Void>;
 
 	public var blendSrc:BlendFactor;
 	public var blendDst:BlendFactor;
@@ -61,8 +61,8 @@ class Layer {
 		_objectsToRemove = [];
 		_active = false;
 
-		onpreRender = new Signal();
-		onpostRender = new Signal();
+		onPreRender = new Signal();
+		onPostRender = new Signal();
 
 		blendSrc = BlendFactor.Undefined;
 		blendDst = BlendFactor.Undefined;
@@ -81,8 +81,8 @@ class Layer {
 		}
 
 		name = null;
-		onpreRender = null;
-		onpostRender = null;
+		onPreRender = null;
+		onPostRender = null;
 		objects = null;
 
 	}
@@ -117,6 +117,7 @@ class Layer {
 		
 		objects.push(geom);
 		geom._layer = this;
+		geom.onAdded(this);
 
 		if(_dirtySort) {
 			dirtySort = true;
@@ -129,12 +130,16 @@ class Layer {
 		_debug('layer `$name` _removeUnsafe geometry: ${geom.name}');
 
 		_objectsToRemove.push(geom);
+		geom.onRemoved(this);
 		geom._layer = null;
 
 	}
 
 	public function update(dt:Float) {
 
+		removeObjects();
+		sortObjects();
+		
 		for (o in objects) {
 			o.update(dt);
 		}
@@ -147,12 +152,12 @@ class Layer {
 
 		Clay.debug.start('renderer.layer.$name');
 
-		onpreRender.emit();
+		onPreRender.emit();
 
 		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
 
-		removeObjects();
-		sortObjects();
+		// removeObjects();
+		// sortObjects();
 
 		#if !no_debug_console
 		stats.reset();
@@ -183,7 +188,7 @@ class Layer {
 		_renderer.stats.add(stats);
 		#end
 
-		onpostRender.emit();
+		onPostRender.emit();
 
 		Clay.debug.end('renderer.layer.$name');
 

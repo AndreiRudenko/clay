@@ -49,11 +49,11 @@ class ResourceManager {
 
 	}
 
-	public function loadAll(arr:Array<String>, onComplete:()->Void, ?onprogress:(p:Float)->Void) {
+	public function loadAll(arr:Array<String>, onComplete:()->Void, ?onProgress:(p:Float)->Void) {
 
 		if(arr.length == 0) {
-			if(onprogress != null) {
-				onprogress(1);
+			if(onProgress != null) {
+				onProgress(1);
 			}
 			onComplete();
 			return;
@@ -72,8 +72,8 @@ class ResourceManager {
 			left--;
 			progress = 1 - left / count;
 
-			if(onprogress != null) {
-				onprogress(progress);
+			if(onProgress != null) {
+				onProgress(progress);
 			}
 
 			if(i < count) {
@@ -161,7 +161,7 @@ class ResourceManager {
 					onComplete(res);
 				}
 			},
-			onerror
+			onError
 		);
 
 	}
@@ -190,7 +190,7 @@ class ResourceManager {
 					onComplete(res);
 				}
 			},
-			onerror
+			onError
 		);
 
 	}
@@ -219,7 +219,7 @@ class ResourceManager {
 					onComplete(res);
 				}
 			},
-			onerror
+			onError
 		);
 
 	}
@@ -249,7 +249,7 @@ class ResourceManager {
 					onComplete(res);
 				}
 			},
-			onerror
+			onError
 		);
 
 	}
@@ -278,7 +278,7 @@ class ResourceManager {
 					onComplete(res);
 				}
 			},
-			onerror
+			onError
 		);
 
 	}
@@ -307,7 +307,7 @@ class ResourceManager {
 					onComplete(res);
 				}
 			},
-			onerror
+			onError
 		);
 
 	}
@@ -338,7 +338,7 @@ class ResourceManager {
 					}
 				});
 			},
-			onerror
+			onError
 		);
 
 	}
@@ -411,7 +411,7 @@ class ResourceManager {
 
 	}
 	
-	function onerror(err:kha.AssetError) {
+	function onError(err:kha.AssetError) {
 
 		log("failed to load resource: " + err.url);
 

@@ -33,8 +33,8 @@ class Camera {
 	public var bounds:Rectangle;
 	public var priority(default, null):Int;
 
-	public var onpreRender(default, null):Signal<(c:Camera)->Void>;
-	public var onpostRender(default, null):Signal<(c:Camera)->Void>;
+	public var onPreRender(default, null):Signal<(c:Camera)->Void>;
+	public var onPostRender(default, null):Signal<(c:Camera)->Void>;
 
 	@:noCompletion public var transform:Transform;
 	@:noCompletion public var projectionMatrix:Matrix;
@@ -88,8 +88,8 @@ class Camera {
 
 		zoom = 1;
 
-		onpreRender = new Signal();
-		onpostRender = new Signal();
+		onPreRender = new Signal();
+		onPostRender = new Signal();
 
 		sizeMode = SizeMode.FIT;
 
@@ -224,8 +224,8 @@ class Camera {
 
 		name = null;
 		viewport = null;
-		onpreRender = null;
-		onpostRender = null;
+		onPreRender = null;
+		onPostRender = null;
 		transform = null;
 		_viewMatrixInverted = null;
 		projectionMatrix = null;
@@ -253,7 +253,7 @@ class Camera {
 
 	function preRender() {
 
-		onpreRender.emit(this);
+		onPreRender.emit(this);
 
 		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
 
@@ -270,7 +270,7 @@ class Camera {
 
 		// g.disableScissor();
 		
-		onpostRender.emit(this);
+		onPostRender.emit(this);
 		
 	}
 	
