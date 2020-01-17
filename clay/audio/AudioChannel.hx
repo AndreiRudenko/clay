@@ -18,7 +18,6 @@ class AudioChannel {
 	public var volume(get, set):Float;
 	public var pan(get, set):Float;
 	public var output(get, null):AudioGroup;
-	// public var outputs:Array<Int>;
 
 	public var effects(get, null):Array<AudioEffect>;
 	public var effectsCount(get, null):Int;
@@ -37,7 +36,6 @@ class AudioChannel {
 
 	var _effects:Vector<AudioEffect>;
 	var _effectsInternal:Vector<AudioEffect>;
-	// var _effectsToRemove:Array<AudioEffect>;
 
 
 	public function new(maxEffects:Int = 8) {
@@ -55,7 +53,6 @@ class AudioChannel {
 
 		_effects = new Vector(_maxEffects);
 		_effectsInternal = new Vector(_maxEffects);
-		// _effectsToRemove = [];
 
 	}
 
@@ -85,7 +82,6 @@ class AudioChannel {
 
 		clay.system.Audio.mutexLock();
 
-		// _effectsToRemove.push(effect);
 		for (i in 0..._effectsCount) {
 			if(_effects[i] == effect) { // todo: remove rest from _effectsCount and effect
 				_effects[i] = _effects[--_effectsCount];
@@ -102,9 +98,6 @@ class AudioChannel {
 
 		clay.system.Audio.mutexLock();
 
-		// for (i in 0..._effectsCount) {
-		// 	_effectsToRemove.push(_effects[i]);
-		// }
 		_effectsCount = 0;
 		_dirtyEffects = true;
 
@@ -120,19 +113,10 @@ class AudioChannel {
 		clay.system.Audio.mutexLock();
 
 		if(_dirtyEffects) {
-			// if(_effectsToRemove.length > 0) {
-			// 	for (effect in _effectsToRemove) {
-			// 		for (i in 0..._effectsCount) {
-			// 			if(_effects[i] == effect) { // todo: remove rest from _effectsCount and effect
-			// 				_effects[i] = _effects[--_effectsCount];
-			// 				break;
-			// 			}
-			// 		}
-			// 	}
-			// 	ArrayTools.clear(_effectsToRemove);
-			// }
-			for (i in 0..._effectsCount) {
-				_effectsInternal[i] = _effects[i];
+			var j:Int = 0;
+			while (j < _effectsCount) {
+				_effectsInternal[j] = _effects[j];
+				j++;
 			}
 			_dirtyEffects = false;
 		}
@@ -140,12 +124,14 @@ class AudioChannel {
 
 		clay.system.Audio.mutexUnlock();
 
+		var i:Int = 0;
 		var e:AudioEffect;
-		for (i in 0...count) {
+		while (i < count) {
 			e = _effectsInternal[i];
 			if(!e._mute) {
 				e.process(samples, data, Clay.audio._sampleRate);
 			}
+			i++;
 		}
 		
 	}
@@ -225,22 +211,6 @@ class AudioChannel {
 		return v;
 
 	}
-
-	// function set_output(v:AudioGroup):AudioGroup {
-
-	// 	if(_output != null) {
-	// 		_output.remove(this);
-	// 	}
-
-	// 	_output = v;
-
-	// 	if(_output != null) {
-	// 		_output.add(this);
-	// 	}
-
-	// 	return _output;
-
-	// }
 
 	function get_effects():Array<AudioEffect> {
 

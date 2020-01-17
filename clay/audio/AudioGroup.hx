@@ -19,8 +19,6 @@ class AudioGroup extends AudioChannel {
 	public var channels(get, null):Array<AudioChannel>;
 	public var channelsCount(get, null):Int;
 
-	// public var channelsVolume(default, null):Float32Array;
-
 	var _channels:Vector<AudioChannel>;
 	var _channelsCount:Int;
 	var _dirtyChannels:Bool;
@@ -29,7 +27,6 @@ class AudioGroup extends AudioChannel {
 	var _cache:Float32Array;
 
 	var _channelsInternal:Vector<AudioChannel>;
-	// var _channelsToRemove:Array<AudioChannel>;
 
 
 	public function new(maxChannels:Int = 32) {
@@ -42,9 +39,7 @@ class AudioGroup extends AudioChannel {
 		_dirtyChannels = true;
 
 		_channels = new Vector(_maxChannels);
-		// channelsVolume = new Float32Array(_maxChannels);
 		_channelsInternal = new Vector(_maxChannels);
-		// _channelsToRemove = [];
 
 	}
 
@@ -88,7 +83,6 @@ class AudioGroup extends AudioChannel {
 
 		if(channel._output == this) {
 			channel._output = null;
-			// _channelsToRemove.push(channel);
 			var found = false;
 			for (i in 0..._channelsCount) {
 				if(_channels[i] == channel) { // todo: remove rest from _channelsInternal and channels
@@ -118,26 +112,19 @@ class AudioGroup extends AudioChannel {
 			_cache = new Float32Array(bufferSamples);
 		}
 
-		for (i in 0...bufferSamples) {
+		var i:Int = 0;
+		while(i < bufferSamples) {
 			_cache[i] = 0;
+			i++;
 		}
 
 		clay.system.Audio.mutexLock();
 
 		if(_dirtyChannels) {
-			// if(_channelsToRemove.length > 0) {
-			// 	for (c in _channelsToRemove) {
-			// 		for (i in 0..._channelsCount) {
-			// 			if(_channels[i] == c) { // todo: remove rest from _channelsInternal and channels
-			// 				_channels[i] = _channels[--_channelsCount];
-			// 				break;
-			// 			}
-			// 		}
-			// 	}
-			// 	ArrayTools.clear(_channelsToRemove);
-			// }
-			for (i in 0..._channelsCount) {
-				_channelsInternal[i] = _channels[i];
+			var j:Int = 0;
+			while(j < _channelsCount) {
+				_channelsInternal[j] = _channels[j];
+				j++;
 			}
 			_dirtyChannels = false;
 		}
@@ -146,19 +133,21 @@ class AudioGroup extends AudioChannel {
 
 		clay.system.Audio.mutexUnlock();
 
-		for (i in 0...count) {
+		i = 0;
+		while(i < count) {
 			if(!_channelsInternal[i]._mute) {
 				_channelsInternal[i].process(_cache, bufferSamples);
 			}
+			i++;
 		}
 
 		processEffects(_cache, bufferSamples);
 
-		var bufferIdx = 0;
-		while(bufferIdx < bufferSamples) {
-			data[bufferIdx] += _cache[bufferIdx] * _volume * _l;
-			data[bufferIdx+1] += _cache[bufferIdx+1] * _volume * _r;
-			bufferIdx +=2;
+		i = 0;
+		while(i < bufferSamples) {
+			data[i] += _cache[i] * _volume * _l;
+			data[i+1] += _cache[i+1] * _volume * _r;
+			i +=2;
 		}
 
 	}
