@@ -14,8 +14,8 @@ class MouseEvent implements IEvent {
 
 	public var x(default, null):Int = 0;
 	public var y(default, null):Int = 0;
-	public var xrel(default, null):Int = 0;
-	public var yrel(default, null):Int = 0;
+	public var dx(default, null):Int = 0;
+	public var dy(default, null):Int = 0;
 	public var wheel(default, null):Int = 0;
 
 	public var button(default, null):MouseButton = MouseButton.NONE;
@@ -24,12 +24,12 @@ class MouseEvent implements IEvent {
 	
 	function new() {}
 
-	inline function set(x:Int, y:Int, xrel:Int, yrel:Int, wheel:Int, state:EventType<MouseEvent>, button:MouseButton) {
+	inline function set(x:Int, y:Int, dx:Int, dy:Int, wheel:Int, state:EventType<MouseEvent>, button:MouseButton) {
 		
 		this.x = x;
 		this.y = y;
-		this.xrel = xrel;
-		this.yrel = yrel;
+		this.dx = dx;
+		this.dy = dy;
 		this.wheel = wheel;
 		this.state = state;
 		this.button = button;

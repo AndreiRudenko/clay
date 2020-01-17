@@ -193,14 +193,14 @@ class Mouse extends Input {
 
 	}
 
-	function _onMove(x:Int, y:Int, xRel:Int, yRel:Int) {
+	function _onMove(x:Int, y:Int, dx:Int, dy:Int) {
 
-		_verboser('_onMove x:$x, y$y, xrel:$xRel, yrel:$yRel');
+		_verboser('_onMove x:$x, y$y, dx:$dx, dy:$dy');
 
 		this.x = x;
 		this.y = y;
 
-		_mouseEvent.set(x, y, xRel, yRel, 0, MouseEvent.MOUSE_MOVE, MouseButton.NONE);
+		_mouseEvent.set(x, y, dx, dy, 0, MouseEvent.MOUSE_MOVE, MouseButton.NONE);
 
 		_app.emitter.emit(MouseEvent.MOUSE_MOVE, _mouseEvent);
 
