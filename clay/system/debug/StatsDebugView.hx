@@ -54,7 +54,7 @@ class StatsDebugView extends DebugView {
 		var rect = debug.inspector.viewrect;
 
 		renderStatsText = new Text(Clay.renderer.font);
-		renderStatsText.size = fontSize;
+		renderStatsText.fontSize = fontSize;
 		renderStatsText.visible = false;
 		renderStatsText.color = new Color().fromInt(0xffa563);
 		renderStatsText.transform.pos.set(rect.x, rect.y);
@@ -65,7 +65,7 @@ class StatsDebugView extends DebugView {
 		renderStatsText.depth = 999.3;
 
 		resourceListText = new Text(Clay.renderer.font);
-		resourceListText.size = fontSize;
+		resourceListText.fontSize = fontSize;
 		resourceListText.align = TextAlign.RIGHT;
 		resourceListText.visible = false;
 		resourceListText.color = new Color().fromInt(0xffa563);
@@ -183,13 +183,13 @@ class StatsDebugView extends DebugView {
 
 	function cameraAdded(c:Camera) {
 		
-		c.onpostRender.add(addCameraStats);
+		c.onPostRender.add(addCameraStats);
 
 	}
 
 	function cameraRemoved(c:Camera) {
 
-		c.onpostRender.remove(addCameraStats);
+		c.onPostRender.remove(addCameraStats);
 		
 	}
 

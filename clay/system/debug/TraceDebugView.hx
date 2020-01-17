@@ -26,7 +26,7 @@ class TraceDebugView extends DebugView {
 		logged = [];
 
 		lines = new Text(Clay.renderer.font);
-		lines.size = 14;
+		lines.fontSize = 14;
 		lines.align = TextAlign.LEFT;
 		lines.alignVertical = TextAlign.BOTTOM;
 		lines.visible = false;

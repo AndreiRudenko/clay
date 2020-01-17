@@ -54,7 +54,7 @@ class AudioDebugView extends DebugView {
 		var rect = debug.inspector.viewrect;
 
 		itemsList = new Text(Clay.renderer.font);
-		itemsList.size = fontSize;
+		itemsList.fontSize = fontSize;
 		itemsList.visible = false;
 		itemsList.color = new Color().fromInt(0xffa563);
 		itemsList.transform.pos.set(rect.x, rect.y);
@@ -289,7 +289,7 @@ private class ProgressBar {
 		this.height = height;
 
 		textItem = new Text(Clay.renderer.font);
-		textItem.size = fontSize;
+		textItem.fontSize = fontSize;
 		textItem.color = new Color().fromInt(0xffa563);
 		textItem.layer = Clay.debug.layer;
 		textItem.depth = 999.3;

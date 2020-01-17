@@ -64,7 +64,7 @@ class Inspector {
 
 		fpsText = new Text(Clay.resources.font("assets/Muli-Regular.ttf"));
 		fpsText.align = TextAlign.LEFT;
-		fpsText.size = 15;
+		fpsText.fontSize = 15;
 		fpsText.visible = false;
 		fpsText.color = new Color().fromInt(0xffa563);
 		fpsText.transform.pos.set(debug.padding.x, debug.padding.y-16);
@@ -73,7 +73,7 @@ class Inspector {
 
 		Clay.on(RenderEvent.RENDER, onrender);
 		Clay.on(KeyEvent.KEY_DOWN, onKeyDown);
-		Clay.on(TouchEvent.TOUCH_DOWN, ontouchdown);
+		Clay.on(TouchEvent.TOUCH_DOWN, onTouchDown);
 
 	}
 
@@ -158,14 +158,14 @@ class Inspector {
 
 	}
 
-	function ontouchdown(e:TouchEvent) {
+	function onTouchDown(e:TouchEvent) {
 
-		if(Clay.input.touch.count > 2) {
+		if(Clay.input.touch.count == 3) {
 			visible = !visible;
 		}
 
 		if(visible) {
-			if(Clay.input.touch.count < 2) {
+			if(Clay.input.touch.count == 2) {
 				debug.switchView(Clay.debug.currentView.index + 1);
 			}
 		}
@@ -216,7 +216,7 @@ private class InspectorTab {
 
 		title = new Text(Clay.resources.font("assets/Muli-Bold.ttf"));
 		title.text = name;
-		title.size = size;
+		title.fontSize = size;
 		title.align = TextAlign.LEFT;
 		title.visible = false;
 		title.color = new Color().fromInt(0xffa563);

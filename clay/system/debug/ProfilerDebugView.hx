@@ -371,7 +371,7 @@ private class ProfilerBar {
 		if(_max != null) max = graph.max = _max;
 
 		textItem = new Text(Clay.renderer.font);
-		textItem.size = Std.int(height*1.8);
+		textItem.fontSize = Std.int(height*1.8);
 		textItem.color = _color;
 		textItem.layer = Clay.debug.layer;
 		textItem.depth = 999.3;
