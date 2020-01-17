@@ -29,7 +29,7 @@ class Transform {
 	var _cleanHandlers:Array<(t:Transform)->Void>;
 	
 
-	public function new(?options:TransformOptions) {
+	public function new() {
 
 		_local = new Spatial();
 		_world = new Spatial();
@@ -39,27 +39,6 @@ class Transform {
 		dirty = true;
 		manualUpdate = false;
 		_cleaning = false;
-
-		if(options != null) {
-			if(options.pos != null) {
-				pos.copyFrom(options.pos);
-			}
-			if(options.scale != null) {
-				scale.copyFrom(options.scale);
-			}
-			if(options.rotation != null) {
-				rotation = options.rotation;
-			}
-			if(options.manualUpdate != null) {
-				manualUpdate = options.manualUpdate;
-			}
-			if(options.origin != null) {
-				origin.copyFrom(options.origin);
-			}
-			if(options.parent != null) {
-				parent = options.parent;
-			}
-		}
 
 		_local.pos.listen(
 			function(v) {
@@ -185,9 +164,7 @@ class Transform {
 
 	}
 
-	function get_world():Spatial {
-
-		// update(); // todo
+	inline function get_world():Spatial {
 		
 		return _world;
 
