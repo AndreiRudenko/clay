@@ -194,7 +194,7 @@ class Cursor {
 		
 	}
 
-	function onMove(x:Int, y:Int, xrel:Int, yrel:Int) {
+	function onMove(x:Int, y:Int, dx:Int, dy:Int) {
 
 		pos.set(x, y);
 
