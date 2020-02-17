@@ -13,8 +13,8 @@ import clay.utils.Log.*;
 class Line extends Mesh {
 
 
-	public var p0(get, set):VectorCallback;
-	public var p1(get, set):VectorCallback;
+	public var point0(get, set):VectorCallback;
+	public var point1(get, set):VectorCallback;
 
 	public var color0(default, set):Color;
 	public var color1(default, set):Color;
@@ -24,18 +24,18 @@ class Line extends Mesh {
 	var _strength:Float;
 	var _tmp:Vector;
 
-	var _p0:VectorCallback;
-	var _p1:VectorCallback;
+	var _point0:VectorCallback;
+	var _point1:VectorCallback;
 
 
-	public function new(p0x:Float = 0, p0y:Float = 0, p1x:Float = 0, p1y:Float = 0) {
+	public function new(point0x:Float = 0, point0y:Float = 0, point1x:Float = 0, point1y:Float = 0) {
 
-		_p0 = new VectorCallback(p0x, p0y);
-		_p1 = new VectorCallback(p1x, p1y);
+		_point0 = new VectorCallback(point0x, point0y);
+		_point1 = new VectorCallback(point1x, point1y);
 		_tmp = new Vector();
 
-		_p0.listen(updateLineGeom);
-		_p1.listen(updateLineGeom);
+		_point0.listen(updateLineGeom);
+		_point1.listen(updateLineGeom);
 
 		var vertices = [
 			new Vertex(new Vector(), new Vector(0, 0)),
@@ -57,56 +57,56 @@ class Line extends Mesh {
 
 	function updateLineGeom(v:Float) {
 
-		if (p0.y == p1.y) {
+		if (point0.y == point1.y) {
 			_tmp.set(0, -1);
 		} else {
-			_tmp.set(1, -(p1.x - p0.x) / (p1.y - p0.y));
+			_tmp.set(1, -(point1.x - point0.x) / (point1.y - point0.y));
 		}
 		_tmp.length = _strength;
 		_tmp.multiplyScalar(0.5);
 
-		vertices[0].pos.set(p0.x + _tmp.x, p0.y + _tmp.y);
-		vertices[1].pos.set(p1.x + _tmp.x, p1.y + _tmp.y);
-		vertices[2].pos.set(p1.x - _tmp.x, p1.y - _tmp.y);
-		vertices[3].pos.set(p0.x - _tmp.x, p0.y - _tmp.y);
+		vertices[0].pos.set(point0.x + _tmp.x, point0.y + _tmp.y);
+		vertices[1].pos.set(point1.x + _tmp.x, point1.y + _tmp.y);
+		vertices[2].pos.set(point1.x - _tmp.x, point1.y - _tmp.y);
+		vertices[3].pos.set(point0.x - _tmp.x, point0.y - _tmp.y);
 
 	}
 
-	inline function get_p0():VectorCallback {
+	inline function get_point0():VectorCallback {
 
-		return _p0;
+		return _point0;
 
 	}
 
-	function set_p0(v:VectorCallback):VectorCallback {
+	function set_point0(v:VectorCallback):VectorCallback {
 
-		_p0.listen(null);
+		_point0.listen(null);
 
-		_p0 = v;
+		_point0 = v;
 
-		_p0.listen(updateLineGeom);
+		_point0.listen(updateLineGeom);
 		updateLineGeom(0);
 
-		return _p0;
+		return _point0;
 
 	}
 
-	inline function get_p1():VectorCallback {
+	inline function get_point1():VectorCallback {
 
-		return _p1;
+		return _point1;
 
 	}
 
-	function set_p1(v:VectorCallback):VectorCallback {
+	function set_point1(v:VectorCallback):VectorCallback {
 
-		_p1.listen(null);
+		_point1.listen(null);
 
-		_p1 = v;
+		_point1 = v;
 
-		_p1.listen(updateLineGeom);
+		_point1.listen(updateLineGeom);
 		updateLineGeom(0);
 
-		return _p1;
+		return _point1;
 
 	}
 
