@@ -5,7 +5,7 @@ import kha.graphics4.Graphics;
 
 import clay.render.types.BlendFactor;
 import clay.render.types.BlendOperation;
-import clay.render.DisplayObject;
+import clay.graphics.DisplayObject;
 import clay.render.Camera;
 import clay.resources.Texture;
 import clay.events.Signal;
@@ -17,7 +17,7 @@ import haxe.ds.ArraySort;
 
 @:access(clay.render.Renderer)
 @:access(clay.render.LayerManager)
-@:access(clay.render.DisplayObject)
+@:access(clay.graphics.DisplayObject)
 class Layer {
 
 
@@ -171,7 +171,7 @@ class Layer {
 				#if !no_debug_console
 				stats.geometry++;
 				#end
-				if(o.visible) {
+				if(o.visible && o.renderable) {
 					#if !no_debug_console
 					stats.visibleGeometry++;
 					#end

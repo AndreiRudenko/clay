@@ -4,7 +4,7 @@ package clay.graphics.particles;
 import clay.graphics.particles.ParticleEmitter;
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
-import clay.render.DisplayObject;
+import clay.graphics.DisplayObject;
 import clay.render.Painter;
 import clay.math.Vector;
 

@@ -10,7 +10,7 @@ import clay.render.Color;
 import clay.math.Vector;
 import clay.math.Rectangle;
 import clay.render.Vertex;
-import clay.render.DisplayObject;
+import clay.graphics.DisplayObject;
 import clay.render.Painter;
 import clay.render.Camera;
 import clay.render.types.BlendFactor;
@@ -115,7 +115,6 @@ class Mesh extends DisplayObject {
 					);
 				}
 			}
-
 		} else {
 			log('WARNING: can`t batch a geometry, vertices: ${vertices.length} vs max ${p.verticesMax}, indices: ${indices.length} vs max ${p.indicesMax}');
 		}

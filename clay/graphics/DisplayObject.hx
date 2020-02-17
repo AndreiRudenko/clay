@@ -1,9 +1,13 @@
-package clay.render;
+package clay.graphics;
 
 
 import clay.math.Rectangle;
 import clay.math.Transform;
 import clay.render.SortKey;
+import clay.render.Layer;
+import clay.render.Shader;
+import clay.render.Painter;
+import clay.render.Camera;
 import clay.utils.Log.*;
 
 
@@ -12,11 +16,13 @@ class DisplayObject {
 
 	static var ID:Int = 0; // for debug
 
-	public var visible:Bool;
 	public var name:String;
 
 	public var transform:Transform;
 
+	public var visible(default, set):Bool;
+	public var renderable:Bool;
+	
 	public var layer(get, set):Layer;
 	public var depth(default, set):Float;
 
@@ -32,6 +38,7 @@ class DisplayObject {
 	public function new() {
 		
 		visible = true;
+		renderable = true;
 		name = 'displayObject.${ID++}';
 		transform = new Transform();
 		sortKey = new SortKey(0,0);
@@ -53,11 +60,17 @@ class DisplayObject {
 		transform.update();
 
 	}
-	
+
 	public function render(p:Painter) {}
 
 	function onAdded(l:Layer) {}
 	function onRemoved(l:Layer) {}
+
+	function set_visible(v:Bool):Bool {
+
+		return visible = v;
+
+	}
 
 	inline function get_layer():Layer {
 
