@@ -50,6 +50,18 @@ class Mathf {
 
 	}
 
+	public static inline function clampTop(value:Float, a:Float):Float {
+
+		return value > a ? a : value;
+
+	}
+
+	public static inline function clampTopi(value:Int, a:Int):Int {
+
+		return value > a ? a : value;
+
+	}
+
 	public static inline function withinRange(value:Float, startRange:Float, endRange:Float):Bool {
 
 		return value >= startRange && value <= endRange;
