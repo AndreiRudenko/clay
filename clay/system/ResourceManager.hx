@@ -99,7 +99,7 @@ class ResourceManager {
 
 	public function load(id:String, ?onComplete:(r:Resource)->Void) {
 
-		var res = get(id);
+		var res = cache.get(id);
 		if(res != null) {
 			log("resource already exists: " + id);
 			if(onComplete != null) {
@@ -138,7 +138,7 @@ class ResourceManager {
 
 	public function loadBytes(id:String, ?onComplete:(r:BytesResource)->Void) {
 
-		var res:BytesResource = bytes(id);
+		var res:BytesResource = cast cache.get(id);
 
 		if(res != null) {
 			log("bytes resource already exists: " + id);
@@ -168,7 +168,7 @@ class ResourceManager {
 
 	public function loadText(id:String, ?onComplete:(r:TextResource)->Void) {
 
-		var res:TextResource = text(id);
+		var res:TextResource = cast cache.get(id);
 
 		if(res != null) {
 			log("text resource already exists: " + id);
@@ -197,7 +197,7 @@ class ResourceManager {
 
 	public function loadJson(id:String, ?onComplete:(r:JsonResource)->Void) {
 
-		var res:JsonResource = json(id);
+		var res:JsonResource = cast cache.get(id);
 
 		if(res != null) {
 			log("json resource already exists: " + id);
@@ -226,7 +226,7 @@ class ResourceManager {
 
 	public function loadTexture(id:String, ?onComplete:(r:Texture)->Void) {
 
-		var res:Texture = texture(id);
+		var res:Texture = cast cache.get(id);
 
 		if(res != null) {
 			log("texture resource already exists: " + id);
@@ -256,7 +256,7 @@ class ResourceManager {
 
 	public function loadFont(id:String, ?onComplete:(r:FontResource)->Void) {
 
-		var res:FontResource = font(id);
+		var res:FontResource = cast cache.get(id);
 
 		if(res != null) {
 			log("font resource already exists: " + id);
@@ -285,7 +285,7 @@ class ResourceManager {
 
 	public function loadVideo(id:String, ?onComplete:(r:VideoResource)->Void) {
 
-		var res:VideoResource = video(id);
+		var res:VideoResource = cast cache.get(id);
 
 		if(res != null) {
 			log("video resource already exists: " + id);
@@ -314,7 +314,7 @@ class ResourceManager {
 
 	public function loadAudio(id:String, ?onComplete:(r:AudioResource)->Void) {
 
-		var res:AudioResource = audio(id);
+		var res:AudioResource = cast cache.get(id);
 
 		if(res != null) {
 			log("audio resource already exists: " + id);
@@ -376,19 +376,26 @@ class ResourceManager {
 
 	}
 
-	public inline function has      (id:String):Bool                   return cache.exists(id);
-	public inline function get      (id:String):Resource               return fetch(id);
-	public inline function bytes    (id:String):BytesResource          return fetch(id);
-	public inline function text     (id:String):TextResource           return fetch(id);
-	public inline function json     (id:String):JsonResource           return fetch(id);
-	public inline function texture  (id:String):Texture                return fetch(id);
-	public inline function font     (id:String):FontResource           return fetch(id);
-	public inline function video    (id:String):VideoResource          return fetch(id);
-	public inline function audio    (id:String):AudioResource          return fetch(id);
+	public inline function has(id:String):Bool return cache.exists(id);
+
+	public function get(id:String):Resource return fetch(id);
+	public function bytes(id:String):BytesResource return fetch(id);
+	public function text(id:String):TextResource return fetch(id);
+	public function json(id:String):JsonResource return fetch(id);
+	public function texture(id:String):Texture return fetch(id);
+	public function font(id:String):FontResource return fetch(id);
+	public function video(id:String):VideoResource return fetch(id);
+	public function audio(id:String):AudioResource return fetch(id);
 
 	inline function fetch<T>(id:String):T {
 
-		return cast cache.get(id);
+		var res:T = cast cache.get(id);
+
+		if(res == null) {
+			log("failed to get resource: " + id);
+		}
+
+		return res;
 
 	}
 
