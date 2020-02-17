@@ -35,15 +35,15 @@ class FontResource extends Resource {
         
 	}
 
-	public function get(size:Int):Texture {
+	public function get(fontSize:Int):Texture {
 
-		var t = textures.get(size);
+		var t = textures.get(fontSize);
 
 		if(t == null) {
-			var k = font._get(size);
+			var k = font._get(fontSize);
 			t = new Texture(k.getTexture());
-			t.id = id + "_" + size;
-			textures.set(size, t);
+			t.id = id + "_" + fontSize;
+			textures.set(fontSize, t);
 			Clay.resources.add(t);
 		}
 
@@ -51,21 +51,21 @@ class FontResource extends Resource {
 		
 	}
 
-	public function width(size:Int):Float {
+	public function height(fontSize:Int):Float {
 
-		return font._get(size).getHeight();
+		return font._get(fontSize).getHeight();
 		
 	}
 
-	public function height(size:Int, str:String):Float {
+	public function width(fontSize:Int, str:String):Float {
 
-		return font._get(size).stringWidth(str);
+		return font._get(fontSize).stringWidth(str);
 		
 	}
 
-	public function charactersWidth(size:Int, characters:Array<Int>, start:Int, length:Int):Float {
+	public function charactersWidth(fontSize:Int, characters:Array<Int>, start:Int, length:Int):Float {
 
-		return font._get(size).charactersWidth(characters, start, length);
+		return font._get(fontSize).charactersWidth(characters, start, length);
 
 	}
 
