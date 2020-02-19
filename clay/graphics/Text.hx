@@ -55,6 +55,9 @@ class Text extends Mesh {
 	var _kravur:KravurImage;
 	var _lines:Array<String>;
 
+	var _canUpdateAsTexture:Bool = true;
+	var _isRenderTexture:Bool = false;
+	
 
 	public function new(font:FontResource) {
 
@@ -120,7 +123,7 @@ class Text extends Mesh {
 				#if !noDebugConsole
 				p.stats.locked++;
 				#end
-				p.drawFromBuffers(_vertexBuffer, _indexBuffer); //TODO: render to texture instead?
+				p.drawFromBuffers(_vertexBuffer, _indexBuffer);
 			} else {
 
 				var v:Vertex;
@@ -347,7 +350,7 @@ class Text extends Mesh {
 
 			var img = texture.image;
 			var customColors = textColors.length != 0;
-			var _color = color;
+			var clr = color;
 
 			var wRatio:Float = img.width / img.realWidth;
 			var hRatio:Float = img.height / img.realHeight;
@@ -395,9 +398,9 @@ class Text extends Mesh {
 
 					for (i in 0...l.length) {
 						if(customColors) {
-							_color = textColors[n];
-							if(_color == null) {
-								_color = color;
+							clr = textColors[n];
+							if(clr == null) {
+								clr = color;
 							}
 						}
 						var cidx = findIndex(l.charCodeAt(i));
@@ -414,16 +417,6 @@ class Text extends Mesh {
 									vertices[n*4+3] = new Vertex();
 								}
 
-								// if(indices.length <= n*6) {
-								// 	var offset = n*4;
-								// 	indices[n*6] = offset;
-								// 	indices[n*6+1] = offset + 1;
-								// 	indices[n*6+2] = offset + 2;
-								// 	indices[n*6+3] = offset + 0;
-								// 	indices[n*6+4] = offset + 2;
-								// 	indices[n*6+5] = offset + 3;
-								// }
-
 								var t0x = q.s0 * wRatio;
 								var t0y = q.t0 * hRatio;
 								var t1x = q.s1 * wRatio;
@@ -436,19 +429,19 @@ class Text extends Mesh {
 
 								v0.pos.set(q.x0+xoffset, q.y1+yoffset);
 								v0.tcoord.set(t0x, t1y);
-								v0.color = _color;
+								v0.color = clr;
 
 								v1.pos.set(q.x0+xoffset, q.y0+yoffset);
 								v1.tcoord.set(t0x, t0y);
-								v1.color = _color;
+								v1.color = clr;
 
 								v2.pos.set(q.x1+xoffset, q.y0+yoffset);
 								v2.tcoord.set(t1x, t0y);
-								v2.color = _color;
+								v2.color = clr;
 
 								v3.pos.set(q.x1+xoffset, q.y1+yoffset);
 								v3.tcoord.set(t1x, t1y);
-								v3.color = _color;
+								v3.color = clr;
 
 								n++;
 							}
@@ -473,11 +466,11 @@ class Text extends Mesh {
 
 		if(_asTexture) {
 			setupAsTexture();
+		} else {
+			_isRenderTexture = false;
 		}
 
 	}
-
-	var _canUpdateAsTexture:Bool = true;
 
 	function setupAsTexture() {
 
@@ -511,34 +504,21 @@ class Text extends Mesh {
 			tth = 4096;
 		}
 
-		var ttwo = ttw * oversample;
-		var ttho = tth * oversample;
+		var ttwo = Math.floor(ttw * oversample);
+		var ttho = Math.floor(tth * oversample);
 
-		var tex = Texture.createRenderTarget(Math.floor(ttwo), Math.floor(ttho), null, null, true);
-		var g = tex.image.g4;
+		var tex:Texture = texture;
+		if(!_isRenderTexture || tex == null || tex.widthActual != ttwo || tex.heightActual != ttho) {
+			tex = Texture.createRenderTarget(ttwo, ttho, null, null, true);
+			_isRenderTexture = true;
+		}
+
 		var p = Clay.renderer.painter;
 		var tr = transform;
 
 		transform = new clay.math.Transform();
 
-		// TODO: separate this to renderToTexture method in renderer
-		g.begin();
-		g.clear(kha.Color.Black);
-
-		p.begin(g, new Rectangle(0, 0, ttwo, ttho));
-
-		var mtrx = new Matrix();
-		if (kha.Image.renderTargetsInvertedY()) {
-			mtrx.orto(0, ttwo, 0, ttho);
-		} else {
-			mtrx.orto(0, ttwo, ttho, 0);
-		}
-
-		p.setProjection(mtrx);
-		_render(p);
-		p.end();
-
-		g.end();
+		p.drawToTexture(tex, ttwo, ttho, _render);
 
 		_width = tw;
 		_height = th;

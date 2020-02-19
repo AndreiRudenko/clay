@@ -70,6 +70,9 @@ class Painter {
 
 	var _projectionMatrix:FastMatrix3;
 
+	var _rtClipRect:Rectangle;
+	var _rtMatrix:Matrix;
+
 
 	public function new(renderer:Renderer, batchSize:Int) {
 
@@ -95,6 +98,9 @@ class Painter {
 
 		_clipRectDefault = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
 		_projectionMatrix = FastMatrix3.identity();
+
+		_rtClipRect = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height);
+		_rtMatrix = new Matrix();
 
 		_textureBlank = Texture.create(1, 1, TextureFormat.RGBA32, Usage.StaticUsage, true);
 		var pixels = _textureBlank.lock();
@@ -266,6 +272,31 @@ class Painter {
 
 	}
 
+	public function drawToTexture(texture:Texture, width:Int, height:Int, callBack:(p:Painter)->Void) {
+
+		var g = texture.image.g4;
+
+		g.begin();
+		g.clear(kha.Color.Black);
+
+		begin(g, _rtClipRect.set(0, 0, width, height));
+
+		if (kha.Image.renderTargetsInvertedY()) {
+			_rtMatrix.orto(0, width, 0, height);
+		} else {
+			_rtMatrix.orto(0, width, height, 0);
+		}
+
+		setProjection(_rtMatrix);
+
+		callBack(this);
+
+		end();
+
+		g.end();
+
+	}
+
 	inline function draw(vertexbuffer:VertexBuffer, indexbuffer:IndexBuffer, count:Int) {
 
 		if(_clipRect != null) {
@@ -295,6 +326,7 @@ class Painter {
 		g.drawIndexedVertices(0, count);
 
 		g.setTexture(textureLoc, null);
+		g.disableScissor();
 
 		#if !no_debug_console
 		stats.drawCalls++;
