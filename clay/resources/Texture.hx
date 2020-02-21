@@ -39,6 +39,15 @@ class Texture extends clay.resources.Resource {
 
 	}
 
+	public static var maxSize(get, never):Int;
+
+
+	static inline function get_maxSize():Int {
+
+		return kha.Image.maxSize;
+
+	}
+
 
 	public var tid(default, null):Int;
 
