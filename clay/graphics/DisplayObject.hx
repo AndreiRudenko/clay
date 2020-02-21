@@ -3,6 +3,7 @@ package clay.graphics;
 
 import clay.math.Rectangle;
 import clay.math.Transform;
+import clay.math.VectorCallback;
 import clay.render.SortKey;
 import clay.render.Layer;
 import clay.render.Shader;
@@ -32,8 +33,13 @@ class DisplayObject {
 	public var sortKey(default, null):SortKey;
 	public var shaderDefault(default, null):Shader;
 
-	var _layer:Layer;
+	public var pos(get, never):VectorCallback;
+	public var scale(get, never):VectorCallback;
+	public var rotation(get, set):Float;
+	public var origin(get, never):VectorCallback;
 
+	var _layer:Layer;
+	
 
 	public function new() {
 		
@@ -123,6 +129,36 @@ class DisplayObject {
 		}
 
 		return clipRect = v;
+
+	}
+
+	inline function get_pos():VectorCallback {
+
+		return transform.pos;
+
+	}
+
+	inline function get_scale():VectorCallback {
+
+		return transform.scale;
+
+	}
+
+	inline function get_rotation():Float {
+
+		return transform.rotation;
+
+	}
+
+	inline function set_rotation(v:Float):Float {
+
+		return transform.rotation = v;
+
+	}
+
+	inline function get_origin():VectorCallback {
+
+		return transform.origin;
 
 	}
 
