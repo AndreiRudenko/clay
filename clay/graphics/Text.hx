@@ -57,9 +57,13 @@ class Text extends Mesh {
 
 	var _canUpdateAsTexture:Bool = true;
 	var _isRenderTexture:Bool = false;
-	
+
 
 	public function new(font:FontResource) {
+
+		if(font == null) {
+			throw("cant create Text without FontResource");
+		}
 
 		_lines = [];
 		textColors = [];
@@ -184,7 +188,6 @@ class Text extends Mesh {
 
 	function findIndex(charCode:Int):Int {
 
-		var glyphs = kha.graphics2.Graphics.fontGlyphs;
 		var blocks = KravurImage.charBlocks;
 		var offset = 0;
 		for (i in 0...Std.int(blocks.length / 2)) {
@@ -324,7 +327,7 @@ class Text extends Mesh {
 	}
 
 	function updateFont() {
-		
+
 		_kravur = font.font._get(_fontSize); // note: this is expensive if creating new font or font size
 		texture = font.get(_fontSize);
 
@@ -496,12 +499,14 @@ class Text extends Mesh {
 		var ttw = textWidth;
 		var tth = textHeight;
 
-		if(ttw > 4096) {
-			ttw = 4096;
+		var maxTextureSize = Texture.maxSize;
+
+		if(ttw > maxTextureSize) {
+			ttw = maxTextureSize;
 		}
 
-		if(tth > 4096) {
-			tth = 4096;
+		if(tth > maxTextureSize) {
+			tth = maxTextureSize;
 		}
 
 		var ttwo = Math.floor(ttw * oversample);
@@ -516,7 +521,7 @@ class Text extends Mesh {
 		var p = Clay.renderer.painter;
 		var tr = transform;
 
-		transform = new clay.math.Transform();
+		transform = new clay.math.Transform(); //TODO: reuse
 
 		p.drawToTexture(tex, ttwo, ttho, _render);
 
