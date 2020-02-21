@@ -4,6 +4,7 @@ package clay.resources;
 import clay.system.ResourceManager;
 
 @:access(kha.Kravur)
+@:access(kha.KravurImage)
 class FontResource extends Resource {
 
 
@@ -11,9 +12,9 @@ class FontResource extends Resource {
 	public var textures(default, null):Map<Int, Texture>;
 
 
-	public function new(_font:kha.Font) {
+	public function new(font:kha.Font) {
 
-		font = _font;
+		this.font = font;
 		textures = new Map();
 		
 		resourceType = ResourceType.FONT;
@@ -61,6 +62,12 @@ class FontResource extends Resource {
 
 		return font._get(fontSize).stringWidth(str);
 		
+	}
+
+	public function charWidth(fontSize:Int, charCode:Int):Float {
+
+		return font._get(fontSize).getCharWidth(charCode);
+
 	}
 
 	public function charactersWidth(fontSize:Int, characters:Array<Int>, start:Int, length:Int):Float {
