@@ -63,9 +63,9 @@ class NineSlice extends Mesh {
 
     }
 
-    override function setTexture(v:Texture):Texture {
+    override function set_texture(v:Texture):Texture {
 
-        super.setTexture(v);
+        super.set_texture(v);
 
         updateWidth();
         updateHeight();
