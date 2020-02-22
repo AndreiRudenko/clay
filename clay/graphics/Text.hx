@@ -70,6 +70,8 @@ class Text extends Mesh {
 
 		super();
 
+		indices = [0, 1, 2, 0, 2, 3];
+
 		shaderDefault = Clay.renderer.shaders.get("text");
 
 		textWidth = 0;
@@ -89,8 +91,6 @@ class Text extends Mesh {
 
 		this.font = font;
 		text = "";
-
-		// updateText();
 
 	}
 
@@ -118,10 +118,8 @@ class Text extends Mesh {
 	function _render(p:Painter) {
 		
 		if(!textIsEmpty(text)) {
-			p.setShader(shader != null ? shader : shaderDefault);
-			p.clip(clipRect);
-			p.setTexture(texture);
-			p.setBlending(_blendSrc, _blendDst, _blendOp, _alphaBlendSrc, _alphaBlendDst, _alphaBlendOp);
+
+			preRenderSetup(p);
 
 			if(locked) {
 				#if !noDebugConsole
@@ -129,74 +127,58 @@ class Text extends Mesh {
 				#end
 				p.drawFromBuffers(_vertexBuffer, _indexBuffer);
 			} else {
-
-				var v:Vertex;
-				var quads = Math.floor(vertices.length / 4);
-				var m = transform.world.matrix;
-
-				for (i in 0...quads) {
+				var matrix = transform.world.matrix;
+				var i = 0;
+				while(i < vertices.length) {
 					p.ensure(4, 6);
-					p.addIndex(0);
-					p.addIndex(1);
-					p.addIndex(2);
-					p.addIndex(0);
-					p.addIndex(2);
-					p.addIndex(3);
-
-					v = vertices[i*4];
-					p.addVertex(
-						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
-						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
-						v.tcoord.x,
-						v.tcoord.y,
-						v.color
-					);
-					
-					v = vertices[i*4+1];
-					p.addVertex(
-						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
-						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
-						v.tcoord.x,
-						v.tcoord.y,
-						v.color
-					);
-					
-					v = vertices[i*4+2];
-					p.addVertex(
-						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
-						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
-						v.tcoord.x,
-						v.tcoord.y,
-						v.color
-					);
-
-					v = vertices[i*4+3];
-					p.addVertex(
-						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
-						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
-						v.tcoord.x,
-						v.tcoord.y,
-						v.color
-					);
-
+					addQuadToPainter(p, matrix, i);
+					i += 4;
 				}
-
 			}
 		}
 
 	}
 
-	function findIndex(charCode:Int):Int {
+	inline function addQuadToPainter(p:Painter, matrix:Matrix, startIdx:Int) {
+		
+		p.addIndex(0);
+		p.addIndex(1);
+		p.addIndex(2);
+		p.addIndex(0);
+		p.addIndex(2);
+		p.addIndex(3);
+
+		var vertex;
+		var j = 0;
+		while(j < 4) {
+			vertex = vertices[startIdx+j];
+			p.addVertex(
+				matrix.getTransformX(vertex.pos.x, vertex.pos.y), 
+				matrix.getTransformY(vertex.pos.x, vertex.pos.y), 
+				vertex.tcoord.x,
+				vertex.tcoord.y,
+				vertex.color
+			);
+			j++;
+		}
+
+	}
+
+	function findCharIndex(charCode:Int):Int {
 
 		var blocks = KravurImage.charBlocks;
 		var offset = 0;
-		for (i in 0...Std.int(blocks.length / 2)) {
-			var start = blocks[i * 2];
-			var end = blocks[i * 2 + 1];
+		var start = 0;
+		var end = 0;
+		var i = 0;
+		while(i < blocks.length) {
+			start = blocks[i];
+			end = blocks[i + 1];
 			if (charCode >= start && charCode <= end) {
 				return offset + charCode - start;
 			}
 			offset += end - start + 1;
+			i += 2;
 		}
 
 		return 0;
@@ -335,7 +317,7 @@ class Text extends Mesh {
 
 	function updateText() {
 
-		var n:Int = 0;
+		var charCount:Int = 0;
 
 		if(!textIsEmpty(text)) {
 
@@ -343,135 +325,141 @@ class Text extends Mesh {
 
 			var quadCache = new AlignedQuad();
 
-			var tWidth:Float = 0;
+			var lineWidth:Float = 0;
 			var fontHeght:Float = _kravur.getHeight();
+
+			var offsetX:Float = 0;
+			var offsetY:Float = 0;
+
+			var customColors = textColors.length > 0;
+			var charColor = color;
+
+			var image = texture.image;
+			var texRatioX:Float = image.width / image.realWidth;
+			var texRatioY:Float = image.height / image.realHeight;
+
 			textWidth = 0;
 			textHeight = (fontHeght + _lineSpacing) * lines.length;
 
-			var xoffset:Float = 0;
-			var yoffset:Float = 0;
+			offsetY = getVerticalOffset(textHeight);
 
-			var img = texture.image;
-			var customColors = textColors.length != 0;
-			var clr = color;
+			for (line in lines) {
+				if(line != null && line.length > 0) {
+					lineWidth = _kravur.stringWidth(line) + (line.length * _letterSpacing);
 
-			var wRatio:Float = img.width / img.realWidth;
-			var hRatio:Float = img.height / img.realHeight;
-
-			switch (_alignVertical) {
-				case TextAlign.BOTTOM:{
-					yoffset = _height - textHeight;
-				}
-				case TextAlign.CENTER:{
-					yoffset = _height*0.5 - textHeight/2;
-				}
-				default:{
-					yoffset = 0;
-				}
-			}
-
-			var l:String;
-			for (i in 0...lines.length) {
-
-				l = lines[i];
-
-				if(l != null && l.length > 0) {
-
-					tWidth = _kravur.stringWidth(l) + (l.length * _letterSpacing);
-
-					if(tWidth > textWidth) {
-						textWidth = tWidth;
+					if(lineWidth > textWidth) {
+						textWidth = lineWidth;
 					}
 
-					var xpos:Float = 0;
+					offsetX = getHorisontalOffset(lineWidth);
 
-					switch (_align) {
-						case TextAlign.RIGHT:{
-							xoffset = _width - tWidth;
-						}
-						case TextAlign.CENTER:{
-							xoffset = _width * 0.5 - tWidth / 2;
-						}
-						default:{
-							xoffset = 0;
-						}
-					}
-
-					var lw:Float = 0;
-
-					for (i in 0...l.length) {
+					var linePos:Float = 0;
+					var charOffset:Float = 0;
+					var charIndex:Int = 0;
+					var charQuad:AlignedQuad;
+					var j:Int = 0;
+					while(j < line.length) {
 						if(customColors) {
-							clr = textColors[n];
-							if(clr == null) {
-								clr = color;
-							}
+							charColor = getCharColor(charCount);
 						}
-						var cidx = findIndex(l.charCodeAt(i));
-						var q:AlignedQuad = _kravur.getBakedQuad(quadCache, cidx, xpos, 0);
-						if (q != null) {
-							lw = q.xadvance + _letterSpacing;
+						charIndex = findCharIndex(line.charCodeAt(j));
+						charQuad = _kravur.getBakedQuad(quadCache, charIndex, linePos, 0);
+						if (charQuad != null) {
+							charOffset = charQuad.xadvance + _letterSpacing;
+							if(charIndex > 0) { // skip space
+								ensureQuadVertices(charCount * 4);
+								setQuadVerticesFromIdx(
+									charCount * 4, 
+									charQuad.x0 + offsetX, charQuad.y0 + offsetY, charQuad.x1 + offsetX, charQuad.y1 + offsetY, 
+									charQuad.s0 * texRatioX, charQuad.t0 * texRatioY, charQuad.s1 * texRatioX, charQuad.t1 * texRatioY,
+									charColor
+								);
 
-							if(cidx > 0) { // skip space
-
-								if(vertices[n*4] == null) {
-									vertices[n*4] = new Vertex();
-									vertices[n*4+1] = new Vertex();
-									vertices[n*4+2] = new Vertex();
-									vertices[n*4+3] = new Vertex();
-								}
-
-								var t0x = q.s0 * wRatio;
-								var t0y = q.t0 * hRatio;
-								var t1x = q.s1 * wRatio;
-								var t1y = q.t1 * hRatio;
-
-								var v0 = vertices[n*4];
-								var v1 = vertices[n*4+1];
-								var v2 = vertices[n*4+2];
-								var v3 = vertices[n*4+3];
-
-								v0.pos.set(q.x0+xoffset, q.y1+yoffset);
-								v0.tcoord.set(t0x, t1y);
-								v0.color = clr;
-
-								v1.pos.set(q.x0+xoffset, q.y0+yoffset);
-								v1.tcoord.set(t0x, t0y);
-								v1.color = clr;
-
-								v2.pos.set(q.x1+xoffset, q.y0+yoffset);
-								v2.tcoord.set(t1x, t0y);
-								v2.color = clr;
-
-								v3.pos.set(q.x1+xoffset, q.y1+yoffset);
-								v3.tcoord.set(t1x, t1y);
-								v3.color = clr;
-
-								n++;
+								charCount++;
 							}
-
-							xpos += lw;
+							linePos += charOffset;
 						}
+						j++;
 					}
+
 				}
-
-				yoffset += fontHeght + _lineSpacing;
-
+				offsetY += fontHeght + _lineSpacing;
 			}
 		}
 
-		if(vertices.length > n*4) {
-			vertices.splice(n*4, vertices.length);
-		}
-
-		if(indices.length > n*6) {
-			indices.splice(n*6, indices.length);
-		}
+		removeVerticesFrom(charCount * 4);
 
 		if(_asTexture) {
 			setupAsTexture();
 		} else {
 			_isRenderTexture = false;
 		}
+
+	}
+
+	inline function removeVerticesFrom(vertsCount:Int) {
+		
+		if(vertices.length > vertsCount) {
+			vertices.splice(vertsCount, vertices.length);
+		}
+
+	}
+
+	inline function getVerticalOffset(textHeight:Float):Float {
+		
+		return switch (_alignVertical) {
+			case TextAlign.BOTTOM: _height - textHeight;
+			case TextAlign.CENTER: _height * 0.5 - textHeight / 2;
+			default: 0;
+		}
+
+	}
+
+	inline function getHorisontalOffset(textWidth:Float):Float {
+		
+		return switch (_align) {
+			case TextAlign.RIGHT: _width - textWidth;
+			case TextAlign.CENTER: _width * 0.5 - textWidth / 2;
+			default: 0;
+		}
+
+	}
+
+	inline function getCharColor(idx:Int):Color {
+
+		return textColors[idx] != null ? textColors[idx] : color;
+		
+	}
+
+	inline function ensureQuadVertices(idx:Int) {
+		
+		if(vertices[idx] == null) {
+			for (i in 0...4) {
+				vertices[idx+i] = new Vertex();
+			}
+		}
+
+	}
+
+	inline function setQuadVerticesFromIdx(
+		idx:Int, 
+		minX:Float, minY:Float, maxX:Float, maxY:Float, 
+		tcoordMinX:Float, tcoordMinY:Float, tcoordMaxX:Float, tcoordMaxY:Float, 
+		color:Color
+	) {
+		
+		applyVertexSettings(vertices[idx], minX, minY, tcoordMinX, tcoordMinY, color);
+		applyVertexSettings(vertices[idx+1], maxX, minY, tcoordMaxX, tcoordMinY, color);
+		applyVertexSettings(vertices[idx+2], maxX, maxY, tcoordMaxX, tcoordMaxY, color);
+		applyVertexSettings(vertices[idx+3], minX, maxY, tcoordMinX, tcoordMaxY, color);
+		
+	}
+
+	inline function applyVertexSettings(vertex:Vertex, posX:Float, posY:Float, tcoordX:Float, tcoordY:Float, color:Color) {
+		
+		vertex.pos.set(posX, posY);
+		vertex.tcoord.set(tcoordX, tcoordY);
+		vertex.color = color;
 
 	}
 
@@ -485,64 +473,63 @@ class Text extends Mesh {
 
 		var oversample:Int = 2;
 
-		var fs = _fontSize;
-		var tw = _width;
-		var th = _height;
+		var prevFontSize = _fontSize;
+		var prevWidth = _width;
+		var prevHeight = _height;
+		var prevTransform = transform;
 
-		_fontSize = fs * oversample;
+		_fontSize *= oversample;
 		_width *= oversample;
 		_height *= oversample;
 
 		updateFont();
 		updateText();
 
-		var ttw = textWidth;
-		var tth = textHeight;
-
 		var maxTextureSize = Texture.maxSize;
 
-		if(ttw > maxTextureSize) {
-			ttw = maxTextureSize;
-		}
+		var textureWidth = Math.min(textWidth, maxTextureSize);
+		var textureHeight = Math.min(textHeight, maxTextureSize);
 
-		if(tth > maxTextureSize) {
-			tth = maxTextureSize;
-		}
+		var textureWidthScaled = Math.floor(textureWidth * oversample);
+		var textureHeightScaled = Math.floor(textureHeight * oversample);
 
-		var ttwo = Math.floor(ttw * oversample);
-		var ttho = Math.floor(tth * oversample);
-
-		var tex:Texture = texture;
-		if(!_isRenderTexture || tex == null || tex.widthActual != ttwo || tex.heightActual != ttho) {
-			tex = Texture.createRenderTarget(ttwo, ttho, null, null, true);
-			_isRenderTexture = true;
-		}
-
-		var p = Clay.renderer.painter;
-		var tr = transform;
+		var fontTexture:Texture = getFontRenderTexture(textureWidthScaled, textureHeightScaled);
 
 		transform = new clay.math.Transform(); //TODO: reuse
 
-		p.drawToTexture(tex, ttwo, ttho, _render);
+		Clay.renderer.painter.drawToTexture(fontTexture, textureWidthScaled, textureHeightScaled, _render);
 
-		_width = tw;
-		_height = th;
-		_fontSize = fs;
+		_width = prevWidth;
+		_height = prevHeight;
+		_fontSize = prevFontSize;
 
-		texture = tex;
-		transform = tr;
+		texture = fontTexture;
+		transform = prevTransform;
 
-		vertices = [
-			new Vertex(new Vector(0, 0), new Vector(0, 0)),
-			new Vertex(new Vector(ttw, 0), new Vector(1, 0)),
-			new Vertex(new Vector(ttw, tth), new Vector(1, 1)),
-			new Vertex(new Vector(0, tth), new Vector(0, 1))
-		];
+		removeVerticesFrom(4);
+		ensureQuadVertices(0);
 
-		indices = [0, 1, 2, 0, 2, 3];
+		setQuadVerticesFromIdx(
+			0, 
+			0, 0, textureWidth, textureHeight, 
+			0, 0, 1, 1, 
+			color
+		);
 
 		_canUpdateAsTexture = true;
 		
+	}
+
+	inline function getFontRenderTexture(width:Int, height:Int):Texture {
+		
+		var fontTexture:Texture = texture;
+		if(!_isRenderTexture || fontTexture == null || fontTexture.widthActual != width || fontTexture.heightActual != height) {
+			fontTexture = Texture.createRenderTarget(width, height, null, null, true);
+			_isRenderTexture = true;
+		}
+
+		return fontTexture;
+
 	}
 
 	inline function textIsEmpty(text:String) {
