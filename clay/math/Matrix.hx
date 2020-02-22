@@ -245,6 +245,24 @@ class Matrix {
 		}
 
 	}
+
+	/**
+	 * Get a new position x with the current transformation applied.
+	 */
+	public inline function getTransformX(x:Float, y:Float):Float {
+
+		return a * x + c * y + tx;
+
+	}
+
+	/**
+	 * Get a new position y with the current transformation applied.
+	 */
+	public inline function getTransformY(x:Float, y:Float):Float {
+
+		return b * x + d * y + ty;
+		
+	}
 	
 
 }
