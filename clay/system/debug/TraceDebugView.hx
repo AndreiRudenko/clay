@@ -34,8 +34,8 @@ class TraceDebugView extends DebugView {
 		lines.transform.pos.set(debug.padding.x+20, debug.padding.y+40);
 		lines.width = Clay.screen.width-(debug.padding.x*2)-20;
 		lines.height = Clay.screen.height-(debug.padding.y*2)-40;
-		lines.layer = debug.layer;
 		lines.depth = 999.3;
+		debug.layer.add(lines);
 
 	}
 

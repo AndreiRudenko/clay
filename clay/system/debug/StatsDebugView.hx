@@ -60,9 +60,9 @@ class StatsDebugView extends DebugView {
 		renderStatsText.transform.pos.set(rect.x, rect.y);
 		renderStatsText.width = rect.w;
 		renderStatsText.height = 0;
-		renderStatsText.layer = debug.layer;
 		renderStatsText.clipRect = rect;
 		renderStatsText.depth = 999.3;
+		debug.layer.add(renderStatsText);
 
 		resourceListText = new Text(Clay.renderer.font);
 		resourceListText.fontSize = fontSize;
@@ -72,9 +72,9 @@ class StatsDebugView extends DebugView {
 		resourceListText.transform.pos.set(rect.x, rect.y);
 		resourceListText.width = rect.w;
 		resourceListText.height = 0;
-		resourceListText.layer = debug.layer;
 		resourceListText.clipRect = rect;
 		resourceListText.depth = 999.3;
+		debug.layer.add(resourceListText);
 
 		Clay.renderer.cameras.onCameraCreate.add(cameraAdded);
 		Clay.renderer.cameras.onCameraDestroy.add(cameraRemoved);

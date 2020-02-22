@@ -60,7 +60,7 @@ class Inspector {
 		overlay.visible = false;
 		overlay.color = new Color(0,0,0,0.8);
 		overlay.depth = 999;
-		overlay.layer = debug.layer;
+		debug.layer.add(overlay);
 
 		fpsText = new Text(Clay.resources.font("assets/Muli-Regular.ttf"));
 		fpsText.align = TextAlign.LEFT;
@@ -68,8 +68,8 @@ class Inspector {
 		fpsText.visible = false;
 		fpsText.color = new Color().fromInt(0xffa563);
 		fpsText.transform.pos.set(debug.padding.x, debug.padding.y-16);
-		fpsText.layer = debug.layer;
 		fpsText.depth = 999.2;
+		debug.layer.add(fpsText);
 
 		Clay.on(RenderEvent.RENDER, onrender);
 		Clay.on(KeyEvent.KEY_DOWN, onKeyDown);
@@ -221,8 +221,8 @@ private class InspectorTab {
 		title.visible = false;
 		title.color = new Color().fromInt(0xffa563);
 		title.transform.pos.set(Clay.debug.padding.x+14, Clay.debug.padding.y+6);
-		title.layer = Clay.debug.layer;
 		title.depth = 999.2;
+		Clay.debug.layer.add(title);
 
 		var	_kravur = title.font.font._get(size);
 		textWidth = _kravur.stringWidth(name);

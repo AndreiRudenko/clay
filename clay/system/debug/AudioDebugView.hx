@@ -60,9 +60,9 @@ class AudioDebugView extends DebugView {
 		itemsList.transform.pos.set(rect.x, rect.y);
 		itemsList.width = rect.w;
 		itemsList.height = 0;
-		itemsList.layer = debug.layer;
 		itemsList.clipRect = rect;
 		itemsList.depth = 999.3;
+		debug.layer.add(itemsList);
 
 		var kravur = itemsList.font.font._get(fontSize);
 		fontHeight = kravur.getHeight();
@@ -291,18 +291,18 @@ private class ProgressBar {
 		textItem = new Text(Clay.renderer.font);
 		textItem.fontSize = fontSize;
 		textItem.color = new Color().fromInt(0xffa563);
-		textItem.layer = Clay.debug.layer;
 		textItem.depth = 999.3;
+		Clay.debug.layer.add(textItem);
 
 		bgGeometry = new Quad(width, height);
 		bgGeometry.color = new Color().fromInt(0x090909);
 		bgGeometry.depth = 999.3;
-		bgGeometry.layer = Clay.debug.layer;
+		Clay.debug.layer.add(bgGeometry);
 
 		barGeometry = new Quad(width-2, height-2);
 		barGeometry.color = new Color().fromInt(0xffa563);
 		barGeometry.depth = 999.33;
-		barGeometry.layer = Clay.debug.layer;
+		Clay.debug.layer.add(barGeometry);
 
 		pos = new VectorCallback();
 		pos.listen(posChanged);

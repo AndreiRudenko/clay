@@ -223,13 +223,13 @@ private class ProfilerGraph {
 			graphbgGeometry = new Quad(width-segment, height2);
 			graphbgGeometry.color = new Color().fromInt(0x101010);
 			graphbgGeometry.depth = 999.3;
-			graphbgGeometry.layer = Clay.debug.layer;
+			Clay.debug.layer.add(graphbgGeometry);
 		}
 
 		graphGeometry = new Mesh();
 		graphGeometry.depth = 999.3;
 		graphGeometry.color = color;
-		graphGeometry.layer = Clay.debug.layer;
+		Clay.debug.layer.add(graphGeometry);
 
 		for (i in 0...history) {
 			var top = new Vertex(new Vector(segment*i, height2), color);
@@ -373,19 +373,19 @@ private class ProfilerBar {
 		textItem = new Text(Clay.renderer.font);
 		textItem.fontSize = Std.int(height*1.8);
 		textItem.color = _color;
-		textItem.layer = Clay.debug.layer;
 		textItem.depth = 999.3;
+		Clay.debug.layer.add(textItem);
 
 		bgGeometry = new Quad(graph.width-2, graph.height-2);
 		bgGeometry.color = new Color().fromInt(0x090909);
 		bgGeometry.depth = 999.3;
-		bgGeometry.layer = Clay.debug.layer;
+		Clay.debug.layer.add(bgGeometry);
 
 		barGeometry = new Quad(graph.width, graph.height);
 		barGeometry.color = _color;
 		barGeometry.depth = 999.33;
-		barGeometry.layer = Clay.debug.layer;
 		barGeometry.transform.pos.set(1,1);
+		Clay.debug.layer.add(barGeometry);
 
 		hide();
 
