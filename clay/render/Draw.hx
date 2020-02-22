@@ -463,7 +463,7 @@ class Draw {
 			if(layer == null) {
 				layer = Clay.renderer.layer;
 			}
-			layer._addUnsafe(geom, depth != null);
+			layer.addUnsafe(geom, depth != null);
 		}
 
 	}

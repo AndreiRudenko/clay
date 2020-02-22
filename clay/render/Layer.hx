@@ -5,10 +5,11 @@ import kha.graphics4.Graphics;
 
 import clay.render.types.BlendFactor;
 import clay.render.types.BlendOperation;
-import clay.graphics.DisplayObject;
+import clay.render.LayerObject;
 import clay.render.Camera;
 import clay.resources.Texture;
 import clay.events.Signal;
+import clay.utils.ArrayTools;
 import clay.utils.Log.*;
 
 import clay.render.RenderStats;
@@ -17,7 +18,7 @@ import haxe.ds.ArraySort;
 
 @:access(clay.render.Renderer)
 @:access(clay.render.LayerManager)
-@:access(clay.graphics.DisplayObject)
+@:access(clay.render.LayerObject)
 class Layer {
 
 
@@ -25,7 +26,7 @@ class Layer {
 	public var id(default, null):Int;
 	public var active(get, set):Bool;
 
-	public var objects(default, null):Array<DisplayObject>;
+	public var objects(default, null):Array<LayerObject>;
 
 	public var priority(default, null):Int;
 
@@ -44,7 +45,7 @@ class Layer {
 	#end
 
 	var _active:Bool;
-	var _objectsToRemove:Array<DisplayObject>;
+	var _objectsToRemove:Array<LayerObject>;
 	var _renderer:Renderer;
 	var _manager:LayerManager;
 
@@ -87,66 +88,70 @@ class Layer {
 
 	}
 
-	public function add(geom:DisplayObject) {
+	public function add(obj:LayerObject) {
 
-		_debug('layer `$name` add geometry: ${geom.name}');
+		_debug('layer `$name` add: ${obj.name}');
 
-		if(geom._layer != null) {
-			geom._layer._removeUnsafe(geom);
+		if(obj.layer != null) {
+			obj.layer.removeUnsafe(obj);
 		}
 
-		_addUnsafe(geom);
+		addUnsafe(obj);
 
 	}
 
-	public function remove(geom:DisplayObject) {
+	public function remove(obj:LayerObject) {
 		
-		_debug('layer `$name` remove geometry: ${geom.name}');
+		_debug('layer `$name` remove: ${obj.name}');
 
-		if(geom._layer != this) {
-			log('can`t remove geometry `${geom.name}` from layer `$name`');
+		if(obj.layer != this) {
+			log('can`t remove `${obj.name}` from layer `$name`');
 		} else {
-			_removeUnsafe(geom);
+			removeUnsafe(obj);
 		}
 
 	}
 
-	@:noCompletion public function _addUnsafe(geom:DisplayObject, _dirtySort:Bool = true) {
+	@:noCompletion public function addUnsafe(obj:LayerObject, sort:Bool = true) {
 
-		_debug('layer `$name` _addUnsafe geometry: ${geom.name}');
+		_debug('layer `$name` addUnsafe: ${obj.name}');
 		
-		objects.push(geom);
-		geom._layer = this;
-		geom.onAdded(this);
+		objects.push(obj);
 
-		if(_dirtySort) {
+		setupAdded(obj);
+
+		if(sort) {
 			dirtySort = true;
 		}
 
 	}
 
-	@:noCompletion public function _removeUnsafe(geom:DisplayObject) {
+	@:noCompletion public function removeUnsafe(obj:LayerObject) {
 
-		_debug('layer `$name` _removeUnsafe geometry: ${geom.name}');
+		_debug('layer `$name` removeUnsafe: ${obj.name}');
 
-		_objectsToRemove.push(geom);
-		geom.onRemoved(this);
-		geom._layer = null;
+		_objectsToRemove.push(obj);
+
+		setupRemoved(obj);
 
 	}
 
-	public function update(dt:Float) {
+	public function update(elapsed:Float) {
+
+		_verboser('layer `$name` update, elapsed: $elapsed');
 
 		removeObjects();
 		sortObjects();
 		
 		for (o in objects) {
-			o.update(dt);
+			if(o.active) {
+				o.update(elapsed);
+			}
 		}
 		
 	}
 
-	public function render(cam:Camera) {
+	public function render(camera:Camera) {
 
 		_verboser('layer `$name` render');
 
@@ -154,28 +159,23 @@ class Layer {
 
 		onPreRender.emit();
 
-		var g = Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
-
-		// removeObjects();
-		// sortObjects();
-
 		#if !no_debug_console
 		stats.reset();
 		#end
 
 		if(objects.length > 0) {
 			var p = _renderer.painter;
-			p.begin(g, cam.viewport);
-			p.setProjection(cam.projectionMatrix);
-			for (o in objects) {
+			p.begin(getTargetGraphics(), camera.viewport);
+			p.setProjection(camera.projectionMatrix);
+			for (obj in objects) {
 				#if !no_debug_console
 				stats.geometry++;
 				#end
-				if(o.visible && o.renderable) {
+				if(obj.visible && obj.renderable) {
 					#if !no_debug_console
 					stats.visibleGeometry++;
 					#end
-					o.render(p);
+					obj.render(p);
 				}
 			}
 			p.end();
@@ -194,10 +194,30 @@ class Layer {
 
 	}
 
+	inline function getTargetGraphics():Graphics {
+
+		return Clay.renderer.target != null ? Clay.renderer.target.image.g4 : Clay.screen.buffer.image.g4;
+
+	}
+
+	inline function setupAdded(obj:LayerObject) {
+		
+		obj._layer = this;
+		obj.onAdded(this);
+
+	}
+
+	inline function setupRemoved(obj:LayerObject) {
+		
+		obj.onRemoved(this);
+		obj._layer = null;
+
+	}
+
 	inline function sortObjects() {
 
 		if(depthSort && dirtySort) {
-			ArraySort.sort(objects, sortDisplayObjects);
+			ArraySort.sort(objects, sortLayerObjects);
 			dirtySort = false;
 		}
 
@@ -209,12 +229,12 @@ class Layer {
 			for (o in _objectsToRemove) {
 				objects.remove(o);
 			}
-			_objectsToRemove.splice(0, _objectsToRemove.length);
+			ArrayTools.clear(_objectsToRemove);
 		}
 
 	}
 
-	inline function sortDisplayObjects(a:DisplayObject, b:DisplayObject):Int {
+	inline function sortLayerObjects(a:LayerObject, b:LayerObject):Int {
 
 		if(a.sortKey < b.sortKey) {
 			return -1;
