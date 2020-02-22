@@ -16,7 +16,6 @@ class TimerManager {
 
 	}
 
-
 	@:allow(clay.utils.Timer) 
 	inline function add(timer:Timer) {
 

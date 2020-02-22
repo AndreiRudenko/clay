@@ -432,8 +432,8 @@ class Uniforms {
 @:generic
 private class Uniform<T, T1> {
 
-	public var value : T;
-	public var location : T1;
+	public var value:T;
+	public var location:T1;
 
 	inline public function new(value:T, location:T1) {
 

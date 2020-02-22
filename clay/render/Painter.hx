@@ -50,7 +50,7 @@ class Painter {
 
 	var _shader:Shader;
 	var _texture:Texture;
-    var _textureBlank:Texture;
+	var _textureBlank:Texture;
 	var _clipRect:Rectangle;
 	var _clipRectDefault:Rectangle;
 
@@ -138,7 +138,7 @@ class Painter {
 
 	public function clip(rect:Rectangle) {
 
-		// if(_clipRect != rect && !_clipRect.equals(rect)) { // check for null
+		// if(_clipRect != rect && (rect != null && !_clipRect.equals(rect))) {
 		if(_clipRect != rect) {
 			flush();
 		}

@@ -86,7 +86,7 @@ class Renderer {
 		#end
 
 		var buffer = Clay.screen.buffer.image.g4;
-	    buffer.begin();
+		buffer.begin();
 		buffer.clear(clearColor.toInt());
 
 		for (cam in cameras.activeCameras) {
@@ -96,7 +96,7 @@ class Renderer {
 		}
 
 		// buffer.disableScissor();
-	    buffer.end();
+		buffer.end();
 
 		var g = f.g4;
 		g.begin();

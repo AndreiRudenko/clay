@@ -33,9 +33,9 @@ class Screen {
 
 
 	@:allow(clay.system.App)
-	function new(_antial:Int) {
+	function new(antialiasing:Int) {
 
-		_antialiasing = _antial;
+		_antialiasing = antialiasing;
 
 		cursor = new Cursor();
 		_window = kha.Window.get(0);
