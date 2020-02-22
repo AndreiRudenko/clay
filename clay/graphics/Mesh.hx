@@ -86,11 +86,8 @@ class Mesh extends DisplayObject {
 
 		if(locked || p.canBatch(vertices.length, indices.length)) {
 			p.ensure(vertices.length, indices.length);
-			
-			p.setShader(shader != null ? shader : shaderDefault);
-			p.clip(clipRect);
-			p.setTexture(texture);
-			p.setBlending(_blendSrc, _blendDst, _blendOp, _alphaBlendSrc, _alphaBlendDst, _alphaBlendOp);
+
+			preRenderSetup(p);
 
 			if(locked) {
 				#if !noDebugConsole
@@ -107,8 +104,8 @@ class Mesh extends DisplayObject {
 				var m = transform.world.matrix;
 				for (v in vertices) {
 					p.addVertex(
-						m.a * v.pos.x + m.c * v.pos.y + m.tx, 
-						m.b * v.pos.x + m.d * v.pos.y + m.ty, 
+						m.getTransformX(v.pos.x, v.pos.y), 
+						m.getTransformY(v.pos.x, v.pos.y), 
 						v.tcoord.x * _regionScaled.w + _regionScaled.x,
 						v.tcoord.y * _regionScaled.h + _regionScaled.y,
 						v.color
@@ -149,7 +146,7 @@ class Mesh extends DisplayObject {
 
 		_alphaBlendSrc = alphaBlendSrc != null ? alphaBlendSrc : blendSrc;
 		_alphaBlendDst = alphaBlendDst != null ? alphaBlendDst : blendDst;
-		_alphaBlendOp = alphaBlendOp != null ? alphaBlendOp : blendOp;	
+		_alphaBlendOp = alphaBlendOp != null ? alphaBlendOp : blendOp;
 
 	}
 
@@ -213,6 +210,15 @@ class Mesh extends DisplayObject {
 			_indexBuffer.delete();
 			_indexBuffer = null;
 		}
+
+	}
+
+	inline function preRenderSetup(p:Painter) {
+		
+		p.setShader(shader != null ? shader : shaderDefault);
+		p.clip(clipRect);
+		p.setTexture(texture);
+		p.setBlending(_blendSrc, _blendDst, _blendOp, _alphaBlendSrc, _alphaBlendDst, _alphaBlendOp);
 
 	}
 
