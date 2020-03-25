@@ -1,8 +1,6 @@
 package clay.events;
 
-
 class Emitter {
-
 
 	@:noCompletion public var bindings:Map<EventType<Dynamic>, Array<EmitHandler<Dynamic>>>;
 
@@ -10,19 +8,15 @@ class Emitter {
 	var _toAdd:Array<EmitHandler<Dynamic>>;
 	var _processing:Bool;
 
-
 	public function new() {
-
 		bindings = new Map();
 
 		_toRemove = [];
 		_toAdd = [];
 		_processing = false;
-
 	}
 
 	public function emit<T>(event:EventType<T>, ?data:T) {
-
 		var list = bindings.get(event);
 
 		if(list != null) {
@@ -45,11 +39,9 @@ class Emitter {
 				_toAdd.splice(0, _toAdd.length);
 			}
 		}
-		
 	}
 
 	public function on<T>(event:EventType<T>, handler:(e:T)->Void, priority:Int = 0) {
-
 		if(_has(event, handler)) {
 			return;
 		}
@@ -64,11 +56,9 @@ class Emitter {
 		} else {
 			_add(new EmitHandler<T>(event, handler, priority));
 		}
-
 	}
 
 	public function off<T>(event:EventType<T>, handler:(e:T)->Void):Bool {
-
 		if(!_has(event, handler)) {
 			return false;
 		}
@@ -85,11 +75,9 @@ class Emitter {
 		}
 
 		return true;
-
 	}
 
 	function _has<T>(event:EventType<T>, handler:(e:T)->Void):Bool {
-
 		var list = bindings.get(event);
 
 		if(list != null) {
@@ -101,11 +89,9 @@ class Emitter {
 		}
 
 		return false;
-		
 	}
 
 	function _add<T>(emitHandler:EmitHandler<T>) {
-
 		var list = bindings.get(emitHandler.event);
 		if(list == null) {
 			list = new Array<EmitHandler<T>>();
@@ -121,11 +107,9 @@ class Emitter {
 			}
 			list.insert(atPos, emitHandler);
 		}
-
 	}
 
 	function _remove<T>(event:EventType<T>, handler:(e:T)->Void) {
-		
 		var list = bindings.get(event);
 		for (i in 0...list.length) {
 			if(list[i].callback == handler) {
@@ -136,9 +120,7 @@ class Emitter {
 		if(list.length == 0) {
 			bindings.remove(event);
 		}
-
 	}
-
 	
 }
 
@@ -146,19 +128,14 @@ private typedef EmitDef<T> = {event:T, handler:(e:T)->Void}
 
 private class EmitHandler<T> {
 
-
 	public var event:EventType<T>;
 	public var callback:(e:T)->Void;
 	public var priority:Int;
 
-
 	public function new(event:EventType<T>, callback:(e:T)->Void, priority:Int) {
-
 		this.event = event;
 		this.callback = callback;
 		this.priority = priority;
-
 	}
-
 
 }

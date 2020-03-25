@@ -1,7 +1,7 @@
 package clay.graphics.particles.components;
 
 
-import clay.render.Color;
+import clay.utils.Color;
 
 
 class ColorBySpeed {

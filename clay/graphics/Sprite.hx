@@ -1,15 +1,12 @@
 package clay.graphics;
 
-
 import clay.math.RectangleCallback;
-import clay.render.Camera;
+import clay.math.Rectangle;
 import clay.graphics.shapes.Quad;
 import clay.resources.Texture;
 import clay.utils.Log.*;
 
-// @:keep
 class Sprite extends Quad {
-
 
 	public var centered(default, set):Bool;
 	public var uv(default, null):RectangleCallback;
@@ -19,39 +16,30 @@ class Sprite extends Quad {
 	var _flipX:Bool;
 	var _flipY:Bool;
 
-
 	public function new(?texture:Texture) {
-		
 		super();
 
 		this.texture = texture;
 
 		uv = new RectangleCallback();
 		uv.listen(uvChanged);
-
-		updateTcoord();
+		updateTextureCoords();
 		setUV(0, 0, 1, 1);
 
 		_flipX = false;
 		_flipY = false;
-
 		centered = true;
-
 	}
 	
-	public function setUV(_x:Float, _y:Float, _w:Float, _h:Float) {
-
-		var lstate = uv.ignoreListeners;
+	public function setUV(x:Float, y:Float, w:Float, h:Float) {
+		var prevState = uv.ignoreListeners;
 		uv.ignoreListeners = true;
-		uv.set(_x, _y, _w, _h);
-		uv.ignoreListeners = lstate;
-
-		updateTcoord();
-
+		uv.set(x, y, w, h);
+		uv.ignoreListeners = prevState;
+		updateTextureCoords();
 	}
 
-	override function sizeChanged(v:Float) {
-
+	override function updateSizeVertices() {
 		if(centered) {
 			var hw = size.x * 0.5;
 			var hh = size.y * 0.5;
@@ -60,19 +48,15 @@ class Sprite extends Quad {
 			vertices[2].pos.set( hw,  hh);
 			vertices[3].pos.set(-hw,  hh);
 		} else {
-			super.sizeChanged(v);
+			super.updateSizeVertices();
 		}
-
 	}
 
-	function uvChanged(v:Float) {
-
-		updateTcoord();
-
+	function uvChanged(r:Rectangle) {
+		updateTextureCoords();
 	}
 
-	function updateTcoord() {
-		
+	function updateTextureCoords() {
 		var tlX = uv.x;
 		var tlY = uv.y;
 		var trX = uv.x + uv.w;
@@ -116,50 +100,32 @@ class Sprite extends Quad {
 		vertices[1].tcoord.set(trX, trY);
 		vertices[2].tcoord.set(brX, brY);
 		vertices[3].tcoord.set(blX, blY);
-
 	}
 
 	inline function get_flipX():Bool {
-
 		return _flipX;
-
 	}
 
 	function set_flipX(v:Bool):Bool {
-
 		_flipX = v;
-
-		updateTcoord();
-
+		updateTextureCoords();
 		return _flipX;
-
 	}
 
 	inline function get_flipY():Bool {
-
 		return _flipY;
-
 	}
 
 	function set_flipY(v:Bool):Bool {
-
 		_flipY = v;
-
-		updateTcoord();
-
+		updateTextureCoords();
 		return _flipY;
-
 	}
 
 	function set_centered(v:Bool):Bool {
-
 		centered = v;
-
-		sizeChanged(0);
-
+		updateSizeVertices();
 		return centered;
-
 	}
 	
-
 }

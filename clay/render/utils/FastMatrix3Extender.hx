@@ -1,14 +1,10 @@
 package clay.render.utils;
 
-
 import kha.math.FastMatrix3;
-
 
 class FastMatrix3Extender {
 
-
 	public static function orto(m:FastMatrix3, left:Float, right:Float, bottom:Float, top:Float):FastMatrix3 {
-
 		var sx:Float = 1.0 / (right - left);
 		var sy:Float = 1.0 / (top - bottom);
 
@@ -25,11 +21,9 @@ class FastMatrix3Extender {
 		m._22 = 1;
 
 		return m;
-
 	}
 	
 	public static function append(m:FastMatrix3, other:FastMatrix3):FastMatrix3 {
-
         var _00 = m._00;
         var _01 = m._01;
         var _10 = m._10;
@@ -44,11 +38,9 @@ class FastMatrix3Extender {
         m._21 = (other._20 * _01) + (other._21 * _11) + m._21;
 
 		return m;
-
 	}
 
 	public static function appendMatrix(m:FastMatrix3, other:clay.math.Matrix):FastMatrix3 {
-
         var _00 = m._00;
         var _01 = m._01;
         var _10 = m._10;
@@ -63,11 +55,9 @@ class FastMatrix3Extender {
         m._21 = (other.tx * _01) + (other.ty * _11) + m._21;
 
 		return m;
-
 	}
 
 	public static function rotate(m:FastMatrix3, radians:Float):FastMatrix3 {
-		
 		var _sin:Float = Math.sin(radians);
 		var _cos:Float = Math.cos(radians);
 
@@ -82,40 +72,32 @@ class FastMatrix3Extender {
 		m._11 = _10 * -_sin + _11 * _cos;
 
 		return m;
-		
 	}
 
 	public static function scale(m:FastMatrix3, _x:Float, _y:Float):FastMatrix3 {
-		
 		m._00 *= _x;
 		m._01 *= _x;
 		m._10 *= _y;
 		m._11 *= _y;
 
 		return m;
-		
 	}
 
 	public static function translate(m:FastMatrix3, _x:Float, _y:Float):FastMatrix3 {
-		
 		m._20 += _x;
 		m._21 += _y;
 
 		return m;
-
 	}    
 
 	public static function apply(m:FastMatrix3, _x:Float, _y:Float):FastMatrix3 {
-		
 		m._20 = m._00 * _x + m._10 * _y + m._20;
 		m._21 = m._01 * _x + m._11 * _y + m._21;
 
 		return m;
-
 	}
 
 	public static function identity(m:FastMatrix3):FastMatrix3 {
-
 		m._00 = 1;
 		m._10 = 0;
 		m._20 = 0;
@@ -129,11 +111,9 @@ class FastMatrix3Extender {
 		m._22 = 1;
 
 		return m;
-
 	}
 
 	public static function invert(m:FastMatrix3):FastMatrix3 {
-
         var a1 = m._00;
         var b1 = m._01;
         var c1 = m._10;
@@ -149,11 +129,9 @@ class FastMatrix3Extender {
         m._21 = -((a1 * m._21) - (b1 * tx1)) / n;
 
 		return m;
-
 	}
 
 	public static function fromMatrix(m3:FastMatrix3, m:clay.math.Matrix):FastMatrix3 {
-
 		m3._00 = m.a;
 		m3._10 = m.c;
 		m3._20 = m.tx;
@@ -167,8 +145,6 @@ class FastMatrix3Extender {
 		m3._22 = 1;
 
 		return m3;
-
 	}
 	
-
 }

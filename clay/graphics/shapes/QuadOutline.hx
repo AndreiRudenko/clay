@@ -1,15 +1,13 @@
 package clay.graphics.shapes;
 
-
 import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.render.Vertex;
 import clay.render.Camera;
 import clay.graphics.Mesh;
-
+import clay.utils.StrokeAlign;
 
 class QuadOutline extends Mesh {
-
 
 	public var size(default, null):VectorCallback;
 	public var weight(get, set):Float;
@@ -18,14 +16,12 @@ class QuadOutline extends Mesh {
 	var _weight:Float;
 	var _align:StrokeAlign;
 
-
 	public function new(w:Float = 32, h:Float = 32, weight:Float = 4) {
-
 		_weight = weight;
 		_align = StrokeAlign.CENTER;
 
 		size = new VectorCallback(w, h);
-		size.listen(sizeChanged);
+		size.listen(sizeChangedListener);
 
 		var vertices = [];
 		var indices = [];
@@ -46,12 +42,14 @@ class QuadOutline extends Mesh {
 
 		super(vertices, indices, null);
 
-		sizeChanged(0);
-
+		sizeChanged();
 	}
 
-	function sizeChanged(v:Float) {
-		
+	function sizeChangedListener(v:Vector) {
+		sizeChanged();
+	}
+
+	inline function sizeChanged() {
 		var sw:Float = 0;
 		var sw2:Float = 0;
 		var w:Float = size.x;
@@ -81,40 +79,26 @@ class QuadOutline extends Mesh {
 
 		vertices[8].pos.set(sw,  sw);
 		vertices[9].pos.set(sw2, sw2);
-
 	}
 
 	inline function get_align():StrokeAlign {
-
 		return _align;
-
 	}
 
 	function set_align(v:StrokeAlign):StrokeAlign {
-
 		_align = v;
-
-		sizeChanged(0);
-
+		sizeChanged();
 		return v;
-
 	}
 
 	inline function get_weight():Float {
-
 		return _weight;
-
 	}
 
 	function set_weight(v:Float):Float {
-
 		_weight = v;
-
-		sizeChanged(0);
-
+		sizeChanged();
 		return v;
-
 	}
-
 
 }

@@ -1,6 +1,5 @@
 package clay.graphics.particles.core;
 
-
 import haxe.macro.Context;
 import haxe.macro.Expr;
 // import haxe.macro.Type;
@@ -10,23 +9,17 @@ import clay.graphics.particles.core.Components;
 // import clay.graphics.particles.ParticleEmitter;
 import clay.graphics.particles.core.ParticleVector;
 
-
 class ComponentManager {
-
 
 	var _capacity:Int;
 	var _components:Array<Components<Dynamic>>;
 
-
 	public function new(capacity:Int) {
-
 		_capacity = capacity;
 		_components = [];
-
 	}
 
 	public macro function get<T>(self:Expr, componentClass:Expr, create:Bool = true):ExprOf<Components<T>> {
-
 		var type = Context.typeof(componentClass);
 
 		var cname = switch (componentClass.expr) {
@@ -130,44 +123,47 @@ class ComponentManager {
 					return macro $self._getClass($v{cname}, $componentClass);
 				}
 		}
-
 	}
 
-	public function remove<T>(_componentClass:Class<T>):Bool {
-
-		var cp = getComponents(Type.getClassName(_componentClass));
-
-		if(cp != null) {
-			cp.clear();
-			return true;
+	public function put(c:Components<Dynamic>) {
+		c.modulesUsed--;
+		if(c.modulesUsed <= 0) {
+			removeComponent(c);
 		}
-
-		return false;
-
 	}
 
-	public function removeAll(id:Int) {
-
-		for (c in _components) {
-			c.remove(id);
-		}
-
+	function removeComponent(c:Components<Dynamic>) {
+		c.clear();
+		_components.remove(c);
 	}
 
-	public function clear() {
+	// public function clear<T>(_componentClass:Class<T>):Bool {
+	// 	var cp = getComponents(Type.getClassName(_componentClass));
 
-		for (c in _components) {
-			c.clear();
-		}
+	// 	if(cp != null) {
+	// 		cp.clear();
+	// 		return true;
+	// 	}
 
-	}
+	// 	return false;
+	// }
+
+	// public function removeAll(id:Int) {
+	// 	for (c in _components) {
+	// 		c.remove(id);
+	// 	}
+	// }
+
+	// public function clear() {
+	// 	for (c in _components) {
+	// 		c.clear();
+	// 	}
+	// }
 
 	@:noCompletion public function swap(a:Int, b:Int) {
-		
 		for (c in _components) {
 			c.swap(a, b);
 		}
-
 	}
 
 	@:noCompletion public function _getBool(cn:String):Components<Bool> return cast getComponents(cn);
@@ -183,7 +179,6 @@ class ComponentManager {
 	@:noCompletion public function _setClass<T>(p:ParticleVector, cn:String, t:Class<T>, f:()->T):Components<T> return createComponents(p, cn, f);
 
 	function createComponents<T>(particles:ParticleVector, componentName:String, f:()->T):Components<T> {
-		
 		var cp:Components<T> = cast getComponents(componentName);
 
 		if(cp == null) {
@@ -198,22 +193,21 @@ class ComponentManager {
 		for (i in 0...particles.capacity) {
 			cp.set(i, f());
 		}
+		
+		cp.modulesUsed++;
 
 		return cp;
-
 	}
 
 	function getComponents(name:String) {
-		
 		for (c in _components) {
 			if(c.name == name) {
+				c.modulesUsed++;
 				return c;
 			}
 		}
 		
 		return null;
-
 	}
-
 
 }

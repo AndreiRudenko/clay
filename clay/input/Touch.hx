@@ -1,25 +1,20 @@
 package clay.input;
 
-
 import clay.system.App;
 import clay.utils.Log.*;
 import clay.utils.Bits;
 import clay.events.TouchEvent;
 
-
-@:allow(clay.system.InputManager)
+@:allow(clay.input.InputManager)
 @:access(clay.system.App)
 class Touch extends Input {
-
 
 	public var count(default, null):Int = 0;
 	public var touches(default, null):Array<TouchEvent>;
 
 	var _touches:Array<TouchEvent>;
 
-
 	override function enable() {
-
 		if(active) {
 			return;
 		}
@@ -43,11 +38,9 @@ class Touch extends Input {
 		#end
 
 		super.enable();
-
 	}
 
 	override function disable() {
-
 		if(!active) {
 			return;
 		}
@@ -66,15 +59,11 @@ class Touch extends Input {
 		_touches = null;
 
 		super.disable();
-
 	}
 
-	function reset() {
-
-	}
+	function reset() {}
 
 	function onPressed(id:Int, x:Int, y:Int) {
-
 		_debug('onPressed id:$id, x:$x, y$y');
 
 		count++;
@@ -85,12 +74,9 @@ class Touch extends Input {
 		touches.push(t);
 
 		_app.emitter.emit(TouchEvent.TOUCH_DOWN, t);
-
-
 	}
 
 	function onReleased(id:Int, x:Int, y:Int) {
-
 		_debug('onPressed id:$id, x:$x, y$y');
 
 		count--;
@@ -101,19 +87,15 @@ class Touch extends Input {
 		_app.emitter.emit(TouchEvent.TOUCH_UP, t);
 
 		touches.remove(t);
-
 	}
 
 	function onMove(id:Int, x:Int, y:Int) {
-
 		_verboser('onMove id:$id, x:$x, y$y');
 
 		var t = _touches[id];
 		t.set(x, y, x - t.x, y - t.y, TouchEvent.TOUCH_MOVE);
 
 		_app.emitter.emit(TouchEvent.TOUCH_MOVE, t);
-
 	}
-
 
 }

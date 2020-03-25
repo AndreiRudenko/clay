@@ -1,26 +1,19 @@
 package clay.utils.macro;
 
-
 import haxe.macro.Context;
 import haxe.macro.Expr;
-
 
 #if macro
 class EventMacro {
 
-
 	public static var eventID:Int = 0;
 	public static var eventMap:Map<String, Int> = new Map();
 
-
 	public static function build():Array<Field> {
-
 		var fields = Context.getBuildFields();
 
 		function getEventName(field:Field):String { 
-
 			var name:String;
-
 			switch (field.kind) {
 				case FVar(t,_): 
 					switch (t) {
@@ -38,9 +31,7 @@ class EventMacro {
 					}
 				case _:
 			}
-
 			return name;
-			
 		}
 
 		// todo: check for static field
@@ -69,7 +60,6 @@ class EventMacro {
 		}
 
 		return fields;
-
 	}
 
 }

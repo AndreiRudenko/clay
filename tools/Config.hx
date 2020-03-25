@@ -81,12 +81,19 @@ class Config {
 
 		if(!noDefaultFont) {
 			var fp = Path.join([CLI.engineDir, 'assets/fonts']);
-			kfile += 'p.addAssets("${fp}", {destination: "assets/{name}", noprocessing: true, notinlist: true});\n';
+			kfile += 'p.addAssets("${fp}", {destination: "${CLI.resourcesPath}/{name}", noprocessing: true, notinlist: true});\n';
 		}
+
+		// if(project.assets != null) {
+		// 	for (s in project.assets) {
+		// 		kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${CLI.resourcesPath}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
+		// 	}
+		// }
+
 
 		if(project.assets != null) {
 			for (s in project.assets) {
-				kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${s}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
+				kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${CLI.resourcesPath}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
 			}
 		}
 

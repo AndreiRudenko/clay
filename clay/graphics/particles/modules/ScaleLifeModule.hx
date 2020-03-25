@@ -6,10 +6,9 @@ import clay.graphics.particles.core.Components;
 import clay.graphics.particles.components.Scale;
 import clay.graphics.particles.components.ScaleDelta;
 import clay.utils.Mathf;
-
+import clay.utils.Log.*;
 
 class ScaleLifeModule extends ParticleModule {
-
 
 	public var initialScale:Float;
 	public var initialScaleMax:Float;
@@ -19,35 +18,34 @@ class ScaleLifeModule extends ParticleModule {
 	var _scale:Components<Scale>;
 	var _scaleDelta:Components<ScaleDelta>;
 
+	public function new(options:ScaleLifeModuleOptions) {
+		super(options);
 
-	public function new(_options:ScaleLifeModuleOptions) {
-
-		super(_options);
-
-		initialScale = _options.initialScale != null ? _options.initialScale : 1;
-		initialScaleMax = _options.initialScaleMax != null ? _options.initialScaleMax : 0;
-		endScale = _options.endScale != null ? _options.endScale : 1;
-		endScaleMax = _options.endScaleMax != null ? _options.endScaleMax : 0;
-
+		initialScale = def(options.initialScale, 1);
+		initialScaleMax = def(options.initialScaleMax, 0);
+		endScale = def(options.endScale, 1);
+		endScaleMax = def(options.endScaleMax, 0);
 	}
 
-	override function init() {
-
+	override function onAdded() {
 		_scale = emitter.components.get(Scale);
 		_scaleDelta = emitter.components.get(ScaleDelta);
+	}
 
+	override function onRemoved() {
+		emitter.components.put(_scale);
+		emitter.components.put(_scaleDelta);
+		_scale = null;
+		_scaleDelta = null;
 	}
 
 	override function onDisabled() {
-
 		for (p in particles) {
 			_scale.set(p.id, 1);
 		}
-		
 	}
 
 	override function onSpawn(p:Particle) {
-
 		var s = _scale.get(p.id);
 		var sd = _scaleDelta.get(p.id);
 
@@ -72,7 +70,6 @@ class ScaleLifeModule extends ParticleModule {
 	}
 
 	override function update(dt:Float) {
-
 		var s:Float;
 		var sd:Float;
 		for (p in particles) {
@@ -83,14 +80,11 @@ class ScaleLifeModule extends ParticleModule {
 				_scale.set(p.id, s);
 			}
 		}
-
 	}
-
 
 // import/export
 
 	override function fromJson(d:Dynamic) {
-
 		super.fromJson(d);
 
 		initialScale = d.initialScale;
@@ -99,11 +93,9 @@ class ScaleLifeModule extends ParticleModule {
 		endScaleMax = d.endScaleMax;
 		
 		return this;
-	    
 	}
 
 	override function toJson():Dynamic {
-
 		var d = super.toJson();
 
 		d.initialScale = initialScale;
@@ -112,21 +104,18 @@ class ScaleLifeModule extends ParticleModule {
 		d.endScaleMax = endScaleMax;
 
 		return d;
-	    
 	}
 
-
 }
-
 
 typedef ScaleLifeModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initialScale : Float;
-	@:optional var initialScaleMax : Float;
-	@:optional var endScale : Float;
-	@:optional var endScaleMax : Float;
+	?initialScale:Float,
+	?initialScaleMax:Float,
+	?endScale:Float,
+	?endScaleMax:Float,
 
 }
 

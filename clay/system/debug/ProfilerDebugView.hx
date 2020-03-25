@@ -6,16 +6,16 @@ import clay.render.Camera;
 import clay.graphics.Text;
 import clay.graphics.shapes.Quad;
 import clay.graphics.Mesh;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.math.Vector;
 import clay.utils.Mathf;
 import clay.system.Debug;
 import clay.input.Keyboard;
 import clay.input.Key;
 import clay.input.Mouse;
-import clay.render.Layer;
+import clay.render.Layers;
 import clay.render.Vertex;
-import clay.system.ResourceManager;
+import clay.resources.ResourceManager;
 import clay.resources.Resource;
 import clay.resources.AudioResource;
 import clay.resources.BytesResource;
@@ -223,13 +223,13 @@ private class ProfilerGraph {
 			graphbgGeometry = new Quad(width-segment, height2);
 			graphbgGeometry.color = new Color().fromInt(0x101010);
 			graphbgGeometry.depth = 999.3;
-			Clay.debug.layer.add(graphbgGeometry);
+			Clay.layers.add(graphbgGeometry, Layers.DEBUG_UI);
 		}
 
 		graphGeometry = new Mesh();
 		graphGeometry.depth = 999.3;
 		graphGeometry.color = color;
-		Clay.debug.layer.add(graphGeometry);
+		Clay.layers.add(graphGeometry, Layers.DEBUG_UI);
 
 		for (i in 0...history) {
 			var top = new Vertex(new Vector(segment*i, height2), color);
@@ -374,18 +374,18 @@ private class ProfilerBar {
 		textItem.fontSize = Std.int(height*1.8);
 		textItem.color = _color;
 		textItem.depth = 999.3;
-		Clay.debug.layer.add(textItem);
+		Clay.layers.add(textItem, Layers.DEBUG_UI);
 
 		bgGeometry = new Quad(graph.width-2, graph.height-2);
 		bgGeometry.color = new Color().fromInt(0x090909);
 		bgGeometry.depth = 999.3;
-		Clay.debug.layer.add(bgGeometry);
+		Clay.layers.add(bgGeometry, Layers.DEBUG_UI);
 
 		barGeometry = new Quad(graph.width, graph.height);
 		barGeometry.color = _color;
 		barGeometry.depth = 999.33;
 		barGeometry.transform.pos.set(1,1);
-		Clay.debug.layer.add(barGeometry);
+		Clay.layers.add(barGeometry, Layers.DEBUG_UI);
 
 		hide();
 

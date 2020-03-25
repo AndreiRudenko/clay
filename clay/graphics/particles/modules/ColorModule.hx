@@ -4,35 +4,35 @@ import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.Components;
 import clay.math.Vector;
-import clay.render.Color;
+import clay.utils.Color;
+import clay.utils.Log.*;
 
+using clay.graphics.particles.utils.ColorExtender;
 
 class ColorModule extends ParticleModule {
-
 
 	public var initialColor(default, null):Color;
 	public var initialColorMax:Color;
 
 	var _color:Components<Color>;
 
+	public function new(options:ColorModuleOptions) {
+		super(options);
 
-	public function new(_options:ColorModuleOptions) {
-
-		super(_options);
-
-		initialColor = _options.initialColor != null ? _options.initialColor : new Color();
-		initialColorMax = _options.initialColorMax;
-
+		initialColor = def(options.initialColor, new Color());
+		initialColorMax = options.initialColorMax;
 	}
 
-	override function init() {
-
+	override function onAdded() {
 		_color = emitter.components.get(Color);
-	    
+	}
+
+	override function onRemoved() {
+		emitter.components.put(_color);
+		_color = null;
 	}
 
 	override function onSpawn(p:Particle) {
-
 		var pcolor:Color = _color.get(p.id);
 
 		if(initialColorMax != null) {
@@ -46,13 +46,11 @@ class ColorModule extends ParticleModule {
 			pcolor.b = initialColor.b;
 			pcolor.a = initialColor.a;
 		}
-
 	}
 
 // import/export
 
 	override function fromJson(d:Dynamic) {
-
 		super.fromJson(d);
 
 		if(d.initialColor != null) {
@@ -67,11 +65,9 @@ class ColorModule extends ParticleModule {
 		}
 
 		return this;
-
 	}
 
 	override function toJson():Dynamic {
-
 		var d = super.toJson();
 
 		d.initialColor = initialColor.toJson();
@@ -81,19 +77,16 @@ class ColorModule extends ParticleModule {
 		}
 
 		return d;
-
 	}
 
-
 }
-
 
 typedef ColorModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initialColor : Color;
-	@:optional var initialColorMax : Color;
+	?initialColor:Color,
+	?initialColorMax:Color,
 
 }
 

@@ -7,15 +7,16 @@ import sys.FileSystem;
 class CLI {
 
 
-	public static var engineName:String = 'clay2d';
-	public static var templatesPath:String = 'templates';
-	public static var backendPath:String = 'backend';
-	public static var khaPath:String = 'Kha';
-	public static var khamakePath:String;
+	public static final engineName:String = 'clay2d';
+	public static final templatesPath:String = 'templates';
+	public static final backendPath:String = 'backend';
+	public static final khaPath:String = 'Kha';
+	public static final resourcesPath:String = 'data';
 
 	public static var commandMap:Map<String, Command>;
 	public static var userDir:String;
 	public static var engineDir:String;
+	public static var khamakePath:String;
 
 	public static var targets:Array<String> = ['html5', 'windows', 'windows-hl', 'osx', 'linux', 'android-native', 'android-hl', 'ios', 'uwp'];
 

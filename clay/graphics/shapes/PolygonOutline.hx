@@ -1,16 +1,14 @@
 package clay.graphics.shapes;
 
-
 import clay.math.VectorCallback;
 import clay.math.Vector;
 import clay.render.Vertex;
-import clay.render.Color;
 import clay.render.Camera;
+import clay.utils.Color;
+import clay.utils.StrokeAlign;
 import clay.graphics.Mesh;
 
-
 class PolygonOutline extends Mesh {
-
 
 	public var weight(get, set):Float;
 	public var points(get, set):Array<Vector>;
@@ -24,9 +22,7 @@ class PolygonOutline extends Mesh {
 	var _tangent:Vector;
 	var _line1:Vector;
 
-
 	public function new(points:Array<Vector>, weight:Float = 4) {
-
 		_weight = weight;
 		_points = points;
 		_align = StrokeAlign.CENTER;
@@ -59,11 +55,9 @@ class PolygonOutline extends Mesh {
 
 		updatePoints();
 		updateTcoords();
-
 	}
 
 	public function updatePoints() {
-
 		if(_points.length < 3) {
 			return;
 		}
@@ -108,68 +102,52 @@ class PolygonOutline extends Mesh {
 				p1.y - miter.y * length * l1
 			);
 		}
-		
 	}
 
 	function updateTcoords() {
-
 		var len = _points.length+1;
 		for (i in 0...len) {
 			vertices[i*2].tcoord.set(i/len,0);
 			vertices[i*2+1].tcoord.set(i/len,1);
 		}
-		
 	}
 
 	inline function get_points():Array<Vector> {
-
 		return _points;
-
 	}
 
 	function set_points(v:Array<Vector>):Array<Vector> {
-
 		_points = v;
 
 		updatePoints();
 		updateTcoords();
 
 		return v;
-
 	}
 
 	inline function get_weight():Float {
-
 		return _weight;
-
 	}
 
 	function set_weight(v:Float):Float {
-
 		_weight = v;
 
 		updatePoints();
 
 		return v;
-
 	}
 
 
 	inline function get_align():StrokeAlign {
-
 		return _align;
-
 	}
 
 	function set_align(v:StrokeAlign):StrokeAlign {
-
 		_align = v;
 
 		updatePoints();
 
 		return v;
-
 	}
-
 
 }

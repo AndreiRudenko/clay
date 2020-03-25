@@ -3,7 +3,7 @@ package clay.system.debug;
 
 import clay.graphics.Text;
 import clay.graphics.shapes.Quad;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.math.Vector;
 import clay.math.VectorCallback;
 import clay.utils.Mathf;
@@ -15,10 +15,11 @@ import clay.utils.ArrayTools;
 import clay.audio.AudioChannel;
 import clay.audio.AudioGroup;
 import clay.audio.Sound;
-import clay.ds.Pool;
+import clay.utils.DynamicPool;
 import clay.events.KeyEvent;
 import clay.events.AppEvent;
 import clay.events.MouseEvent;
+import clay.render.Layers;
 
 
 class AudioDebugView extends DebugView {
@@ -34,7 +35,7 @@ class AudioDebugView extends DebugView {
 	var hideComps:Bool = true;
 	var audioStats:AudioStats;
 	var bars:Array<ProgressBar>;
-	var barsPool:Pool<ProgressBar>;
+	var barsPool:DynamicPool<ProgressBar>;
 	var _objIndex:Int = 0;
 
 
@@ -45,7 +46,7 @@ class AudioDebugView extends DebugView {
 		debugName = "Audio";
 
 		bars = [];
-		barsPool = new Pool<ProgressBar>(16, 0, 
+		barsPool = new DynamicPool<ProgressBar>(16, 
 			function() {
 				return new ProgressBar("", 0, 0, 1, 64, 10, 15);
 			}
@@ -62,7 +63,7 @@ class AudioDebugView extends DebugView {
 		itemsList.height = 0;
 		itemsList.clipRect = rect;
 		itemsList.depth = 999.3;
-		debug.layer.add(itemsList);
+		Clay.layers.add(itemsList, Layers.DEBUG_UI);
 
 		var kravur = itemsList.font.font._get(fontSize);
 		fontHeight = kravur.getHeight();
@@ -167,23 +168,23 @@ class AudioDebugView extends DebugView {
 		_objIndex = 0;
 		var _result = new StringBuf();
 		// var _result = "";
-			_result.add("Output ( " + audioStats.groups + " / " + audioStats.sounds + " / " + audioStats.effects + " ) Volume: " + Mathf.fixed(Clay.audio.gain, 4) + " \n \n ");
+		_result.add("Output ( " + audioStats.groups + " / " + audioStats.sounds + " / " + audioStats.effects + " ) \n \n ");
 
-			audioStats.reset();
-			audioStats.get(Clay.audio, false);
-			_result.add("Master ( " + audioStats.groups + " / " + audioStats.sounds + " / " + audioStats.effects + " ) \n ");
+		audioStats.reset();
+		audioStats.get(Clay.audio, false);
+		_result.add("Master ( " + audioStats.groups + " / " + audioStats.sounds + " / " + audioStats.effects + " ) \n ");
 
-			listEffects(_result, Clay.audio);
+		listEffects(_result, Clay.audio);
 
-			var channels = Clay.audio.channels;
-			var channelsCount = Clay.audio.channelsCount;
+		var channels = Clay.audio.channels;
+		var channelsCount = Clay.audio.channelsCount;
 
-			for (i in 0...channelsCount) {
-				listChannel(_result, channels[i]);
-			}
-			for (i in 0...channelsCount) {
-				listGroup(_result, channels[i]);
-			}
+		for (i in 0...channelsCount) {
+			listChannel(_result, channels[i]);
+		}
+		for (i in 0...channelsCount) {
+			listGroup(_result, channels[i]);
+		}
 
 		return _result.toString();
 
@@ -292,17 +293,17 @@ private class ProgressBar {
 		textItem.fontSize = fontSize;
 		textItem.color = new Color().fromInt(0xffa563);
 		textItem.depth = 999.3;
-		Clay.debug.layer.add(textItem);
+		Clay.layers.add(textItem, Layers.DEBUG_UI);
 
 		bgGeometry = new Quad(width, height);
 		bgGeometry.color = new Color().fromInt(0x090909);
 		bgGeometry.depth = 999.3;
-		Clay.debug.layer.add(bgGeometry);
+		Clay.layers.add(bgGeometry, Layers.DEBUG_UI);
 
 		barGeometry = new Quad(width-2, height-2);
 		barGeometry.color = new Color().fromInt(0xffa563);
 		barGeometry.depth = 999.33;
-		Clay.debug.layer.add(barGeometry);
+		Clay.layers.add(barGeometry, Layers.DEBUG_UI);
 
 		pos = new VectorCallback();
 		pos.listen(posChanged);

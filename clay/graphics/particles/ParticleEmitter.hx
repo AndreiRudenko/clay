@@ -1,102 +1,81 @@
 package clay.graphics.particles;
 
-
-import clay.graphics.particles.ParticleSystem;
 import clay.graphics.particles.core.ComponentManager;
-import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.ParticleVector;
-import clay.graphics.particles.utils.ModulesFactory;
+import clay.graphics.particles.core.Particle;
+import clay.graphics.Sprite;
+import clay.graphics.DisplayObject;
+import clay.render.RenderContext;
 import clay.math.Vector;
-import clay.render.Painter;
-// import clay.math.Rectangle;
-// import clay.resources.Texture;
-
+import clay.math.Transform;
+import clay.utils.Log.*;
+import clay.utils.Color;
 
 class ParticleEmitter {
 
-
-	public var inited(default, null):Bool = false;
-		/** if the emitter is active, it will update */
-	public var active:Bool;
-		/** if the emitter is enabled, it's spawn and update modules */
-	public var enabled(default, null):Bool = false;
-		/** emitter name */
 	public var name:String;
-		/** offset from system position */
-	public var pos(default, null):Vector;
+	public var transform(default, null):Transform;
 
-		/** emitter particles */
-	public var particles(default, null):ParticleVector;
-		/** particles components */
-	public var components(default, null):ComponentManager;
-		/** emitter modules */
-	public var modules(default, null):Array<ParticleModule>;
-		/** active emitter modules */
-	public var activeModules(default, null):Array<ParticleModule>;
-		/** reference to system */
+	public var active:Bool;
+	public var enabled(default, null):Bool = false;
+
+	@:allow(clay.graphics.particles.ParticleSystem)
 	public var system(default, null):ParticleSystem;
 
-		/** number of particles per emit */
+	public var particles(default, null):ParticleVector;
+	public var components(default, null):ComponentManager;
+
+	public var modules(default, null):Array<ParticleModule>;
+
 	public var count:Int;
-		/** number of particles per emit max */
 	public var countMax:Int;
 
-		/** lifetime for particles */
 	public var lifetime:Float;
-		/** max lifetime for particles, if > 0, particle lifetime is random between lifetime and lifetimeMax */
 	public var lifetimeMax:Float;
 
-		/** emitter rate, particles per sec */
 	public var rate(default, set):Float;
-		/** emitter rate, max particles per sec */
 	public var rateMax(default, set):Float;
 
-		/** emitter duration */
 	public var duration(default, set):Float;
-		/** emitter duration max*/
 	public var durationMax(default, set):Float;
-		/** preprocess particles in seconds */
-	public var preprocess(default, null):Float;
-		/** emitter cache size */
+
+	public var preprocess:Float;
+
 	public var cacheSize(default, null):Int;
-		/** emitter cache wrap */
 	public var cacheWrap:Bool;
 
-		/** emitter random function */
 	public var random:()->Float;
-
-		/** emitter particles sort mode */
-	public var sortMode:ParticlesSortMode;
-		/** custom particles sort function */
-	public var sortFunc:(p1:Particle, p2:Particle)->Int;
-
-		/** emitter index in particle system */
-	public var index(default, null):Int = 0;
 
 	@:noCompletion public var options:ParticleEmitterOptions;
 
 	var _time:Float;
 	var _frameTime:Float;
+	var _duration:Float;
 	var _invRate:Float;
 	var _invRateMax:Float;
-	var _duration:Float;
 	var _preprocess:Float;
-	var _needReset:Bool = true;
 
+	var _cosA:Float;
+	var _sinA:Float;
 
 	public function new(options:ParticleEmitterOptions) {
+		transform = new Transform();
+		transform.world.autoDecompose = true;
+
+		modules = [];
+		_time = 0;
+		_frameTime = 0;
+		_duration = 0;
+		_invRate = 0;
+		_invRateMax = 0;
+		_preprocess = 0;
+		_cosA = 0;
+		_sinA = 0;
 
 		this.options = options;
 
 		name = options.name != null ? options.name : 'emitter.${Math.random()}';
-
-		modules = [];
-		activeModules = [];
-
-		_time = 0;
-		_frameTime = 0;
-		_preprocess = 0;
 
 		cacheSize = options.cacheSize != null ? options.cacheSize : 128;
 		if(cacheSize <= 0) {
@@ -106,252 +85,114 @@ class ParticleEmitter {
 		components = new ComponentManager(cacheSize);
 		particles = new ParticleVector(components, cacheSize);
 
-		pos = options.pos != null ? options.pos : new Vector();
+		if(options.pos != null) {
+			transform.pos.copyFrom(options.pos);
+		}
+
+		if(options.scale != null) {
+			transform.scale.copyFrom(options.scale);
+		}
+
+		if(options.rotation != null) {
+			transform.rotation = options.rotation;
+		}
 		
-		active = options.active != null ? options.active : true;
-		enabled = options.enabled != null ? options.enabled : false;
+		active = def(options.active, true);
+		enabled = def(options.enabled, false);
 
-		duration = options.duration != null ? options.duration : -1;
-		durationMax = options.durationMax != null ? options.durationMax : -1;
-		preprocess = options.preprocess != null ? options.preprocess : 0;
+		duration = def(options.duration, -1);
+		durationMax = def(options.durationMax, -1);
+		preprocess = def(options.preprocess, 0);
 
-		count = options.count != null ? options.count : 1;
-		countMax = options.countMax != null ? options.countMax : 0;
+		count = def(options.count, 1);
+		countMax = def(options.countMax, 0);
 
-		lifetime = options.lifetime != null ? options.lifetime : 1;
-		lifetimeMax = options.lifetimeMax != null ? options.lifetimeMax : 0;
+		lifetime = def(options.lifetime, 1);
+		lifetimeMax = def(options.lifetimeMax, 0);
 
-		rate = options.rate != null ? options.rate : 10;
-		rateMax = options.rateMax != null ? options.rateMax : 0;
+		rate = def(options.rate, 10);
+		rateMax = def(options.rateMax, 0);
 
-		random = options.random != null ? options.random : Math.random;
-
-		// if(options.texture != null) {
-		// 	texture = options.texture;
-		// } else if(options.imagePath != null) {
-		// 	imagePath = options.imagePath;
-		// }
-
-		// region = options.region;
-		sortFunc = options.sortFunc;
+		random = def(options.random, Math.random);
 		
-		cacheWrap = options.cacheWrap != null ? options.cacheWrap : false;
-		sortMode = options.sortMode != null ? options.sortMode : ParticlesSortMode.NONE;
+		cacheWrap = def(options.cacheWrap, false);
 
 		if(options.modules != null) {
 			for (m in options.modules) {
 				addModule(m);
 			}
 		}
-		
-		// create modules from data
-		if(options.modulesData != null) {
-			var _classname:String;
-			for (md in options.modulesData) {
-				_classname = md.name;
-				var m = ModulesFactory.create(_classname, md);
-				if(m != null) {
-					addModule(m.fromJson(md));
-				}
+	}
+
+	public function addModule(module:ParticleModule, ?priority:Int):ParticleEmitter {
+		var name = Type.getClassName(Type.getClass(module));
+
+		if(getModuleByName(name) != null) {
+			log('can`t add particle module: $name already exists');
+		} else {
+			if(module.emitter != null) {
+				log('particle module: $name already in another emitter, remove from it');
+				module.emitter.removeModuleInternal(module);
 			}
-		}
-
-	}
-
-	public function destroy() {
-		
-		for (m in modules) {
-			m.onDestroy();
-		}
-
-		components.clear();
-
-		name = null;
-		particles = null;
-		components = null;
-		modules = null;
-		activeModules = null;
-		system = null;
-
-	}
-
-	public function reset() {
-
-		for (m in modules) {
-			m.onReset();
-		}
-
-	}
-
-	public function addModule(module:ParticleModule):ParticleEmitter {
-
-		var cname:String = Type.getClassName(Type.getClass(module));
-
-		if(_hasModule(cname)) {
-			throw('particle module: $cname already exists');
-		}
-
-		modules.push(module);
-		module._onAdded(this);
-
-		if(module.enabled) {
-			_enableModule(module);
-		}
-
-		if(inited) {
-			module._init();
+			if(priority != null) {
+				module.priority = priority;
+			}
+			addModuleInternal(module);
 		}
 
 		return this;
-
 	}
 
 	public function getModule<T:ParticleModule>(moduleClass:Class<T>):T {
-
-		return cast _getModule(Type.getClassName(moduleClass));
-		
+		var name = Type.getClassName(moduleClass);
+		return cast getModuleByName(name);
 	}
 
 	public function removeModule<T:ParticleModule>(moduleClass:Class<T>):T {
-
-		var cname:String = Type.getClassName(moduleClass);
-
-		var module:T = cast _getModule(cname);
-
-		if(module != null) {
-			if(module.enabled) {
-				_disableModule(module);
-			}
-
-			for (i in 0...modules.length) {
-				if(modules[i].name == cname) {
-					modules.splice(i, 1);
-					break;
-				}
-			}
-
-			module._onRemoved();
-
-			if(_needReset) {
-				resetModules();
-			}
-		}
-
-		return module;
+		var m:T = getModule(moduleClass);
 		
+		if(m != null) {
+			removeModuleInternal(m);
+		}
+		return m;
+	}
+	
+	public function enableModule<T:ParticleModule>(moduleClass:Class<T>) {
+		var m:T = getModule(moduleClass);
+		
+		if(m != null && !m.enabled) {
+			m.enabled = true;
+			m.onEnabled();
+		}
 	}
 
-	public function enableModule(moduleClass:Class<Dynamic>) {
+	public function disableModule<T:ParticleModule>(moduleClass:Class<T>) {
+		var m:T = getModule(moduleClass);
 		
-		var cname:String = Type.getClassName(moduleClass);
-		var m = _getModule(cname);
-		if(m == null) {
-			throw('module: $cname doesnt exists');
+		if(m != null && m.enabled) {
+			m.enabled = false;
+			m.onDisabled();
 		}
-
-		if(!m.enabled) {
-			_enableModule(m);
-		}
-
-	}
-
-	public function disableModule(moduleClass:Class<Dynamic>) {
-		
-		var cname:String = Type.getClassName(moduleClass);
-		var m = _getModule(cname);
-		if(m == null) {
-			throw('module: $cname doesnt exists');
-		}
-
-		if(m.enabled) {
-			_disableModule(m);
-		}
-
-	}
-
-	public function update(dt:Float) {
-
-		if(active) {
-
-			// check lifetime
-			var pd:Particle;
-			var i:Int = 0;
-			var len:Int = particles.length;
-			while(i < len) {
-				pd = particles.get(i);
-				pd.lifetime -=dt;
-				pd.age += dt;
-				if(pd.lifetime <= 0) {
-					unspawn(pd);
-					len = particles.length;
-				} else {
-					i++;
-				}
-			}
-
-			if(enabled && rate > 0) {
-
-				_frameTime += dt;
-
-				var ir:Float;
-
-				while(_frameTime > 0) {
-
-					_emit();
-
-					if(rateMax > 0) {
-						ir = randomFloat(_invRate, _invRateMax);
-					} else {
-						ir = _invRate;
-					}
-
-					if(ir == 0) {
-						_frameTime = 0;
-						break;
-					}
-
-					_frameTime -= ir;
-
-				}
-
-				_time += dt;
-
-				if(_duration >= 0 && _time >= _duration) {
-					stop();
-				}
-
-			}
-
-			for (m in activeModules) {
-				m.update(dt);
-			}
-
-			if(_preprocess > 0) {
-				while((_preprocess -= dt) > 0) {
-					update(dt);
-				}
-			}
-
-		}
-		
-	}
-
-	public function render(p:Painter) {
-
-		for (m in activeModules) {
-			m.render(p);
-		}
-		
 	}
 
 	public function emit() {
+		var emitCount:Int;
 
-		_emit();
+		if(countMax > 0) {
+			emitCount = randomInt(count, countMax);
+		} else {
+			emitCount = count;
+		}
 
+		emitCount = emitCount > cacheSize ? cacheSize : emitCount;
+
+		while(emitCount > 0) {
+			spawn();
+			emitCount--;
+		}
 	}
-	
-	public function start(?duration:Float) {
 
+	public function start(?duration:Float) {
 		enabled = true;
 		_time = 0;
 		_frameTime = 0;
@@ -363,11 +204,9 @@ class ParticleEmitter {
 		} else {
 			_duration = duration;
 		}
-
 	}
 
 	public function stop(kill:Bool = false) {
-
 		enabled = false;
 		_time = 0;
 		_frameTime = 0;
@@ -375,251 +214,236 @@ class ParticleEmitter {
 		if(kill) {
 			unspawnAll();
 		}
-
-	}
-
-	public function unspawnAll() {
-		
-		for (p in particles) {
-			for (m in modules) {
-				m.onUnSpawn(p);
-			}
-		}
-		particles.reset();
-
 	}
 
 	public function pause() {
-		
 		active = false;
-
 	}
 
 	public function unpause() {
-
 		active = true;
-		
 	}
 
-	public function unspawn(p:Particle) {
+	public function update(elapsed:Float) {
+		updateTransform();
 
+		if(active) {
+			// remove ended particles
+			var pd:Particle;
+			var i:Int = 0;
+			var len:Int = particles.length;
+			while(i < len) {
+				pd = particles.get(i);
+				pd.lifetime -= elapsed;
+				pd.age += elapsed;
+				if(pd.lifetime <= 0) {
+					unspawn(pd);
+					len = particles.length;
+				} else {
+					i++;
+				}
+			}
+
+			if(enabled && rate > 0) {
+				_frameTime += elapsed;
+
+				var ir:Float;
+				while(_frameTime > 0) {
+					emit();
+
+					if(rateMax > 0) {
+						ir = randomFloat(_invRate, _invRateMax);
+					} else {
+						ir = _invRate;
+					}
+
+					if(ir == 0) { // TODO: invRate can be 0 from randomFloat(_invRate, _invRateMax);
+						_frameTime = 0;
+						break;
+					}
+
+					_frameTime -= ir;
+				}
+
+				_time += elapsed;
+
+				if(_duration >= 0 && _time >= _duration) {
+					stop();
+				}
+			}
+
+			for (m in modules) {
+				if(m.enabled) {
+					m.update(elapsed);
+				}
+			}
+
+			// update particles global position
+			i = 0;
+			len = particles.length;
+			if(system.localSpace) {
+				while(i < len) {
+					pd = particles.get(i);
+					pd.globalX = getTransformX(pd.x, pd.y);
+					pd.globalY = getTransformY(pd.x, pd.y);
+					i++;
+				}
+			} else {
+				while(i < len) {
+					pd = particles.get(i);
+					pd.globalX = pd.x;
+					pd.globalY = pd.y;
+					i++;
+				}
+			}
+
+			// TODO: add modules lateUpdate ?
+
+			if(_preprocess > 0) {
+				_preprocess -= elapsed;
+				update(elapsed);
+			}
+		}
+	}
+
+	inline function updateTransform() {
+		transform.update();
+		var r = transform.world.rotation;
+		_cosA = Math.cos(r);
+		_sinA = Math.sin(r);
+	}
+
+	public function render(ctx:RenderContext) {
+		for (m in modules) {
+			if(m.enabled) {
+				m.render(ctx);
+			}
+		}
+	}
+
+	inline function spawn() {
+		if(particles.length < particles.capacity) {
+			spawnParticle(particles.ensure());
+		} else if(cacheWrap) {
+			var p:Particle = particles.wrap();
+			unspawnParticle(p);
+			spawnParticle(p);
+		}
+	}
+
+	inline function unspawn(p:Particle) {
 		particles.remove(p);
-		_unspawnParticle(p);
-		
+		unspawnParticle(p);
 	}
 
-
-	public function getSortModeFunc():(p1:Particle, p2:Particle)->Int {
-		
-		switch (sortMode) {
-			case ParticlesSortMode.LIFETIME: return lifetimeSort;
-			case ParticlesSortMode.LIFETIME_INV: return lifetimeInvSort;
-			case ParticlesSortMode.YOUNGEST: return youngestSort;
-			case ParticlesSortMode.OLDEST: return oldestSort;
-			case ParticlesSortMode.CUSTOM: return sortFunc;
-			default: return null;
+	public function unspawnAll() {
+		for (p in particles) {
+			for (m in modules) {
+				m.onUnspawn(p);
+			}
 		}
-
+		particles.reset();
 	}
 
-	@:allow(clay.graphics.particles.ParticleSystem)
-	function init(ps:ParticleSystem) {
-
-		system = ps;
-		inited = true;
-
+	inline function spawnParticle(p:Particle) {
 		for (m in modules) {
-			m._init();
+			if(m.enabled) {
+				if(lifetimeMax > 0) {
+					p.lifetime = randomFloat(lifetime, lifetimeMax);
+				} else {
+					p.lifetime = lifetime;
+				}
+				p.age = 0;
+				m.onSpawn(p);
+			}
 		}
-
 	}
 
-	function _emit() {
-
-		var _count:Int;
-
-		if(countMax > 0) {
-			_count = randomInt(count, countMax);
-		} else {
-			_count = count;
+	inline function unspawnParticle(p:Particle) {
+		for (m in modules) {
+			if(m.enabled) {
+				m.onUnspawn(p);
+			}
 		}
-
-		_count = _count > cacheSize ? cacheSize : _count;
-
-		for (_ in 0..._count) {
-			spawn();
-		}
-
 	}
 
-	function resetModules() { // todo: remove this?
-
-		_needReset = false;
-
-		for (m in activeModules) {
-			m.onDisabled();
-		}
-
+	function getModuleByName(name:String):ParticleModule {
 		for (m in modules) {
-			m._onRemoved();
+			if(m.name == name) {
+				return m;
+			}
 		}
-
-		for (m in modules) {
-			m._onAdded(this);
-		}
-
-		for (m in activeModules) {
-			m.onEnabled();
-		}
-
-		for (m in modules) {
-			m._init();
-		}
-		
-		_needReset = true;
-
+		return null;
 	}
 
-	function _enableModule(module:ParticleModule) {
-		
+	inline function addModuleSorted(module:ParticleModule) {
 		var added:Bool = false;
-		var am:ParticleModule = null;
-		for (i in 0...activeModules.length) {
-			am = activeModules[i];
-			if (module.priority <= am.priority) {
-				activeModules.insert(i,module);
+		var m:ParticleModule = null;
+		for (i in 0...modules.length) {
+			m = modules[i];
+			if (module.priority <= m.priority) {
+				modules.insert(i,module);
 				added = true;
 				break;
 			}
 		}
 		
 		if(!added) {
-			activeModules.push(module);
+			modules.push(module);
 		}
-
-		module.onEnabled();
-
 	}
 
-	function _disableModule(module:ParticleModule) {
-
-		module.onDisabled();
-		activeModules.remove(module);
-		
+	inline function addModuleInternal(module:ParticleModule) {
+		module.emitter = this;
+		addModuleSorted(module);
+		emitAddModuleSignals(module);
 	}
 
-	function _getModule(name:String):ParticleModule {
+	inline function removeModuleInternal(module:ParticleModule) {
+		emitRemoveModuleSignals(module);
+		modules.remove(module);
+		module.emitter = null;
+	}
 
-		for (m in modules) {
-			if(m.name == name) {
-				return m;
-			}
+	inline function emitAddModuleSignals(module:ParticleModule) {
+		module.onAdded();
+		if(module.enabled) {
+			module.onEnabled();
 		}
-		
-		return null;
-
-
 	}
-	function _hasModule(name:String):Bool {
 
-		for (m in modules) {
-			if(m.name == name) {
-				return true;
-			}
+	inline function emitRemoveModuleSignals(module:ParticleModule) {
+		if(module.enabled) {
+			module.onDisabled();
 		}
-		
-		return false;
-
-	}
-
-	inline function _sortActive() {
-
-		haxe.ds.ArraySort.sort(
-			activeModules,
-			function(a,b) {
-				if (a.priority < b.priority) {
-					return -1;
-				} else if (a.priority > b.priority) {
-					return 1;
-				}
-				return 0;
-			}
-		);
-		
-	}
-
-	inline function spawn() {
-
-		if(particles.length < particles.capacity) {
-			_spawnParticle(particles.ensure());
-		} else if(cacheWrap) {
-			var p:Particle = particles.wrap();
-			_unspawnParticle(p);
-			_spawnParticle(p);
-		}
-
-	}
-
-	inline function _spawnParticle(p:Particle) {
-
-		for (m in activeModules) {
-			if(lifetimeMax > 0) {
-				p.lifetime = randomFloat(lifetime, lifetimeMax);
-			} else {
-				p.lifetime = lifetime;
-			}
-			p.age = 0;
-			m.onSpawn(p);
-		}
-		
-	}
-
-	inline function _unspawnParticle(p:Particle) {
-		
-		for (m in activeModules) {
-			m.onUnSpawn(p);
-		}
-
+		module.onRemoved();
 	}
 
 	@:allow(clay.graphics.particles.core.ParticleModule)
-	inline function random1To1(){ 
-
-		return random() * 2 - 1; 
-
+	function sortModules() {
+		haxe.ds.ArraySort.sort(modules,sortModulesFunc);
 	}
 
-	@:allow(clay.graphics.particles.core.ParticleModule)
-	inline function randomInt(min:Float, ?max:Null<Float>=null):Int {
-
-		return Math.floor(randomFloat(min, max));
-
-	}
-
-	@:allow(clay.graphics.particles.core.ParticleModule)
-	inline function randomFloat(min:Float, ?max:Null<Float>=null):Float {
-
-		if(max == null) { 
-			max = min; 
-			min = 0; 
+	function sortModulesFunc(a:ParticleModule, b:ParticleModule) {
+		if (a.priority < b.priority) {
+			return -1;
+		} else if (a.priority > b.priority) {
+			return 1;
 		}
-
-		return random() * ( max - min ) + min;
-		
+		return 0;
 	}
 
-	inline function calcDuration() {
+	@:allow(clay.graphics.particles.ParticleSystem)
+	function onAdded() {
+		transform.parent = system.transform;
+	}
 
-		if(duration >= 0 && durationMax > duration) {
-			_duration = randomFloat(duration, durationMax);
-		} else {
-			_duration = duration;
-		}
-		
+	@:allow(clay.graphics.particles.ParticleSystem)
+	function onRemoved() {
+		transform.parent = null;
 	}
 
 	function set_rate(value:Float):Float {
-
 		if(value > 0) {
 			_invRate = 1 / value;
 		} else {
@@ -628,11 +452,9 @@ class ParticleEmitter {
 		}
 
 		return rate = value;
-
 	}
 
 	function set_rateMax(value:Float):Float {
-
 		if(value > 0) {
 			_invRateMax = 1 / value;
 		} else {
@@ -641,27 +463,65 @@ class ParticleEmitter {
 		}
 
 		return rateMax = value;
-
 	}
 
 	function set_duration(value:Float):Float {
-
 		duration = value;
-		
 		calcDuration();
-
 		return duration;
-
 	}
 
 	function set_durationMax(value:Float):Float {
-
 		durationMax = value;
-
 		calcDuration();
-
 		return durationMax;
+	}
 
+	inline function calcDuration() {
+		if(duration >= 0 && durationMax > duration) {
+			_duration = randomFloat(duration, durationMax);
+		} else {
+			_duration = duration;
+		}
+	}
+
+	@:allow(clay.graphics.particles.core.ParticleModule)
+	inline function random1To1(){ 
+		return random() * 2 - 1; 
+	}
+
+	@:allow(clay.graphics.particles.core.ParticleModule)
+	inline function randomInt(min:Float, ?max:Null<Float>=null):Int {
+		return Math.floor(randomFloat(min, max));
+	}
+
+	@:allow(clay.graphics.particles.core.ParticleModule)
+	inline function randomFloat(min:Float, ?max:Null<Float>=null):Float {
+		if(max == null) { 
+			max = min; 
+			min = 0; 
+		}
+		return random() * (max - min) + min;
+	}
+
+	@:allow(clay.graphics.particles.core.ParticleModule)
+	inline function getTransformX(x:Float, y:Float):Float {
+		return transform.world.matrix.getTransformX(x, y);
+	}
+
+	@:allow(clay.graphics.particles.core.ParticleModule)
+	inline function getTransformY(x:Float, y:Float):Float {
+		return transform.world.matrix.getTransformY(x, y);
+	}
+
+	@:allow(clay.graphics.particles.core.ParticleModule)
+	inline function getRotateX(x:Float, y:Float):Float {
+		return _cosA * x - _sinA * y;
+	}
+
+	@:allow(clay.graphics.particles.core.ParticleModule)
+	inline function getRotateY(x:Float, y:Float):Float {
+		return _sinA * x + _cosA * y;
 	}
 
 	@:access(clay.graphics.particles.core.ComponentManager)
@@ -676,93 +536,51 @@ class ParticleEmitter {
 			name : name, 
 			active : active, 
 			enabled : enabled, 
+
 			cacheWrap : cacheWrap, 
 			cacheSize : particles.capacity, 
 			count : count, 
 			countMax : countMax, 
 			lifetime : lifetime, 
 			lifetimeMax : lifetimeMax, 
-			rate : rate, 
-			rateMax : rateMax, 
-			duration : duration, 
-			durationMax : durationMax, 
-			// imagePath : imagePath, 
-			// blendSrc : blendSrc, 
-			// blendDst : blendDst, 
-			modulesData : _modules,
-			sortMode : sortMode
+			rate : rate,
+			rateMax : rateMax,
+			duration : duration,
+			durationMax : durationMax,
+			preprocess : preprocess,
+			modulesData : _modules
 		};
 		
 	}
-
-	function lifetimeSort(a:Particle, b:Particle):Int {
-
-		return a.lifetime < b.lifetime ? -1 : 1;
-		
-	}
-
-	function lifetimeInvSort(a:Particle, b:Particle):Int {
-
-		return a.lifetime > b.lifetime ? -1 : 1;
-		
-	}
-
-	function youngestSort(a:Particle, b:Particle):Int {
-
-		return a.age > b.age ? -1 : 1;
-
-	}
-
-	function oldestSort(a:Particle, b:Particle):Int {
-
-		return a.age < b.age ? -1 : 1;
-
-	}
-
 
 }
 
 typedef ParticleEmitterOptions = {
 
-	@:optional var name:String;
+	?name:String,
 
-	@:optional var active:Bool;
-	@:optional var enabled:Bool;
-	@:optional var pos:Vector;
+	?active:Bool,
+	?enabled:Bool,
+	?pos:Vector,
+	?rotation:Float,
+	?scale:Vector,
 
-	@:optional var cacheWrap:Bool;
-	@:optional var cacheSize:Int;
-	@:optional var count:Int;
-	@:optional var countMax:Int;
-	@:optional var lifetime:Float;
-	@:optional var lifetimeMax:Float;
-	@:optional var rate:Float;
-	@:optional var rateMax:Float;
-	@:optional var duration:Float;
-	@:optional var durationMax:Float;
-	@:optional var preprocess:Float;
+	?cacheWrap:Bool,
+	?cacheSize:Int,
+	?count:Int,
+	?countMax:Int,
+	?lifetime:Float,
+	?lifetimeMax:Float,
+	?rate:Float,
+	?rateMax:Float,
+	?duration:Float,
+	?durationMax:Float,
+	?preprocess:Float,
 
-	// @:optional var imagePath:String;
-	// @:optional var texture:Texture;
-	// @:optional var region:Rectangle;
+	?modules:Array<ParticleModule>,
 
-	@:optional var modules:Array<ParticleModule>;
-
-	@:optional var modulesData:Array<Dynamic>; // used for json import
-	@:optional var random:()->Float;
-	@:optional var options:Dynamic;
-	@:optional var sortMode:ParticlesSortMode;
-	@:optional var sortFunc:(p1:Particle, p2:Particle)->Int;
-
-}
-
-@:enum abstract ParticlesSortMode(UInt) from UInt to UInt {
-	
-	var NONE              = 0;
-	var LIFETIME          = 1;
-	var LIFETIME_INV      = 2;
-	var YOUNGEST          = 3;
-	var OLDEST            = 4;
-	var CUSTOM            = 5;
+	?modulesData:Array<Dynamic>, // used for json import
+	?random:()->Float,
+	// ?options:Dynamic,
 
 }

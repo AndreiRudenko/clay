@@ -7,12 +7,12 @@ import kha.Framebuffer;
 import kha.WindowOptions;
 import kha.WindowOptions.WindowFeatures;
 
-import clay.system.InputManager;
-import clay.system.ResourceManager;
-import clay.system.Audio;
+import clay.input.InputManager;
+import clay.resources.ResourceManager;
+import clay.audio.Audio;
 import clay.system.Debug;
 import clay.system.Screen;
-import clay.system.TimerManager;
+import clay.utils.Timer;
 import clay.tween.TweenManager;
 
 import clay.input.Key;
@@ -25,7 +25,7 @@ import clay.input.Bindings;
 
 import clay.render.Renderer;
 import clay.render.Camera;
-import clay.render.Draw;
+import clay.utils.Draw;
 import clay.events.Emitter;
 import clay.events.Events;
 import clay.events.AppEvent;
@@ -35,10 +35,8 @@ import clay.utils.Random;
 import clay.utils.Mathf;
 import clay.utils.Log.*;
 
-
 @:keep
 class App {
-
 
 	public var renderer(default, null):Renderer;
 	public var draw(default, null):Draw;
@@ -86,9 +84,7 @@ class App {
 	var _appEvent:AppEvent;
 	var _renderEvent:RenderEvent;
 
-
 	public function new(options:ClayOptions, onReady:()->Void) {
-
 		_debug("creating app");
 
 		var _khaOpt = parseOptions(options);
@@ -99,33 +95,25 @@ class App {
 				ready(onReady);
 			}
 		);
-		
 	}
 
 	public function shutdown() {
-
 		destroy();
 		System.stop();
-
 	}
 
 		/** Call a function at the start of the next frame,
 		useful for async calls in a sync context, allowing the sync function to return safely before the onload is fired. */
 	public inline function next(func:()->Void) {
-
 		if(func != null) _nextQueue.push(func);
-
 	}
 
 		/** Call a function at the end of the current frame */
 	public inline function defer(func:()->Void) {
-
 		if(func != null) _deferQueue.push(func);
-
 	}
 
 	function ready(onReady:()->Void) {
-		
 		_debug("ready");
 
 		clay.Clay.app = this;
@@ -139,6 +127,7 @@ class App {
 		tween = new TweenManager();
 		random = new Random(_options.randomSeed);
 		timer = new TimerManager();
+		Timer.globalManager = timer;
 
 		renderer = new Renderer(_options.renderer);
 		draw = new Draw();
@@ -155,8 +144,8 @@ class App {
 			
 			Clay.resources.loadAll(
 				[
-				"assets/Muli-Regular.ttf",
-				"assets/Muli-Bold.ttf"
+				"Muli-Regular.ttf",
+				"Muli-Bold.ttf"
 				], 
 				function() {
 
@@ -173,11 +162,9 @@ class App {
 			_debug("onReady");
 			onReady();
 		}
-
 	}
 
 	function init() {
-
 		_debug("init");
 
 		time = kha.System.time;
@@ -201,20 +188,17 @@ class App {
 		debug.start(DebugTag.process);
 		debug.start(DebugTag.update);
 		debug.start(DebugTag.render);
-
 	}
 
 	function destroy() {
-
 		disconnectEvents();
 		
 		debug.destroy();
 		events.destroy();
 		input.destroy();
 		renderer.destroy();
-		// audio.destroy();
+		audio.empty();
 		timer.destroy();
-		// signals.destroy();
 
 		debug = null;
 		screen = null;
@@ -224,14 +208,11 @@ class App {
 		audio = null;
 		timer = null;
 		tween = null;
-		// signals = null;
 		_nextQueue = null;
 		_deferQueue = null;
-
 	}
 
 	function parseOptions(options:ClayOptions):SystemOptions {
-
 		_debug("parsing options: " + options);
 
 		_options = {};
@@ -267,31 +248,43 @@ class App {
 		};
 
 		return _khaOpt;
-
 	}
 
 	function connectEvents() {
-
 		System.notifyOnFrames(render);
 		System.notifyOnApplicationState(foreground, resume, pause, background, null);
-
 		input.enable();
-
 	}
 
 	function disconnectEvents() {
-
 		System.removeFramesListener(render);
-
 		input.disable();
-		
 	}
 
-	var renderCounter:Int = 0;
-	var stepCounter:Int = 0;
+	function render(f:Array<Framebuffer>) {
+		_verboser("render");
+
+		debug.start(DebugTag.process);
+
+		debug.start(DebugTag.update);
+		step(); // TODO: move to another place?
+		debug.end(DebugTag.update);
+
+		debug.start(DebugTag.render);
+		_renderEvent.set(renderer.ctx);
+
+		emitter.emit(RenderEvent.PRERENDER, _renderEvent);
+		emitter.emit(RenderEvent.RENDER, _renderEvent);
+
+		renderer.process(f[0]);
+
+		emitter.emit(RenderEvent.POSTRENDER, _renderEvent);
+
+		debug.end(DebugTag.render);
+		debug.end(DebugTag.process);
+	}
 
 	function step() {
-
 		if(!inFocus) {
 			return;
 		}
@@ -302,7 +295,7 @@ class App {
 		frameDelta = time - _lastTime;
 
 		if(frameDelta > _frameMaxDelta) {
-			frameDelta = 1/60;
+			frameDelta = _frameMaxDelta;
 		}
 
 		// Smooth out the delta over the previous X frames
@@ -337,121 +330,70 @@ class App {
 		_lastTime = time;
 
 		tickend();
-
 	}
 
 	inline function tickstart() {
-
 		_verboser("ontickstart");
-		
-		cycleNextQueue();
 
+		cycleNextQueue();
 		emitter.emit(AppEvent.TICKSTART, _appEvent);
-		
 	}
 
 	inline function tick() {
-
 		_verboser("tick");
 		
 		timer.update(dt);
 		events.process();
 		tween.step(dt);
 		draw.update();
-
 	}
 
 	inline function tickend() {
-
 		_verboser("ontickend");
 
 		emitter.emit(AppEvent.TICKEND, _appEvent);
 		input.reset();
 
 		cycleDeferQueue();
-
-	}
-
-	// render
-	function render(f:Array<Framebuffer>) {
-
-		_verboser("render");
-
-		debug.start(DebugTag.process);
-
-		debug.start(DebugTag.update);
-		step(); // todo: move to another place?
-		debug.end(DebugTag.update);
-
-		debug.start(DebugTag.render);
-
-		_renderEvent.set(f[0]);
-
-		emitter.emit(RenderEvent.PRERENDER, _renderEvent);
-
-		emitter.emit(RenderEvent.RENDER, _renderEvent);
-		renderer.process(f[0]);
-		
-		emitter.emit(RenderEvent.POSTRENDER, _renderEvent);
-
-		debug.end(DebugTag.render);
-
-		debug.end(DebugTag.process);
-
 	}
 
 	function foreground() {
-
 		emitter.emit(AppEvent.FOREGROUND, _appEvent);
-
 		inFocus = true;
-
 	}
 
 	function background() {
-
 		emitter.emit(AppEvent.BACKGROUND, _appEvent);
-
 		inFocus = false;
-
 	}
 
 	function pause() {
-
 		emitter.emit(AppEvent.PAUSE, _appEvent);
-
 	}
 
 	function resume() {
-
 		emitter.emit(AppEvent.RESUME, _appEvent);
-
 	}
 
 	inline function cycleNextQueue() {
-
 		var count = _nextQueue.length;
 		var i = 0;
 		while(i < count) {
 			(_nextQueue.shift())();
 			++i;
 		}
-
 	}
 
 	inline function cycleDeferQueue() {
-
 		var count = _deferQueue.length;
 		var i = 0;
 		while(i < count) {
 			(_deferQueue.shift())();
 			++i;
 		}
-
 	}
 
 	function set_timescale(v:Float):Float {
-
 		v = Mathf.clampBottom(v, 0);
 
 		timescale = v;
@@ -459,13 +401,10 @@ class App {
 		emitter.emit(AppEvent.TIMESCALE, v);
 
 		return v;
-		
 	}
 
 	function set_fixedFrameTime(v:Float):Float {
-
 		return fixedFrameTime = Mathf.clampBottom(v, 0);
-		
 	}
 
 }

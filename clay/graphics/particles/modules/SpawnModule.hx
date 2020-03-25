@@ -6,22 +6,23 @@ import clay.graphics.particles.core.ParticleModule;
 
 class SpawnModule extends ParticleModule {
 
-
-	public function new(?_options:ParticleModuleOptions) {
-
-		super(_options);
+	public function new(?options:ParticleModuleOptions) {
+		super(options);
 
 		_priority = -999;
-
 	}
 
-	override function onSpawn(pd:Particle) {
-
-		pd.x = emitter.system.pos.x + emitter.pos.x;
-		pd.y = emitter.system.pos.y + emitter.pos.y;
-
+	override function onSpawn(p:Particle) {
+		if(emitter.system.localSpace) {
+			p.x = 0;
+			p.y = 0;
+		} else {
+			// p.x = emitter.getTransformX(0,0);
+			// p.y = emitter.getTransformY(0,0);
+			p.x = emitter.transform.world.matrix.tx;
+			p.y = emitter.transform.world.matrix.ty;
+		}
 	}
-
 
 }
 

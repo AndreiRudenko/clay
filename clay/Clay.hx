@@ -1,11 +1,9 @@
 package clay;
 
-
 import clay.system.App;
 import clay.utils.Log.*;
 
 class Clay {
-
 
 	@:allow(clay.system.App)
 	public static var app(default, null):clay.system.App;
@@ -15,15 +13,14 @@ class Clay {
 	public static var renderer(get, never):clay.render.Renderer;
 	public static var camera(get, never):clay.render.Camera;
 	public static var cameras(get, never):clay.render.CameraManager;
-	public static var layer(get, never):clay.render.Layer;
-	public static var layers(get, never):clay.render.LayerManager;
-	public static var draw(get, never):clay.render.Draw;
+	public static var layers(get, never):clay.render.Layers;
+	public static var draw(get, never):clay.utils.Draw;
 
-	public static var input(get, never):clay.system.InputManager;
-	public static var resources(get, never):clay.system.ResourceManager;
+	public static var input(get, never):clay.input.InputManager;
+	public static var resources(get, never):clay.resources.ResourceManager;
 
-	public static var audio(get, never):clay.system.Audio;
-	public static var timer(get, never):clay.system.TimerManager;
+	public static var audio(get, never):clay.audio.Audio;
+	public static var timer(get, never):clay.utils.Timer.TimerManager;
 	public static var events(get, never):clay.events.Events;
 	public static var tween(get, never):clay.tween.TweenManager;
 	
@@ -35,30 +32,21 @@ class Clay {
 
 	// public static var io(default, null):clay.IO;
 
-
 	static var inited:Bool = false;
 
 
 	public static function init(options:ClayOptions, onReady:()->Void) {
-
 		assert(!inited, "app already inited");
-
 		inited = true;
-
 		new clay.system.App(options, onReady);
-
 	}
 
 	public static inline function on<T>(event:clay.events.EventType<T>, handler:T->Void, priority:Int = 0) {
-
 		app.emitter.on(event, handler, priority);
-
 	}
 
 	public static inline function off<T>(event:clay.events.EventType<T>, handler:T->Void):Bool {
-
 		return app.emitter.off(event, handler);
-
 	}
 
 	public static inline function next(func:()->Void) app.next(func);
@@ -70,7 +58,6 @@ class Clay {
 	static inline function get_renderer() return app.renderer;
 	static inline function get_camera() return app.renderer.camera;
 	static inline function get_cameras() return app.renderer.cameras;
-	static inline function get_layer() return app.renderer.layer;
 	static inline function get_layers() return app.renderer.layers;
 	static inline function get_draw() return app.draw;
 
@@ -89,5 +76,4 @@ class Clay {
 	static inline function get_timescale() return app.timescale;
 	static inline function set_timescale(v) return app.timescale = v;
 	
-
 }

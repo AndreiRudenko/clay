@@ -1,12 +1,10 @@
 package clay.audio.effects;
 
-
 import clay.utils.Mathf;
 import clay.utils.Log.*;
-
+import clay.audio.Audio;
 
 class Compressor extends AudioEffect {
-
 
 	public var ratio(get, set):Float;
 
@@ -42,9 +40,7 @@ class Compressor extends AudioEffect {
 	var _preGainAmp:Float;
 	var _postGainAmp:Float;
 
-
 	public function new(ratio:Float = 3, threshold:Float = -2, attack:Float = 0, release:Float = 0.5, preGain:Float = 0, postGain:Float = 0) {
-
 		super();
 
 		_sampleRate = Clay.audio.sampleRate;
@@ -75,17 +71,13 @@ class Compressor extends AudioEffect {
 		
 		_preGain = _setPreGain(preGain);
 		_postGain = _setPostGain(postGain);
-
 	}
 
 	override function process(samples:Int, data:kha.arrays.Float32Array, sampleRate:Int) {
-		
 		//apply pre gain to signal
 		for (k in 0...samples) {
 			data[k] = _preGainAmp * data[k];
 		}
-
-		var envelopeData = getEnvelope(samples, data);
 
 		var len = Std.int(samples/2);
 
@@ -102,6 +94,8 @@ class Compressor extends AudioEffect {
 			}
 		}
 		
+		var envelopeData = getEnvelope(samples, data);
+
 		for (i in 0...len) {
 			var gainDb = _slope * (_threshold - ampToDb(envelopeData[i]));
 			//is gain below zero?
@@ -110,225 +104,174 @@ class Compressor extends AudioEffect {
 			data[i*2] *= (gain * _postGainAmp);
 			data[i*2+1] *= (gain * _postGainAmp);
 		}
-
 	}
 
 	function getEnvelope(samples:Int, data:kha.arrays.Float32Array):kha.arrays.Float32Array {
-
 		var len = Std.int(samples/2);
-
 		if(_envelopeBuffer.length < len) {
 			_envelopeBuffer = new kha.arrays.Float32Array(len);
 		}
 		
 		for (i in 0...len) {
-				
 			var envIn = Math.abs(toMono(data[i*2], data[i*2+1]));
-			
 			if (_envelopeSample < envIn){
 				_envelopeSample = envIn + _attackGain * (_envelopeSample - envIn);
 			} else {
 				_envelopeSample = envIn + _releaseGain * (_envelopeSample - envIn);
 			}
-			
 			_envelopeBuffer[i] = _envelopeSample;
-			
 		}
 		
 		return _envelopeBuffer;
-
 	}
 
 	function get_ratio():Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		var v = _ratio;
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function set_ratio(v:Float):Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		v = _setRatio(v);
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function get_threshold():Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		var v = _threshold;
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function set_threshold(v:Float):Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		_threshold = v;
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function get_preGain():Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		var v = _preGain;
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function set_preGain(v:Float):Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		v = _setPreGain(v);
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function get_postGain():Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		var v = _postGain;
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function set_postGain(v:Float):Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		v = _setPostGain(v);
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function get_attackTime():Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		var v = _attackTime;
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
-	function set_attackTime(v:Float):Float {
-
 		//attack in milliseconds
-		clay.system.Audio.mutexLock();
+	function set_attackTime(v:Float):Float {
+		Audio.mutexLock();
 		v = _setAttackTime(v);
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function get_releaseTime():Float {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		var v = _releaseTime;
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
-	function set_releaseTime(v:Float):Float {
-
 		//release in milliseconds
-		clay.system.Audio.mutexLock();
+	function set_releaseTime(v:Float):Float {
+		Audio.mutexLock();
 		v = _setReleaseTime(v);
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-
 	}
 
 	function _setRatio(v:Float) {
-		
 		_ratio = Mathf.clampBottom(v, 1);
 		_slope = 1 - (1/_ratio);
 
 		return _ratio;
-
 	}
 
 	function _setPreGain(v:Float) {
-		
 		_preGain = v;
 		_preGainAmp = dbToAmp(_preGain);
 
 		return _preGain;
-
 	}
 
 	function _setPostGain(v:Float) {
-		
 		_postGain = v;
 		_postGainAmp = dbToAmp(_postGain);
 
 		return _postGain;
-
 	}
 
 	function _setAttackTime(v:Float) {
-
 		_attackTime = v;
 		_attackGain = Math.exp(-1 / (_sampleRate * _attackTime));
 
 		return _attackTime;
-
 	}
 
 	function _setReleaseTime(v:Float) {
-		
 		_releaseTime = v;
 		_releaseGain = Math.exp(-1 / (_sampleRate * _releaseTime));	
 
 		return _releaseTime;
-
 	}
 
 	inline function toMono(l:Float, r:Float):Float {
-		
 		return (l + r) / 2;
-
 	}
 
 	inline function log10(x:Float):Float {
-
   		return Math.log(x) / 2.302585092994046; // Math.log(x) / Math.log(10);
-
 	}
 
 	inline function ampToDb(v:Float):Float {
-		
 		return 20 * log10(v);	
-
 	}
 
 	inline function dbToAmp(db:Float):Float {
-
 		return Math.pow(10, db / 20);
-
 	}
-
 
 }

@@ -1,23 +1,22 @@
 package clay.graphics.particles.modules;
 
-
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.Components;
 import clay.graphics.particles.components.Velocity;
 import clay.graphics.particles.components.ColorBySpeed;
 import clay.graphics.particles.components.Color;
-// import clay.render.Color;
 import clay.utils.Mathf;
+import clay.utils.Log.*;
 
+using clay.graphics.particles.utils.ColorExtender;
 
 class ColorBySpeedModule extends ParticleModule {
 
-
 	public var minColor(default, null):Color;
 	public var maxColor(default, null):Color;
-	public var minColorMax:Color; // TODO: that name...
-	public var maxColorMax:Color; // TODO: that name...
+	public var minColorMax:Color; // TODO: rename
+	public var maxColorMax:Color; // TODO: rename
 
 	public var minSpeed:Float;
 	public var maxSpeed:Float;
@@ -26,30 +25,33 @@ class ColorBySpeedModule extends ParticleModule {
 	var _color:Components<Color>;
 	var _colorsBySpeed:Components<ColorBySpeed>;
 
+	public function new(options:ColorBySpeedModuleOptions) {
+		super(options);
 
-	public function new(_options:ColorBySpeedModuleOptions) {
-
-		super(_options);
-
-		minColor = _options.minColor != null ? _options.minColor : new Color();
-		minColorMax = _options.minColorMax;
-		maxColor = _options.maxColor != null ? _options.maxColor : new Color();
-		maxColorMax = _options.maxColorMax;
-		minSpeed = _options.minSpeed != null ? _options.minSpeed : 0;
-		maxSpeed = _options.maxSpeed != null ? _options.maxSpeed : 1;
-
+		minColor = def(options.minColor, new Color());
+		minColorMax = options.minColorMax;
+		maxColor = def(options.maxColor, new Color());
+		maxColorMax = options.maxColorMax;
+		minSpeed = def(options.minSpeed, 0);
+		maxSpeed = def(options.maxSpeed, 1);
 	}
 
-	override function init() {
-
+	override function onAdded() {
 		_velocity = emitter.components.get(Velocity);
 		_color = emitter.components.get(Color);
 		_colorsBySpeed = emitter.components.get(ColorBySpeed);
-	    
+	}
+
+	override function onRemoved() {
+		emitter.components.put(_velocity);
+		emitter.components.put(_color);
+		emitter.components.put(_colorsBySpeed);
+		_velocity = null;
+		_color = null;
+		_colorsBySpeed = null;
 	}
 
 	override function onSpawn(p:Particle) {
-
 		var vel = _velocity.get(p.id);
 		var c = _color.get(p.id);
 		var cbs = _colorsBySpeed.get(p.id);
@@ -82,12 +84,9 @@ class ColorBySpeedModule extends ParticleModule {
 		}
 
 		setColorFromVelocity(c, cbs, vel);
-
 	}
 
-
 	override function update(dt:Float) {
-
 		var vel:Velocity;
 		var cbs:ColorBySpeed;
 		var c:Color;
@@ -97,11 +96,9 @@ class ColorBySpeedModule extends ParticleModule {
 			c = _color.get(p.id);
 			setColorFromVelocity(c, cbs, vel);
 		}
-
 	}
 
 	inline function setColorFromVelocity(c:Color, cbs:ColorBySpeed, vel:Velocity) {
-
 		var lenSq = vel.lengthSq;
 		var minSpeedSq = minSpeed * minSpeed;
 		var maxSpeedSq = maxSpeed * maxSpeed;
@@ -110,13 +107,11 @@ class ColorBySpeedModule extends ParticleModule {
 			var t = Mathf.inverseLerp(minSpeedSq, maxSpeedSq, lenSq);
 			c.copyFrom(cbs.minColor).lerp(cbs.maxColor, t);
 		}
-		
 	}
 
 // import/export
 
 	override function fromJson(d:Dynamic) {
-
 		super.fromJson(d);
 
 		minSpeed = d.minSpeed;
@@ -145,11 +140,9 @@ class ColorBySpeedModule extends ParticleModule {
 		}
 
 		return this;
-
 	}
 
 	override function toJson():Dynamic {
-
 		var d = super.toJson();
 
 		d.minSpeed = minSpeed;
@@ -167,9 +160,7 @@ class ColorBySpeedModule extends ParticleModule {
 		}
 
 		return d;
-
 	}
-
 
 }
 
@@ -177,12 +168,12 @@ typedef ColorBySpeedModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var minColor:Color;
-	@:optional var minColorMax:Color;
-	@:optional var maxColor:Color;
-	@:optional var maxColorMax:Color;
-	@:optional var minSpeed:Float;
-	@:optional var maxSpeed:Float;
+	?minColor:Color,
+	?minColorMax:Color,
+	?maxColor:Color,
+	?maxColorMax:Color,
+	?minSpeed:Float,
+	?maxSpeed:Float,
 
 }
 

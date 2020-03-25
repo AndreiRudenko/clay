@@ -1,6 +1,6 @@
 package clay.graphics.particles.components;
 
 
-typedef Color = clay.render.Color;
+typedef Color = clay.utils.Color;
 
 

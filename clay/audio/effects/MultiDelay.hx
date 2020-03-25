@@ -1,14 +1,10 @@
 package clay.audio.effects;
 
-
-import clay.utils.Mathf;
-import clay.utils.Log.*;
-import clay.Sound;
+import clay.audio.Sound;
 
 // https://github.com/corbanbrook/dsp.js
 
 class MultiDelay extends AudioEffect {
-
 
 	public var delaySamples(default, set):Int;
 
@@ -21,32 +17,26 @@ class MultiDelay extends AudioEffect {
 
 	var sampleRate:Float;
 
-
-	public function new(_delaySamples:Int, _masterVolume:Float, _delayVolume:Float) {
-
-		delayBufferSamples = new kha.arrays.Float32Array(_delaySamples); // The maximum size of delay
-		delayInputPointer  = _delaySamples;
+	public function new(delaySamples:Int, masterVolume:Float, delayVolume:Float) {
+		delayBufferSamples = new kha.arrays.Float32Array(delaySamples); // The maximum size of delay
+		delayInputPointer  = delaySamples;
 		delayOutputPointer = 0;
 	 
-		delaySamples = _delaySamples;
-		delayVolume = _delayVolume;
-		masterVolume = _masterVolume;
+		this.delaySamples = delaySamples;
+		this.delayVolume = delayVolume;
+		this.masterVolume = masterVolume;
 
 		sampleRate = Clay.audio.sampleRate;
-
 	}
 
 	override function process(samples:Int, buffer:kha.arrays.Float32Array, sampleRate:Int) {
-
 		for (i in 0...Std.int(samples/2)) {
 			buffer[i*2] = getDelayed(buffer[i*2]) * masterVolume;
 			buffer[i*2+1] = getDelayed(buffer[i*2+1]) * masterVolume;
 		}
-
 	}
 
 	function getDelayed(input:Float) {
-
 		var delaySample = delayBufferSamples.get(delayOutputPointer);
 
 		// Mix normal audio data with delayed audio
@@ -69,11 +59,9 @@ class MultiDelay extends AudioEffect {
 		} 
 
 		return sample;
-
 	}
 
 	function set_delaySamples(v:Int):Int {
-
 		delaySamples = v;
 		delayInputPointer = delayOutputPointer + delaySamples;
 
@@ -82,7 +70,6 @@ class MultiDelay extends AudioEffect {
 		}
 
 		return delaySamples;
-		
 	}
 
 

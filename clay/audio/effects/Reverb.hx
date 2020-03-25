@@ -1,6 +1,5 @@
 package clay.audio.effects;
 
-
 import clay.Clay;
 import clay.utils.Log.*;
 import clay.audio.AudioEffect;
@@ -14,9 +13,7 @@ import clay.audio.dsp.HighPassFilter;
 import clay.audio.dsp.LowPassFilter;
 
 // based on FreeVerb3
-
 class Reverb extends AudioEffect {
-
 
 	static var FIXED_GAIN:Float = 0.05; // 0.015
 
@@ -33,7 +30,7 @@ class Reverb extends AudioEffect {
 	static var COMBS:Int = 8;
 	static var ALLPASSES:Int = 4;
 	static var ALLPASSES_CROSS:Int = 4;
-	static var SCALE:Float = 1; // TODO
+	static var SCALE:Float = 1; // TODO: to non static variable
 	static var CROSSFEED:Float = 0.4;
 
 	// in ms
@@ -54,7 +51,6 @@ class Reverb extends AudioEffect {
 		7.732426303854875283447, 
 		5.102040816326530612245
 	];
-
 
 	public var dry(default, set):Float;
 	public var wet(get, set):Float;
@@ -88,11 +84,9 @@ class Reverb extends AudioEffect {
 	var _highPassL:HighPassFilter;
 	var _highPassR:HighPassFilter;
 
-
 	public function new(options:ReverbOptions) {
-
 		super();
-
+		
 		_combsL = [];
 		_combsR = [];
 		_allpassesL = [];
@@ -124,18 +118,15 @@ class Reverb extends AudioEffect {
 		damping = def(options.damping, 0.5);
 		roomSize = def(options.roomSize, 0.5);
 		frozen = def(options.frozen, false);
-
 	}
 
 	override function process(samples:Int, buffer:Float32Array, sampleRate:Int) {
-
 		var inL:Float;
 		var inR:Float;
 		var outL:Float;
 		var outR:Float;
 		var earlyL:Float;
 		var earlyR:Float;
-
 		var fL:Float;
 		var fR:Float;
 
@@ -188,161 +179,107 @@ class Reverb extends AudioEffect {
 			outL = _preDelayLR.process(outL);
 			outR = _preDelayLR.process(outR);
 
-
 			buffer[i] = outL * _wet0 + outR * _wet1 + inL * dry;
 			buffer[i+1] = outR * _wet0 + outL * _wet1 + inR * dry;
 
 			i += 2;
 		}
-
 	}
 
 	function toSamples(ms:Float):Int {
-
 		return DSP.toSamples(ms, Clay.audio.sampleRate);
-
 	}
 
 	function updateWetGains() {
-
 		_wet0 = _wet * SCALE_WET * (width / 2.0 + 0.5);
 		_wet1 = _wet * SCALE_WET * ((1.0 - width) / 2.0);
-
 	}
 
 	function updateFeedback() {
-
 		var feed = frozen ? 1 : _roomSize * SCALE_ROOM + OFFSET_ROOM;
-
 		for (i in 0...COMBS) {
 			_combsL[i].feedback = feed;
 			_combsR[i].feedback = feed;
 		}
-
 	}
 
 	function updateDamping() {
-
 		var damp = frozen ? 0 : _damping * SCALE_DAMPING;
-
 		for (i in 0...COMBS) {
 			_combsL[i].damping = damp;
 			_combsR[i].damping = damp;
 		}
-
 	}
 
 	function get_wet():Float {
-
 		return _wet;
-
 	}
 
 	function set_wet(v:Float):Float {
-
 		_wet = Mathf.clamp(v, 0, 1);
-
 		updateWetGains();
-
 		return _wet;
-
 	}
 
 	function set_dry(v:Float):Float {
-
 		dry = Mathf.clamp(v, 0, 1);
-
 		return dry;
-
 	}
 
 	function set_preDelay(v:Float):Float {
-
 		preDelay = Mathf.clampBottom(v, 1);
 		_preDelayLR = new Delay(toSamples(preDelay) * 2, 1);
-
 		return preDelay;
-
 	}
 
 	function set_width(v:Float):Float {
-
 		width = Mathf.clamp(v, 0, 1);
-
 		updateWetGains();
-
 		return width;
-
 	}
 
 	function set_highCut(v:Float):Float {
-
 		highCut = Mathf.clamp(v, 0, 20000);
-
 		_lowPassL.freq = highCut;
 		_lowPassR.freq = highCut;
-
 		return highCut;
-
 	}
 
 	function set_lowCut(v:Float):Float {
-
 		lowCut = Mathf.clamp(v, 0, 20000);
-
 		_highPassL.freq = lowCut;
 		_highPassR.freq = lowCut;
-
 		return lowCut;
-
 	}
 
 	function get_damping():Float {
-
 		return _damping;
-
 	}
 
 	function set_damping(v:Float):Float {
-
 		_damping = v;
-
 		updateDamping();
-
 		return _damping;
-
 	}
 
 	function get_roomSize():Float {
-
 		return _roomSize;
-
 	}
 
 	function set_roomSize(v:Float):Float {
-
 		_roomSize = Mathf.clamp(v, 0, 1);
-
 		updateFeedback();
-
 		return _roomSize;
-
 	}
 
 	function set_frozen(v:Bool):Bool {
-
 		frozen = v;
-
 		updateFeedback();
 		updateDamping();
-
 		return v;
-
 	}
 
-
 }
-
 
 typedef ReverbOptions = {
 

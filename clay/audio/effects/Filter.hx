@@ -1,13 +1,10 @@
 package clay.audio.effects;
 
-
 import clay.utils.Mathf;
-import clay.utils.Log.*;
-import clay.Sound;
-
+import clay.audio.Sound;
+import clay.audio.Audio;
 
 class Filter extends AudioEffect {
-
 
 	public var cutoff(default, set):Float;
 	public var resonance(default, set):Float;
@@ -20,10 +17,8 @@ class Filter extends AudioEffect {
 
 	var f:Array<Float>;
 
-
-	public function new(_type:FilterType, _cut:Float, _res:Float, _sampleRate:Int = 44100) {
-
-		filterType = _type;
+	public function new(type:FilterType, cutoff:Float, resonance:Float, sampleRate:Int = 44100) {
+		filterType = type;
 
 		f = [];
 
@@ -35,17 +30,15 @@ class Filter extends AudioEffect {
 		freq = 0;
 		damp = 0;
 
-		sampleRate = _sampleRate;
+		this.sampleRate = sampleRate;
 
-		cutoff = _cut;
-		resonance = _res;
+		this.cutoff = cutoff;
+		this.resonance = resonance;
 
 		calcCoef();
-
 	}
 
 	override function process(samples:Int, buffer:kha.arrays.Float32Array, sampleRate:Int) {
-
 		var input:Float = 0;
 		var output:Float = 0;
 		for (i in 0...samples) {
@@ -65,44 +58,36 @@ class Filter extends AudioEffect {
 			output += 0.5 * f[filterType];
 			buffer[i] = output;
 		}
-
 	}
 
 	function calcCoef() {
-
 		freq = 2 * Math.sin(Math.PI * Math.min(0.25, cutoff/(sampleRate*2)));  
-		damp = Math.min(2 * (1 - Math.pow(resonance, 0.25)), Math.min(2, 2/freq - freq * 0.5));
-
+		damp = Math.min(2 * (1 - Math.pow(resonance, 0.25)), Math.min(2, 2/freq - freq*0.5));
 	}
 
 	function set_cutoff(v:Float):Float {
-
+		Audio.mutexLock();
 		cutoff = v;
 		calcCoef();
+		Audio.mutexUnlock();
 
 		return cutoff;
-
 	}
 
 	function set_resonance(v:Float):Float {
-
+		Audio.mutexLock();
 		resonance = Mathf.clamp(v, 0, 1);
 		calcCoef();
+		Audio.mutexUnlock();
 
 		return resonance;
-
 	}
-
 
 }
 
-
-
-@:enum abstract FilterType(Int) from Int to Int {
-
-	var lowpass = 0;
-	var highpass = 1;
-	var bandpass = 2;
-	var notch = 3;
-
+enum abstract FilterType(Int){
+	var LOWPASS;
+	var HIGHPASS;
+	var BANDPASS;
+	var NOTCH;
 }

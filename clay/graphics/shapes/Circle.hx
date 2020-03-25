@@ -1,16 +1,13 @@
 package clay.graphics.shapes;
 
-
 import clay.math.VectorCallback;
 import clay.math.Vector;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.render.Vertex;
 import clay.graphics.Mesh;
 import clay.utils.Log.*;
 
-
 class Circle extends Mesh {
-
 
 	public var radius(get, set):Float;
 	public var segments(get, set):Int;
@@ -20,9 +17,7 @@ class Circle extends Mesh {
 	var _segments:Int;
 	var _autoSegments:Bool;
 
-
 	public function new(radius:Float, ?segments:Int) {
-
 		super();
 
 		_radius = radius;
@@ -35,11 +30,9 @@ class Circle extends Mesh {
 		}
 
 		setCircleVertices(_radius, _segments);
-
 	}
 
 	function setCircleVertices(r:Float, segments:Int) {
-
 		vertices = [];
 		indices = [];
 
@@ -66,12 +59,10 @@ class Circle extends Mesh {
 
 		}
 
-		add(new Vertex(new Vector(), color, new Vector(0.5,0.5))); 
-			
+		add(new Vertex(new Vector(), color, new Vector(0.5,0.5))); 	
 	}
 
 	function updateCircleVertices(r:Float) {
-
 		var theta = 2 * Math.PI / segments;
 		
 		var c = Math.cos(theta);
@@ -90,17 +81,13 @@ class Circle extends Mesh {
 			y = s * t + c * y;
 
 		}
-			
 	}
 
 	inline function get_autoSegments():Bool {
-
 		return _autoSegments;
-
 	}
 
 	function set_autoSegments(v:Bool):Bool {
-
 		_autoSegments = v;
 
 		if(v) {
@@ -109,23 +96,17 @@ class Circle extends Mesh {
 		}
 
 		return v;
-
 	}
 
 	inline function segmentsForSmoothCircle(radius:Float, smooth:Float = 5):Int {
-
 		return Std.int(smooth * Math.sqrt(radius));
-
 	}
 
 	inline function get_radius():Float {
-
 		return _radius;
-
 	}
 
 	function set_radius(v:Float):Float {
-
 		_radius = v;
 
 		if(_autoSegments) {
@@ -136,25 +117,19 @@ class Circle extends Mesh {
 		}
 
 		return v;
-
 	}
 
 	inline function get_segments():Int {
-
 		return _segments;
-
 	}
 
 	function set_segments(v:Int):Int {
-
 		if(!_autoSegments) {
 			_segments = v;
 			setCircleVertices(_radius, _segments);
 		}
 
 		return _segments;
-
 	}
-
 
 }

@@ -2,7 +2,7 @@ package clay.input;
 
 import kha.input.KeyCode;
 
-@:enum abstract Key(Int) to Int {
+enum abstract Key(Int) to Int {
 	var UNKNOWN = KeyCode.Unknown;
 	var BACK = KeyCode.Back; // Android
 	var CANCEL = KeyCode.Cancel;

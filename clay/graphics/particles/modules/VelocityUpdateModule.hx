@@ -7,32 +7,30 @@ import clay.graphics.particles.components.Velocity;
 import clay.utils.Mathf;
 import clay.math.Vector;
 import clay.math.Rectangle;
-
+import clay.utils.Log.*;
 
 class VelocityUpdateModule extends ParticleModule {
-
 
 	public var damping:Float = 0;
 
 	var _velComps:Components<Velocity>;
 
-
 	public function new(options:VelocityUpdateModuleOptions) {
-
 		super({});
 
-		damping = options.damping != null ? options.damping : 0;
-
+		damping = def(options.damping, 0);
 	}
 
-	override function init() {
-		
+	override function onAdded() {
 		_velComps = emitter.components.get(Velocity);
-		
+	}
+
+	override function onRemoved() {
+		emitter.components.put(_velComps);
+		_velComps = null;
 	}
 
 	override function update(dt:Float) {
-
 		var v:Velocity;
 		var pd:Particle;
 		for (p in particles) {
@@ -41,18 +39,15 @@ class VelocityUpdateModule extends ParticleModule {
 			p.x += v.x * dt;
 			p.y += v.y * dt;
 		}
-
 	}
 
-
 }
-
 
 typedef VelocityUpdateModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var damping:Float;
+	?damping:Float,
 
 }
 

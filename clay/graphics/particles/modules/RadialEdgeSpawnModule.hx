@@ -4,71 +4,66 @@ package clay.graphics.particles.modules;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.ParticleModule;
 import clay.math.Vector;
-
+import clay.utils.Log.*;
 
 class RadialEdgeSpawnModule  extends ParticleModule {
-
 
 	public var radius:Float;
 	public var radiusMax:Float;
 
+	public function new(options:RadialEdgeSpawnModuleModuleOptions) {
+		super(options);
 
-	public function new(_options:RadialEdgeSpawnModuleModuleOptions) {
-
-		super(_options);
-
-		radius = _options.radius != null ? _options.radius : 64;
-		radiusMax = _options.radiusMax != null ? _options.radiusMax : 128;
+		radius = def(options.radius, 64);
+		radiusMax = def(options.radiusMax, 128);
 
 		_priority = -999;
-		
 	}
 
 	override function onSpawn(p:Particle) {
-
 		var a = emitter.random() * Math.PI * 2;
 		var r = emitter.randomFloat(radius, radiusMax);
 
-		p.x = emitter.system.pos.x + emitter.pos.x + Math.cos(a) * r;
-		p.y = emitter.system.pos.y + emitter.pos.y + Math.sin(a) * r;
+		var x = Math.cos(a) * r;
+		var y = Math.sin(a) * r;
 
+		if(emitter.system.localSpace) {
+			p.x = x;
+			p.y = y;
+		} else {
+			p.x = emitter.getTransformX(x, y);
+			p.y = emitter.getTransformY(x, y);
+		}
 	}
-
 
 // import/export
 
 	override function fromJson(d:Dynamic) {
-
 		super.fromJson(d);
 
 		radius = d.radius;
 		radiusMax = d.radiusMax;
 		
 		return this;
-	    
 	}
 
 	override function toJson():Dynamic {
-
 		var d = super.toJson();
 
 		d.radius = radius;
 		d.radiusMax = radiusMax;
 
 		return d;
-	    
 	}
 
-
 }
-
 
 typedef RadialEdgeSpawnModuleModuleOptions = {
 
 	>ParticleModuleOptions,
 
-	@:optional var radius:Float;
-	@:optional var radiusMax:Float;
+	?radius:Float,
+	?radiusMax:Float,
 
 }
 

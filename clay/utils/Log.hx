@@ -29,54 +29,40 @@ class Log {
 	}
 
 	macro public static function level( __level:Int ) : haxe.macro.Expr {
-
 		_level = __level;
-
 		return macro null;
-
 	}
 
 	macro static function filter( __filter:String ) : haxe.macro.Expr {
-
 		_filter = __filter.split(',');
-
 		var _index = 0;
 		for(_f in _filter) {
 			_filter[_index] = StringTools.trim(_f);
 			_index++;
 		}
-
 		return macro null;
-
 	}
 
-	macro static function exclude( __exclude:String ) : haxe.macro.Expr {
-
-		_exclude = __exclude.split(',');
-
+	macro static function exclude(excl:String):haxe.macro.Expr {
+		_exclude = excl.split(',');
 		var _index = 0;
 		for(_e in _exclude) {
 			_exclude[_index] = StringTools.trim(_e);
 			_index++;
 		}
-
 		return macro null;
-
 	}
 
-	macro static function width( _width:Int ) : haxe.macro.Expr {
-
-		_logWidth = _width;
-
+	macro static function width(w:Int):haxe.macro.Expr {
+		_logWidth = w;
 		return macro null;
-
 	}
 
 		//This macro uses the defined log level value to reject code that
 		//shouldn't even exist at runtime , like low level debug information
 		//and logging by injecting or not injecting code
 	macro public static function log( value:Dynamic ) : Expr {
-
+		#if !display // TODO: log breaks autocompletion ?
 		var _file = Path.withoutDirectory(Context.getPosInfos(Context.currentPos()).file);
 		var _context = Path.withoutExtension(_file).toLowerCase();
 		var _spaces = _getSpacing(_file);
@@ -91,7 +77,6 @@ class Log {
 		}
 
 		var _log = (_level > 0);
-
 			if(_filter != null && (_filter.indexOf(_context) == -1)) {
 				_log = false;
 			}
@@ -99,17 +84,14 @@ class Log {
 			if(_exclude != null && (_exclude.indexOf(_context) != -1)) {
 				_log = false;
 			}
-
 		if(_log) {
 			return macro @:pos(Context.currentPos()) trace('${_spaces}i / $_context / ' + $value);
 		}
-
+		#end
 		return macro null;
-
 	}
 
 	macro public static function _debug( value:Dynamic ) : Expr { // TODO: rename to debug?
-
 		var _file = Path.withoutDirectory(Context.getPosInfos(Context.currentPos()).file);
 		var _context = Path.withoutExtension(_file).toLowerCase();
 		var _spaces = _getSpacing(_file);
@@ -121,10 +103,9 @@ class Log {
 					default: throw LogError.RequireString('log_as meta requires a string constant like "name"');
 				}
 			}
-		} //for each meta
+		}
 
 		var _log = (_level > 1);
-
 			if(_filter != null && (_filter.indexOf(_context) == -1)) {
 				_log = false;
 			}
@@ -132,17 +113,14 @@ class Log {
 			if(_exclude != null && (_exclude.indexOf(_context) != -1)) {
 				_log = false;
 			}
-
 		if(_log) {
 			return macro @:pos(Context.currentPos()) trace('${_spaces}d / $_context / ' + $value);
 		}
 
 		return macro null;
-
 	}
 
 	macro public static function _verbose( value:Dynamic ) : Expr { // TODO: rename to verbose?
-
 		var _file = Path.withoutDirectory(Context.getPosInfos(Context.currentPos()).file);
 		var _context = Path.withoutExtension(_file).toLowerCase();
 		var _spaces = _getSpacing(_file);
@@ -154,10 +132,9 @@ class Log {
 					default: throw LogError.RequireString('log_as meta requires a string constant like "name"');
 				}
 			}
-		} //for each meta
+		}
 
 		var _log = (_level > 2);
-
 			if(_filter != null && (_filter.indexOf(_context) == -1)) {
 				_log = false;
 			}
@@ -165,17 +142,14 @@ class Log {
 			if(_exclude != null && (_exclude.indexOf(_context) != -1)) {
 				_log = false;
 			}
-
 		if(_log) {
 			return macro @:pos(Context.currentPos()) trace('${_spaces}v / $_context / ' + $value);
 		}
 
 		return macro null;
-
 	}
 
 	macro public static function _verboser( value:Dynamic ) : Expr { // TODO: rename to verboser?
-
 		var _file = Path.withoutDirectory(Context.getPosInfos(Context.currentPos()).file);
 		var _context = Path.withoutExtension(_file).toLowerCase();
 		var _spaces = _getSpacing(_file);
@@ -190,7 +164,6 @@ class Log {
 		}
 
 		var _log = (_level > 3);
-
 			if(_filter != null && (_filter.indexOf(_context) == -1)) {
 				_log = false;
 			}
@@ -198,17 +171,14 @@ class Log {
 			if(_exclude != null && (_exclude.indexOf(_context) != -1)) {
 				_log = false;
 			}
-
 		if(_log) {
 			return macro @:pos(Context.currentPos()) trace('${_spaces}V / $_context / ' + $value);
 		}
 
 		return macro null;
-
 	}
 
 	macro public static function assert(expr:Expr, ?reason:ExprOf<String>) {
-
 		#if !clay_no_assertions
 			var _str = haxe.macro.ExprTools.toString(expr);
 
@@ -222,41 +192,18 @@ class Log {
 			}
 		#end
 		return macro null;
-
-	}
-
-	macro public static function assertNull(value:Expr, ?reason:ExprOf<String>) {
-
-		#if !clay_no_assertions
-			var _str = haxe.macro.ExprTools.toString(value);
-
-			reason = switch(reason) {
-				case macro null: macro '';
-				case _: macro ' ( ' + $reason + ' )';
-			}
-			return macro @:pos(Context.currentPos()) {
-				if($value == null) throw clay.utils.Log.DebugError.nullAssertion('$_str was null' + $reason);
-			}
-		#end
-		return macro null;
-
 	}
 
 	macro public static function def(value:Expr, def:Expr):Expr {
-
 		return macro @:pos(Context.currentPos()) {
 			if($value == null) $value = $def;
 			$value;
 		}
-
 	}
-
 
 //Internal Helpers
 
-
 	static function _getSpacing(_file:String ) {
-
 		var _spaces = '';
 
 			//the magic number here is File.hx[:1234] for the trace listener log spacing
@@ -269,10 +216,9 @@ class Log {
 		}
 
 		return _spaces;
-
 	}
 
-} // Debug
+}
 
 enum DebugError {
 	assertion(expr:String);

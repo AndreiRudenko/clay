@@ -1,18 +1,15 @@
 package clay.graphics.tile;
 
-
 import clay.resources.Texture;
 import clay.math.Rectangle;
 import clay.math.Vector;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.render.Vertex;
 import clay.render.Camera;
 import clay.utils.Log.*;
 import clay.utils.ArrayTools;
 
-
 class Tilemap extends Mesh {
-
 
 		/* The width of the tile */
 	public var tileWidth(default, null):Int;
@@ -28,9 +25,7 @@ class Tilemap extends Mesh {
 
 	public var tilesCount(default, null):Int;
 
-
 	public function new(width:Int, height:Int, tileWidth:Int, tileHeight:Int) {
-
 		this.tileWidth = tileWidth;
 		this.tileHeight = tileHeight;
 		this.width = width;
@@ -41,34 +36,26 @@ class Tilemap extends Mesh {
 		super();
 
 		tilesCount = 0;
-
 	}
 
 	public function empty() {
-		
 		ArrayTools.clear(map);
 		ArrayTools.clear(vertices);
 		ArrayTools.clear(indices);
 
 		tilesCount = 0;
-
 	}
 	
 	public function setTileset(texture:Texture, tileWidth:Int, tileHeight:Int, tileMargin:Int = 0, tileSpacing:Int = 0) {
-
 		tileset = new Tileset('tileset', texture, tileWidth, tileHeight, tileMargin, tileSpacing);
 		this.texture = texture; 
-		
 	}
 
 	public function getTile(x:Int, y:Int):Tile {
-		
 		return map[getIndex(x, y)];
-
 	}
 
 	public function setTile(x:Int, y:Int, index:Int):Tile {
-		
 		var idx = getIndex(x, y);
 
 		if(map[idx] != null) {
@@ -82,11 +69,9 @@ class Tilemap extends Mesh {
 		updateTileTcoords(tile);
 
 		return tile;
-		
 	}
 
 	public function setTileColor(x:Int, y:Int, color:Color):Tile {
-
 		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
@@ -97,11 +82,9 @@ class Tilemap extends Mesh {
 		}
 
 		return tile;
-
 	}
 
 	public function setTileFlipX(x:Int, y:Int, flip:Bool):Tile {
-
 		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
@@ -113,11 +96,9 @@ class Tilemap extends Mesh {
 		}
 
 		return tile;
-
 	}
 
 	public function setTileFlipY(x:Int, y:Int, flip:Bool):Tile {
-
 		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
@@ -129,11 +110,9 @@ class Tilemap extends Mesh {
 		}
 
 		return tile;
-
 	}
 
 	public function setTileRotate(x:Int, y:Int, rotate:Int):Tile {
-
 		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
@@ -145,11 +124,9 @@ class Tilemap extends Mesh {
 		}
 
 		return tile;
-
 	}
 
 	public function setTileVisible(x:Int, y:Int, visible:Bool):Tile {
-		
 		var idx = getIndex(x, y);
 		var tile = map[idx];
 
@@ -167,11 +144,9 @@ class Tilemap extends Mesh {
 		}
 
 		return tile;
-		
 	}
 
 	public function removeTile(x:Int, y:Int):Tile {
-		
 		var idx = getIndex(x, y);
 		var tile = map[idx];
 		
@@ -183,29 +158,21 @@ class Tilemap extends Mesh {
 		}
 
 		return tile;
-
 	}
 
 	public function toMapX(x:Float):Int {
-
 		return Math.floor(x / tileWidth);
-		
 	}
 
 	public function toMapY(y:Float):Int {
-
 		return Math.floor(y / tileHeight);
-		
 	}
 
 	inline function getIndex(x:Int, y:Int):Int { // i = x + w * y;  x = i % w; y = i / w;
-
 		return Std.int(x + width * y);
-
 	}
 
 	inline function addTileGeometry(tile:Tile) {
-
 		var offset = vertices.length;
 
 		indices.push(offset);
@@ -220,11 +187,9 @@ class Tilemap extends Mesh {
 		}
 
 		tilesCount++;
-
 	}
 
 	inline function removeTileGeometry(tile:Tile) {
-
 		var found = false;
 		for (v in tile.vertices) {
 			if(remove(v)) {
@@ -238,11 +203,9 @@ class Tilemap extends Mesh {
 			}
 			tilesCount--;
 		}
-		
 	}
 
 	function updateTileTcoords(tile:Tile) {
-
 		var tc = tileset.getTileCoords(tile.index);
 
 		if(tc == null) {
@@ -313,9 +276,7 @@ class Tilemap extends Mesh {
 				tile.vertices[2].tcoord.set(brX, brY);
 				tile.vertices[3].tcoord.set(blX, blY);
 		}
-
 	}
-
 
 }
 
@@ -337,9 +298,7 @@ class Tile {
 
 	public var vertices:Array<Vertex>;
 
-
 	public function new(index:Int, x:Int, y:Int, w:Int, h:Int, color:Color) {
-
 		this.index = index;
 		this.x = x;
 		this.y = y;
@@ -352,11 +311,9 @@ class Tile {
 		vertices.push(new Vertex(new Vector(x, y + h)));
 
 		this.color = color;
-
 	}
 
 	function set_color(v:Color):Color {
-
 		color = v;
 
 		for (v in vertices) {
@@ -364,8 +321,6 @@ class Tile {
 		}
 		
 		return color;
-
 	}
-
 
 }

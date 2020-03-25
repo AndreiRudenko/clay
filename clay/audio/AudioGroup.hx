@@ -1,20 +1,14 @@
 package clay.audio;
 
-
 import clay.utils.Mathf;
 import clay.utils.Log.*;
-
-import clay.utils.Mathf;
-import clay.utils.Log.*;
-import kha.arrays.Float32Array;
 import clay.audio.AudioEffect;
+import clay.audio.Audio;
 import clay.utils.ArrayTools;
-
+import kha.arrays.Float32Array;
 import haxe.ds.Vector;
 
-
 class AudioGroup extends AudioChannel {
-
 
 	public var channels(get, null):Array<AudioChannel>;
 	public var channelsCount(get, null):Int;
@@ -28,9 +22,7 @@ class AudioGroup extends AudioChannel {
 
 	var _channelsInternal:Vector<AudioChannel>;
 
-
 	public function new(maxChannels:Int = 32) {
-
 		super();
 
 		_maxChannels = maxChannels;
@@ -40,27 +32,25 @@ class AudioGroup extends AudioChannel {
 
 		_channels = new Vector(_maxChannels);
 		_channelsInternal = new Vector(_maxChannels);
-
 	}
 
 	public function add(channel:AudioChannel) {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 
 		if(channel == this) {
-			clay.system.Audio.mutexUnlock();
+			Audio.mutexUnlock();
 			log('can`t add channel to itself');
 			return;
 		}
 
 		if(channel._output == this) {
-			clay.system.Audio.mutexUnlock();
+			Audio.mutexUnlock();
 			log('channel already added to group');
 			return;
 		}
 
 		if(_channelsCount >= _maxChannels) {
-			clay.system.Audio.mutexUnlock();
+			Audio.mutexUnlock();
 			log('can`t add channel, max channels: ${_maxChannels}');
 			return;
 		}
@@ -73,20 +63,20 @@ class AudioGroup extends AudioChannel {
 		_channels[_channelsCount++] = channel;
 		_dirtyChannels = true;
 
-		clay.system.Audio.mutexUnlock();
-
+		Audio.mutexUnlock();
 	}
 
 	public function remove(channel:AudioChannel) {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 
 		if(channel._output == this) {
 			channel._output = null;
 			var found = false;
 			for (i in 0..._channelsCount) {
-				if(_channels[i] == channel) { // todo: remove rest from _channelsInternal and channels
-					_channels[i] = _channels[--_channelsCount];
+				if(_channels[i] == channel) { // TODO: remove rest from _channelsInternal and channels
+					_channelsCount--;
+					_channels[i] = _channels[_channelsCount];
+					_channels[_channelsCount] = null;
 					found = true;
 					break;
 				}
@@ -99,16 +89,29 @@ class AudioGroup extends AudioChannel {
 			log('can`t remove channel, it not belong to this group');
 		}
 
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
+	}
 
+	public function empty() {
+		Audio.mutexLock();
+		
+		var j:Int = 0;
+		while(j < _maxChannels) {
+			_channels[j]._output = null;
+			_channels[j] = null;
+			j++;
+		}
+		_channelsCount = null;
+		_dirtyChannels = true;
+
+		Audio.mutexUnlock();
 	}
 
 	override function process(data:Float32Array, bufferSamples:Int) {
-	    
 		if (_cache.length < bufferSamples) {
-			clay.system.Audio.mutexLock();
+			Audio.mutexLock();
 			log('Allocation request in audio thread. cache: ${_cache.length}, samples: $bufferSamples');
-			clay.system.Audio.mutexUnlock();
+			Audio.mutexUnlock();
 			_cache = new Float32Array(bufferSamples);
 		}
 
@@ -118,7 +121,7 @@ class AudioGroup extends AudioChannel {
 			i++;
 		}
 
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 
 		if(_dirtyChannels) {
 			var j:Int = 0;
@@ -126,12 +129,16 @@ class AudioGroup extends AudioChannel {
 				_channelsInternal[j] = _channels[j];
 				j++;
 			}
+			while(j < _maxChannels && _channelsInternal[j] != null) {
+				_channelsInternal[j] = null;
+				j++;
+			}
 			_dirtyChannels = false;
 		}
 
 		var count = _channelsCount;
 
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		i = 0;
 		while(i < count) {
@@ -149,31 +156,25 @@ class AudioGroup extends AudioChannel {
 			data[i+1] += _cache[i+1] * _volume * _r;
 			i +=2;
 		}
-
 	}
 
 	function get_channels():Array<AudioChannel> {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		var v = [];
 		for (i in 0..._channelsCount) {
 			v.push(_channels[i]);
 		}
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-		
 	}
 
 	function get_channelsCount():Int {
-
-		clay.system.Audio.mutexLock();
+		Audio.mutexLock();
 		var v = _channelsCount;
-		clay.system.Audio.mutexUnlock();
+		Audio.mutexUnlock();
 
 		return v;
-		
 	}
-
 
 }

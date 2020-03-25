@@ -1,6 +1,5 @@
 package clay.render;
 
-
 import kha.graphics4.Graphics;
 
 import clay.math.Rectangle;
@@ -11,7 +10,6 @@ import clay.utils.Log.*;
 @:access(clay.render.Camera)
 class CameraManager {
 
-
 	public var onCameraCreate(default, null):Signal<Camera->Void>;
 	public var onCameraDestroy(default, null):Signal<Camera->Void>;
 
@@ -20,20 +18,16 @@ class CameraManager {
 	@:noCompletion public var activeCameras:Array<Camera>;
 	@:noCompletion public var cameras:Map<String, Camera>;
 
-
 	public function new() {
-		
 		activeCameras = [];
 		cameras = new Map();
 		length = 0;
 
 		onCameraCreate = new Signal();
 		onCameraDestroy = new Signal();
-
 	}
 
 	public function create(name:String, ?viewport:Rectangle, priority:Int = 0, enabled:Bool = true):Camera {
-
 		var camera = new Camera(this, name, viewport, priority);
 
 		handleDuplicateWarning(name);
@@ -47,11 +41,9 @@ class CameraManager {
 		onCameraCreate.emit(camera);
 
 		return camera;
-
 	}
 
 	public function destroy(camera:Camera) {
-		
 		if(cameras.exists(camera.name)) {
 			cameras.remove(camera.name);
 			length--;
@@ -63,17 +55,13 @@ class CameraManager {
 		onCameraDestroy.emit(camera);
 
 		camera.destroy();
-
 	}
 
 	public inline function get(name:String):Camera {
-
 		return cameras.get(name);
-
 	}
 
 	public function enable(camera:Camera) {
-
 		if(camera._active) {
 			return;
 		}
@@ -94,31 +82,25 @@ class CameraManager {
 		if(!added) {
 			activeCameras.push(camera);
 		}
-
 	}
 
 	public function disable(camera:Camera) {
-
 		if(!camera._active) {
 			return;
 		}
 
 		activeCameras.remove(camera);
 		camera._active = false;
-		
 	}
 
 	public function clear() {
-
 		for (c in cameras) {
 			destroy(c);
 		}
 		length = 0;
-		
 	}
 
 	function handleDuplicateWarning(name:String) {
-
 		var c:Camera = cameras.get(name);
 		if(c != null) {
 			log('adding a second camera named: "${name}"!
@@ -126,14 +108,10 @@ class CameraManager {
 			cameras.remove(name);
 			disable(c);
 		}
-
 	}
 
-	@:noCompletion public inline function iterator():Iterator<Camera> { // todo: using this is broke hashlink build, ftw?
-
+	@:noCompletion public inline function iterator():Iterator<Camera> { // TODO: remove
 		return activeCameras.iterator();
-
 	}
-
 
 }

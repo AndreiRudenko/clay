@@ -4,15 +4,17 @@ package clay.system.debug;
 import clay.Clay;
 import clay.render.Camera;
 import clay.graphics.Text;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.math.Vector;
 import clay.utils.Mathf;
+import clay.utils.Align;
 import clay.system.Debug;
 // import clay.input.Keyboard;
 import clay.input.Key;
 // import clay.input.Mouse;
 import clay.render.Layer;
-import clay.system.ResourceManager;
+import clay.render.Layers;
+import clay.resources.ResourceManager;
 import clay.resources.Resource;
 import clay.resources.AudioResource;
 import clay.resources.BytesResource;
@@ -62,11 +64,11 @@ class StatsDebugView extends DebugView {
 		renderStatsText.height = 0;
 		renderStatsText.clipRect = rect;
 		renderStatsText.depth = 999.3;
-		debug.layer.add(renderStatsText);
+		Clay.layers.add(renderStatsText, Layers.DEBUG_UI);
 
 		resourceListText = new Text(Clay.renderer.font);
 		resourceListText.fontSize = fontSize;
-		resourceListText.align = TextAlign.RIGHT;
+		resourceListText.align = Align.RIGHT;
 		resourceListText.visible = false;
 		resourceListText.color = new Color().fromInt(0xffa563);
 		resourceListText.transform.pos.set(rect.x, rect.y);
@@ -74,7 +76,7 @@ class StatsDebugView extends DebugView {
 		resourceListText.height = 0;
 		resourceListText.clipRect = rect;
 		resourceListText.depth = 999.3;
-		debug.layer.add(resourceListText);
+		Clay.layers.add(resourceListText, Layers.DEBUG_UI);
 
 		Clay.renderer.cameras.onCameraCreate.add(cameraAdded);
 		Clay.renderer.cameras.onCameraDestroy.add(cameraRemoved);
@@ -83,7 +85,7 @@ class StatsDebugView extends DebugView {
 			cameraAdded(c);
 		}
 
-		Clay.on(RenderEvent.RENDER, onrender);
+		Clay.on(RenderEvent.RENDER, onRender);
 		Clay.on(KeyEvent.KEY_DOWN, onKeyDown);
 		Clay.on(MouseEvent.MOUSE_WHEEL, onMouseWheel);
 		// Clay.on(TouchEvent.TOUCH_DOWN, ontouchdown);
@@ -119,16 +121,13 @@ class StatsDebugView extends DebugView {
 	}
 
 	function onKeyDown(e:KeyEvent) {
-
 		if(e.key == Key.THREE) {
 			hideLayers = !hideLayers;
 			refresh();
 		}
-
 	}
 
 	function onMouseWheel(e:MouseEvent) {
-
 		var px = e.x/Clay.screen.width;
 
 		if(px > 0.5) {
@@ -170,51 +169,38 @@ class StatsDebugView extends DebugView {
 			renderStatsText.transform.pos.y = newY;
 
 		}
-
 	}
 
-	function onrender(_) {
-
+	function onRender(_) {
 		if(active) {
 			refresh();
 		}
-
 	}
 
 	function cameraAdded(c:Camera) {
-		
 		c.onPostRender.add(addCameraStats);
-
 	}
 
 	function cameraRemoved(c:Camera) {
-
 		c.onPostRender.remove(addCameraStats);
-		
 	}
 
 	function addCameraStats(c:Camera) {
-
 		if(active) {
 			cameraStats.add(getCameraInfo(c));
 		}
-		
 	}
 
 	function bytesToString( bytes:Int, ?precision:Int=3 ):String {
-
 		var index = bytes == 0 ? 0 : Math.floor(Math.log(bytes) / Math.log(1024));
 		var _byteValue = bytes / Math.pow(1024, index);
 			_byteValue = clay.utils.Mathf.fixed(_byteValue, precision);
 
 		return _byteValue + " " + _byteLevels[index];
-
 	}
 
 	@:access(kha.Kravur)
 	function getResourceStats():String {
-
-
 		var bytesLists = new StringBuf();
 		var textLists = new StringBuf();
 		var jsonLists = new StringBuf();
@@ -234,7 +220,7 @@ class StatsDebugView extends DebugView {
 		var _totalFnt = 0;
 		var _totalAll = 0;
 
-		inline function _res(res:Resource) return "" + res.id + " • " + res.ref + "    \n ";
+		inline function _res(res:Resource) return "" + res.id + " • " + res.references + "    \n ";
 
 		
 		inline function _fnt(res:FontResource) {
@@ -245,13 +231,13 @@ class StatsDebugView extends DebugView {
 		inline function _txt(res:TextResource) {
 			var _l = if(res.text != null) res.text.length else 0;
 			_totalTxt += _l;
-			return "(~" + bytesToString(_l) + ") " + res.id + " • " + res.ref + "    \n ";
+			return "(~" + bytesToString(_l) + ") " + res.id + " • " + res.references + "    \n ";
 		}
 
 		inline function _bts(res:BytesResource) {
 			var _l = res.blob != null ? res.memoryUse() : 0;
 			_totalBts += _l;
-			return "(~" + bytesToString(_l) + ") " + res.id + " • " + res.ref + "    \n ";
+			return "(~" + bytesToString(_l) + ") " + res.id + " • " + res.references + "    \n ";
 		}
 
 		inline function _tex(res:Texture) {
@@ -260,17 +246,17 @@ class StatsDebugView extends DebugView {
 			} else {
 				_totalTex += res.memoryUse();
 			}
-			return "(" + res.widthActual + "x" + res.heightActual + " ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.ref + "    \n ";
+			return "(" + res.widthActual + "x" + res.heightActual + " ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.references + "    \n ";
 		}
 
 		inline function _snd(res:AudioResource) return {
 			_totalSnd += res.memoryUse();
-			return "(" + clay.utils.Mathf.fixed(res.duration, 2) + "s " + res.channels + "ch ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.ref + "    \n ";
+			return "(" + clay.utils.Mathf.fixed(res.duration, 2) + "s " + res.channels + "ch ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.references + "    \n ";
 		}
 
 		inline function _vid(res:VideoResource) {
 			_totalVid += res.memoryUse();
-			return "(" + res.video.width + "x" + res.video.height + " ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.ref + "    \n ";
+			return "(" + res.video.width + "x" + res.video.height + " ~" + bytesToString(res.memoryUse()) + ")    " + res.id + " • " + res.references + "    \n ";
 		}
 
 		for(res in Clay.resources.cache) {
@@ -330,12 +316,10 @@ class StatsDebugView extends DebugView {
 			lists.add(orblank(videoLists));
 
 		return lists.toString();
-
 	}
 
 
 	function getRenderStats():String {
-
 		var _renderStats = Clay.renderer.stats;
 
 		var sb = new StringBuf();
@@ -344,24 +328,23 @@ class StatsDebugView extends DebugView {
 			"total geometry : " + _renderStats.geometry + " \n " +
 			"visible geometry : " + _renderStats.visibleGeometry + " \n " +
 			"static geometry : " + _renderStats.locked + " \n " +
-			"vertices : " + _renderStats.vertices + " \n " +
-			"indices : " + _renderStats.indices + " \n " +
+			"vertices : " + _renderStats.vertices + " / " + Clay.renderer.ctx.verticesMax + " \n " +
+			"indices : " + _renderStats.indices + " / " + Clay.renderer.ctx.indicesMax + " \n " +
 			"draw calls : " + _renderStats.drawCalls + " \n " +
-			"layers : " + Clay.renderer.layers.activeCount + " \n " +
+			"layers : " + Clay.renderer.layers.activeCount + " ( " + Clay.renderer.layers.used + " / " + Clay.renderer.layers.capacity + " ) \n " +
 			"cameras : " + Clay.renderer.cameras.length + " \n "
 		);
 
 		sb.add(cameraStats.toString());
 
 		return sb.toString();
-
 	}
 
+	@:access(clay.render.Layers)
 	function getCameraInfo(c:Camera):String {
-
 		var _layers = [];
-		for (l in Clay.renderer.layers) {
-			if(c._visibleLayersMask.get(l.id)) {
+		for (l in Clay.renderer.layers._activeLayers) {
+			if(c.inCullingMask(l.id)) {
 				_layers.push(l);
 			}
 		}
@@ -377,28 +360,23 @@ class StatsDebugView extends DebugView {
 		}
 
 		return _s;
-		
 	}
 
 	inline function getLayerInfo(l:Layer):String {
-
 		return
-			"        " + l.name + " | " + l.priority + " \n " +
+			"        " + l.name + " | " + l.id + " \n " +
 			"            total geometry : " + l.stats.geometry + " \n " +
 			"            visible geometry : " + l.stats.visibleGeometry + " \n " +
 			"            static geometry : " + l.stats.locked + " \n " +
 			"            vertices : " + l.stats.vertices + " \n " +
 			"            indices : " + l.stats.indices + " \n " +
 			"            draw calls : " + l.stats.drawCalls + " \n ";
-
 	}
 
 	function refresh() {
-
 		renderStatsText.text = getRenderStats();
 		resourceListText.text = getResourceStats();
 		cameraStats = new StringBuf();
-
 	}
 
 	// function tabs(_d:Int) {

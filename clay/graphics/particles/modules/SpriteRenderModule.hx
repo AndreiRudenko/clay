@@ -10,33 +10,31 @@ import clay.graphics.particles.components.Origin;
 import clay.graphics.particles.components.Region;
 import clay.utils.Mathf;
 import clay.math.Vector;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.render.Vertex;
 import clay.math.Rectangle;
 import clay.math.Matrix;
-import clay.render.Painter;
+import clay.render.RenderContext;
 import clay.resources.Texture;
+import clay.render.TextureParameters;
 import clay.render.types.BlendFactor;
 import clay.render.types.BlendOperation;
+import clay.render.Blending;
+import clay.utils.Log.*;
+import clay.utils.BlendMode;
+import clay.graphics.particles.utils.ParticlesSortMode;
 
+using clay.graphics.particles.utils.VectorExtender;
+using clay.graphics.particles.utils.RectangleExtender;
 
 class SpriteRenderModule extends ParticleModule {
 
-
 	public var texture(default, set):Texture;
 	public var region(default, set):Rectangle;
-
-	public var blendMode(default, set):BlendMode;
-	public var premultipliedAlpha(get, set):Bool;
-
-	var _blendSrc:BlendFactor;
-	var _blendDst:BlendFactor;
-	var _blendOp:BlendOperation;
-	var _alphaBlendSrc:BlendFactor;
-	var _alphaBlendDst:BlendFactor;
-	var _alphaBlendOp:BlendOperation;
-
-	var _premultipliedAlpha:Bool;
+	public var textureParameters(default, null):TextureParameters;
+	public var blending(default, null):Blending;
+	public var sortMode(get, set):ParticlesSortMode;
+	public var sortFunc(get, set):(p1:Particle, p2:Particle)->Int;
 
 	var _matrix:Matrix;
 	var _regionScaled:Rectangle;
@@ -55,16 +53,16 @@ class SpriteRenderModule extends ParticleModule {
 	var _colorDefault:Color;
 	var _rotationDefault:Rotation;
 	var _originDefault:Origin;
+
+	var _sortMode:ParticlesSortMode;
+	var _sortFunc:(p1:Particle, p2:Particle)->Int;
 	
 	var _pSortTmp:haxe.ds.Vector<ParticleSprite>;
 	var _particleSprites:haxe.ds.Vector<ParticleSprite>;
 
-
 	public function new(options:SpriteRenderModuleOptions) {
-
 		super({});
 
-		_premultipliedAlpha = true;
 		_count = 0;
 		_matrix = new Matrix();
 		_regionScaled = new Rectangle();
@@ -73,24 +71,17 @@ class SpriteRenderModule extends ParticleModule {
 		region = options.region;
 		texture = options.texture;
 
-		_blendSrc = options.blendSrc != null ? options.blendSrc : BlendFactor.BlendOne;
-		_blendDst = options.blendDst != null ? options.blendDst : BlendFactor.InverseSourceAlpha;
-		_blendOp = options.blendOp != null ? options.blendOp : BlendOperation.Add;
-
-		_alphaBlendSrc = options.alphaBlendSrc != null ? options.alphaBlendSrc : BlendFactor.BlendOne;
-		_alphaBlendDst = options.alphaBlendDst != null ? options.alphaBlendDst : BlendFactor.InverseSourceAlpha;
-		_alphaBlendOp = options.alphaBlendOp != null ? options.alphaBlendOp : BlendOperation.Add;
-
-		blendMode = options.blendMode != null ? options.blendMode : BlendMode.NORMAL;
-
-		if(options.premultipliedAlpha != null) {
-			premultipliedAlpha = options.premultipliedAlpha;
+		blending = new Blending();
+		blending.mode = def(options.blendMode, BlendMode.NORMAL);
+		blending.premultipliedAlpha = def(options.premultipliedAlpha, true);
+		textureParameters = new TextureParameters();
+		sortMode = def(options.sortMode, ParticlesSortMode.NONE);
+		if(options.sortFunc != null) {
+			sortFunc = options.sortFunc;
 		}
-
 	}
 
-	override function init() {
-
+	override function onAdded() {
 		_size = emitter.components.get(Size, false);
 		_scale = emitter.components.get(Scale, false);
 		_color = emitter.components.get(Color, false);
@@ -136,17 +127,53 @@ class SpriteRenderModule extends ParticleModule {
 			p = emitter.particles.get(i);
 			_particleSprites[p.id] = new ParticleSprite();
 		}
-
 	}
 
-	override function render(g:Painter) {
+	override function onRemoved() {
+		if(_size != null) {
+			emitter.components.put(_size);
+		}
 
-		g.setBlending(_blendSrc, _blendDst, _blendOp, _alphaBlendSrc, _alphaBlendDst, _alphaBlendOp);
-		g.setTexture(texture);
+		if(_scale != null) {
+			emitter.components.put(_scale);
+		}
 
-		var sortMode = emitter.getSortModeFunc();
+		if(_color != null) {
+			emitter.components.put(_color);
+		}
 
-		if(sortMode != null) {
+		if(_rotation != null) {
+			emitter.components.put(_rotation);
+		}
+
+		if(_origin != null) {
+			emitter.components.put(_origin);
+		}
+
+		if(_region != null) {
+			emitter.components.put(_region);
+		}
+
+	    _particleSprites = null;
+		_pSortTmp = null;
+		_size = null;
+		_scale = null;
+		_color = null;
+		_rotation = null;
+		_origin = null;
+		_region = null;
+		_sizeDefault = null;
+		_colorDefault = null;
+		_originDefault = null;
+	}
+
+	override function render(ctx:RenderContext) {
+		var layer = emitter.system.layer;
+		ctx.setTexture(texture);
+		ctx.setTextureParameters(textureParameters);
+		ctx.setBlending(blending);
+
+		if(_sortFunc != null) {
 			var p:Particle;
 			var ps:ParticleSprite;
 
@@ -164,12 +191,12 @@ class SpriteRenderModule extends ParticleModule {
 				ps.region = _region != null ? getRegionScaled(_region.get(p.id)) : _regionScaled;
 			}
 
-			_sort(_particleSprites, _pSortTmp, 0, _count-1, sortMode);
+			_sort(_particleSprites, _pSortTmp, 0, _count-1, _sortFunc);
 
 			for (i in 0..._count) {
 				ps = _particleSprites[i];
 				renderParticle(
-					g, 
+					ctx, 
 					emitter.system.transform.world.matrix,
 					ps.particleData,
 					ps.size,
@@ -183,7 +210,7 @@ class SpriteRenderModule extends ParticleModule {
 		} else {
 			for (p in emitter.particles) {
 				renderParticle(
-					g, 
+					ctx, 
 					emitter.system.transform.world.matrix,
 					p,
 					_size != null ? _size.get(p.id) : _sizeDefault,
@@ -195,11 +222,10 @@ class SpriteRenderModule extends ParticleModule {
 				);
 			}
 		}
-
 	}
 
 	inline function renderParticle(
-		g:Painter, 
+		ctx:RenderContext, 
 		emitterMatrix:Matrix, 
 		particle:Particle, 
 		size:Size, 
@@ -209,89 +235,63 @@ class SpriteRenderModule extends ParticleModule {
 		color:Color, 
 		reg:Rectangle
 	) {
+		ctx.ensure(4, 6);
 
-		g.ensure(4, 6);
-
-		_matrix.copy(emitterMatrix)
-		.translate(particle.x, particle.y)
+		_matrix.identity()
+		.translate(particle.globalX, particle.globalY)
 		.rotate(Mathf.radians(-rotation))
 		.scale(scale, scale)
 		.apply(-origin.x * size.x, -origin.y * size.y);
 
-		g.addIndex(0);
-		g.addIndex(1);
-		g.addIndex(2);
-		g.addIndex(0);
-		g.addIndex(2);
-		g.addIndex(3);
+		ctx.addIndex(0);
+		ctx.addIndex(1);
+		ctx.addIndex(2);
+		ctx.addIndex(0);
+		ctx.addIndex(2);
+		ctx.addIndex(3);
 
-		g.addVertex(
+		ctx.setColor(color);
+
+		ctx.addVertex(
 			_matrix.tx, 
 			_matrix.ty, 
 			reg.x,
-			reg.y,
-			color
+			reg.y
 		);
 
-		g.addVertex(
+		ctx.addVertex(
 			_matrix.a * size.x + _matrix.tx, 
 			_matrix.b * size.x + _matrix.ty, 
 			reg.x + reg.w,
-			reg.y,
-			color
+			reg.y
 		);
 
-		g.addVertex(
+		ctx.addVertex(
 			_matrix.a * size.x + _matrix.c * size.y + _matrix.tx, 
 			_matrix.b * size.x + _matrix.d * size.y + _matrix.ty, 
 			reg.x + reg.w,
-			reg.y + reg.h,
-			color
+			reg.y + reg.h
 		);
 
-		g.addVertex(
+		ctx.addVertex(
 			_matrix.c * size.y + _matrix.tx, 
 			_matrix.d * size.y + _matrix.ty, 
 			reg.x,
-			reg.y + reg.h,
-			color
+			reg.y + reg.h
 		);
-		
 	}	
-
-	public function setBlending(
-		blendSrc:BlendFactor, 
-		blendDst:BlendFactor, 
-		?blendOp:BlendOperation, 
-		?alphaBlendSrc:BlendFactor, 
-		?alphaBlendDst:BlendFactor, 
-		?alphaBlendOp:BlendOperation
-	) {
-		
-		_blendSrc = blendSrc;
-		_blendDst = blendDst;
-		_blendOp = blendOp != null ? blendOp : BlendOperation.Add;	
-
-		_alphaBlendSrc = alphaBlendSrc != null ? alphaBlendSrc : blendSrc;
-		_alphaBlendDst = alphaBlendDst != null ? alphaBlendDst : blendDst;
-		_alphaBlendOp = alphaBlendOp != null ? alphaBlendOp : blendOp;	
-
-	}
 
 	// merge sort
 	function _sort(a:haxe.ds.Vector<ParticleSprite>, aux:haxe.ds.Vector<ParticleSprite>, l:Int, r:Int, compare:(p1:Particle, p2:Particle)->Int) { 
-		
 		if (l < r) {
 			var m = Std.int(l + (r - l) / 2);
 			_sort(a, aux, l, m, compare);
 			_sort(a, aux, m + 1, r, compare);
 			_merge(a, aux, l, m, r, compare);
 		}
-
 	}
 
 	inline function _merge(a:haxe.ds.Vector<ParticleSprite>, aux:haxe.ds.Vector<ParticleSprite>, l:Int, m:Int, r:Int, compare:(p1:Particle, p2:Particle)->Int) { 
-
 		var k = l;
 		while (k <= r) {
 			aux[k] = a[k];
@@ -308,11 +308,9 @@ class SpriteRenderModule extends ParticleModule {
 			else a[k] = aux[i++];
 			k++;
 		}
-		
 	}
 
 	inline function getRegionScaled(r:Rectangle) {
-		
 		_regionTmp.set(
 			_regionScaled.x + r.x,
 			_regionScaled.y + r.y,
@@ -321,11 +319,9 @@ class SpriteRenderModule extends ParticleModule {
 		);
 
 		return _regionTmp;
-
 	}
 
 	function updateRegionScaled() {
-		
 		if(region != null && texture != null) {
 			_regionScaled.set(
 				region.x / texture.widthActual,
@@ -336,86 +332,88 @@ class SpriteRenderModule extends ParticleModule {
 		} else {
 			_regionScaled.set(0, 0, 1, 1);
 		}
-
-	}
-
-	function updateBlending() {
-
-		if(_premultipliedAlpha) {
-			switch (blendMode) {
-				case BlendMode.NONE: setBlending(BlendFactor.BlendOne, BlendFactor.BlendZero);
-				case BlendMode.NORMAL: setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha);
-				case BlendMode.ADD: setBlending(BlendFactor.BlendOne, BlendFactor.BlendOne);
-				case BlendMode.MULTIPLY: setBlending(BlendFactor.DestinationColor, BlendFactor.InverseSourceAlpha);
-				case BlendMode.SCREEN: setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceColor);
-				case BlendMode.ERASE: setBlending(BlendFactor.BlendZero, BlendFactor.InverseSourceAlpha);
-				case BlendMode.MASK: setBlending(BlendFactor.BlendZero, BlendFactor.SourceAlpha); //TODO: test this
-				case BlendMode.BELOW: setBlending(BlendFactor.InverseDestinationAlpha, BlendFactor.DestinationAlpha); //TODO: test this
-			}
-		} else {
-			switch (blendMode) {
-				case BlendMode.NONE: setBlending(BlendFactor.BlendOne, BlendFactor.BlendZero);
-				case BlendMode.NORMAL: setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha);
-				case BlendMode.ADD: setBlending(BlendFactor.SourceAlpha, BlendFactor.DestinationAlpha);
-				case BlendMode.MULTIPLY: setBlending(BlendFactor.DestinationColor, BlendFactor.InverseSourceAlpha);
-				case BlendMode.SCREEN: setBlending(BlendFactor.SourceAlpha, BlendFactor.BlendOne);
-				case BlendMode.ERASE: setBlending(BlendFactor.BlendZero, BlendFactor.InverseSourceAlpha);
-				case BlendMode.MASK: setBlending(BlendFactor.BlendZero, BlendFactor.SourceAlpha); //TODO: test this
-				case BlendMode.BELOW: setBlending(BlendFactor.InverseDestinationAlpha, BlendFactor.DestinationAlpha); //TODO: test this
-			}
-		}
-		
 	}
 
 	function set_texture(v:Texture):Texture {
-
+		if(texture != null) {
+			texture.unref();
+		}
 		texture = v;
 
+		if(texture != null) {
+			texture.ref();
+		}
 		updateRegionScaled();
 
 		return texture;
+	}
 
+	inline function get_sortMode() {
+		return _sortMode;
+	}
+
+	function set_sortMode(v:ParticlesSortMode):ParticlesSortMode {
+		_sortMode = v;
+		_sortFunc = ParticlesSortFunc.getSortModeFunc(_sortMode);
+		return _sortMode;
+	}
+
+	inline function get_sortFunc() {
+		return _sortFunc;
+	}
+
+	function set_sortFunc(v:(p1:Particle, p2:Particle)->Int) {
+		_sortFunc = v;
+		_sortMode = ParticlesSortMode.CUSTOM;
+		return _sortFunc;
 	}
 
 	function set_region(v:Rectangle):Rectangle {
-
 		region = v;
-
 		updateRegionScaled();
-
 		return region;
+	}
+	
+// import/export
 
+	override function fromJson(d:Dynamic) {
+		super.fromJson(d);
+
+
+		if(d.imagePath != null) {
+			texture = Clay.resources.texture(d.imagePath);
+		}
+		if(d.region != null) {
+			region = new Rectangle().fromJson(d.region);
+		}
+
+		blending.mode = d.blendMode;
+		blending.premultipliedAlpha = d.premultipliedAlpha;
+		sortMode = d.sortMode;
+
+		return this;
 	}
 
-	function set_blendMode(v:BlendMode):BlendMode {
+	override function toJson():Dynamic {
+		var d = super.toJson();
 
-		blendMode = v;
-		updateBlending();
+		if(texture != null) {
+			d.imagePath = texture.id;
+		}
+		if(region != null) {
+			d.region = region.toJson();
+		}
 
-		return blendMode;
-		
+		d.premultipliedAlpha = blending.premultipliedAlpha;
+		d.blendMode = blending.mode;
+		d.sortMode = sortMode;
+
+		return d;
 	}
-
-	inline function get_premultipliedAlpha():Bool {
-
-		return _premultipliedAlpha;
-		
-	}
-
-	function set_premultipliedAlpha(v:Bool):Bool {
-
-		_premultipliedAlpha = v;
-		updateBlending();
-
-		return _premultipliedAlpha;
-		
-	}
-
 
 }
 
 private class ParticleSprite {
-
 
 	public var particleData:Particle;
 
@@ -426,30 +424,21 @@ private class ParticleSprite {
 	public var color:Color;
 	public var region:Region;
 
-
 	public function new() {}
 
-
 }
-
 
 typedef SpriteRenderModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var texture:Texture;
-	@:optional var region:Rectangle;
+	?texture:Texture,
+	?region:Rectangle,
 
-	@:optional var premultipliedAlpha:Bool;
-	@:optional var blendMode:BlendMode;
+	?premultipliedAlpha:Bool,
+	?blendMode:BlendMode,
 
-	// custom blending
-	@:optional var blendSrc:BlendFactor;
-	@:optional var blendDst:BlendFactor;
-	@:optional var blendOp:BlendOperation;
-	@:optional var alphaBlendSrc:BlendFactor;
-	@:optional var alphaBlendDst:BlendFactor;
-	@:optional var alphaBlendOp:BlendOperation;
-
+	?sortMode:ParticlesSortMode,
+	?sortFunc:(p1:Particle, p2:Particle)->Int,
 }
 

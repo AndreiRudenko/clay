@@ -1,17 +1,14 @@
 package clay.graphics.tile;
 
-
 import clay.resources.Texture;
 import clay.math.Rectangle;
 import clay.math.Vector;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.render.Vertex;
 import clay.utils.Log.*;
 import clay.utils.ArrayTools;
 
-
 class Tileset {
-
 
 	public var name:String;
 
@@ -30,9 +27,7 @@ class Tileset {
 	public var tdata(default, null):Array<Dynamic>;
 	public var tprops(default, null):Array<Dynamic>;
 
-
 	public function new(name:String, texture:Texture, tileWidth:Int, tileHeight:Int, tileMargin:Int = 0, tileSpacing:Int = 0) {
-		
 		this.name = name;
 		this.texture = texture;
 		this.tileWidth = tileWidth;
@@ -49,29 +44,23 @@ class Tileset {
 		tprops = [];
 
 		updateTileData(texture.widthActual, texture.heightActual);
-
 	}
 
 	public function setTexture(t:Texture) {
-
 		texture = t;
 		updateTileData(texture.widthActual, texture.heightActual);
-		
 	}
 
 	public function setTileSize(w:Int, h:Int) {
-		
 		tileWidth = w;
 		tileHeight = h;
 
 		if(texture != null) {
 			updateTileData(texture.widthActual, texture.heightActual);
 		}
-
 	}
 
 	public function setTileSpacing(?margin:Int, ?spacing:Int) {
-
 		if(margin != null) {
 			tileMargin = margin;
 		}
@@ -83,29 +72,21 @@ class Tileset {
 		if(texture != null) {
 			updateTileData(texture.widthActual, texture.heightActual);
 		}
-
 	}
 
 	public function getTileData(tile:Int) {
-
 		return tdata[tile - gid];
-		
 	}
 
 	public function getTileProps(tile:Int) {
-
 		return tprops[tile - gid];
-		
 	}
 
 	public function getTileCoords(tile:Int):Vector {
-		
 		return tcoords[tile - gid];
-
 	}
 
 	function updateTileData(textureWidth:Int, textureHeight:Int) {
-		
 		var rowCount = (textureHeight - tileMargin * 2 + tileSpacing) / (tileHeight + tileSpacing);
 		var colCount = (textureWidth - tileMargin * 2 + tileSpacing) / (tileHeight + tileSpacing);
 		
@@ -134,9 +115,6 @@ class Tileset {
 			tx = tileMargin;
 			ty += tileHeight + tileSpacing;
 		}
-
 	}
-
-
 
 }

@@ -1,16 +1,13 @@
 package clay.events;
 
 
-
 @:allow(clay.input.Mouse)
 class MouseEvent implements IEvent {
-
 
 	public static inline var MOUSE_UP:EventType<MouseEvent>;
 	public static inline var MOUSE_DOWN:EventType<MouseEvent>;
 	public static inline var MOUSE_MOVE:EventType<MouseEvent>;
 	public static inline var MOUSE_WHEEL:EventType<MouseEvent>;
-
 
 	public var x(default, null):Int = 0;
 	public var y(default, null):Int = 0;
@@ -21,11 +18,9 @@ class MouseEvent implements IEvent {
 	public var button(default, null):MouseButton = MouseButton.NONE;
 	public var state(default, null):EventType<MouseEvent> = MouseEvent.MOUSE_UP;
 
-	
 	function new() {}
 
 	inline function set(x:Int, y:Int, dx:Int, dy:Int, wheel:Int, state:EventType<MouseEvent>, button:MouseButton) {
-		
 		this.x = x;
 		this.y = y;
 		this.dx = dx;
@@ -33,13 +28,11 @@ class MouseEvent implements IEvent {
 		this.wheel = wheel;
 		this.state = state;
 		this.button = button;
-
 	}
 
 }
 
-@:enum abstract MouseButton(Int) from Int to Int {
-
+enum abstract MouseButton(Int) from Int to Int {
     var NONE   	= -1;
     var LEFT   	= 0;
     var RIGHT  	= 1;
@@ -48,5 +41,4 @@ class MouseEvent implements IEvent {
     var EXTRA2 	= 4;
     var EXTRA3 	= 5;
     var EXTRA4 	= 6;
-
 }

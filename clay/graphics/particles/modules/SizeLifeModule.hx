@@ -7,12 +7,11 @@ import clay.graphics.particles.components.Size;
 import clay.graphics.particles.components.SizeDelta;
 import clay.math.Vector;
 import clay.utils.Mathf;
+import clay.utils.Log.*;
 
 using clay.graphics.particles.utils.VectorExtender;
 
-
 class SizeLifeModule extends ParticleModule {
-
 
 	public var initialSize(default, null):Vector;
 	public var endSize(default, null):Vector;
@@ -22,27 +21,28 @@ class SizeLifeModule extends ParticleModule {
 	var _size:Components<Size>;
 	var _sizeDelta:Components<SizeDelta>;
 
+	public function new(options:SizeLifeModuleOptions) {
+		super(options);
 
-	public function new(_options:SizeLifeModuleOptions) {
-
-		super(_options);
-
-		initialSize = _options.initialSize != null ? _options.initialSize : new Vector(32, 32);
-		initialSizeMax = _options.initialSizeMax;
-		endSize = _options.endSize != null ? _options.endSize : new Vector(8, 8);
-		endSizeMax = _options.endSizeMax;
-
+		initialSize = def(options.initialSize, new Vector(32, 32));
+		initialSizeMax = options.initialSizeMax;
+		endSize = def(options.endSize, new Vector(8, 8));
+		endSizeMax = options.endSizeMax;
 	}
 
-	override function init() {
-
+	override function onAdded() {
 		_size = emitter.components.get(Size);
 		_sizeDelta = emitter.components.get(SizeDelta);
-		
+	}
+	
+	override function onRemoved() {
+		emitter.components.put(_size);
+		emitter.components.put(_sizeDelta);
+		_size = null;
+		_sizeDelta = null;
 	}
 
 	override function onSpawn(pd:Particle) {
-
 		var szd:Vector = _sizeDelta.get(pd.id);
 		var sz:Vector = _size.get(pd.id);
 		var lf:Float = pd.lifetime;
@@ -70,11 +70,9 @@ class SizeLifeModule extends ParticleModule {
 		if(szd.y != 0) {
 			szd.y /= lf;
 		}
-
 	}
 
 	override function update(dt:Float) {
-
 		var szd:Vector;
 		var sz:Vector;
 		for (p in particles) {
@@ -82,14 +80,11 @@ class SizeLifeModule extends ParticleModule {
 			sz = _size.get(p.id);
 			sz.set(Mathf.clampBottom(sz.x + szd.x * dt, 0), Mathf.clampBottom(sz.y + szd.y * dt, 0));
 		}
-
 	}
-
 
 // import/export
 
 	override function fromJson(d:Dynamic) {
-
 		super.fromJson(d);
 
 		initialSize.fromJson(d.initialSize);
@@ -110,11 +105,9 @@ class SizeLifeModule extends ParticleModule {
 		}
 
 		return this;
-	    
 	}
 
 	override function toJson():Dynamic {
-
 		var d = super.toJson();
 
 		d.initialSize = initialSize.toJson();
@@ -128,21 +121,16 @@ class SizeLifeModule extends ParticleModule {
 		}
 
 		return d;
-	    
 	}
 
-
 }
-
 
 typedef SizeLifeModuleOptions = {
 	
 	>ParticleModuleOptions,
-	@:optional var initialSize : Vector;
-	@:optional var initialSizeMax : Vector;
-	@:optional var endSize : Vector;
-	@:optional var endSizeMax : Vector;
+	?initialSize:Vector,
+	?initialSizeMax:Vector,
+	?endSize:Vector,
+	?endSizeMax:Vector,
 
 }
-
-

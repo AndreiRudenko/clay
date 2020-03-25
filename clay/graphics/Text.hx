@@ -1,6 +1,5 @@
 package clay.graphics;
 
-
 import kha.Kravur;
 import kha.Kravur.AlignedQuad;
 import kha.Kravur.KravurImage;
@@ -9,28 +8,27 @@ import kha.graphics4.TextureFormat;
 import clay.math.Vector;
 import clay.math.Matrix;
 import clay.math.Rectangle;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.render.Shader;
 import clay.render.Vertex;
 import clay.render.Camera;
 import clay.render.types.BlendFactor;
 import clay.render.types.BlendOperation;
-import clay.render.Painter;
+import clay.render.RenderContext;
 import clay.resources.FontResource;
 import clay.resources.Texture;
 import clay.graphics.Mesh;
 import clay.utils.Log.*;
 import clay.utils.ArrayTools;
-
+import clay.utils.Align;
 
 class Text extends Mesh {
 
-
-	public var text(default, set):String;
-	public var font(default, set):FontResource;
+	public var text(get, set):String;
+	public var font(get, set):FontResource;
 	public var fontSize(get, set):Int; // expensive
-	public var align(get, set):TextAlign;
-	public var alignVertical(get, set):TextAlign;
+	public var align(get, set):Align;
+	public var alignVertical(get, set):Align;
 
 	public var width(get, set):Float;
 	public var height(get, set):Float;
@@ -43,13 +41,15 @@ class Text extends Mesh {
 
 	public var textColors:Array<Color>; // TODO: remove?
 
+	var _font:FontResource;
+	var _text:String;
 	var _fontSize:Int;
 	var _width:Float;
 	var _height:Float;
 	var _lineSpacing:Float;
 	var _letterSpacing:Float;
-	var _align:TextAlign;
-	var _alignVertical:TextAlign;
+	var _align:Align;
+	var _alignVertical:Align;
 	var _asTexture:Bool;
 
 	var _kravur:KravurImage;
@@ -58,12 +58,8 @@ class Text extends Mesh {
 	var _canUpdateAsTexture:Bool = true;
 	var _isRenderTexture:Bool = false;
 
-
 	public function new(font:FontResource) {
-
-		if(font == null) {
-			throw("cant create Text without FontResource");
-		}
+		assert(font != null, "cant create Text without FontResource");
 
 		_lines = [];
 		textColors = [];
@@ -78,8 +74,8 @@ class Text extends Mesh {
 		textHeight = 0;
 
 		_fontSize = 12;
-		_align = TextAlign.LEFT;
-		_alignVertical = TextAlign.TOP;
+		_align = Align.LEFT;
+		_alignVertical = Align.TOP;
 		_width = 0;
 		_height = 0;
 		_lineSpacing = 0;
@@ -87,85 +83,88 @@ class Text extends Mesh {
 
 		_asTexture = false;
 
-		premultipliedAlpha = false;
+		blending.premultipliedAlpha = false;
 
+		_text = "";
 		this.font = font;
-		text = "";
-
 	}
 
 	public function addText(t:String, ?c:Color) {
-
-		var start = text.length;
+		var start = _text.length;
 
 		for (i in 0...t.length) {
 			textColors[start + i] = c;
 		}
-		text += t;
-		
+		_text += t;
 	}
 
-	override function render(p:Painter) {
-
+	override function render(ctx:RenderContext) {
 		if(_asTexture) {
-			super.render(p);
+			super.render(ctx);
 		} else {
-			_render(p);
+			_render(ctx);
 		}
-
 	}
 
-	function _render(p:Painter) {
-		
-		if(!textIsEmpty(text)) {
+	override function destroy() {
+		_font.unref();
+		_font = null;
+		_align = null;
+		_alignVertical = null;
+		_kravur = null;
+		_lines = null;
+	    super.destroy();
+	}
 
-			preRenderSetup(p);
+	function _render(ctx:RenderContext) {
+		if(!textIsEmpty(_text)) {
+
+			preRenderSetup(ctx);
 
 			if(locked) {
 				#if !noDebugConsole
-				p.stats.locked++;
+				if(ctx.stats != null) {
+					ctx.stats.locked++;
+				}
 				#end
-				p.drawFromBuffers(_vertexBuffer, _indexBuffer);
+				ctx.drawFromBuffers(_vertexBuffer, _indexBuffer);
 			} else {
 				var matrix = transform.world.matrix;
 				var i = 0;
 				while(i < vertices.length) {
-					p.ensure(4, 6);
-					addQuadToPainter(p, matrix, i);
+					ctx.ensure(4, 6);
+					addQuadToRenderContext(ctx, matrix, i);
 					i += 4;
 				}
 			}
 		}
-
 	}
 
-	inline function addQuadToPainter(p:Painter, matrix:Matrix, startIdx:Int) {
-		
-		p.addIndex(0);
-		p.addIndex(1);
-		p.addIndex(2);
-		p.addIndex(0);
-		p.addIndex(2);
-		p.addIndex(3);
+	inline function addQuadToRenderContext(ctx:RenderContext, matrix:Matrix, startIdx:Int) {
+		ctx.addIndex(0);
+		ctx.addIndex(1);
+		ctx.addIndex(2);
+		ctx.addIndex(0);
+		ctx.addIndex(2);
+		ctx.addIndex(3);
+
+		ctx.setColor(vertices[startIdx].color);
 
 		var vertex;
 		var j = 0;
 		while(j < 4) {
 			vertex = vertices[startIdx+j];
-			p.addVertex(
+			ctx.addVertex(
 				matrix.getTransformX(vertex.pos.x, vertex.pos.y), 
 				matrix.getTransformY(vertex.pos.x, vertex.pos.y), 
 				vertex.tcoord.x,
-				vertex.tcoord.y,
-				vertex.color
+				vertex.tcoord.y
 			);
 			j++;
 		}
-
 	}
 
 	function findCharIndex(charCode:Int):Int {
-
 		var blocks = KravurImage.charBlocks;
 		var offset = 0;
 		var start = 0;
@@ -182,11 +181,10 @@ class Text extends Mesh {
 		}
 
 		return 0;
-
 	}
 
+	// TODO: rework this
 	function splitInLines(txt:String, kravur:KravurImage):Array<String> {
-
 		ArrayTools.clear(_lines); 
 
 		var spaceCode:Int = " ".code;
@@ -305,23 +303,19 @@ class Text extends Mesh {
 		}
 
 		return _lines;
-
 	}
 
 	function updateFont() {
-
-		_kravur = font.font._get(_fontSize); // note: this is expensive if creating new font or font size
-		texture = font.get(_fontSize);
-
+		_kravur = _font.font._get(_fontSize); // note: this is expensive if creating new font or font size
+		texture = _font.get(_fontSize);
 	}
 
 	function updateText() {
-
 		var charCount:Int = 0;
 
-		if(!textIsEmpty(text)) {
+		if(!textIsEmpty(_text)) {
 
-			var lines = splitInLines(text, _kravur);
+			var lines = splitInLines(_text, _kravur);
 
 			var quadCache = new AlignedQuad();
 
@@ -394,77 +388,35 @@ class Text extends Mesh {
 		} else {
 			_isRenderTexture = false;
 		}
-
 	}
 
 	inline function removeVerticesFrom(vertsCount:Int) {
-		
 		if(vertices.length > vertsCount) {
 			vertices.splice(vertsCount, vertices.length);
 		}
-
 	}
 
 	inline function getVerticalOffset(textHeight:Float):Float {
-		
 		return switch (_alignVertical) {
-			case TextAlign.BOTTOM: _height - textHeight;
-			case TextAlign.CENTER: _height * 0.5 - textHeight / 2;
+			case Align.BOTTOM: _height - textHeight;
+			case Align.CENTER: _height * 0.5 - textHeight / 2;
 			default: 0;
 		}
-
 	}
 
 	inline function getHorisontalOffset(textWidth:Float):Float {
-		
 		return switch (_align) {
-			case TextAlign.RIGHT: _width - textWidth;
-			case TextAlign.CENTER: _width * 0.5 - textWidth / 2;
+			case Align.RIGHT: _width - textWidth;
+			case Align.CENTER: _width * 0.5 - textWidth / 2;
 			default: 0;
 		}
-
 	}
 
 	inline function getCharColor(idx:Int):Color {
-
 		return textColors[idx] != null ? textColors[idx] : color;
-		
-	}
-
-	inline function ensureQuadVertices(idx:Int) {
-		
-		if(vertices[idx] == null) {
-			for (i in 0...4) {
-				vertices[idx+i] = new Vertex();
-			}
-		}
-
-	}
-
-	inline function setQuadVerticesFromIdx(
-		idx:Int, 
-		minX:Float, minY:Float, maxX:Float, maxY:Float, 
-		tcoordMinX:Float, tcoordMinY:Float, tcoordMaxX:Float, tcoordMaxY:Float, 
-		color:Color
-	) {
-		
-		applyVertexSettings(vertices[idx], minX, minY, tcoordMinX, tcoordMinY, color);
-		applyVertexSettings(vertices[idx+1], maxX, minY, tcoordMaxX, tcoordMinY, color);
-		applyVertexSettings(vertices[idx+2], maxX, maxY, tcoordMaxX, tcoordMaxY, color);
-		applyVertexSettings(vertices[idx+3], minX, maxY, tcoordMinX, tcoordMaxY, color);
-		
-	}
-
-	inline function applyVertexSettings(vertex:Vertex, posX:Float, posY:Float, tcoordX:Float, tcoordY:Float, color:Color) {
-		
-		vertex.pos.set(posX, posY);
-		vertex.tcoord.set(tcoordX, tcoordY);
-		vertex.color = color;
-
 	}
 
 	function setupAsTexture() {
-
 		if(!_canUpdateAsTexture) {
 			return;
 		}
@@ -497,7 +449,7 @@ class Text extends Mesh {
 
 		transform = new clay.math.Transform(); //TODO: reuse
 
-		Clay.renderer.painter.drawToTexture(fontTexture, textureWidthScaled, textureHeightScaled, _render);
+		Clay.renderer.ctx.renderToTexture(fontTexture, textureWidthScaled, textureHeightScaled, _render);
 
 		_width = prevWidth;
 		_height = prevHeight;
@@ -517,197 +469,183 @@ class Text extends Mesh {
 		);
 
 		_canUpdateAsTexture = true;
-		
 	}
 
 	inline function getFontRenderTexture(width:Int, height:Int):Texture {
-		
 		var fontTexture:Texture = texture;
 		if(!_isRenderTexture || fontTexture == null || fontTexture.widthActual != width || fontTexture.heightActual != height) {
-			fontTexture = Texture.createRenderTarget(width, height, null, null, true);
+			fontTexture = Texture.createRenderTarget(width, height);
 			_isRenderTexture = true;
 		}
 
 		return fontTexture;
-
 	}
 
-	inline function textIsEmpty(text:String) {
-		
-		return text == null || text == "" || text.length == 0;
+	inline function ensureQuadVertices(idx:Int) {
+		if(vertices[idx] == null) {
+			for (i in 0...4) {
+				vertices[idx+i] = new Vertex();
+			}
+		}
+	}
 
+	inline function setQuadVerticesFromIdx(
+		idx:Int, 
+		minX:Float, minY:Float, maxX:Float, maxY:Float, 
+		tcoordMinX:Float, tcoordMinY:Float, tcoordMaxX:Float, tcoordMaxY:Float, 
+		color:Color
+	) {
+		applyVertexSettings(vertices[idx], minX, minY, tcoordMinX, tcoordMinY, color);
+		applyVertexSettings(vertices[idx+1], maxX, minY, tcoordMaxX, tcoordMinY, color);
+		applyVertexSettings(vertices[idx+2], maxX, maxY, tcoordMaxX, tcoordMaxY, color);
+		applyVertexSettings(vertices[idx+3], minX, maxY, tcoordMinX, tcoordMaxY, color);
+	}
+
+	inline function applyVertexSettings(vertex:Vertex, posX:Float, posY:Float, tcoordX:Float, tcoordY:Float, color:Color) {
+		vertex.pos.set(posX, posY);
+		vertex.tcoord.set(tcoordX, tcoordY);
+		vertex.color = color;
+	}
+	
+	inline function textIsEmpty(text:String) {
+		return text == null || text == "" || text.length == 0;
+	}
+
+	inline function get_text() {
+		return _text;
 	}
 
 	function set_text(v:String):String {
-
-		if(text != v) {
-			text = v;
-			if(textColors.length > text.length) {
-				textColors.splice(text.length, textColors.length - text.length);
+		if(_text != v) {
+			_text = v;
+			if(textColors.length > _text.length) {
+				textColors.splice(_text.length, textColors.length - _text.length);
 			}
 			updateText();
 		}
 
-		return text;
-		
+		return _text;
+	}
+
+	inline function get_font() {
+		return _font;
 	}
 
 	function set_font(v:FontResource):FontResource {
+		if(_font != null) {
+			_font.unref();
+		}
+		_font = v;
+		assert(_font != null, "can`t set font to null for Text");
 
-		font = v;
 		updateFont();
 		updateText();
 
-		return font;
-		
+		_font.ref();
+
+		return _font;
 	}
 
 	inline function get_fontSize():Int {
-
 		return _fontSize;
-		
 	}
 
 	function set_fontSize(v:Int):Int {
-
 		_fontSize = v;
 		updateFont();
 		updateText();
 
 		return _fontSize;
-		
 	}
 
-	inline function get_align():TextAlign {
-
+	inline function get_align():Align {
 		return _align;
-		
 	}
 
-	function set_align(v:TextAlign):TextAlign {
-
+	function set_align(v:Align):Align {
 		_align = v;
 		updateText();
 
 		return _align;
-		
 	}
 
-	function get_alignVertical():TextAlign {
-
+	function get_alignVertical():Align {
 		return _alignVertical;
-		
 	}
 
-	function set_alignVertical(v:TextAlign):TextAlign {
-
+	function set_alignVertical(v:Align):Align {
 		_alignVertical = v;
 		updateText();
 
 		return _alignVertical;
-		
 	}
 
 	inline function get_lineSpacing():Float {
-
 		return _lineSpacing;
-		
 	}
 
 	function set_lineSpacing(v:Float):Float {
-
 		_lineSpacing = v;
 		updateText();
 
 		return _lineSpacing;
-		
 	}
 
 	inline function get_width():Float {
-
 		return _width;
-		
 	}
 
 	function set_width(v:Float):Float {
-
 		if(_width != v) {
 			_width = v;
 			updateText();
 		}
 
 		return _width;
-		
 	}
 
 	inline function get_height():Float {
-
 		return _height;
-		
 	}
 
 	function set_height(v:Float):Float {
-
 		if(_height != v) {
 			_height = v;
 			updateText();
 		}
 
 		return _height;
-		
 	}
 
 	inline function get_letterSpacing():Float {
-
 		return _letterSpacing;
-		
 	}
 
 	function set_letterSpacing(v:Float):Float {
-
 		_letterSpacing = v;
 		updateText();
 
 		return _letterSpacing;
-		
-
 	}
 
 	inline function get_asTexture():Bool {
-
 		return _asTexture;
-		
 	}
 
 	function set_asTexture(v:Bool):Bool {
-
 		_asTexture = v;
 		updateFont();
 		updateText();
 
 		return v;
-		
 	}
 
 	override function set_color(v:Color):Color {
-
 		ArrayTools.clear(textColors);
 
 		super.set_color(v);
 
 		return v;
-
 	}
 	
-
-}
-
-@:enum abstract TextAlign(Int) from Int to Int {
-
-	var LEFT = 0;
-	var RIGHT = 1;
-	var CENTER = 2;
-	var TOP = 3;
-	var BOTTOM = 4;
-
 }

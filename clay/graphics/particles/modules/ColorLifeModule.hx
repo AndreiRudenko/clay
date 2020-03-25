@@ -1,46 +1,47 @@
 package clay.graphics.particles.modules;
 
-
 import clay.graphics.particles.core.ParticleModule;
 import clay.graphics.particles.core.Particle;
 import clay.graphics.particles.core.Components;
 import clay.graphics.particles.components.ColorDelta;
-import clay.render.Color;
+import clay.utils.Color;
 import clay.utils.Mathf;
+import clay.utils.Log.*;
 
+using clay.graphics.particles.utils.ColorExtender;
 
 class ColorLifeModule extends ParticleModule {
 
-
-	public var initialColor	(default, null):Color;
-	public var endColor    	(default, null):Color;
+	public var initialColor(default, null):Color;
+	public var endColor(default, null):Color;
 	public var initialColorMax:Color;
 	public var endColorMax:Color;
 
 	var _colorDelta:Components<ColorDelta>;
 	var _color:Components<Color>;
 
+	public function new(options:ColorLifeModuleOptions) {
+		super(options);
 
-	public function new(_options:ColorLifeModuleOptions) {
-
-		super(_options);
-
-		initialColor = _options.initialColor != null ? _options.initialColor : new Color();
-		initialColorMax = _options.initialColorMax;
-		endColor = _options.endColor != null ? _options.endColor : new Color();
-		endColorMax = _options.endColorMax;
-
+		initialColor = def(options.initialColor, new Color());
+		initialColorMax = options.initialColorMax;
+		endColor = def(options.endColor, new Color());
+		endColorMax = options.endColorMax;
 	}
 
-	override function init() {
-
-		_colorDelta = emitter.components.get(ColorDelta);
+	override function onAdded() {
 		_color = emitter.components.get(Color);
-	    
+		_colorDelta = emitter.components.get(ColorDelta);
+	}
+
+	override function onRemoved() {
+		emitter.components.put(_color);
+		emitter.components.put(_colorDelta);
+		_color = null;
+		_colorDelta = null;
 	}
 
 	override function onSpawn(p:Particle) {
-
 		var cd:Color = _colorDelta.get(p.id);
 		var pcolor:Color = _color.get(p.id);
 		var lf:Float = p.lifetime;
@@ -69,15 +70,13 @@ class ColorLifeModule extends ParticleModule {
 			cd.a = endColor.a - pcolor.a;
 		}
 
-		if(cd.r != 0) { cd.r /= lf; }
-		if(cd.g != 0) { cd.g /= lf; }
-		if(cd.b != 0) { cd.b /= lf; }
-		if(cd.a != 0) { cd.a /= lf; }
-
+		if(cd.r != 0) cd.r /= lf;
+		if(cd.g != 0) cd.g /= lf;
+		if(cd.b != 0) cd.b /= lf;
+		if(cd.a != 0) cd.a /= lf;
 	}
 
 	override function update(dt:Float) {
-
 		var cd:Color;
 		var pcolor:Color;
 		for (p in particles) {
@@ -88,14 +87,12 @@ class ColorLifeModule extends ParticleModule {
 			pcolor.b = Mathf.clamp(pcolor.b + cd.b * dt, 0, 1);
 			pcolor.a = Mathf.clamp(pcolor.a + cd.a * dt, 0, 1);
 		}
-
 	}
 
 
 // import/export
 
 	override function fromJson(d:Dynamic) {
-
 		super.fromJson(d);
 
 		if(d.initialColor != null) {
@@ -121,11 +118,9 @@ class ColorLifeModule extends ParticleModule {
 		}
 
 		return this;
-
 	}
 
 	override function toJson():Dynamic {
-
 		var d = super.toJson();
 
 		d.initialColor = initialColor.toJson();
@@ -140,9 +135,7 @@ class ColorLifeModule extends ParticleModule {
 		}
 
 		return d;
-
 	}
-
 
 }
 
@@ -150,11 +143,9 @@ typedef ColorLifeModuleOptions = {
 
 	>ParticleModuleOptions,
 	
-	@:optional var initialColor : Color;
-	@:optional var initialColorMax : Color;
-	@:optional var endColor : Color;
-	@:optional var endColorMax : Color;
+	?initialColor:Color,
+	?initialColorMax:Color,
+	?endColor:Color,
+	?endColorMax:Color,
 
 }
-
-
