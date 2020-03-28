@@ -32,7 +32,6 @@ class ThreeSlice extends Mesh {
 
 	var _left:Float;
 	var _right:Float;
-	var _widthScale:Float;
 
 	public function new(left:Float, right:Float) {
 		var vertices = [];
@@ -47,10 +46,10 @@ class ThreeSlice extends Mesh {
 		];
 
 		super(vertices, indices);
+		name = 'ThreeSlice.${clay.utils.UUID.get()}';
 
 		_left = left;
 		_right = right;
-		_widthScale = 1;
 
 		_width = 128;
 		_height = 128;
@@ -71,26 +70,28 @@ class ThreeSlice extends Mesh {
 			return;
 		}
 		var tw:Float = texture.widthActual;
-		var th = texture.heightActual;
-
-		_widthScale = _height / _left;
+		var th:Float = texture.heightActual;
 
 		if(region != null) {
 			tw = region.w;
+			th = region.h;
 		}
+
+		var leftScale = (_height / _left)  * (_left / th);
+		var rightScale = (_height / _right)  * (_right / th);
 
 		if(width > height) {
 			vertices[0].pos.x = vertices[4].pos.x = 0; 
-			vertices[1].pos.x = vertices[5].pos.x = _left * _widthScale; 
-			vertices[2].pos.x = vertices[6].pos.x = _width - _right * _widthScale; 
+			vertices[1].pos.x = vertices[5].pos.x = _left * leftScale; 
+			vertices[2].pos.x = vertices[6].pos.x = _width - _right * rightScale; 
 			vertices[3].pos.x = vertices[7].pos.x = _width;
 
 			vertices[0].pos.y = vertices[1].pos.y = vertices[2].pos.y = vertices[3].pos.y = 0; 
 			vertices[4].pos.y = vertices[5].pos.y = vertices[6].pos.y = vertices[7].pos.y = _height; 
 		} else {
 			vertices[0].pos.y = vertices[4].pos.y = 0; 
-			vertices[1].pos.y = vertices[5].pos.y = _left * _widthScale; 
-			vertices[2].pos.y = vertices[6].pos.y = _width - _right * _widthScale; 
+			vertices[1].pos.y = vertices[5].pos.y = _left * leftScale; 
+			vertices[2].pos.y = vertices[6].pos.y = _width - _right * rightScale; 
 			vertices[3].pos.y = vertices[7].pos.y = _width;
 
 			vertices[0].pos.x = vertices[1].pos.x = vertices[2].pos.x = vertices[3].pos.x = _height; 
