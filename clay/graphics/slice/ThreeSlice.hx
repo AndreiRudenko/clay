@@ -77,10 +77,9 @@ class ThreeSlice extends Mesh {
 			th = region.h;
 		}
 
-		var leftScale = (_height / _left)  * (_left / th);
-		var rightScale = (_height / _right)  * (_right / th);
-
 		if(width > height) {
+			var leftScale = (_height / _left)  * (_left / th);
+			var rightScale = (_height / _right)  * (_right / th);
 			vertices[0].pos.x = vertices[4].pos.x = 0; 
 			vertices[1].pos.x = vertices[5].pos.x = _left * leftScale; 
 			vertices[2].pos.x = vertices[6].pos.x = _width - _right * rightScale; 
@@ -89,12 +88,14 @@ class ThreeSlice extends Mesh {
 			vertices[0].pos.y = vertices[1].pos.y = vertices[2].pos.y = vertices[3].pos.y = 0; 
 			vertices[4].pos.y = vertices[5].pos.y = vertices[6].pos.y = vertices[7].pos.y = _height; 
 		} else {
+			var leftScale = (_width / _left)  * (_left / th);
+			var rightScale = (_width / _right)  * (_right / th);
 			vertices[0].pos.y = vertices[4].pos.y = 0; 
 			vertices[1].pos.y = vertices[5].pos.y = _left * leftScale; 
-			vertices[2].pos.y = vertices[6].pos.y = _width - _right * rightScale; 
-			vertices[3].pos.y = vertices[7].pos.y = _width;
+			vertices[2].pos.y = vertices[6].pos.y = _height - _right * rightScale; 
+			vertices[3].pos.y = vertices[7].pos.y = _height;
 
-			vertices[0].pos.x = vertices[1].pos.x = vertices[2].pos.x = vertices[3].pos.x = _height; 
+			vertices[0].pos.x = vertices[1].pos.x = vertices[2].pos.x = vertices[3].pos.x = _width; 
 			vertices[4].pos.x = vertices[5].pos.x = vertices[6].pos.x = vertices[7].pos.x = 0; 
 		}
 
