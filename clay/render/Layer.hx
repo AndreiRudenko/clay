@@ -19,7 +19,7 @@ import haxe.ds.ArraySort;
 )
 class Layer {
 
-	public var name(default, null):String;
+	public var name:String;
 	public var id(default, null):Int;
 	public var active(default, null):Bool;
 

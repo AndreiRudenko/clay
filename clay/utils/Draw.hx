@@ -42,6 +42,7 @@ class Draw {
 		var noLayer = def(options.noLayer, false);
 		
 		var geom = new Line(options.p0.x, options.p0.y, options.p1.x, options.p1.y);
+		geom.texture = options.texture;
 		geom.color0 = color0;
 		geom.color1 = color1;
 		geom.strength = strength;
@@ -78,6 +79,7 @@ class Draw {
 		var noLayer = def(options.noLayer, false);
 
 		var geom = new Quad(w, h);
+		geom.texture = options.texture;
 		geom.transform.pos.set(x,y);
 		geom.transform.origin.set(ox,oy);
 		geom.transform.rotation = angle;
@@ -115,6 +117,7 @@ class Draw {
 		var noLayer = def(options.noLayer, false);
 
 		var geom = new QuadOutline(w, h, options.weight);
+		geom.texture = options.texture;
 		geom.transform.pos.set(x,y);
 		geom.transform.origin.set(ox,oy);
 		geom.transform.rotation = angle;
@@ -153,6 +156,7 @@ class Draw {
 		var noLayer = def(options.noLayer, false);
 
 		var geom = new Circle(r, options.segments);
+		geom.texture = options.texture;
 		geom.transform.pos.set(x,y);
 		geom.transform.origin.set(ox,oy);
 		geom.color = color;
@@ -186,6 +190,7 @@ class Draw {
 		var noLayer = def(options.noLayer, false);
 
 		var geom = new CircleOutline(r, options.weight, options.segments);
+		geom.texture = options.texture;
 		geom.transform.pos.set(x,y);
 		geom.transform.origin.set(ox,oy);
 		geom.color = color;
@@ -262,6 +267,7 @@ class Draw {
 		}
 
 		var geom = new Mesh(vertices, indices);
+		geom.texture = options.texture;
 		geom.transform.pos.set(x,y);
 		geom.transform.origin.set(ox,oy);
 		geom.transform.rotation = angle;
@@ -291,6 +297,7 @@ class Draw {
 		var noLayer = def(options.noLayer, false);
 
 		var geom = new PolygonOutline(options.points, options.weight);
+		geom.texture = options.texture;
 		geom.color = color;
 
 		if(options.depth != null) {
@@ -442,7 +449,8 @@ class Draw {
 
 
 typedef DrawGeometryOptions = {
-
+	
+	@:optional var texture:Texture;
 	@:optional var layer:Layer;
 	@:optional var immediate:Bool;
 	@:optional var depth:Float;
@@ -522,8 +530,6 @@ typedef DrawQuadOutlineOptions = {
 typedef DrawSpriteOptions = {
 
 	> DrawQuadOptions,
-
-	var texture:Texture;
 
 	@:optional var color:Color;
 
