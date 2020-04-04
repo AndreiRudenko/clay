@@ -1,16 +1,12 @@
 package clay.tween.tweens;
 
-
 import haxe.macro.Expr;
 import clay.tween.actions.TweenAction;
 
-
 typedef EaseFunc = Float->Float;
-
 
 @:access(clay.tween.actions.TweenAction)
 class Tween<T> {
-
 
 	public var target(default, null):T;
 
@@ -45,9 +41,7 @@ class Tween<T> {
 	var _head:TweenAction<T>;
 	var _tail:TweenAction<T>;
 
-
 	public function new(manager:TweenManager, target:T, manualUpdate:Bool) {
-
 		this.target = target;
 
 		_manager = manager;
@@ -69,7 +63,6 @@ class Tween<T> {
 	}
 
 	public function stop(complete:Bool = false) {
-
 		if(active) {
 			if(_onStop != null) {
 				_onStop();
@@ -88,26 +81,24 @@ class Tween<T> {
 
 			active = false;
 		}
-
 	}
 
 	public function step(dt:Float) {
-
 		if(!active || paused) {
 			return;
 		}
 
 		if(dt > 0) {
 			_action.step(dt);
+			if(_onUpdate != null) {
+				_onUpdate();
+			}
 			checkNext();
 		}
-
 	}
 
 	function begin(time:Float = 0) {
-
 		if(!active) {
-
 			if(_onStart != null) {
 				_onStart();
 			}
@@ -130,38 +121,29 @@ class Tween<T> {
 
 				checkNext();
 			}
-
 		}
-
 	}
 
 	function init() {
-		
 		if(!_added && !_manualUpdate) {
 			_manager.addTween(this);
 			_manager.addTargetTween(this, target);
 			_added = true;
 		}
-		
 	}
 
 	function drop() {
-
 		_manager.removeTargetTween(this, target);
 		_added = false;
-
 	}
 
 	inline function checkNext() {
-		
 		while(_action.complete && active) {
 			nextAction();
 		}
-
 	}
 
 	function nextAction() {
-
 		var next = _backwards ? _action._prev : _action._next;
 
 		if(next != null) {
@@ -193,29 +175,23 @@ class Tween<T> {
 				nextTween();
 			}
 		}
-
 	}
 
 	inline function finish() {
-
 		complete = true;
 		
 		if(_onComplete != null) {
 			_onComplete();
 		}
-
 	}
 
 	inline function nextTween() {
-		
 		if(_nextTween != null) {
 			_nextTween.begin(_timeRemains);
 		}
-
 	}
 
 	function addAction(a:TweenAction<T>):TweenAction<T> {
-
 		_duration += a.duration;
 
 		if (_tail != null) {
@@ -228,11 +204,9 @@ class Tween<T> {
 		_tail = a;
 
 		return a;
-
 	}
 
 	function set_paused(v:Bool):Bool {
-		
 		if(v != paused) {
 			if(paused) {
 				if(_onResume != null) {
@@ -246,22 +220,18 @@ class Tween<T> {
 		}
 
 		return paused = v;
-
 	}
 
 	function set_timescale(v:Float):Float {
-		
 		if(v < 0) {
 			v = 0;
 		}
 
 		return timescale = v;
-
 	}
 
 	@:noCompletion
 	public static macro function getFn(name:String, start:ExprOf<Array<Float>> = null, end:ExprOf<Array<Float>> = null) {
-
 		var startLen = switch (start.expr) {
 			case EArrayDecl(a): a.length;
 			case _: 0;
@@ -295,12 +265,10 @@ class Tween<T> {
 				$fn;
 			}
 		};
-
 	}
 	
 	@:noCompletion
 	public static function getProps(props:Expr, fields:Array<String>, values:Array<Expr>) {
-		
 		switch (props.expr) {
 			case EObjectDecl(obj):
 				for (o in obj) {
@@ -314,8 +282,6 @@ class Tween<T> {
 				trace(props);
 				throw('Invalid expression in props');
 		}
-
 	}
-
 
 }
