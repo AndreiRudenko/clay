@@ -109,8 +109,6 @@ class Text extends Mesh {
 	override function destroy() {
 		_font.unref();
 		_font = null;
-		_align = null;
-		_alignVertical = null;
 		_kravur = null;
 		_lines = null;
 	    super.destroy();

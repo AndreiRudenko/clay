@@ -101,7 +101,7 @@ class AudioGroup extends AudioChannel {
 			_channels[j] = null;
 			j++;
 		}
-		_channelsCount = null;
+		_channelsCount = 0;
 		_dirtyChannels = true;
 
 		Audio.mutexUnlock();
