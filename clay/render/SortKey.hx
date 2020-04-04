@@ -76,7 +76,7 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 	}
 
 	inline function set_shader(id:UInt):UInt {
-		id = Mathf.clampi(id, 0, Clay.renderer.sortOptions.shaderMax);
+		id = Mathf.clampI(id, 0, Clay.renderer.sortOptions.shaderMax);
 		setSortKey(id, Clay.renderer.sortOptions.shaderBits, Clay.renderer.sortOptions.shaderOffset);
 
 		return id;
@@ -87,7 +87,7 @@ abstract SortKey(__SortKey) from __SortKey to __SortKey {
 	}
 	
 	inline function set_texture(id:UInt):UInt {
-		id = Mathf.clampi(id, 0, Clay.renderer.sortOptions.textureMax);
+		id = Mathf.clampI(id, 0, Clay.renderer.sortOptions.textureMax);
 		setSortKey(id, Clay.renderer.sortOptions.textureBits, Clay.renderer.sortOptions.textureOffset);
 
 		return id;

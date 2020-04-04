@@ -20,7 +20,7 @@ class Mathf {
 		return ( value < a ) ? a : ( ( value > b ) ? b : value );
 	}
 
-	public static inline function clampi(value:Int, a:Int, b:Int):Int {
+	public static inline function clampI(value:Int, a:Int, b:Int):Int {
 		return ( value < a ) ? a : ( ( value > b ) ? b : value );
 	}
 
@@ -28,7 +28,7 @@ class Mathf {
 		return value < a ? a : value;
 	}
 
-	public static inline function clampBottomi(value:Int, a:Int):Int {
+	public static inline function clampBottomI(value:Int, a:Int):Int {
 		return value < a ? a : value;
 	}
 
@@ -36,7 +36,7 @@ class Mathf {
 		return value > a ? a : value;
 	}
 
-	public static inline function clampTopi(value:Int, a:Int):Int {
+	public static inline function clampTopI(value:Int, a:Int):Int {
 		return value > a ? a : value;
 	}
 
@@ -44,7 +44,7 @@ class Mathf {
 		return value >= startRange && value <= endRange;
 	}
 
-    public static inline function smoothstep(x:Float, min:Float, max:Float):Float {
+    public static inline function smoothStep(x:Float, min:Float, max:Float):Float {
         if (x <= min) {
             return 0;
         }
