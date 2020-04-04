@@ -174,6 +174,17 @@ class Matrix {
 		}
 	}
 
+	public inline function fromMatrix3(m:kha.math.FastMatrix3):Matrix {
+		a = m._00;
+		c = m._10;
+		tx = m._20;
+
+		b = m._01;
+		d = m._11;
+		ty = m._21;
+		return this;
+	}
+
 	public inline function getTransformX(x:Float, y:Float):Float {
 		return a * x + c * y + tx;
 	}
