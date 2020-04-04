@@ -230,11 +230,13 @@ class RenderContext {
 
 	public function setViewport(rect:Rectangle) {
 		if(currentState.viewport != rect) {
+			flush();
 			currentState.viewport = rect;
 		}
 	}
 
 	public function setProjection(?matrix:Matrix) {
+		flush();
 		if(matrix != null) {
 			currentState.projectionMatrix.fromMatrix(matrix);
 		} else {
