@@ -1,11 +1,8 @@
 package clay.utils;
 
-
 class UUID {
 
-
 	public static function get(?val:Null<Int>):String {
-
 		// http://www.anotherchris.net/csharp/friendly-unique-id-generation-part-2/#base62
 
 		if(val == null) {
@@ -27,8 +24,6 @@ class UUID {
 		} else {
 			return Std.string(toChar(r));
 		}
-
 	}
-
 	
 }
