@@ -1,7 +1,5 @@
 package clay.tween.tweens;
 
-
-
 interface ITween {
 
 	public var active(default, null):Bool;
@@ -19,6 +17,5 @@ interface ITween {
 	public function repeat(times:Int = -1):ITween;
 	public function reflect():ITween;
 	public function then(tween:Tween<Dynamic>):ITween;
-
 
 }
