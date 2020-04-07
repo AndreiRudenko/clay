@@ -71,15 +71,16 @@ class Mesh extends DisplayObject {
 			preRenderSetup(ctx);
 
 			if(locked) {
-				#if !noDebugConsole
+				#if !no_debug_console
 				if(ctx.stats != null) {
-					ctx.stats.locked++;
+					ctx.stats.lockedObjects++;
 				}
 				#end
 				ctx.drawFromBuffers(_vertexBuffer, _indexBuffer);
 			} else {
 				updateRegionScaled();
 
+				ctx.beginGeometry();
 				for (index in indices) {
 					ctx.addIndex(index);
 				}
@@ -94,6 +95,7 @@ class Mesh extends DisplayObject {
 						v.tcoord.y * _regionScaled.h + _regionScaled.y
 					);
 				}
+				ctx.endGeometry();
 			}
 		} else {
 			log('WARNING: can`t batch a geometry, vertices: ${vertices.length} vs max ${ctx.verticesMax}, indices: ${indices.length} vs max ${ctx.indicesMax}');
@@ -102,7 +104,7 @@ class Mesh extends DisplayObject {
 
 	public function updateLocked() {
 		if(locked) {
-			if(_vertexBuffer.count() != vertices.length * 8) {
+			if(_vertexBuffer.count() != vertices.length * 8) { //TODO: hardcoded
 				clearBuffers();
 				setupLockedBuffers();
 			}

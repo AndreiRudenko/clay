@@ -32,6 +32,7 @@ import clay.utils.ArrayTools;
 import clay.utils.Log.*;
 import clay.utils.BlendMode;
 import clay.utils.DynamicPool;
+import clay.utils.PowerOfTwo;
 
 using clay.render.utils.FastMatrix3Extender;
 
@@ -57,9 +58,6 @@ class RenderContext {
 
 	var _textureBlank:Texture;
 
-	var _vertexBuffer:VertexBuffer;
-	var _indexBuffer:IndexBuffer;
-
 	var _vertices:Float32Array;
 	var _indices:Uint32Array;
 
@@ -76,13 +74,20 @@ class RenderContext {
 	var _matrixTmp:Matrix;
 	var _fastMatrixTmp:FastMatrix3;
 
+	var _vertexBuffers:Array<VertexBuffer>;
+	var _indexBuffers:Array<IndexBuffer>;
+
+	var _inGeometryMode:Bool = false;
+	var _vertPos:Int = 0;
+
 	public function new(renderer:Renderer, batchSize:Int) {
 		_renderer = renderer;
 
 		verticesMax = batchSize;
 		indicesMax = Std.int(verticesMax / 4) * 6; // adjusted for quads
 
-		initBuffers();
+		_vertices = new Float32Array(verticesMax * 8);
+		_indices = new Uint32Array(indicesMax);
 		initQuadBuffers();
 
 		_viewportDefault = new Rectangle(0, 0, Clay.screen.width, Clay.screen.height); // TODO: window size can be changed
@@ -101,27 +106,15 @@ class RenderContext {
 		_textureBlank.unlock();
 
 		states = [];
+
+		_vertexBuffers = [];
+		_indexBuffers = [];
+
 		statesPool = new DynamicPool<RenderState>(16, 
 			function() {
 				return new RenderState();
 			}
 		);
-	}
-
-	function initBuffers() {
-		var shader = _renderer.shaders.get('textured');
-		_vertexBuffer = new VertexBuffer(
-			verticesMax,
-			shader.pipeline.inputLayout[0],
-			Usage.DynamicUsage
-		);
-
-		_indexBuffer = new IndexBuffer(
-			indicesMax,
-			Usage.DynamicUsage
-		);
-		_vertices = _vertexBuffer.lock();
-		_indices = _indexBuffer.lock();
 	}
 
 	function initQuadBuffers() {
@@ -180,13 +173,10 @@ class RenderContext {
 
 	public function begin(renderTexture:Texture, ?clearColor:Color) {
 		assert(renderTexture.isRenderTarget, 'RenderContext: begin with non renderTarget texture');
-		// var exists = checkStateExists(renderTexture.tid);
-		// assert(!exists, 'RenderContext: end this target: ${renderTexture.tid} before you begin');
 
 		if(currentState != null) {
 			flush();
-			var g = currentState.target.image.g4;
-			g.end();
+			endInternal(currentState);
 		}
 
 		pushState(renderTexture);
@@ -196,19 +186,14 @@ class RenderContext {
 			currentState.clearColor = clearColor.toInt();
 		}
 
-		var g = renderTexture.image.g4;
-		g.begin();
-		g.clear(currentState.clearColor);
+		beginInternal(currentState);
 	}
 
 	public function end() {
 		assert(currentState != null, 'RenderContext: no active target, begin before you end');
 
 		flush();
-
-		var g = currentState.target.image.g4;
-		g.end();
-
+		endInternal(currentState);
 		popState();
 
 		#if !no_debug_console
@@ -216,9 +201,7 @@ class RenderContext {
 		#end
 
 		if(currentState != null) {
-			g = currentState.target.image.g4;
-			g.begin();
-			g.clear(currentState.clearColor);
+			beginInternal(currentState);
 		}
 	}
 
@@ -294,15 +277,20 @@ class RenderContext {
 		return vertsCount < verticesMax && indicesCount < indicesMax;
 	}
 
-	public function ensure(vertsCount:Int, indicesCount:Int) {
+	public function ensure(vertsCount:Int, indicesCount:Int) { // TODO: beginGeometry
 		if(_vertsDraw + vertsCount >= verticesMax || _indicesDraw + indicesCount >= indicesMax) {
 			flush();
 		}
 	}
 
-		// NOTE: adding indices must be before adding vertices
+	public function beginGeometry() {
+		assert(!_inGeometryMode, 'RenderContext: beginGeometry already started');
+		_inGeometryMode = true;
+		_vertPos = _vertsDraw;
+	}
+
 	public inline function addIndex(i:Int) {
-		_indices[_indicesDraw++] = _vertsDraw + i;
+		_indices[_indicesDraw++] = _vertPos + i;
 
 		#if !no_debug_console
 		if(stats != null) {
@@ -334,6 +322,16 @@ class RenderContext {
 		#end
 	}
 
+	public function endGeometry() {
+		assert(_inGeometryMode, 'RenderContext: beginGeometry is not started');
+		_inGeometryMode = false;
+		#if !no_debug_console
+		if(stats != null) {
+			stats.geometry++;
+		}
+		#end
+	}
+	
 	public function drawFromBuffers(vertexbuffer:VertexBuffer, indexbuffer:IndexBuffer, count:Int = 0) {
 		flush();
 
@@ -345,6 +343,7 @@ class RenderContext {
 		if(stats != null) {
 			stats.vertices += Math.floor(vertexbuffer.count() / 8);
 			stats.indices += count;
+			stats.geometry++;
 		}
 		#end
 		
@@ -357,16 +356,13 @@ class RenderContext {
 			return;
 		}
 
-		_vertexBuffer.unlock(_vertsDraw);
-		_indexBuffer.unlock(_indicesDraw);
-
-		draw(_vertexBuffer, _indexBuffer, _indicesDraw);
-
-		_vertices = _vertexBuffer.lock();
-		_indices = _indexBuffer.lock();
+		var vbo = getVertexBuffer(_vertsDraw);
+		var ibo = getIndexBuffer(_indicesDraw);
+		uploadBuffers(vbo, ibo);
+		
+		draw(vbo, ibo, _indicesDraw);
 
 		_vertexIdx = 0;
-
 		_vertsDraw = 0;
 		_indicesDraw = 0;
 	}
@@ -398,33 +394,12 @@ class RenderContext {
 			y = offset.y;
 		}
 
-		var width = target.width;
-		var height = target.height;
-		var maxX = x + source.width * sx;
-		var maxY = y + source.height * sy;
-
 		var vertices = _vertexBufferQuad.lock();
-
-		var index:Int = 0;
-		vertices.set(index + 0, x);
-		vertices.set(index + 1, y);
-
-		index += 8;
-		vertices.set(index + 0, maxX);
-		vertices.set(index + 1, y);
-
-		index += 8;
-		vertices.set(index + 0, maxX);
-		vertices.set(index + 1, maxY);
-
-		index += 8;
-		vertices.set(index + 0, x);
-		vertices.set(index + 1, maxY);
-
+		setQuadVerticesToBuffer(vertices, x, y, source.width * sx, source.height * sy);
 		_vertexBufferQuad.unlock();
 
 		var g = target.image.g4;
-		var projectionMatrix = setOrtoFastMatrix3(_fastMatrixTmp, width, height);
+		var projectionMatrix = setOrtoFastMatrix3(_fastMatrixTmp, target.width, target.height);
 
 		g.begin();
 		g.clear(kha.Color.Transparent);
@@ -445,39 +420,19 @@ class RenderContext {
 		g.end();
 	}
 
+	@:allow(clay.render.Renderer)
 	function drawToCanvas(source:Texture, target:kha.Canvas, shader:Shader) {
 		var sx = 1.0;
 		var sy = 1.0;
 		var x = 0.0;
 		var y = 0.0;
 
-		var width = target.width;
-		var height = target.height;
-		var maxX = x + source.width * sx;
-		var maxY = y + source.height * sy;
-
 		var vertices = _vertexBufferQuad.lock();
-
-		var index:Int = 0;
-		vertices.set(index + 0, x);
-		vertices.set(index + 1, y);
-
-		index += 8;
-		vertices.set(index + 0, maxX);
-		vertices.set(index + 1, y);
-
-		index += 8;
-		vertices.set(index + 0, maxX);
-		vertices.set(index + 1, maxY);
-
-		index += 8;
-		vertices.set(index + 0, x);
-		vertices.set(index + 1, maxY);
-
+		setQuadVerticesToBuffer(vertices, x, y, source.width * sx, source.height * sy);
 		_vertexBufferQuad.unlock();
 
 		var g = target.g4;
-		var projectionMatrix = _fastMatrixTmp.orto(0, width, height, 0);
+		var projectionMatrix = _fastMatrixTmp.orto(0, target.width, target.height, 0);
 
 		g.begin();
 		g.clear(kha.Color.Transparent);
@@ -498,8 +453,9 @@ class RenderContext {
 		g.end();
 	}
 
-	inline function assertLeftStates() {
+	public inline function checkErrors() {
 		assert(states.length == 0, 'RenderContext has unfinished states:[${getStateNames()}], make sure you end all states');
+		assert(!_inGeometryMode, 'RenderContext: has unfinished beginGeometry');
 	}
 
 	#if !clay_no_assertions
@@ -511,6 +467,35 @@ class RenderContext {
 		return stateNames.join(',');
 	}
 	#end
+
+	inline function beginInternal(state:RenderState) {
+		var g = state.target.image.g4;
+		g.begin();
+		g.clear(state.clearColor);
+	}
+
+	inline function endInternal(state:RenderState) {
+		var g = state.target.image.g4;
+		g.end();
+	}
+
+	inline function setQuadVerticesToBuffer(buffer:Float32Array, x:Float, y:Float, w:Float, h:Float) {
+		var index:Int = 0;
+		buffer.set(index + 0, x);
+		buffer.set(index + 1, y);
+
+		index += 8;
+		buffer.set(index + 0, x + w);
+		buffer.set(index + 1, y);
+
+		index += 8;
+		buffer.set(index + 0, x + w);
+		buffer.set(index + 1, y + h);
+
+		index += 8;
+		buffer.set(index + 0, x);
+		buffer.set(index + 1, y + h);
+	}
 
 	inline function setOrtoFastMatrix3(matrix:FastMatrix3, width:Int, height:Int):FastMatrix3 {
 		if (kha.Image.renderTargetsInvertedY()) {
@@ -528,6 +513,25 @@ class RenderContext {
 			matrix.orto(0, width, height, 0);
 		}
 		return matrix;
+	}
+
+	inline function uploadBuffers(vertexBuffer:VertexBuffer, indexBuffer:IndexBuffer) {
+		var vCount = _vertsDraw * 8;
+		var verts = vertexBuffer.lock();
+		var i:Int = 0;
+		while(i < vCount) {
+			verts.set(i, _vertices.get(i));
+			i++;
+		}
+		vertexBuffer.unlock();
+		
+		var ind = indexBuffer.lock();
+		i = 0;
+		while(i < _indicesDraw) {
+			ind.set(i, _indices.get(i));
+			i++;
+		}
+		indexBuffer.unlock();
 	}
 
 	inline function draw(vertexbuffer:VertexBuffer, indexbuffer:IndexBuffer, count:Int) {
@@ -556,14 +560,14 @@ class RenderContext {
 		#end
 	}
 
-	function popState() {
+	inline function popState() {
 		var lastState = states.pop();
 		currentState = getLastState();
 		lastState.reset();
 		statesPool.put(lastState);
 	}
 
-	function pushState(target:Texture) {
+	inline function pushState(target:Texture) {
 		currentState = statesPool.get();
 		currentState.target = target;
 		states.push(currentState);
@@ -634,6 +638,33 @@ class RenderContext {
 		if(clipRect != null) {
 			g.disableScissor();
 		}
+	}
+
+	function getVertexBuffer(vertsCount:Int):VertexBuffer {
+		var p2 = PowerOfTwo.get(vertsCount);
+		var idx = Mathf.log2(p2);
+		var buffer = _vertexBuffers[idx];
+
+		if(buffer == null) {
+			var shader = _renderer.shaders.get('textured');
+			buffer = new VertexBuffer(p2, shader.pipeline.inputLayout[0], Usage.DynamicUsage);
+			_vertexBuffers[idx] = buffer;
+		}
+
+		return buffer;
+	}
+
+	function getIndexBuffer(idxCount:Int):IndexBuffer {
+		var p2 = PowerOfTwo.get(idxCount);
+		var idx = Mathf.log2(p2);
+		var buffer = _indexBuffers[idx];
+
+		if(buffer == null) {
+			buffer = new IndexBuffer(p2, Usage.DynamicUsage);
+			_indexBuffers[idx] = buffer;
+		}
+
+		return buffer;
 	}
 
 }

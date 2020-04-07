@@ -243,6 +243,8 @@ class SpriteRenderModule extends ParticleModule {
 		.scale(scale, scale)
 		.apply(-origin.x * size.x, -origin.y * size.y);
 
+		ctx.beginGeometry();
+
 		ctx.addIndex(0);
 		ctx.addIndex(1);
 		ctx.addIndex(2);
@@ -279,6 +281,8 @@ class SpriteRenderModule extends ParticleModule {
 			reg.x,
 			reg.y + reg.h
 		);
+		
+		ctx.endGeometry();
 	}	
 
 	// merge sort

@@ -106,23 +106,20 @@ class Layer {
 
 	public function render(ctx:RenderContext) {
 		_verboser('layer `$name` render');
-
 		#if !no_debug_console
 		stats.reset();
 		#end
-
 		if(objects.length > 0) {
 			#if !no_debug_console
 			ctx.setStats(stats);
 			#end
-
 			for (obj in objects) {
 				#if !no_debug_console
-				stats.geometry++;
+				stats.totalObjects++;
 				#end
 				if(obj.visible && obj.renderable) {
 					#if !no_debug_console
-					stats.visibleGeometry++;
+					stats.visibleObjects++;
 					#end
 					obj.render(ctx);
 				}

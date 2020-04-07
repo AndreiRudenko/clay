@@ -10,7 +10,6 @@ import clay.utils.BlendMode;
 import clay.utils.Color;
 using clay.render.utils.FastMatrix3Extender;
 
-
 class RenderState {
 
 	public var id(get, never):Int;

@@ -120,9 +120,9 @@ class Text extends Mesh {
 			preRenderSetup(ctx);
 
 			if(locked) {
-				#if !noDebugConsole
+				#if !no_debug_console
 				if(ctx.stats != null) {
-					ctx.stats.locked++;
+					ctx.stats.lockedObjects++;
 				}
 				#end
 				ctx.drawFromBuffers(_vertexBuffer, _indexBuffer);
@@ -139,6 +139,8 @@ class Text extends Mesh {
 	}
 
 	inline function addQuadToRenderContext(ctx:RenderContext, matrix:Matrix, startIdx:Int) {
+		ctx.beginGeometry();
+		
 		ctx.addIndex(0);
 		ctx.addIndex(1);
 		ctx.addIndex(2);
@@ -160,6 +162,8 @@ class Text extends Mesh {
 			);
 			j++;
 		}
+
+		ctx.endGeometry();
 	}
 
 	function findCharIndex(charCode:Int):Int {

@@ -325,9 +325,10 @@ class StatsDebugView extends DebugView {
 		var sb = new StringBuf();
 
 		sb.add("Renderer Statistics \n \n " +
-			"total geometry : " + _renderStats.geometry + " \n " +
-			"visible geometry : " + _renderStats.visibleGeometry + " \n " +
-			"static geometry : " + _renderStats.locked + " \n " +
+			"total objects : " + _renderStats.totalObjects + " \n " +
+			"visible objects : " + _renderStats.visibleObjects + " \n " +
+			"static objects : " + _renderStats.lockedObjects + " \n " +
+			"geometry : " + _renderStats.geometry + " \n " +
 			"vertices : " + _renderStats.vertices + " / " + Clay.renderer.ctx.verticesMax + " \n " +
 			"indices : " + _renderStats.indices + " / " + Clay.renderer.ctx.indicesMax + " \n " +
 			"draw calls : " + _renderStats.drawCalls + " \n " +
@@ -365,9 +366,10 @@ class StatsDebugView extends DebugView {
 	inline function getLayerInfo(l:Layer):String {
 		return
 			"        " + l.name + " | " + l.id + " \n " +
-			"            total geometry : " + l.stats.geometry + " \n " +
-			"            visible geometry : " + l.stats.visibleGeometry + " \n " +
-			"            static geometry : " + l.stats.locked + " \n " +
+			"            total objects : " + l.stats.totalObjects + " \n " +
+			"            visible objects : " + l.stats.visibleObjects + " \n " +
+			"            static objects : " + l.stats.lockedObjects + " \n " +
+			"            geometry : " + l.stats.geometry + " \n " +
 			"            vertices : " + l.stats.vertices + " \n " +
 			"            indices : " + l.stats.indices + " \n " +
 			"            draw calls : " + l.stats.drawCalls + " \n ";

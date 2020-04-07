@@ -13,6 +13,7 @@ import clay.render.RenderContext;
 import clay.render.Camera;
 import clay.utils.Color;
 import clay.events.Signal;
+import clay.utils.Log.*;
 
 typedef ScreenRotation = kha.ScreenRotation;
 typedef WindowMode = kha.WindowMode;
@@ -88,6 +89,8 @@ class Screen {
 		var y = camera.viewport.y;
 		var color = Color.WHITE;
 
+		ctx.beginGeometry();
+
 		ctx.addIndex(0);
 		ctx.addIndex(1);
 		ctx.addIndex(2);
@@ -124,6 +127,8 @@ class Screen {
 			0,
 			1
 		);
+
+		ctx.endGeometry();
 	}
 
 	@:noCompletion public function postRender(ctx:RenderContext) {

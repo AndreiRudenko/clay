@@ -84,7 +84,7 @@ class Renderer {
 			}
 		}
 
-		ctx.assertLeftStates();
+		ctx.checkErrors();
 
 		// cameras -> screen
 		var screen = Clay.screen;
@@ -94,7 +94,7 @@ class Renderer {
 		}
 		screen.postRender(ctx);
 
-		ctx.assertLeftStates();
+		ctx.checkErrors();
 
 		// screen -> framebuffer
 		ctx.drawToCanvas(Clay.screen.buffer, framebuffer, shaderTextured);
