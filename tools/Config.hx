@@ -159,7 +159,6 @@ class Config {
 	}
 
 	public static function get():ConfigData {
-	    
 		var configPath = Path.join([CLI.userDir, 'project.yml']);
 		if (!FileSystem.exists(configPath)) {
 			CLI.error('Cant find project.yml in: ${CLI.userDir}');

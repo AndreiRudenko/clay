@@ -1,26 +1,20 @@
 package commands;
 
-
 import Config;
 import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
 
-
 class Launch extends Command {
 
-
 	public function new() {
-
 		super(
 			'launch', 
 			'launch project: launch <target>'
 		);
-
 	}
 
 	override function execute(args:Array<String>) {
-
 		if(args.length == 0) {
 			CLI.error('Target not defined');
 		}
@@ -30,14 +24,21 @@ class Launch extends Command {
 			CLI.error('Unknown target, use: [${CLI.targets.join(",")}]');
 		}
 
-		launchProject(target);
-
-	}
-
-	function launchProject(target:String) {
-
 		var config:ConfigData = Config.get();
 
+		config.debug = false;
+		for (a in args) {
+			switch (a) {
+				case '--debug' : {
+					config.debug = true;
+				}
+			}
+		}
+
+		launchProject(config, target);
+	}
+
+	function launchProject(config:ConfigData, target:String) {
 		switch (target) {
 			case 'html5' : {
 				var port = 8080;
@@ -67,7 +68,14 @@ class Launch extends Command {
 				CLI.execute('start', ['cmd', "/c", '$path']); // todo: remove cmd ?
 			}
 			case 'android-hl' : {
-				var path = Path.join([CLI.userDir, 'build/android-hl-build/${config.project.title}/app/build/outputs/apk/debug/app-debug.apk']);
+				var path:String;
+
+				if(config.debug) {
+					path = Path.join([CLI.userDir, 'build/android-hl-build/${config.project.title}/app/build/outputs/apk/debug/app-debug.apk']);
+				} else {
+					path = Path.join([CLI.userDir, 'build/android-hl-build/${config.project.title}/app/build/outputs/apk/release/app-release.apk']);
+				}
+
 				if(!FileSystem.exists(path)) {
 					CLI.error('Can`t find app at: $path');
 				}
@@ -79,7 +87,9 @@ class Launch extends Command {
 				}
 				// CLI.execute('start', ['cmd', "/c", 'adb', 'uninstall', '$pkg']);
 				CLI.execute('start', ['cmd', "/c", 'adb', 'install', '-r', '$path']);
-				CLI.execute('start', ['cmd', "/c", 'adb', 'logcat', '-s', 'Kinc', 'DEBUG', 'AndroidRuntime']);
+				if(config.debug) {
+					CLI.execute('start', ['cmd', "/c", 'adb', 'logcat', '-s', 'Kinc', 'DEBUG', 'AndroidRuntime']);
+				}
 				CLI.execute('start', ['cmd', "/c", 'adb', 'shell', 'am', 'start', '-n', '$pkg/tech.kode.kore.KoreActivity']);
 			}
 			case 'linux': {
@@ -99,6 +109,5 @@ class Launch extends Command {
 		}
 
 	}
-
 
 }
