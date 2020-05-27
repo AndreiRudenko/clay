@@ -15,7 +15,7 @@ class Distortion extends AudioEffect {
 		var x:Float = 0;
 
 		for (i in 0...samples) {
-			x = buffer[i] * gain;
+			x = buffer[i] * _gain;
 			if(x > 0) {
 				buffer[i] = 1 - Math.exp(-x);
 			} else {
