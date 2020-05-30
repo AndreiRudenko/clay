@@ -1,6 +1,6 @@
 # Clay  
-Clay is a cross-platform, 2d game framework.  
-Build on top of [Kha](https://github.com/Kode/Kha) framework using [Haxe](https://haxe.org/) language.  
+a cross-platform, 2d game framework.  
+Built on top of [Kha](https://github.com/Kode/Kha) framework using [Haxe](https://haxe.org/) language.  
 
 ## Installation
 ```bash
