@@ -146,16 +146,6 @@ class Vector2 {
 		return Math.atan2(other.y - y, other.x - x);
 	}
 
-	public inline function transform(m:Matrix) {
-		set(m.a * x + m.c * y + m.tx, m.b * x + m.d * y + m.ty);
-		return this;
-	}
-
-	public inline function transformFast(m:FastMatrix3) {
-		set(m.a * x + m.c * y + m.tx, m.b * x + m.d * y + m.ty);
-		return this;
-	}
-
 	static public inline function Add(a:Vector2, b:Vector2) {
 	    return new Vector2(a.x + b.x, a.y + b.y);
 	}

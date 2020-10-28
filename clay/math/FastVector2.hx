@@ -150,16 +150,6 @@ abstract FastVector2(kha.math.FastVector2) from kha.math.FastVector2 to kha.math
 		return Math.atan2(other.y - y, other.x - x);
 	}
 
-	public inline function transform(m:Matrix) {
-		this.x = m.a * x + m.c * y + m.tx;
-		this.y = m.b * x + m.d * y + m.ty;
-	}
-
-	public inline function transformFast(m:FastMatrix3) {
-		this.x = m.a * x + m.c * y + m.tx;
-		this.y = m.b * x + m.d * y + m.ty;
-	}
-
 	static public inline function Add(a:FastVector2, b:FastVector2) {
 	    return new FastVector2(a.x + b.x, a.y + b.y);
 	}
