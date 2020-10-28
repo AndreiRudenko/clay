@@ -2,12 +2,12 @@ package clay.audio;
 
 import kha.arrays.Float32Array;
 import clay.resources.AudioResource;
-import clay.audio.Audio;
+import clay.Audio;
 import clay.audio.AudioChannel;
 import clay.audio.AudioEffect;
 import clay.audio.AudioGroup;
-import clay.utils.Mathf;
-import clay.utils.Log.*;
+import clay.utils.Math;
+import clay.utils.Log;
 
 class Sound extends AudioChannel {
 
@@ -39,6 +39,8 @@ class Sound extends AudioChannel {
 	var _cache:Float32Array;
 	var _outputToPlay:AudioGroup;
 
+	var _linInt:Float;
+
 	public function new(?resource:AudioResource, output:AudioGroup = null, maxEffects:Int = 8) {
 		super(maxEffects);
 
@@ -48,6 +50,7 @@ class Sound extends AudioChannel {
 		_pitch = 1;
 		_position = 0;
 		_positionRaw = 0;
+		_linInt = 0;
 
 		_paused = false;
 		_loop = false;
@@ -61,7 +64,7 @@ class Sound extends AudioChannel {
 		if(_resource == null || _paused) {
 			return;
 		}
-	    
+		
 		if (_cache.length < bufferSamples) {
 			_cache = new Float32Array(bufferSamples);
 		}
@@ -72,29 +75,85 @@ class Sound extends AudioChannel {
 			return;
 		}
 
+		// var soundData = _resource.uncompressedData;
+		// var bufferIdx = 0;
+		// var chunkIdx = 0;
+		// var chunkLen = 0;
+		// while (bufferIdx < bufferSamples) {
+		// 	// chunkLen = Math.ceil((soundData.length - _position) / _pitch); // TODO: test this
+		// 	chunkLen = Math.floor((soundData.length - _position) / _pitch); // TODO: test this
+		// 	if(chunkLen > (bufferSamples - bufferIdx)) {
+		// 		chunkLen = (bufferSamples - bufferIdx);
+		// 	}
+			
+		// 	// output[outputPtr]=(currSample[ptr+1]*linInt)+(currSample[ptr]*(1-linInt));
+
+		// 	while (chunkIdx++ < chunkLen) {
+		// 		_linInt = _positionRaw - _position;
+
+		// 		//linear interpolation pitch shifting
+		// 		_cache[bufferIdx++] = (soundData[min(_position+1, soundData.length-1)] * _linInt) + (soundData[_position] * (1-_linInt));
+		// 		// _cache[bufferIdx++] = soundData[_position];
+
+		// 		_positionRaw += _pitch;
+		// 		_position = Math.floor(_positionRaw);
+		// 	}
+
+		// 	if (!_loop) {
+		// 		if (_position >= soundData.length) {
+		// 			_finished = true;
+		// 		}
+		// 		break;
+		// 	} else { 
+		// 		if (_position >= soundData.length) {
+		// 			_position = 0;
+		// 			_positionRaw = 0;
+		// 		}
+		// 	}
+		// 	chunkIdx = 0;
+		// }
+
 		var soundData = _resource.uncompressedData;
 		var bufferIdx = 0;
 		var chunkIdx = 0;
 		var chunkLen = 0;
+		var dataLen = Math.floor(soundData.length / 2)-1;
+		var nextPos = 0;
 		while (bufferIdx < bufferSamples) {
-			chunkLen = Math.floor((soundData.length - _position) / _pitch); // TODO: test this
+			// chunkLen = Math.ceil((soundData.length - _position) / _pitch); // TODO: test this
+			// chunkLen = Math.floor((dataLen - _position)) * 2; // TODO: test this
+			chunkLen = Math.floor((dataLen - _position) / _pitch) * 2; // TODO: test this
 			if(chunkLen > (bufferSamples - bufferIdx)) {
 				chunkLen = (bufferSamples - bufferIdx);
 			}
 			
-			while (chunkIdx++ < chunkLen) {
-				_cache[bufferIdx++] = soundData[_position];
+			// output[outputPtr]=(currSample[ptr+1]*linInt)+(currSample[ptr]*(1-linInt));
+
+			while (chunkIdx < chunkLen) {
+				_linInt = _positionRaw - _position;
+
+				//linear interpolation pitch shifting
+				nextPos = min(Math.floor(_positionRaw + _pitch), dataLen-1);
+				_cache[bufferIdx] = (soundData[nextPos*2] * _linInt) + (soundData[_position*2] * (1-_linInt));
+				_cache[bufferIdx+1] = (soundData[nextPos*2+1] * _linInt) + (soundData[_position*2+1] * (1-_linInt));
+
+				// _cache[bufferIdx] = soundData[_position*2];
+				// _cache[bufferIdx+1] = soundData[_position*2+1];
+				bufferIdx +=2;
+
 				_positionRaw += _pitch;
 				_position = Math.floor(_positionRaw);
+				// _position++;
+				chunkIdx +=2;
 			}
 
 			if (!_loop) {
-				if (_position >= soundData.length) {
+				if (_position >= dataLen) {
 					_finished = true;
 				}
 				break;
 			} else { 
-				if (_position >= soundData.length) {
+				if (_position >= dataLen) {
 					_position = 0;
 					_positionRaw = 0;
 				}
@@ -115,6 +174,40 @@ class Sound extends AudioChannel {
 			bufferIdx +=2;
 		}
 	}
+	
+	// public function nextSamples(requestedSamples: Float32Array, requestedLength: Int, sampleRate: Int): Void {
+	// 	if (paused || stopped) {
+	// 		for (i in 0...requestedLength) {
+	// 			requestedSamples[i] = 0;
+	// 		}
+	// 		return;
+	// 	}
+		
+	// 	var requestedSamplesIndex = 0;
+	// 	while (requestedSamplesIndex < requestedLength) {
+	// 		for (i in 0...min(data.length - myPosition, requestedLength - requestedSamplesIndex)) {
+	// 			requestedSamples[requestedSamplesIndex++] = data[myPosition++];
+	// 		}
+
+	// 		if (myPosition >= data.length) {
+	// 			myPosition = 0;
+	// 			if (!looping) {
+	// 				stopped = true;
+	// 				break;
+	// 			}
+	// 		}
+	// 	}
+
+	// 	while (requestedSamplesIndex < requestedLength) {
+	// 		requestedSamples[requestedSamplesIndex++] = 0;
+	// 	}
+	// }
+
+
+
+	static inline function min(a: Int, b: Int) {
+		return a < b ? a : b;
+	}
 
 	public function play():Sound {
 		Audio.mutexLock();
@@ -131,10 +224,10 @@ class Sound extends AudioChannel {
 					_added = true;
 				}
 			} else {
-				log("cant play: there is no output channel for sound");
+				Log.warning("cant play: there is no output channel for sound");
 			}
 		} else {
-			log("there is no audio _resource to play");
+			Log.warning("there is no audio _resource to play");
 		}
 
 		Audio.mutexUnlock();
@@ -152,10 +245,10 @@ class Sound extends AudioChannel {
 					_added = false;
 				}
 			} else {
-				log("cant stop: there is no output channel for sound");
+				Log.warning("cant stop: there is no output channel for sound");
 			}
 		} else {
-			log("there is no audio _resource, nothing to stop");
+			Log.warning("there is no audio _resource, nothing to stop");
 		}
 
 		Audio.mutexUnlock();
@@ -232,7 +325,7 @@ class Sound extends AudioChannel {
 
 	function set_pitch(v:Float):Float {
 		Audio.mutexLock();
-		_pitch = Mathf.clampBottom(v, 0.01); // TODO: 0?
+		_pitch = Math.max(v, 0.01); // TODO: 0?
 		v = _pitch;
 		Audio.mutexUnlock();
 
@@ -258,7 +351,7 @@ class Sound extends AudioChannel {
 	function get_time():Float {
 		Audio.mutexLock();
 		// var v = _position / Clay.audio._sampleRate / _getChannels();
-		var v = _position / Clay.audio._sampleRate / 2;
+		var v = _position / Clay.audio.sampleRate / 2;
 		Audio.mutexUnlock();
 
 		return v;
@@ -349,7 +442,7 @@ class Sound extends AudioChannel {
 	function _getDuration():Float {
 		if(_resource != null) {
 			// return _resource.uncompressedData.length / Clay.audio._sampleRate / _resource.channels;
-			return _resource.uncompressedData.length / Clay.audio._sampleRate / 2; // kha uses 2 channels by default
+			return _resource.uncompressedData.length / Clay.audio.sampleRate / 2; // kha uses 2 channels by default
 		}
 
 		return 0;

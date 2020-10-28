@@ -48,7 +48,7 @@ class FloatRingBuffer {
 	}
 
 	inline function modLength(i:Int):Int {
-		return clay.utils.Mathf.mod(i, _buffer.length);
+		return clay.utils.Math.mod(i, _buffer.length);
 	}
 
 	inline function getIndex(i:Int):Int {

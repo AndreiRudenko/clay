@@ -84,13 +84,6 @@ class Config {
 			kfile += 'p.addAssets("${fp}", {destination: "${CLI.resourcesPath}/{name}", noprocessing: true, notinlist: true});\n';
 		}
 
-		// if(project.assets != null) {
-		// 	for (s in project.assets) {
-		// 		kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${CLI.resourcesPath}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
-		// 	}
-		// }
-
-
 		if(project.assets != null) {
 			for (s in project.assets) {
 				kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${CLI.resourcesPath}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
@@ -246,6 +239,7 @@ typedef UWPConfig = {
 
 typedef AndroidConfig = {
 	// var package:String;
+	var graphics:String;
 	var arch:String;
 	var orientation:String;
 	var installLocation:String;

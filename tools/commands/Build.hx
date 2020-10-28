@@ -13,6 +13,7 @@ class Build extends Command {
 	var windowsGraphics:Array<String> = ["direct3d9", "direct3d11", "direct3d12", "vulkan", "opengl"];
 	var uwpGraphics:Array<String> = ["direct3d11", "direct3d12"];
 	var linuxGraphics:Array<String> = ["vulkan", "opengl"];
+	var androidGraphics:Array<String> = ["vulkan", "opengl"];
 
 	var audio:Array<String> = ["wasapi", "directsound"];
 
@@ -131,6 +132,13 @@ class Build extends Command {
 					if(config.android.arch != null) {
 						arch = config.android.arch;
 					}
+				}
+				if(config.android.graphics != null) {
+					if(androidGraphics.indexOf(config.android.graphics) == -1) {
+						CLI.error('Unknown graphics target, use: [${androidGraphics.join(',')}]'); 
+					}
+					args.push('--graphics');
+					args.push(config.android.graphics);
 				}
 				args.push('--arch ${arch}');
 			}

@@ -6,10 +6,10 @@ import haxe.macro.Expr;
 #if macro
 class EventMacro {
 
-	public static var eventID:Int = 0;
-	public static var eventMap:Map<String, Int> = new Map();
+	static public var eventID:Int = 0;
+	static public var eventMap:Map<String, Int> = new Map();
 
-	public static function build():Array<Field> {
+	static public function build():Array<Field> {
 		var fields = Context.getBuildFields();
 
 		function getEventName(field:Field):String { 

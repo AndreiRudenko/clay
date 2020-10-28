@@ -1,12 +1,12 @@
 package clay.audio;
 
-import clay.utils.Mathf;
-import clay.utils.Log.*;
+import clay.utils.Math;
 import clay.audio.AudioEffect;
-import clay.audio.Audio;
+import clay.Audio;
 import clay.utils.ArrayTools;
 import kha.arrays.Float32Array;
 import haxe.ds.Vector;
+import clay.utils.Log;
 
 class AudioGroup extends AudioChannel {
 
@@ -39,19 +39,19 @@ class AudioGroup extends AudioChannel {
 
 		if(channel == this) {
 			Audio.mutexUnlock();
-			log('can`t add channel to itself');
+			Log.warning('can`t add channel to itself');
 			return;
 		}
 
 		if(channel._output == this) {
 			Audio.mutexUnlock();
-			log('channel already added to group');
+			Log.warning('channel already added to group');
 			return;
 		}
 
 		if(_channelsCount >= _maxChannels) {
 			Audio.mutexUnlock();
-			log('can`t add channel, max channels: ${_maxChannels}');
+			Log.warning('can`t add channel, max channels: ${_maxChannels}');
 			return;
 		}
 
@@ -82,11 +82,11 @@ class AudioGroup extends AudioChannel {
 				}
 			}
 			if(!found) {
-				log('can`t remove channel ?');
+				Log.warning('can`t remove channel ?');
 			}
 			_dirtyChannels = true;
 		} else {
-			log('can`t remove channel, it not belong to this group');
+			Log.warning('can`t remove channel, it not belong to this group');
 		}
 
 		Audio.mutexUnlock();
@@ -110,7 +110,7 @@ class AudioGroup extends AudioChannel {
 	override function process(data:Float32Array, bufferSamples:Int) {
 		if (_cache.length < bufferSamples) {
 			Audio.mutexLock();
-			log('Allocation request in audio thread. cache: ${_cache.length}, samples: $bufferSamples');
+			Log.warning('Allocation request in audio thread. cache: ${_cache.length}, samples: $bufferSamples');
 			Audio.mutexUnlock();
 			_cache = new Float32Array(bufferSamples);
 		}

@@ -1,9 +1,8 @@
 package clay.audio;
 
 
-import clay.utils.Mathf;
-import clay.utils.Log.*;
-import clay.audio.Audio;
+import clay.utils.Math;
+import clay.Audio;
 
 @:allow(clay.audio.AudioChannel)
 class AudioEffect {

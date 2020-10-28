@@ -1,8 +1,8 @@
 package clay.audio.effects;
 
-import clay.utils.Mathf;
+import clay.utils.Math;
 import clay.audio.Sound;
-import clay.audio.Audio;
+import clay.Audio;
 
 class Filter extends AudioEffect {
 
@@ -76,7 +76,7 @@ class Filter extends AudioEffect {
 
 	function set_resonance(v:Float):Float {
 		Audio.mutexLock();
-		resonance = Mathf.clamp(v, 0, 1);
+		resonance = Math.clamp(v, 0, 1);
 		calcCoef();
 		Audio.mutexUnlock();
 

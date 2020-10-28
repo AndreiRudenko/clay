@@ -1,13 +1,15 @@
 package clay.input;
 
-import clay.system.App;
-import clay.utils.Log.*;
+import clay.App;
+import clay.utils.Log;
 import clay.utils.Bits;
 import clay.events.GamepadEvent;
 
-@:allow(clay.input.InputManager)
+@:allow(clay.Input)
 @:access(clay.events.GamepadEvent)
-class Gamepads extends Input {
+class Gamepads {
+
+	public var active(default, null):Bool = false;
 
 	// TODO: need to figure how gamepad is stored, and change map to array maybe
 	var _gamepads:Map<Int, Gamepad>;
@@ -16,9 +18,7 @@ class Gamepads extends Input {
 	var _gamepadBindings:Map<String, Map<Int, Int>>;
 	var _binding:Bindings;
 
-	function new(app:App) {
-		super(app);
-
+	public function new() {
 		_gamepadBindings = new Map();
 		_binding = Clay.input.binding;
 	}
@@ -31,7 +31,7 @@ class Gamepads extends Input {
 		return _gamepads.get(gamepad);
 	}
 
-	override function enable() {
+	public function enable() {
 		if(active) {
 			return;
 		}
@@ -39,22 +39,21 @@ class Gamepads extends Input {
 		_gamepads = new Map();
 
 		#if use_gamepad_input
-		kha.input.Gamepad.notifyOnConnect(onconnect, ondisconnect);
+		kha.input.Gamepad.notifyOnConnect(onConnect, onDisconnect);
 		#end 
 
 		_gamepadEvent = new GamepadEvent();
-
-		super.enable();
+		active = true;
 	}
 
-	override function disable() {
+	public function disable() {
 		if(!active) {
 			return;
 		}
 
 		#if use_gamepad_input
 
-		kha.input.Gamepad.removeConnect(onconnect, ondisconnect);
+		kha.input.Gamepad.removeConnect(onConnect, onDisconnect);
 		for (g in _gamepads) {
 			g.unlistenEvents();
 		}
@@ -63,8 +62,7 @@ class Gamepads extends Input {
 
 		_gamepads = null;
 		_gamepadEvent = null;
-
-		super.disable();
+		active = false;
 	}
 
 	public function pressed(gamepad:Int, button:Int):Bool {
@@ -101,6 +99,13 @@ class Gamepads extends Input {
 		}
 
 		return 0;
+	}
+
+	public function rumble(gamepad:Int, leftAmount:Int, rightAmount:Int) {
+		var g = _gamepads.get(gamepad);
+		if(g != null) {
+			g.rumble(leftAmount, rightAmount);
+		}
 	}
 
 	public function bind(name:String, gamepad:Int, button:Int) {
@@ -151,9 +156,9 @@ class Gamepads extends Input {
 		#end
 	}
 
-	function onconnect(gamepad:Int) {
-		_debug('onconnect gamepad:$gamepad');
-		assert(!_gamepads.exists(gamepad), 'trying to add gamepad that already exists');
+	function onConnect(gamepad:Int) {
+		Log.debug('onConnect gamepad:$gamepad');
+		Log.assert(!_gamepads.exists(gamepad), 'trying to add gamepad that already exists');
 
 		var g = new Gamepad(gamepad, this);
 		g.listenEvents();
@@ -161,12 +166,12 @@ class Gamepads extends Input {
 
 		_gamepadEvent.set(gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_ADDED);
 
-		_app.emitter.emit(GamepadEvent.DEVICE_ADDED, _gamepadEvent);
+		Clay.app.emitter.emit(GamepadEvent.DEVICE_ADDED, _gamepadEvent);
 	}
 
-	function ondisconnect(gamepad:Int) {
-		_debug('ondisconnect gamepad:$gamepad');
-		assert(_gamepads.exists(gamepad), 'trying to remove gamepad that not exists');
+	function onDisconnect(gamepad:Int) {
+		Log.debug('onDisconnect gamepad:$gamepad');
+		Log.assert(_gamepads.exists(gamepad), 'trying to remove gamepad that not exists');
 
 		var g = _gamepads.get(gamepad);
 		g.unlistenEvents();
@@ -174,13 +179,13 @@ class Gamepads extends Input {
 
 		_gamepadEvent.set(gamepad, g.id, -1, -1, 0, GamepadEvent.DEVICE_REMOVED);
 		
-		_app.emitter.emit(GamepadEvent.DEVICE_REMOVED, _gamepadEvent);
+		Clay.app.emitter.emit(GamepadEvent.DEVICE_REMOVED, _gamepadEvent);
 	}
 
 }
 
 @:allow(clay.input.Gamepads)
-@:access(clay.system.App, clay.input.Gamepads)
+@:access(clay.App, clay.input.Gamepads)
 class Gamepad {
 
 	public var id(default, null):String;
@@ -224,6 +229,10 @@ class Gamepad {
 		return 0;
 	}
 
+	public function rumble(leftAmount:Float, rightAmount:Float) {
+		// TODO: implement in kha
+	}
+
 	function listenEvents() {
 		kha.input.Gamepad.get(gamepad).notify(onAxis, onButton);
 	}
@@ -244,18 +253,18 @@ class Gamepad {
 			return;
 		}
 		
-		_debug('onAxis gamepad:$gamepad, axis:$a, value:$v');
+		Log.debug('onAxis gamepad:$gamepad, axis:$a, value:$v');
 
 		_axisID = a;
 		_axisValue = v;
 
 		_gamepadEvent.set(gamepad, id, -1, _axisID, _axisValue, GamepadEvent.AXIS);
 
-		_gamepads._app.emitter.emit(GamepadEvent.AXIS, _gamepadEvent);
+		Clay.app.emitter.emit(GamepadEvent.AXIS, _gamepadEvent);
 	}
 
 	function onButton(b:Int, v:Float) {
-		_debug('onButton gamepad:$gamepad, button:$b, value:$v');
+		Log.debug('onButton gamepad:$gamepad, button:$b, value:$v');
 
 		if(v > 0.5) {
 			onPressed(b);
@@ -265,7 +274,7 @@ class Gamepad {
 	}
 
 	inline function onPressed(b:Int) {
-		_debug('onPressed gamepad:$gamepad, button:$b');
+		Log.debug('onPressed gamepad:$gamepad, button:$b');
 
 		_buttonsPressed = Bits.set(_buttonsPressed, b);
 		_buttonsDown = Bits.set(_buttonsDown, b);
@@ -273,11 +282,11 @@ class Gamepad {
 		_gamepadEvent.set(gamepad, id, b, -1, 0, GamepadEvent.BUTTON_DOWN);
 
 		_gamepads.checkBinding(gamepad, b, true);
-		_gamepads._app.emitter.emit(GamepadEvent.BUTTON_DOWN, _gamepadEvent);
+		Clay.app.emitter.emit(GamepadEvent.BUTTON_DOWN, _gamepadEvent);
 	}
 
 	inline function onReleased(b:Int) {
-		_debug('onReleased gamepad:$gamepad, button:$b');
+		Log.debug('onReleased gamepad:$gamepad, button:$b');
 
 		_buttonsPressed = Bits.clear(_buttonsPressed, b);
 		_buttonsDown = Bits.clear(_buttonsDown, b);
@@ -286,7 +295,7 @@ class Gamepad {
 		_gamepadEvent.set(gamepad, id, b, -1, 0, GamepadEvent.BUTTON_UP);
 
 		_gamepads.checkBinding(gamepad, b, false);
-		_gamepads._app.emitter.emit(GamepadEvent.BUTTON_UP, _gamepadEvent);
+		Clay.app.emitter.emit(GamepadEvent.BUTTON_UP, _gamepadEvent);
 	}
 
 }

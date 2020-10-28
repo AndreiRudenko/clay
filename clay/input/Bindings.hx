@@ -5,11 +5,13 @@ import clay.input.Keyboard;
 import clay.input.Gamepad;
 import clay.input.Touch;
 import clay.input.Pen;
-import clay.utils.Log.*;
+import clay.utils.Log;
 import clay.events.*;
 
-@:allow(clay.input.InputManager)
-class Bindings extends Input {
+@:allow(clay.Input)
+class Bindings {
+
+	public var active(default, null):Bool = false;
 
 	@:noCompletion public var inputEvent:InputEvent;
 
@@ -19,7 +21,9 @@ class Bindings extends Input {
 
 	var _dirty:Bool = false;
 
-	override function enable() {
+	public function new() {}
+
+	public function enable() {
 		if(active) {
 			return;
 		}
@@ -29,11 +33,11 @@ class Bindings extends Input {
 		_inputDown = new Map();
 
 		inputEvent = new InputEvent();
-
-		super.enable();
+		
+		active = true;
 	}
 
-	override function disable() {
+	public function disable() {
 		if(!active) {
 			return;
 		}
@@ -44,7 +48,7 @@ class Bindings extends Input {
 
 		inputEvent = null;
 
-		super.disable();
+		active = false;
 	}
 
 	public function pressed(_key:String):Bool {
@@ -60,9 +64,8 @@ class Bindings extends Input {
 	}
 
 	function reset() {
-		_verboser("reset");
-
 		if(_dirty) {
+			Log.debug("reset");
 			for (k in _inputPressed.keys()) {
 				_inputPressed.remove(k);
 			}
@@ -131,18 +134,18 @@ class Bindings extends Input {
 	}
 
 	@:noCompletion public function inputPressed() {
-		_verboser('inputPressed');
+		Log.debug('inputPressed');
 
 		_dirty = true;
 
 		addPressed(inputEvent.name);
 		addDown(inputEvent.name);
 
-		_app.emitter.emit(InputEvent.INPUT_DOWN, inputEvent);
+		Clay.app.emitter.emit(InputEvent.INPUT_DOWN, inputEvent);
 	}
 
 	@:noCompletion public function inputReleased() {
-		_verboser('inputReleased');
+		Log.debug('inputReleased');
 
 		_dirty = true;
 
@@ -150,7 +153,7 @@ class Bindings extends Input {
 		removePressed(inputEvent.name);
 		removeDown(inputEvent.name);
 
-		_app.emitter.emit(InputEvent.INPUT_UP, inputEvent);
+		Clay.app.emitter.emit(InputEvent.INPUT_UP, inputEvent);
 	}
 
 }

@@ -1,7 +1,7 @@
 package clay.audio.dsp;
 
 import clay.Clay;
-import clay.utils.Mathf;
+import clay.utils.Math;
 
 // First Order Digital HighPass Filter from FreeVerb3
 class HighPassFilter {
@@ -25,7 +25,7 @@ class HighPassFilter {
 		this.freq = freq;
 	}
 
-	public inline function process(input:Float):Float {
+	public function process(input:Float):Float {
 		var output = input * b1 + y1;
 		y1 = output * a2 + input * b2;
 			
@@ -33,7 +33,7 @@ class HighPassFilter {
 	}
 
 	function set_freq(v:Float):Float {
-		freq = Mathf.clampBottom(v, 0);
+		freq = Math.max(v, 0);
 		
 		a2 = Math.exp(-1 * Math.PI * freq / (sampleRate / 2));
 

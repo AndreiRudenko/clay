@@ -3,7 +3,7 @@ package clay.utils;
 
 class Timer {
 
-	public static var globalManager:TimerManager;
+	static public var globalManager:TimerManager;
 
 	public var timeLimit(default, set):Float;
 	public var loops:Int;

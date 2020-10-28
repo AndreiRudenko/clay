@@ -1,6 +1,6 @@
 package clay.audio.dsp;
 
-import clay.utils.Mathf;
+import clay.utils.Math;
 
 class CombFilter {
 
@@ -20,7 +20,7 @@ class CombFilter {
 		_buffer = new FloatRingBuffer(length);
 	}
 
-	public inline function process(input:Float):Float {
+	public function process(input:Float):Float {
 		var output = _buffer.read();
 		_filter = output * _dampingInv + _filter * damping;
 		_buffer.insert(input + _filter * feedback);
@@ -29,7 +29,7 @@ class CombFilter {
 	}
 
 	function set_damping(v:Float):Float {
-		damping = Mathf.clamp(v, 0, 1);
+		damping = Math.clamp(v, 0, 1);
 		_dampingInv = 1.0 - damping;
 
 		return damping;

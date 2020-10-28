@@ -18,11 +18,6 @@ class RectangleCallback extends Rectangle {
 	    return this;
 	}
 
-	public function listen(f:(r:Rectangle)->Void):RectangleCallback {
-		listener = f;
-		return this;
-	}
-
 	override function set_x(v:Float):Float {
 		super.set_x(v);
 		callListener();
@@ -45,6 +40,11 @@ class RectangleCallback extends Rectangle {
 		super.set_h(v);
 		callListener();
 		return v;
+	}
+
+	public function listen(f:(r:Rectangle)->Void):RectangleCallback {
+		listener = f;
+		return this;
 	}
 
 	inline function callListener() {

@@ -1,13 +1,12 @@
 package clay.audio;
 
-import clay.utils.Mathf;
-import clay.utils.Log.*;
+import clay.utils.Math;
 import kha.arrays.Float32Array;
 import clay.audio.AudioEffect;
-import clay.audio.Audio;
+import clay.Audio;
 import clay.utils.ArrayTools;
 import haxe.ds.Vector;
-import clay.utils.Log.*;
+import clay.utils.Log;
 
 class AudioChannel {
 
@@ -56,12 +55,12 @@ class AudioChannel {
 		Audio.mutexLock();
 
 		if(_effectsCount >= _maxEffects) {
-			log("cant add effect, max effects: " + _maxEffects);
+			Log.warning("cant add effect, max effects: " + _maxEffects);
 			return;
 		}
 
 		if(effect._parent != null) {
-			log("audio effect already in another channel");
+			Log.warning("audio effect already in another channel");
 			return;
 		}
 
@@ -118,7 +117,7 @@ class AudioChannel {
 		while (i < count) {
 			e = _effectsInternal[i];
 			if(!e._mute) {
-				e.process(samples, data, Clay.audio._sampleRate);
+				e.process(samples, data, Clay.audio.sampleRate);
 			}
 			i++;
 		}
@@ -150,7 +149,7 @@ class AudioChannel {
 
 	function set_volume(v:Float):Float {
 		Audio.mutexLock();
-		_volume = Mathf.clamp(v, 0, 1);
+		_volume = Math.clamp(v, 0, 1);
 		v = _volume;
 		Audio.mutexUnlock();
 
@@ -168,7 +167,7 @@ class AudioChannel {
 	function set_pan(v:Float):Float {
 		Audio.mutexLock();
 
-		_pan = Mathf.clamp(v, -1, 1);
+		_pan = Math.clamp(v, -1, 1);
 		_l = Math.cos((_pan + 1) * Math.PI / 4);
 		_r = Math.sin((_pan + 1) * Math.PI / 4);
 		v = _pan;

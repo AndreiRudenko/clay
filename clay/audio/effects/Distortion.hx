@@ -1,6 +1,6 @@
 package clay.audio.effects;
 
-import clay.audio.Audio;
+import clay.Audio;
 
 class Distortion extends AudioEffect {
 
@@ -8,6 +8,7 @@ class Distortion extends AudioEffect {
 	var _gain:Float;
 
 	public function new(gain:Float = 1) {
+		super();
 		_gain = gain;
 	}
 
@@ -15,7 +16,7 @@ class Distortion extends AudioEffect {
 		var x:Float = 0;
 
 		for (i in 0...samples) {
-			x = buffer[i] * _gain;
+			x = buffer[i] * gain;
 			if(x > 0) {
 				buffer[i] = 1 - Math.exp(-x);
 			} else {

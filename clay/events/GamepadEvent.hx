@@ -1,13 +1,15 @@
 package clay.events;
 
+import clay.utils.EventType;
+
 @:allow(clay.input.Gamepad)
 class GamepadEvent implements IEvent {
 
-	public static inline var BUTTON_UP:EventType<GamepadEvent>;
-	public static inline var BUTTON_DOWN:EventType<GamepadEvent>;
-	public static inline var AXIS:EventType<GamepadEvent>;
-	public static inline var DEVICE_ADDED:EventType<GamepadEvent>;
-	public static inline var DEVICE_REMOVED:EventType<GamepadEvent>;
+	static public inline var BUTTON_UP:EventType<GamepadEvent>;
+	static public inline var BUTTON_DOWN:EventType<GamepadEvent>;
+	static public inline var AXIS:EventType<GamepadEvent>;
+	static public inline var DEVICE_ADDED:EventType<GamepadEvent>;
+	static public inline var DEVICE_REMOVED:EventType<GamepadEvent>;
 
 	public var id(default, null):String;
 	public var gamepad(default, null):Int;
@@ -18,7 +20,7 @@ class GamepadEvent implements IEvent {
 
 	public var state(default, null):EventType<GamepadEvent>;
 
-	function new() {}
+	public function new() {}
 
 	inline function set(gamepad:Int, id:String, button:Int, axisID:Int, value:Float, state:EventType<GamepadEvent>) {
 		this.id = id;

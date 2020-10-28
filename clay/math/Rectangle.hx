@@ -2,29 +2,52 @@ package clay.math;
 
 class Rectangle {
 
-	public var x(default, set):Float;
-	public var y(default, set):Float;
-	public var w(default, set):Float;
-	public var h(default, set):Float;
+	public var x(get, set):Float;
+	var _x:Float;
+	inline function get_x() return _x; 
+	function set_x(v:Float):Float {
+		return _x = v;
+	}
+
+	public var y(get, set):Float;
+	var _y:Float;
+	inline function get_y() return _y; 
+	function set_y(v:Float):Float {
+		return _y = v;
+	}
+
+	public var w(get, set):Float;
+	var _w:Float;
+	inline function get_w() return _w; 
+	function set_w(v:Float):Float {
+		return _w = v;
+	}
+
+	public var h(get, set):Float;
+	var _h:Float;
+	inline function get_h() return _h; 
+	function set_h(v:Float):Float {
+		return _h = v;
+	}
 
 	public function new(x:Float = 0, y:Float = 0, w:Float = 0, h:Float = 0) {
 		set(x, y, w, h);
 	}
 
 	public function set(x:Float, y:Float, w:Float, h:Float):Rectangle {
-		this.x = x;
-		this.y = y;
-		this.w = w;
-		this.h = h;
+		_x = x;
+		_y = y;
+		_w = w;
+		_h = h;
 
 		return this;
 	}
 	
-	public function pointInside(point:Vector) {
-		if(point.x < x) return false;
-		if(point.y < y) return false;
-		if(point.x > x + w) return false;
-		if(point.y > y + h) return false;
+	public function pointInside(px:Float, py:Float) {
+		if(px < x) return false;
+		if(py < y) return false;
+		if(px > x + w) return false;
+		if(py > y + h) return false;
 
 		return true;
 	}
@@ -93,22 +116,6 @@ class Rectangle {
 
 	public function clone():Rectangle {
 		return new Rectangle(x, y, w, h);
-	}
-
-	function set_x(v:Float) {
-		return x = v;
-	}
-
-	function set_y(v:Float) {
-		return y = v;
-	}
-
-	function set_w(v:Float) {
-		return w = v;
-	}
-
-	function set_h(v:Float) {
-		return h = v;
 	}
 
 	@:noCompletion public function toString() {
