@@ -21,6 +21,9 @@ class Camera {
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
+	public var scaleX:Float = 1;
+	public var scaleY:Float = 1;
+
 	public var zoom:Float = 1;
 
 	public var projection:FastMatrix3 = new FastMatrix3();
@@ -32,6 +35,7 @@ class Camera {
 		this.y = y;
 		this.width = width > 0 ? width : Clay.window.width;
 		this.height = height > 0 ? height : Clay.window.height;
+		update();
 	}
 
 	public function update() {		
@@ -41,7 +45,7 @@ class Camera {
 			projection.orto(0, width, height, 0);
 		}
 
-		view.setTransform(x+offsetX, y+offsetY, Math.radians(rotation), zoom, zoom, originX, originY, 0, 0);
+		view.setTransform(x+offsetX, y+offsetY, Math.radians(rotation), scaleX*zoom, scaleY*zoom, originX, originY, 0, 0);
 		invProjectionView.copyFrom(view);
 		invProjectionView.invert();
 
