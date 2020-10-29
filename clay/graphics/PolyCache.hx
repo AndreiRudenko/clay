@@ -246,7 +246,7 @@ class PolyCache {
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).multiply(transform);
+			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
 			addPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}
@@ -260,7 +260,7 @@ class PolyCache {
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			_drawMatrix.fromMatrix(transform).multiply(this.transform);
+			_drawMatrix.fromMatrix(transform).append(this.transform);
 			addPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}
@@ -280,7 +280,7 @@ class PolyCache {
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).multiply(transform);
+			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
 			addPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}
@@ -296,7 +296,7 @@ class PolyCache {
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			_drawMatrix.fromMatrix(transform).multiply(this.transform);
+			_drawMatrix.fromMatrix(transform).append(this.transform);
 			addPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}

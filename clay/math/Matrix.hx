@@ -100,23 +100,42 @@ class Matrix {
 		d = c1 * -sin + d1 * cos;
 
 		return this;
-	}	
+	}
 
 	public inline function append(m:Matrix):Matrix {
-		var a1:Float = a;
-		var b1:Float = b;
-		var c1:Float = c;
-		var d1:Float = d;
+        var a1 = a;
+        var b1 = b;
+        var c1 = c;
+        var d1 = d;
 
-		a = (m.a * a1) + (m.b * c1);
-		b = (m.a * b1) + (m.b * d1);
-		c = (m.c * a1) + (m.d * c1);
-		d = (m.c * b1) + (m.d * d1);
+        a  = m.a * a1 + m.b * c1;
+        b  = m.a * b1 + m.b * d1;
+        c  = m.c * a1 + m.d * c1;
+        d  = m.c * b1 + m.d * d1;
 
-		tx = (m.tx * a1) + (m.ty * c1) + tx;
-		ty = (m.tx * b1) + (m.ty * d1) + ty;
+        tx = m.tx * a1 + m.ty * c1 + tx;
+        ty = m.tx * b1 + m.ty * d1 + ty;
 
 		return this;
+	}
+
+	public inline function prepend(m:Matrix):Matrix {
+	    var tx1 = tx;
+
+	    if (m.a != 1 || m.b != 0 || m.c != 0 || m.d != 1) {
+	        var a1 = a;
+	        var c1 = c;
+
+	        a = a1 * m.a + b * m.c;
+	        b = a1 * m.b + b * m.d;
+	        c = c1 * m.a + d * m.c;
+	        d = c1 * m.b + d * m.d;
+	    }
+
+	    tx = tx1 * m.a + ty * m.c + m.tx;
+	    ty = tx1 * m.b + ty * m.d + m.ty;
+
+	    return this;
 	}
 
 	public inline function orto(left:Float, right:Float, bottom:Float, top:Float):Matrix {
@@ -128,17 +147,6 @@ class Matrix {
 			0,           2.0*sy,
 			-(right+left)*sx, -(top+bottom)*sy
 		);
-
-		return this;
-	}
-
-	public inline function multiply(m:Matrix):Matrix {
-		a = a * m.a + b * m.c;
-		b = a * m.b + b * m.d;
-		c = c * m.a + d * m.c;
-		d = c * m.b + d * m.d;
-		tx = tx * m.a + ty * m.c + m.tx;
-		ty = tx * m.b + ty * m.d + m.ty;
 
 		return this;
 	}

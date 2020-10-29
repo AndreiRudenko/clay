@@ -215,7 +215,7 @@ class PolyBatch {
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolyBatch.begin must be called before draw');
-		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).multiply(transform);
+		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
 		drawPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
@@ -225,7 +225,7 @@ class PolyBatch {
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolyBatch.begin must be called before draw');
-		_drawMatrix.fromMatrix(transform).multiply(this.transform);
+		_drawMatrix.fromMatrix(transform).append(this.transform);
 		drawPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
@@ -241,7 +241,7 @@ class PolyBatch {
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolyBatch.begin must be called before draw');
-		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).multiply(transform);
+		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
 		drawPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
@@ -253,7 +253,7 @@ class PolyBatch {
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolyBatch.begin must be called before draw');
-		_drawMatrix.fromMatrix(transform).multiply(this.transform);
+		_drawMatrix.fromMatrix(transform).append(this.transform);
 		drawPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 

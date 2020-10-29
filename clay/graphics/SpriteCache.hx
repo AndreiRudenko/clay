@@ -238,7 +238,7 @@ class SpriteCache {
 		if(_currentCache.used + 1 >= _currentCache.size) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
-			_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY).multiply(transform);
+			_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY).append(transform);
 			addInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 		}
 	}
@@ -253,7 +253,7 @@ class SpriteCache {
 		if(_currentCache.used + 1 >= _currentCache.size) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
-			_drawMatrix.fromMatrix(transform).multiply(this.transform);
+			_drawMatrix.fromMatrix(transform).append(this.transform);
 			addInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 		}
 	}
@@ -272,7 +272,7 @@ class SpriteCache {
 		if(_currentCache.used * 4 + vertices.length >= _currentCache.size * 4) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
-			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).multiply(transform);
+			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
 			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}
@@ -287,7 +287,7 @@ class SpriteCache {
 		if(_currentCache.used * 4 + vertices.length >= _currentCache.size * 4) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
-			_drawMatrix.fromMatrix(transform).multiply(this.transform);
+			_drawMatrix.fromMatrix(transform).append(this.transform);
 			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}

@@ -200,7 +200,7 @@ class SpriteBatch {
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY).multiply(transform);
+		_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY).append(transform);
 		drawImageInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 	}
 
@@ -211,7 +211,7 @@ class SpriteBatch {
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		_drawMatrix.fromMatrix(transform).multiply(this.transform);
+		_drawMatrix.fromMatrix(transform).append(this.transform);
 		drawImageInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 	}
 
@@ -226,7 +226,7 @@ class SpriteBatch {
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).multiply(transform);
+		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
 		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
@@ -237,7 +237,7 @@ class SpriteBatch {
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		_drawMatrix.fromMatrix(transform).multiply(this.transform);
+		_drawMatrix.fromMatrix(transform).append(this.transform);
 		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
@@ -255,7 +255,7 @@ class SpriteBatch {
 		if(text.length == 0) return;
 		if(font == null) font = Graphics.fontDefault;
 
-		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).multiply(transform);
+		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
 		drawStringInternal(text, size, font, spacing, _drawMatrix);
 	}
 
@@ -269,7 +269,7 @@ class SpriteBatch {
 		if(text.length == 0) return;
 		if(font == null) font = Graphics.fontDefault;
 
-		_drawMatrix.fromMatrix(transform).multiply(this.transform);
+		_drawMatrix.fromMatrix(transform).append(this.transform);
 		drawStringInternal(text, size, font, spacing, _drawMatrix);
 	}
 
