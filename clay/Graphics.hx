@@ -195,9 +195,8 @@ class Graphics {
 	public function new() {}
 
 	public function begin(?target:Texture) {
-		if(target == null) {
-			target = Clay.window.buffer;
-		}
+		if(target == null) target = Clay.window.buffer;
+		
 		Log.assert(target.isRenderTarget, 'Graphics: begin with non renderTarget texture');
 		this.target = target;
 		_g4 = target.image.g4;
@@ -216,14 +215,14 @@ class Graphics {
 		_g4 = null;
 	}
 
-	public function viewport(rect:Rectangle) {
+	public function viewport(x:Float, y:Float, w:Float, h:Float) {
 		Log.assert(target != null, 'Graphics: no active target, begin before you set viewport');
-		_g4.viewport(Std.int(rect.x), Std.int(rect.y), Std.int(rect.w), Std.int(rect.h));
+		_g4.viewport(Std.int(x), Std.int(y), Std.int(w), Std.int(h));
 	}
 
-	public function scissor(rect:Rectangle) {
+	public function scissor(x:Float, y:Float, w:Float, h:Float) {
 		Log.assert(target != null, 'Graphics: no active target, begin before you set scissor');
-		_g4.scissor(Std.int(rect.x), Std.int(rect.y), Std.int(rect.w), Std.int(rect.h));
+		_g4.scissor(Std.int(x), Std.int(y), Std.int(w), Std.int(h));
 	}
 
 	public function disableScissor() {
