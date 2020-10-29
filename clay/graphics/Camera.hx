@@ -38,7 +38,7 @@ class Camera {
 		update();
 	}
 
-	public function update() {		
+	public function update() {
 		if (Texture.renderTargetsInvertedY) {
 			projection.orto(0, width, 0, height);
 		} else {
@@ -46,6 +46,7 @@ class Camera {
 		}
 
 		view.setTransform(x+offsetX, y+offsetY, Math.radians(rotation), scaleX*zoom, scaleY*zoom, originX, originY, 0, 0);
+
 		invProjectionView.copyFrom(view);
 		invProjectionView.invert();
 
@@ -54,20 +55,14 @@ class Camera {
 
 	public function screenToWorld(v:Vector2, ?into:Vector2):Vector2 {
 		if(into == null) into = new Vector2();
-		
-		into.copyFrom(v);
 		into.set(view.getTransformX(v.x, v.y), view.getTransformY(v.x, v.y));
-
 		return into;
 	}
 
 	public function worldToScreen(v:Vector2, ?into:Vector2):Vector2 {
 		if(into == null) into = new Vector2();
-		
-		into.copyFrom(v);
 		into.set(invProjectionView.getTransformX(v.x, v.y), invProjectionView.getTransformY(v.x, v.y));
-
 		return into;
 	}
-
+	
 }
