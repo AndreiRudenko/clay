@@ -49,27 +49,27 @@ class Viewport {
 	inline function applyScaledViewport() {
 		var sW:Float = width;
 		var sH:Float = height;
-		// switch (scaleMode) {
-		// 	case ScaleMode.FIT: {
-		// 		var targetRatio = camera.height / camera.width;
-		// 		var sourceRatio = height / width;
-		// 		var scale = targetRatio > sourceRatio ? camera.width / width : camera.height / height;
-		// 		sW = width * scale;
-		// 		sH = height * scale;
-		// 	}
-		// 	case ScaleMode.FILL: {
-		// 		var targetRatio = camera.height / camera.width;
-		// 		var sourceRatio = height / width;
-		// 		var scale = targetRatio < sourceRatio ? camera.width / width : camera.height / height;
-		// 		sW = width * scale;
-		// 		sH = height * scale;
-		// 	}
-		// 	case ScaleMode.STRETCH: {
-		// 		sW = camera.width;
-		// 		sH = camera.height;
-		// 	}
-		// 	default: 
-		// }
+		switch (scaleMode) {
+			case ScaleMode.FIT: {
+				var targetRatio = camera.height / camera.width;
+				var sourceRatio = height / width;
+				var scale = targetRatio > sourceRatio ? camera.width / width : camera.height / height;
+				sW = width * scale;
+				sH = height * scale;
+			}
+			case ScaleMode.FILL: {
+				var targetRatio = camera.height / camera.width;
+				var sourceRatio = height / width;
+				var scale = targetRatio < sourceRatio ? camera.width / width : camera.height / height;
+				sW = width * scale;
+				sH = height * scale;
+			}
+			case ScaleMode.STRETCH: {
+				sW = camera.width;
+				sH = camera.height;
+			}
+			default: 
+		}
 		Clay.graphics.viewport(x, y, sW, sH);
 	}
 	
