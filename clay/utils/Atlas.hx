@@ -2,7 +2,7 @@ package clay.utils;
 
 import clay.Clay;
 import clay.resources.Texture;
-import clay.math.RectangleInt;
+import clay.math.Rectangle;
 import haxe.io.Path;
 
 class Atlas {
@@ -15,24 +15,24 @@ class Atlas {
 		var texture = Clay.resources.texture(p);
 	    var atlas = new Atlas(texture);
 		for (r in data.regions) {
-			atlas.addRegion(r.name, new RectangleInt(r.x, r.y, r.w, r.h));
+			atlas.addRegion(r.name, new Rectangle(r.x, r.y, r.w, r.h));
 		}
 	    return atlas;
 	}
 
 	public var texture:Texture;
-	var regions:Map<String, RectangleInt>;
+	var regions:Map<String, Rectangle>;
 
 	public function new(texture:Texture) {
 		this.texture = texture;
 		this.regions = new Map();
 	}
 
-	public function addRegion(name:String, rect:RectangleInt) {
+	public function addRegion(name:String, rect:Rectangle) {
 		return regions.set(name, rect);
 	}
 
-	public function getRegion(name:String):RectangleInt {
+	public function getRegion(name:String):Rectangle {
 		return regions.get(name);
 	}
 
@@ -42,7 +42,7 @@ class Atlas {
 
 	public function toJson():AtlasData {
 		var regionsData:Array<AtlasRegionData> = [];
-		var rect:RectangleInt;
+		var rect:Rectangle;
 		for (k in regions.keys()) {
 			rect = regions.get(k);
 			regionsData.push(
