@@ -6,14 +6,11 @@ import clay.graphics.VertexBuffer;
 import clay.graphics.IndexBuffer;
 import clay.graphics.Pipeline;
 import clay.graphics.Texture;
-// import clay.graphics.TextureParameters;
 import clay.graphics.Font;
 import clay.graphics.VertexStructure;
 import clay.graphics.Shaders;
 import clay.math.FastMatrix3;
-import clay.math.Rectangle;
 import clay.graphics.Color;
-import clay.utils.DynamicPool;
 import clay.utils.Log;
 
 class Graphics {
@@ -83,10 +80,8 @@ class Graphics {
 			projection.orto(0, Clay.window.width, Clay.window.height, 0);
 		}
 
-		if(pipeline == null) {
-			pipeline = Graphics.pipelineTexturedPremultAlpha;
-		}
-
+		if(pipeline == null) pipeline = Graphics.pipelineTexturedPremultAlpha;
+		
 		setBlitVertices(offsetX, offsetY, src.widthActual * scaleX, src.heightActual * scaleY);
 
 		g.begin();
@@ -113,7 +108,7 @@ class Graphics {
 
 	@:allow(clay.App)
 	static function render(f:Array<Framebuffer>) {
-	    frameBuffer = f[0];
+		frameBuffer = f[0];
 	}
 
 	static function initBuffers() {
@@ -125,37 +120,17 @@ class Graphics {
 		);
 
 		var vertices = vertexBuffer.lock();
-		vertices.set(2, 1);
-		vertices.set(3, 1);
-		vertices.set(4, 1);
-		vertices.set(5, 1);
 
-		vertices.set(6, 0);
-		vertices.set(7, 0);
+		vertices[2] = 1; vertices[3] = 1; vertices[4] = 1; vertices[5] = 1;
+		vertices[10] = 1; vertices[11] = 1; vertices[12] = 1; vertices[13] = 1;
+		vertices[18] = 1; vertices[19] = 1; vertices[20] = 1; vertices[21] = 1;
+		vertices[26] = 1; vertices[27] = 1; vertices[28] = 1; vertices[29] = 1;
 
-		vertices.set(10, 1);
-		vertices.set(11, 1);
-		vertices.set(12, 1);
-		vertices.set(13, 1);
+		vertices[6] = 0; vertices[7] = 0;
+		vertices[14] = 1; vertices[15] = 0;
+		vertices[22] = 1; vertices[23] = 1;
+		vertices[30] = 0; vertices[31] = 1;
 
-		vertices.set(14, 1);
-		vertices.set(15, 0);
-
-		vertices.set(18, 1);
-		vertices.set(19, 1);
-		vertices.set(20, 1);
-		vertices.set(21, 1);
-
-		vertices.set(22, 1);
-		vertices.set(23, 1);
-
-		vertices.set(26, 1);
-		vertices.set(27, 1);
-		vertices.set(28, 1);
-		vertices.set(29, 1);
-
-		vertices.set(30, 0);
-		vertices.set(31, 1);
 		vertexBuffer.unlock();
 
 		indexBuffer = new IndexBuffer(
@@ -175,17 +150,17 @@ class Graphics {
 
 	static function setBlitVertices(x:Float, y:Float, w:Float, h:Float) {		
 		var vertices = vertexBuffer.lock();
-		vertices.set(0, x);
-		vertices.set(1, y);
+		vertices[0] = x;
+		vertices[1] = y;
 
-		vertices.set(8, x + w);
-		vertices.set(9, y);
+		vertices[8] = x + w;
+		vertices[9] = y;
 
-		vertices.set(16, x + w);
-		vertices.set(17, y + h);
+		vertices[16] = x + w;
+		vertices[17] = y + h;
 
-		vertices.set(24, x);
-		vertices.set(25, y + h);
+		vertices[24] = x;
+		vertices[25] = y + h;
 		vertexBuffer.unlock();
 	}
 

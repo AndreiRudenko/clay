@@ -30,7 +30,7 @@ class ScissorStack {
 			var s = scissor;
 			Clay.graphics.scissor(s.x, s.y, s.w, s.h);
 		} else {
-			Log.warning('pop scissor with no scissors left in stack');
+			Log.warning('ScissorStack.popScissor with no scissors left in stack');
 		}
 	}
     
