@@ -1,4 +1,4 @@
-package clay.graphics;
+package clay.utils;
 
 import clay.math.Vector2;
 import clay.graphics.Camera;
@@ -11,20 +11,25 @@ class Viewport {
 	public var camera:Camera;
 	public var scaleMode:ScaleMode;
 
+	var _scaledWidth:Float = 0;
+	var _scaledHeight:Float = 0;
+
 	public function new(camera:Camera, x:Int = 0, y:Int = 0, width:Int = 0, height:Int = 0) {
 		this.camera = camera;
 		this.x = x;
 		this.y = y;
 		this.width = width > 0 ? width : Std.int(camera.width);
 		this.height = height > 0 ? height : Std.int(camera.height);
+		_scaledWidth = this.width;
+		_scaledHeight = this.height;
 		scaleMode = ScaleMode.NONE;
 	}
 
 	public function screenToWorld(v:Vector2, ?into:Vector2):Vector2 {
 		if(into == null) into = new Vector2();
 		
-		into.x = (v.x - x) * (camera.width / width);
-		into.y = (v.y - y) * (camera.height / height);
+		into.x = (v.x - x) * (camera.width / _scaledWidth);
+		into.y = (v.y - y) * (camera.height / _scaledHeight);
 		into.set(camera.view.getTransformX(into.x, into.y), camera.view.getTransformY(into.x, into.y));
 
 		return into;
@@ -35,8 +40,8 @@ class Viewport {
 		
 		into.copyFrom(v);
 		into.set(camera.invProjectionView.getTransformX(into.x, into.y), camera.invProjectionView.getTransformY(into.x, into.y));
-		into.x = (width / camera.width) * into.x + x;
-		into.y = (height / camera.height) * into.y + y;
+		into.x = (_scaledWidth / camera.width) * into.x + x;
+		into.y = (_scaledHeight / camera.height) * into.y + y;
 
 		return into;
 	}
@@ -47,30 +52,30 @@ class Viewport {
 	}
 
 	inline function applyScaledViewport() {
-		var sW:Float = width;
-		var sH:Float = height;
+		_scaledWidth = width;
+		_scaledHeight = height;
 		switch (scaleMode) {
 			case ScaleMode.FIT: {
 				var targetRatio = camera.height / camera.width;
 				var sourceRatio = height / width;
 				var scale = targetRatio > sourceRatio ? camera.width / width : camera.height / height;
-				sW = width * scale;
-				sH = height * scale;
+				_scaledWidth = width * scale;
+				_scaledHeight = height * scale;
 			}
 			case ScaleMode.FILL: {
 				var targetRatio = camera.height / camera.width;
 				var sourceRatio = height / width;
 				var scale = targetRatio < sourceRatio ? camera.width / width : camera.height / height;
-				sW = width * scale;
-				sH = height * scale;
+				_scaledWidth = width * scale;
+				_scaledHeight = height * scale;
 			}
 			case ScaleMode.STRETCH: {
-				sW = camera.width;
-				sH = camera.height;
+				_scaledWidth = camera.width;
+				_scaledHeight = camera.height;
 			}
 			default: 
 		}
-		Clay.graphics.viewport(x, y, sW, sH);
+		Clay.graphics.viewport(x, y, _scaledWidth, _scaledHeight);
 	}
 	
 	inline function setScissor(x:Float, y:Float, w:Float, h:Float) {
