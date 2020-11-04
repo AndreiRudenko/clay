@@ -1,4 +1,4 @@
-package clay.graphics;
+package clay.graphics.render;
 
 
 typedef VertexStructure = kha.graphics4.VertexStructure;

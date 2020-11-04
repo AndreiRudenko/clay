@@ -3,6 +3,8 @@ package clay.graphics;
 import haxe.io.Bytes;
 import clay.resources.Resource;
 import clay.Resources;
+import clay.utils.IdGenerator;
+import clay.utils.Log;
 
 typedef TextureFormat = kha.graphics4.TextureFormat;
 typedef DepthStencilFormat = kha.graphics4.DepthStencilFormat;
@@ -12,6 +14,16 @@ typedef MipMapFilter = kha.graphics4.MipMapFilter;
 typedef TextureAddressing = kha.graphics4.TextureAddressing;
 
 class Texture extends Resource {
+
+	static public var maxTextures:Int = 4096; // TODO: get from sortkey
+	static var ids:IdGenerator = new IdGenerator();
+
+	static function getId():Int {
+		var id = ids.get();
+		Log.assert(id < maxTextures, 'Texture: Cant create more than ${maxTextures} textures');
+		return id;
+	}
+	static inline function putId(id:Int) ids.put(id);
 
 	static public var maxSize(get, never):Int;
 	static inline function get_maxSize() return kha.Image.maxSize;
@@ -56,6 +68,8 @@ class Texture extends Resource {
 	public var image:kha.Image;
 
 	public function new(image:kha.Image, renderTarget:Bool = false) {
+		// can be used for texture sorting, and packing to int
+		this.id = Texture.getId();
 		this.image = image;
 		isRenderTarget = renderTarget;
 		
@@ -81,6 +95,7 @@ class Texture extends Resource {
 	override function unload() {
 		image.unload();
 		image = null;
+		Texture.putId(id);
 	}
 
 	override function memoryUse() {

@@ -1,22 +1,31 @@
-package clay.graphics;
+package clay.graphics.batchers;
 
 import clay.Graphics;
 import clay.graphics.Color;
 import clay.graphics.Texture;
 import clay.graphics.Polygon;
 import clay.graphics.Vertex;
-import clay.graphics.VertexBuffer;
-import clay.graphics.IndexBuffer;
+import clay.graphics.render.VertexBuffer;
+import clay.graphics.render.IndexBuffer;
+import clay.graphics.render.Pipeline;
 import clay.math.FastMatrix3;
 import clay.math.Matrix;
 import clay.utils.Log;
 import clay.utils.Math;
 import clay.utils.Float32Array;
 import clay.utils.Uint32Array;
+import clay.utils.SparseSet;
 
 class PolyBatch {
 
-	public var projection:FastMatrix3 = new FastMatrix3();
+	public var projection(get, set):FastMatrix3;
+	var _projection:FastMatrix3 = new FastMatrix3();
+	inline function get_projection() return _projection;
+	function set_projection(v:FastMatrix3) {
+		if(isDrawing) flush();
+		return _projection = v;
+	}
+	
 	public var transform:FastMatrix3 = new FastMatrix3();
 
 	public var opacity(get, set):Float;
@@ -77,9 +86,12 @@ class PolyBatch {
 
 	var _pipelineAlpha:Pipeline;
 	var _pipelinePremultAlpha:Pipeline;
-	var _pipelineColored:Pipeline;
 
 	var _texture:Texture;
+	var _textureIds:SparseSet;
+	var _textures:haxe.ds.Vector<Texture>;
+	var _texturesUsed:Int = 0;
+
 	var _currentPipeline:Pipeline;
 	var _vertexBuffer:VertexBuffer;
 	var _indexBuffer:IndexBuffer;
@@ -109,9 +121,8 @@ class PolyBatch {
 		_bufferSize = size;
 		_vertsPerGeom = vertsPerGeom;
 
-		_pipelineAlpha = Graphics.pipelineTextured;
-		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlpha;
-		_pipelineColored = Graphics.pipelineColored;
+		_pipelineAlpha = Graphics.pipelineTexturedM;
+		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlphaM;
 
 		_currentPipeline = _pipelinePremultAlpha;
 
@@ -138,10 +149,17 @@ class PolyBatch {
 		_vertices = _vertexBuffer.lock();
 
 		if (Texture.renderTargetsInvertedY) {
-			projection.orto(0, Clay.window.width, 0, Clay.window.height);
+			_projection.orto(0, Clay.window.width, 0, Clay.window.height);
 		} else {
-			projection.orto(0, Clay.window.width, Clay.window.height, 0);
+			_projection.orto(0, Clay.window.width, Clay.window.height, 0);
 		}
+		_textures = new haxe.ds.Vector(Graphics.maxShaderTextures);
+		_textureIds = new SparseSet(Texture.maxTextures);
+	}
+
+	public function dispose() {
+		_vertexBuffer.delete();
+		_indexBuffer.delete();
 	}
 
 	public function begin() {
@@ -165,9 +183,15 @@ class PolyBatch {
 		renderCallsTotal++;
 		if(_vertPos > maxVerticesInBatch) maxVerticesInBatch = _vertPos;
 
-		_currentPipeline.setMatrix3('projectionMatrix', projection);
-		_currentPipeline.setTexture('tex', _texture);
-		_currentPipeline.setTextureParameters('tex', _textureAddressing, _textureAddressing, _textureFilter, _textureFilter, _textureMipFilter);
+		_currentPipeline.setMatrix3('projectionMatrix', _projection);	
+
+		var i:Int = 0;
+		while(i < _textureIds.used) {
+			_currentPipeline.setTexture('tex[$i]', _textures[i]);
+			_currentPipeline.setTextureParameters('tex[$i]', _textureAddressing, _textureAddressing, _textureFilter, _textureFilter, _textureMipFilter);
+			_textures[i] = null;
+			i++;
+		}
 		
 		_graphics.setPipeline(_currentPipeline);
 		_graphics.applyUniforms(_currentPipeline);
@@ -184,13 +208,9 @@ class PolyBatch {
 
 		_graphics.draw(0, _indPos);
 
+		_textureIds.clear();
 		_vertPos = 0;
 		_indPos = 0;
-	}
-
-	public function dispose() {
-		_vertexBuffer.delete();
-		_indexBuffer.delete();
 	}
 
 	public function pushOpacity(opacity:Float) {
@@ -259,29 +279,31 @@ class PolyBatch {
 
 	inline function drawPolyInternal(texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
 		var indCount = _useIndices ? indices.length : _indicesPerGeom;
+		var pipeline = getPipeline(_premultipliedAlpha);
 
 		if(vertices.length >= _maxVertices || indCount >= _maxIndices) {
 			throw('can`t batch geometry with vertices(${vertices.length}/$_maxVertices), indices($indCount/$_maxIndices)');
-		} else if(_vertPos + vertices.length >= _maxVertices || _indPos + indCount >= _maxIndices) {
+		} else if(
+			_vertPos + vertices.length >= _maxVertices || 
+			_indPos + indCount >= _maxIndices ||
+			pipeline != _currentPipeline
+		) {
 			flush();
 		}
 
-		var pipeline = getPipeline(_premultipliedAlpha);
-		if(pipeline != _currentPipeline) {
-			switchPipeline(pipeline);
-		}
+		if(texture != _texture) switchTexture(texture);
+
+		_currentPipeline = pipeline;
 
 		if(regionW == 0 && regionH == 0) {
 			regionW = texture.widthActual;
 			regionH = texture.heightActual;
 		}
 
-		if(texture != _texture) switchTexture(texture);
-		
-		var rsx = regionX / texture.widthActual;
-		var rsy = regionY / texture.heightActual;
-		var rsw = regionW / texture.widthActual;
-		var rsh = regionH / texture.heightActual;
+		final rsx = regionX / texture.widthActual;
+		final rsy = regionY / texture.heightActual;
+		final rsw = regionW / texture.widthActual;
+		final rsh = regionH / texture.heightActual;
 
 		var i:Int = 0;
 		if(_useIndices) {
@@ -292,9 +314,10 @@ class PolyBatch {
 			_indPos += _indicesPerGeom;
 		}
 
-		var vertIdx = _vertPos * Graphics.vertexSize;
-		var m = transform;
-		var opacity = this.opacity;
+		var vertIdx = _vertPos * Graphics.vertexSizeMultiTextured;
+		final m = transform;
+		final opacity = this.opacity;
+		final textureId = _textureIds.getSparse(_texture.id);
 		var v:Vertex;
 
 		i = 0;
@@ -311,6 +334,8 @@ class PolyBatch {
 
 			_vertices[vertIdx++] = v.u * rsw + rsx;
 			_vertices[vertIdx++] = v.v * rsh + rsy;
+			
+			_vertices[vertIdx++] = textureId;
 
 			_vertPos++;
 		}
@@ -341,13 +366,13 @@ class PolyBatch {
 		return _pipeline != null ? _pipeline : (premultAlpha ? _pipelinePremultAlpha : _pipelineAlpha);		
 	}
 
-	inline function switchPipeline(pipeline:Pipeline) {
-		flush();
-		_currentPipeline = pipeline;
-	}
-
 	inline function switchTexture(texture:Texture) {
-		flush();
+		if(_textureIds.used >= Graphics.maxShaderTextures) flush();
+
+		if(!_textureIds.has(texture.id)) {
+			_textures[_textureIds.used] = texture;
+			_textureIds.insert(texture.id);
+		}
 		_texture = texture;
 		_invTexWidth = 1 / _texture.widthActual;
 		_invTexHeight = 1 / _texture.heightActual;

@@ -1,4 +1,4 @@
-package clay.graphics;
+package clay.graphics.slice;
 
 import clay.graphics.Texture;
 import clay.graphics.Vertex;
@@ -19,10 +19,8 @@ class NineSlice extends Polygon {
 	var _width:Float;
 	inline function get_width() return _width;
 	function set_width(v:Float):Float {
-		if(_width != v) {
-			_width = v;
-			updateWidth();
-		}
+		_width = v;
+		updateWidth();
 		return _width;
 	}
 
@@ -30,10 +28,8 @@ class NineSlice extends Polygon {
 	var _height:Float;
 	inline function get_height() return _height;
 	function set_height(v:Float):Float {
-		if(_height != v) {
-			_height = v;
-			updateHeight();
-		}
+		_height = v;
+		updateHeight();
 		return _height;
 	}
 

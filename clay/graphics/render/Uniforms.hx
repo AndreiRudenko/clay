@@ -1,4 +1,4 @@
-package clay.graphics;
+package clay.graphics.render;
 
 import kha.graphics4.ConstantLocation;
 import kha.graphics4.TextureUnit;

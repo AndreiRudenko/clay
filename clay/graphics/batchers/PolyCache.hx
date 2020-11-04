@@ -1,12 +1,13 @@
-package clay.graphics;
+package clay.graphics.batchers;
 
 import clay.Graphics;
 import clay.graphics.Color;
 import clay.graphics.Texture;
 import clay.graphics.Polygon;
 import clay.graphics.Vertex;
-import clay.graphics.VertexBuffer;
-import clay.graphics.IndexBuffer;
+import clay.graphics.render.VertexBuffer;
+import clay.graphics.render.IndexBuffer;
+import clay.graphics.render.Pipeline;
 import clay.math.FastMatrix3;
 import clay.math.Matrix;
 import clay.utils.Log;
@@ -92,6 +93,11 @@ class PolyCache {
 		}
 	}
 
+	public function dispose() {
+		_vertexBuffer.delete();
+		_indexBuffer.delete();
+	}
+	
 	public function beginCache(cacheID:Int = -1) {
 		Log.assert(!isDrawing, 'PolyCache.end must be called before beginCache');
 		Log.assert(_currentCache == null, 'PolyCache.endCache must be called before begin');
@@ -331,7 +337,7 @@ class PolyCache {
 		_currentCache.usedI = indPos;
 
 
-		var vertIdx = vertPos * Graphics.vertexSize;
+		var vertIdx = vertPos * Graphics.vertexSizeTextured;
 		var m = transform;
 		var opacity = this.opacity;
 		var v:Vertex;

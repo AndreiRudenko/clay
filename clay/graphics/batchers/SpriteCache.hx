@@ -1,4 +1,4 @@
-package clay.graphics;
+package clay.graphics.batchers;
 
 import kha.Kravur;
 import clay.Graphics;
@@ -6,8 +6,9 @@ import clay.graphics.Color;
 import clay.graphics.Texture;
 import clay.graphics.Font;
 import clay.graphics.Vertex;
-import clay.graphics.VertexBuffer;
-import clay.graphics.IndexBuffer;
+import clay.graphics.render.VertexBuffer;
+import clay.graphics.render.IndexBuffer;
+import clay.graphics.render.Pipeline;
 import clay.math.FastMatrix3;
 import clay.math.Matrix;
 import clay.utils.FastFloat;
@@ -380,7 +381,7 @@ class SpriteCache {
 		v3x:FastFloat, v3y:FastFloat, v3c:Color, v3u:FastFloat, v3v:FastFloat,
 		v4x:FastFloat, v4y:FastFloat, v4c:Color, v4u:FastFloat, v4v:FastFloat
 	) {
-		var idx = (_currentCache.offset + _currentCache.used) * Graphics.vertexSize * 4;
+		var idx = (_currentCache.offset + _currentCache.used) * Graphics.vertexSizeTextured * 4;
 		var opacity = this.opacity;
 
 		_vertices[idx+0] = v1x;

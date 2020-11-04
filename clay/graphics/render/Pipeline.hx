@@ -1,4 +1,4 @@
-package clay.graphics;
+package clay.graphics.render;
 
 
 import kha.graphics4.Graphics;
@@ -15,33 +15,66 @@ import kha.arrays.Float32Array;
 
 import clay.graphics.Texture;
 import clay.graphics.Video;
-import clay.graphics.VertexBuffer;
-import clay.graphics.VertexStructure;
-import clay.graphics.Uniforms;
+import clay.graphics.render.VertexBuffer;
+import clay.graphics.render.VertexStructure;
+import clay.graphics.render.Uniforms;
+import clay.utils.IdGenerator;
 
 typedef BlendFactor = kha.graphics4.BlendingFactor;
 typedef BlendOperation = kha.graphics4.BlendingOperation;
+typedef CompareMode = kha.graphics4.CompareMode;
 
 class Pipeline {
 
-	static var ID:Int = 0;
+	static var ids:IdGenerator = new IdGenerator();
 
-	public var id(default,null):Int;
-	public var uniforms(default,null):Uniforms;
+	public var id(default, null):Int;
+	public var uniforms(default, null):Uniforms;
+
 	public var inputLayout(get, never):Array<VertexStructure>;
-	public var vertexShader(default, null):VertexShader;
-	public var fragmentShader(default, null):FragmentShader;
+	inline function get_inputLayout() return _pipeline.inputLayout;
+
+	public var vertexShader(get, never):VertexShader;
+	inline function get_vertexShader() return _pipeline.vertexShader;
+
+	public var fragmentShader(get, never):FragmentShader;
+	inline function get_fragmentShader() return _pipeline.fragmentShader;
+
+	public var depthWrite(get, set):Bool;
+	inline function get_depthWrite() return _pipeline.depthWrite;
+	inline function set_depthWrite(v:Bool) return _pipeline.depthWrite = v;
+
+	public var depthMode(get, set):CompareMode;
+	inline function get_depthMode() return _pipeline.depthMode;
+	inline function set_depthMode(v:CompareMode) return _pipeline.depthMode = v;
+
+	public var colorWriteMask(never, set):Bool;
+	inline function set_colorWriteMask(v:Bool) return _pipeline.colorWriteMask = v;
+
+	public var colorWriteMaskRed(get, set):Bool;
+	inline function get_colorWriteMaskRed() return _pipeline.colorWriteMaskRed;
+	inline function set_colorWriteMaskRed(v:Bool) return _pipeline.colorWriteMaskRed = v;
+	
+	public var colorWriteMaskGreen(get, set):Bool;
+	inline function get_colorWriteMaskGreen() return _pipeline.colorWriteMaskGreen;
+	inline function set_colorWriteMaskGreen(v:Bool) return _pipeline.colorWriteMaskGreen = v;
+	
+	public var colorWriteMaskBlue(get, set):Bool;
+	inline function get_colorWriteMaskBlue() return _pipeline.colorWriteMaskBlue;
+	inline function set_colorWriteMaskBlue(v:Bool) return _pipeline.colorWriteMaskBlue = v;
+	
+	public var colorWriteMaskAlpha(get, set):Bool;
+	inline function get_colorWriteMaskAlpha() return _pipeline.colorWriteMaskAlpha;
+	inline function set_colorWriteMaskAlpha(v:Bool) return _pipeline.colorWriteMaskAlpha = v;
+
 	var _pipeline:PipelineState;
 	var _textureParameters:TextureParameters;
 
 	public function new(inputLayout:Array<VertexStructure>, vertexShader:VertexShader, fragmentShader:FragmentShader) {
-		id = Pipeline.ID++; // TODO: use smart generated ids
+		id = Pipeline.ids.get();
 
 		_pipeline = new PipelineState();
 		_textureParameters = new TextureParameters();
-
-		this.vertexShader = vertexShader;
-		this.fragmentShader = fragmentShader;
 
 		_pipeline.inputLayout = inputLayout;
 		_pipeline.vertexShader = vertexShader;
@@ -117,14 +150,11 @@ class Pipeline {
 		_pipeline.compile();
 	}
 
-	public function destroy() {
+	public function dispose() {
 		_pipeline.delete();
 		uniforms = null;
 		_pipeline = null;
-	}
-
-	function get_inputLayout() {
-		return _pipeline.inputLayout;
+		Pipeline.ids.put(id);
 	}
 
 }

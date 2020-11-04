@@ -2,25 +2,32 @@ package clay;
 
 import kha.Framebuffer;
 import clay.Clay;
-import clay.graphics.VertexBuffer;
-import clay.graphics.IndexBuffer;
-import clay.graphics.Pipeline;
 import clay.graphics.Texture;
 import clay.graphics.Font;
-import clay.graphics.VertexStructure;
-import clay.graphics.Shaders;
-import clay.math.FastMatrix3;
 import clay.graphics.Color;
+import clay.graphics.render.VertexBuffer;
+import clay.graphics.render.IndexBuffer;
+import clay.graphics.render.Pipeline;
+import clay.graphics.render.VertexStructure;
+import clay.graphics.render.Shaders;
+import clay.math.FastMatrix3;
 import clay.utils.Log;
 
 class Graphics {
 
 	static public var fontDefault:Font;
 
-	static public inline var vertexSize:Int = 8;
+	// hardcoded for now, TODO: get from project settings
+	static public inline var maxShaderTextures:Int = 8; 
+
+	static public inline var vertexSizeMultiTextured:Int = 9;
+	static public inline var vertexSizeTextured:Int = 8;
+	static public inline var vertexSizeColored:Int = 6;
 
 	static public var pipelineTextured:Pipeline;
 	static public var pipelineTexturedPremultAlpha:Pipeline;
+	static public var pipelineTexturedM:Pipeline;
+	static public var pipelineTexturedPremultAlphaM:Pipeline;
 	static public var pipelineColored:Pipeline;
 
 	static var frameBuffer:Framebuffer;
@@ -35,14 +42,31 @@ class Graphics {
 		structure.add("texPosition", VertexData.Float2);
 
 		// textured
-		pipelineTexturedPremultAlpha = new Pipeline([structure], Shaders.textured_vert, Shaders.textured_frag);
+		pipelineTexturedPremultAlpha = new Pipeline([structure], Shaders.textured_vert, Shaders.texturedpremult_frag);
 		pipelineTexturedPremultAlpha.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
 		pipelineTexturedPremultAlpha.compile();
 
 		// text
-		pipelineTextured = new Pipeline([structure], Shaders.textured_vert, Shaders.text_frag);
+		pipelineTextured = new Pipeline([structure], Shaders.textured_vert, Shaders.textured_frag);
 		pipelineTextured.setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
 		pipelineTextured.compile();
+
+		// multi texture
+		structure = new VertexStructure();
+		structure.add("vertexPosition", VertexData.Float2);
+		structure.add("vertexColor", VertexData.Float4);
+		structure.add("texPosition", VertexData.Float2);
+		structure.add("texId", VertexData.Float1);
+
+		// textured
+		pipelineTexturedPremultAlphaM = new Pipeline([structure], Shaders.multitexture_vert, Shaders.multitexturepremult_frag);
+		pipelineTexturedPremultAlphaM.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
+		pipelineTexturedPremultAlphaM.compile();
+		
+		// text
+		pipelineTexturedM = new Pipeline([structure], Shaders.multitexture_vert, Shaders.multitexture_frag);
+		pipelineTexturedM.setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
+		pipelineTexturedM.compile();
 
 		// colored
 		structure = new VertexStructure();
