@@ -14,6 +14,7 @@ import clay.utils.Log;
 import clay.utils.Math;
 import clay.utils.Float32Array;
 import clay.utils.Uint32Array;
+import clay.utils.SparseSet;
 using clay.utils.ArrayTools;
 
 class PolyCache {
@@ -62,8 +63,7 @@ class PolyCache {
 	var _verticesMax:Int = 0;
 	var _indicesMax:Int = 0;
 
-	var _invTexWidth:Float = 0;
-	var _invTexHeight:Float = 0;
+	var _textureIds:SparseSet;
 
 	var _graphics:Graphics;
 
@@ -72,8 +72,8 @@ class PolyCache {
 		_verticesMax = verticesMax;
 		_indicesMax = indicesMax;
 
-		_pipelineAlpha = Graphics.pipelineTextured;
-		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlpha;
+		_pipelineAlpha = Graphics.pipelineTexturedM;
+		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlphaM;
 
 		_drawMatrix = new FastMatrix3();
 
@@ -91,6 +91,7 @@ class PolyCache {
 		} else {
 			projection.orto(0, Clay.window.width, Clay.window.height, 0);
 		}
+		_textureIds = new SparseSet(Texture.maxTextures);
 	}
 
 	public function dispose() {
@@ -125,10 +126,7 @@ class PolyCache {
 			_currentCache = _caches[cacheID];
 			Log.assert(_currentCache != null, 'PolyCache.beginCache can`t find cache ${cacheID} to redefine it');
 
-			_currentCache.textures.clear();
-			_currentCache.countsI.clear();
-			_currentCache.usedV = 0;
-			_currentCache.usedI = 0;
+			_currentCache.reset();
 			if (cacheID == _caches.length - 1) {
 				_currentCache.sizeV = _verticesMax - _currentCache.offsetV;
 				_currentCache.sizeI = _indicesMax - _currentCache.offsetI;
@@ -145,14 +143,13 @@ class PolyCache {
 		}
 		var id = _currentCache.id;
 		_currentCache = null;
+		_textureIds.clear();
 		return id;
 	}
 
 	public function clearCache(cacheID:Int) {
 		Log.assert(!isDrawing, 'PolyCache.end must be called before clearCache');
 		var cache = _caches[cacheID];
-		cache.textures.clear();
-		cache.countsI.clear();
 		var start = cache.offsetV;
 		var end = start + cache.sizeV;
 		while(start < end) {
@@ -163,6 +160,7 @@ class PolyCache {
 		while(start < end) {
 			_indices[start++] = 0;
 		}
+		cache.reset();
 	}
 
 	public function begin() {
@@ -190,34 +188,31 @@ class PolyCache {
 
 	public function draw(cacheID:Int) {
 		Log.assert(isDrawing, 'PolyCache.begin must be called before draw');
-		var cache = _caches[cacheID];
-		if(cache.textures.length == 0) {
-			Log.warning('Nothing to draw in cache:${cacheID}');
-			return;
-		}
 
-		var textures = cache.textures;
-		var countsI = cache.countsI;
-		var offsetI = cache.offsetI;
-
-		var countI:Int;
-
-		var currentPipeline = getPipeline();
+		final commands = _caches[cacheID].commands;
+		final currentPipeline = getPipeline();
 
 		_graphics.setPipeline(currentPipeline);
 		currentPipeline.setMatrix3('projectionMatrix', projection);
 
+		var cmd:DrawCommand;
 		var i:Int = 0;
-		while(i < textures.length) {
-			countI = countsI[i];
-			currentPipeline.setTexture('tex', textures[i]);
-			currentPipeline.setTextureParameters('tex', textureAddressing, textureAddressing, textureFilter, textureFilter, textureMipFilter);
-
-			_graphics.applyUniforms(currentPipeline);
-			_graphics.draw(offsetI, countI);
-
-			offsetI += countI;
-			renderCalls++;
+		var tIdx:Int = 0;
+		while(i < commands.length) {
+			cmd = commands[i];
+			if(cmd.texturesUsed > 0) {
+				tIdx = 0;
+				while(tIdx < cmd.texturesUsed) {
+					currentPipeline.setTexture('tex[$tIdx]', cmd.textures[tIdx]);
+					currentPipeline.setTextureParameters('tex[$tIdx]', textureAddressing, textureAddressing, textureFilter, textureFilter, textureMipFilter);
+					tIdx++;
+				}
+				_graphics.applyUniforms(currentPipeline);
+				_graphics.draw(cmd.offset, cmd.count);
+				renderCalls++;
+			} else {
+				Log.warning('Nothing to draw in cache:${cacheID}, with command: ${i}');
+			}
 			i++;
 		}
 	}
@@ -239,7 +234,7 @@ class PolyCache {
 		}
 	}
 
-	public function add(
+	public function addPolygon(
 		polygon:Polygon, 
 		x:Float = 0, y:Float = 0, 
 		scaleX:Float = 1, scaleY:Float = 1, 
@@ -257,7 +252,7 @@ class PolyCache {
 		}
 	}
 
-	public function addT(
+	public function addPolygonT(
 		polygon:Polygon, 
 		transform:Matrix,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
@@ -271,7 +266,7 @@ class PolyCache {
 		}
 	}
 
-	public function addV(
+	public function addVertices(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
@@ -291,7 +286,7 @@ class PolyCache {
 		}
 	}
 
-	public function addVT(
+	public function addVerticesT(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
@@ -308,13 +303,23 @@ class PolyCache {
 	}
 
 	inline function addPolyInternal(texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
-		var lastIndex = _currentCache.textures.length - 1;
+		var lastCommand = _currentCache.getLastCommand();
+		var lastTextureIndex = lastCommand.texturesUsed-1;
 
-		if(lastIndex < 0 || texture != _currentCache.textures[lastIndex]) {
-			_currentCache.textures.push(texture);
-			_currentCache.countsI.push(indices.length);
-		} else {
-			_currentCache.countsI[lastIndex] = _currentCache.countsI[lastIndex] + indices.length;
+		if(lastTextureIndex < 0 || texture != lastCommand.textures[lastTextureIndex]) {
+			if(lastCommand.texturesUsed >= Graphics.maxShaderTextures) {
+				final cmd = new DrawCommand();
+				cmd.offset = lastCommand.offset + lastCommand.count;
+				lastCommand = cmd;
+				_currentCache.commands.push(cmd);
+				_textureIds.clear();
+			}
+
+			if(!_textureIds.has(texture.id)) {
+				lastCommand.textures[lastCommand.texturesUsed] = texture;
+				lastCommand.texturesUsed++;
+				_textureIds.insert(texture.id);
+			}
 		}
 
 		if(regionW == 0 && regionH == 0) {
@@ -329,17 +334,19 @@ class PolyCache {
 
 		var vertPos = _currentCache.usedV;
 		var indPos = _currentCache.usedI;
+		// var indPos = lastCommand.offset + lastCommand.count;
 
 		var i:Int = 0;
 		while(i < indices.length) {
 			_indices[indPos++] = vertPos + indices[i++];
 		}
 		_currentCache.usedI = indPos;
+		lastCommand.count += indices.length;
 
-
-		var vertIdx = vertPos * Graphics.vertexSizeTextured;
-		var m = transform;
-		var opacity = this.opacity;
+		final m = transform;
+		final textureId = _textureIds.getSparse(texture.id);
+		final opacity = this.opacity;
+		var vertIdx = vertPos * Graphics.vertexSizeMultiTextured;
 		var v:Vertex;
 
 		i = 0;
@@ -357,6 +364,8 @@ class PolyCache {
 			_vertices[vertIdx++] = v.u * rsw + rsx;
 			_vertices[vertIdx++] = v.v * rsh + rsy;
 
+			_vertices[vertIdx++] = textureId;
+
 			vertPos++;
 		}
 		_currentCache.usedV = vertPos;
@@ -372,7 +381,7 @@ private class Cache {
 
 	public var id:Int;
 
-	public var textures:Array<Texture>;
+	public var commands:Array<DrawCommand>;
 
 	public var offsetV:Int;
 	public var offsetI:Int;
@@ -383,16 +392,56 @@ private class Cache {
 	public var usedV:Int = 0;
 	public var usedI:Int = 0;
 
-	public var countsI:Array<Int>;
-
 	public function new(id:Int, offsetV:Int, sizeV:Int, offsetI:Int, sizeI:Int) {
+		commands = [];
 		this.id = id;
 		this.offsetV = offsetV;
 		this.sizeV = sizeV;
 		this.offsetI = offsetI;
 		this.sizeI = sizeI;
-		textures = [];
-		countsI = [];
+
+		var cmd = new DrawCommand();
+		cmd.offset = offsetI;
+		commands.push(cmd);
+	}
+
+	public function reset() {
+		while(commands.length > 1) {
+			commands.pop();
+		}
+
+		final cmd = commands[0];
+		cmd.clear();
+		cmd.offset = offsetI;
+
+		usedV = 0;
+		usedI = 0;
+	}
+
+	public inline function getLastCommand():DrawCommand {
+		return commands[commands.length-1];
+	}
+
+}
+
+private class DrawCommand {
+
+	public var textures:haxe.ds.Vector<Texture>;
+	public var texturesUsed:Int = 0;
+	public var offset:Int = 0;
+	public var count:Int = 0;
+
+	public function new() {
+		textures = new haxe.ds.Vector(Graphics.maxShaderTextures);
+	}
+
+	public function clear() {
+		while(texturesUsed > 0) {
+			texturesUsed--;
+			textures[texturesUsed] = null;
+		}
+		offset = 0;
+		count = 0;
 	}
 
 }
