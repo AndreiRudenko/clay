@@ -18,7 +18,7 @@ class Graphics {
 	static public var fontDefault:Font;
 
 	// hardcoded for now, TODO: get from project settings
-	static public inline var maxShaderTextures:Int = 8; 
+	static public inline var maxShaderTextures:Int = 16; 
 
 	static public inline var vertexSizeMultiTextured:Int = 9;
 	static public inline var vertexSizeTextured:Int = 8;
@@ -59,12 +59,12 @@ class Graphics {
 		structure.add("texId", VertexData.Float1);
 
 		// textured
-		pipelineTexturedPremultAlphaM = new Pipeline([structure], Shaders.multitexture_vert, Shaders.multitexturepremult_frag);
+		pipelineTexturedPremultAlphaM = new Pipeline([structure], Shaders.multitexture_vert, Shaders.multitexturepremult16_frag);
 		pipelineTexturedPremultAlphaM.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
 		pipelineTexturedPremultAlphaM.compile();
-		
+
 		// text
-		pipelineTexturedM = new Pipeline([structure], Shaders.multitexture_vert, Shaders.multitexture_frag);
+		pipelineTexturedM = new Pipeline([structure], Shaders.multitexture_vert, Shaders.multitexture16_frag);
 		pipelineTexturedM.setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
 		pipelineTexturedM.compile();
 
