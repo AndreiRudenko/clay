@@ -17,7 +17,7 @@ import clay.utils.Uint32Array;
 import clay.utils.SparseSet;
 using clay.utils.ArrayTools;
 
-class PolyCache {
+class PolygonCache {
 
 	public var projection:FastMatrix3 = new FastMatrix3();
 	public var transform:FastMatrix3 = new FastMatrix3();
@@ -100,8 +100,8 @@ class PolyCache {
 	}
 	
 	public function beginCache(cacheID:Int = -1) {
-		Log.assert(!isDrawing, 'PolyCache.end must be called before beginCache');
-		Log.assert(_currentCache == null, 'PolyCache.endCache must be called before begin');
+		Log.assert(!isDrawing, 'PolygonCache.end must be called before beginCache');
+		Log.assert(_currentCache == null, 'PolygonCache.endCache must be called before begin');
 		if(cacheID < 0) {
 			var offsetV:Int = 0;
 			var offsetI:Int = 0;
@@ -124,7 +124,7 @@ class PolyCache {
 			}
 		} else {
 			_currentCache = _caches[cacheID];
-			Log.assert(_currentCache != null, 'PolyCache.beginCache can`t find cache ${cacheID} to redefine it');
+			Log.assert(_currentCache != null, 'PolygonCache.beginCache can`t find cache ${cacheID} to redefine it');
 
 			_currentCache.reset();
 			if (cacheID == _caches.length - 1) {
@@ -135,8 +135,8 @@ class PolyCache {
 	}
 
 	public function endCache():Int {
-		Log.assert(!isDrawing, 'PolyCache.end must be called before beginCache');
-		Log.assert(_currentCache != null, 'PolyCache.beginCache must be called before endCache');
+		Log.assert(!isDrawing, 'PolygonCache.end must be called before beginCache');
+		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before endCache');
 		if(_currentCache == _caches[_caches.length-1]) {
 			_currentCache.sizeV = _currentCache.usedV;
 			_currentCache.sizeI = _currentCache.usedI;
@@ -148,7 +148,7 @@ class PolyCache {
 	}
 
 	public function clearCache(cacheID:Int) {
-		Log.assert(!isDrawing, 'PolyCache.end must be called before clearCache');
+		Log.assert(!isDrawing, 'PolygonCache.end must be called before clearCache');
 		var cache = _caches[cacheID];
 		var start = cache.offsetV;
 		var end = start + cache.sizeV;
@@ -164,8 +164,8 @@ class PolyCache {
 	}
 
 	public function begin() {
-		Log.assert(!isDrawing, 'PolyCache.end must be called before begin');
-		Log.assert(_currentCache == null, 'PolyCache.endCache must be called before begin');
+		Log.assert(!isDrawing, 'PolygonCache.end must be called before begin');
+		Log.assert(_currentCache == null, 'PolygonCache.endCache must be called before begin');
 		isDrawing = true;
 		renderCalls = 0;
 		if(_caches.length > 0) {
@@ -178,7 +178,7 @@ class PolyCache {
 	}
 
 	public function end() {
-		Log.assert(isDrawing, 'PolyCache.begin must be called before end');
+		Log.assert(isDrawing, 'PolygonCache.begin must be called before end');
 		isDrawing = false;
 		if(_caches.length > 0) {
 			_vertices = _vertexBuffer.lock();
@@ -187,7 +187,7 @@ class PolyCache {
 	}
 
 	public function draw(cacheID:Int) {
-		Log.assert(isDrawing, 'PolyCache.begin must be called before draw');
+		Log.assert(isDrawing, 'PolygonCache.begin must be called before draw');
 
 		final commands = _caches[cacheID].commands;
 		final currentPipeline = getPipeline();
@@ -243,12 +243,12 @@ class PolyCache {
 		skewX:Float = 0, skewY:Float = 0, 
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
-		Log.assert(_currentCache != null, 'PolyCache.beginCache must be called before add');
+		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before add');
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
 			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
-			addPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
+			addPolygonInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}
 
@@ -257,12 +257,12 @@ class PolyCache {
 		transform:Matrix,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
-		Log.assert(_currentCache != null, 'PolyCache.beginCache must be called before add');
+		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before add');
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
 			_drawMatrix.fromMatrix(transform).append(this.transform);
-			addPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
+			addPolygonInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}
 
@@ -277,12 +277,12 @@ class PolyCache {
 		skewX:Float = 0, skewY:Float = 0, 
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
-		Log.assert(_currentCache != null, 'PolyCache.beginCache must be called before add');
+		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before add');
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
 			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
-			addPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
+			addPolygonInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}
 
@@ -293,16 +293,16 @@ class PolyCache {
 		transform:Matrix,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
-		Log.assert(_currentCache != null, 'PolyCache.beginCache must be called before add');
+		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before add');
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
 			_drawMatrix.fromMatrix(transform).append(this.transform);
-			addPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
+			addPolygonInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
 		}
 	}
 
-	inline function addPolyInternal(texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
+	inline function addPolygonInternal(texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
 		var lastCommand = _currentCache.getLastCommand();
 		var lastTextureIndex = lastCommand.texturesUsed-1;
 
