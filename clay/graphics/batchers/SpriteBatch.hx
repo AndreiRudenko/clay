@@ -97,7 +97,6 @@ class SpriteBatch {
 	var _texture:Texture;
 	var _textureIds:SparseSet;
 	var _textures:haxe.ds.Vector<Texture>;
-	var _texturesUsed:Int = 0;
 
 	var _currentPipeline:Pipeline;
 	var _vertices:Float32Array;
@@ -246,7 +245,7 @@ class SpriteBatch {
 		drawImageInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 	}
 
-	public function drawImageV(
+	public function drawVertices(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		x:Float = 0, y:Float = 0, 
@@ -261,7 +260,7 @@ class SpriteBatch {
 		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
-	public function drawImageVT(
+	public function drawVerticesT(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		transform:Matrix,

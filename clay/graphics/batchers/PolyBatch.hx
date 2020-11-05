@@ -90,7 +90,6 @@ class PolyBatch {
 	var _texture:Texture;
 	var _textureIds:SparseSet;
 	var _textures:haxe.ds.Vector<Texture>;
-	var _texturesUsed:Int = 0;
 
 	var _currentPipeline:Pipeline;
 	var _vertexBuffer:VertexBuffer;
@@ -249,7 +248,7 @@ class PolyBatch {
 		drawPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
-	public function drawPolyV(
+	public function drawVertices(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
@@ -265,7 +264,7 @@ class PolyBatch {
 		drawPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
-	public function drawPolyVT(
+	public function drawVerticesT(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
@@ -334,7 +333,7 @@ class PolyBatch {
 
 			_vertices[vertIdx++] = v.u * rsw + rsx;
 			_vertices[vertIdx++] = v.v * rsh + rsy;
-			
+
 			_vertices[vertIdx++] = textureId;
 
 			_vertPos++;
