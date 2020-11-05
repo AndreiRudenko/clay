@@ -224,7 +224,7 @@ class PolyBatch {
 		}
 	}
 
-	public function drawPoly(
+	public function drawPolygon(
 		polygon:Polygon, 
 		x:Float = 0, y:Float = 0, 
 		scaleX:Float = 1, scaleY:Float = 1, 
@@ -238,7 +238,7 @@ class PolyBatch {
 		drawPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
-	public function drawPolyT(
+	public function drawPolygonT(
 		polygon:Polygon, 
 		transform:Matrix,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
