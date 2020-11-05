@@ -15,7 +15,7 @@ import clay.utils.FastFloat;
 import clay.utils.Log;
 import clay.utils.Math;
 import clay.utils.Float32Array;
-
+import clay.utils.SparseSet;
 using clay.utils.ArrayTools;
 
 class SpriteCache {
@@ -64,8 +64,7 @@ class SpriteCache {
 
 	var _bufferSize:Int = 0;
 
-	var _invTexWidth:Float = 0;
-	var _invTexHeight:Float = 0;
+	var _textureIds:SparseSet;
 
 	var _graphics:Graphics;
 
@@ -73,8 +72,8 @@ class SpriteCache {
 		_graphics = Clay.graphics;
 		_bufferSize = size;
 
-		_pipelineAlpha = Graphics.pipelineTextured;
-		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlpha;
+		_pipelineAlpha = Graphics.pipelineTexturedM;
+		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlphaM;
 
 		_drawMatrix = new FastMatrix3();
 
@@ -101,6 +100,7 @@ class SpriteCache {
 		} else {
 			projection.orto(0, Clay.window.width, Clay.window.height, 0);
 		}
+		_textureIds = new SparseSet(Texture.maxTextures);
 	}
 
 	public function beginCache(cacheID:Int = -1) {
@@ -126,9 +126,7 @@ class SpriteCache {
 			_currentCache = _caches[cacheID];
 			Log.assert(_currentCache != null, 'SpriteCache.beginCache can`t find cache ${cacheID} to redefine it');
 
-			_currentCache.textures.clear();
-			_currentCache.counts.clear();
-			_currentCache.used = 0;
+			_currentCache.reset();
 			if (cacheID == _caches.length - 1) _currentCache.size = _bufferSize - _currentCache.offset;
 		}
 	}
@@ -139,19 +137,19 @@ class SpriteCache {
 		if(_currentCache == _caches[_caches.length-1]) _currentCache.size = _currentCache.used;
 		var id = _currentCache.id;
 		_currentCache = null;
+		_textureIds.clear();
 		return id;
 	}
 
 	public function clearCache(cacheID:Int) {
 		Log.assert(!isDrawing, 'SpriteCache.end must be called before clearCache');
 		var cache = _caches[cacheID];
-		cache.textures.clear();
-		cache.counts.clear();
 		var start = cache.offset;
 		var end = start + cache.size;
 		while(start < end) {
 			_vertices[start++] = 0;
 		}
+		cache.reset();
 	}
 
 	public function begin() {
@@ -176,35 +174,32 @@ class SpriteCache {
 	}
 
 	public function draw(cacheID:Int) {
-		Log.assert(isDrawing, 'SpriteCache.begin must be called before draw');
-		var cache = _caches[cacheID];
-		if(cache.textures.length == 0) {
-			Log.warning('Nothing to draw in cache:${cacheID}');
-			return;
-		}
+		Log.assert(isDrawing, 'PolyCache.begin must be called before draw');
 
-		var textures = cache.textures;
-		var counts = cache.counts;
-		var offset = cache.offset;
-
-		var count:Int;
-
-		var currentPipeline = getPipeline();
+		final commands = _caches[cacheID].commands;
+		final currentPipeline = getPipeline();
 
 		_graphics.setPipeline(currentPipeline);
 		currentPipeline.setMatrix3('projectionMatrix', projection);
 
+		var cmd:DrawCommand;
 		var i:Int = 0;
-		while(i < textures.length) {
-			count = counts[i];
-			currentPipeline.setTexture('tex', textures[i]);
-			currentPipeline.setTextureParameters('tex', textureAddressing, textureAddressing, textureFilter, textureFilter, textureMipFilter);
-
-			_graphics.applyUniforms(currentPipeline);
-			_graphics.draw(offset * 6, count * 6);
-
-			offset += count;
-			renderCalls++;
+		var tIdx:Int = 0;
+		while(i < commands.length) {
+			cmd = commands[i];
+			if(cmd.texturesUsed > 0) {
+				tIdx = 0;
+				while(tIdx < cmd.texturesUsed) {
+					currentPipeline.setTexture('tex[$tIdx]', cmd.textures[tIdx]);
+					currentPipeline.setTextureParameters('tex[$tIdx]', textureAddressing, textureAddressing, textureFilter, textureFilter, textureMipFilter);
+					tIdx++;
+				}
+				_graphics.applyUniforms(currentPipeline);
+				_graphics.draw(cmd.offset, cmd.count);
+				renderCalls++;
+			} else {
+				Log.warning('Nothing to draw in cache:${cacheID}, with command: ${i}');
+			}
 			i++;
 		}
 	}
@@ -226,7 +221,7 @@ class SpriteCache {
 		}
 	}
 
-	public function add(
+	public function addImage(
 		texture:Texture, 
 		x:Float = 0, y:Float = 0, 
 		width:Float = 0, height:Float = 0, 
@@ -244,7 +239,7 @@ class SpriteCache {
 		}
 	}
 
-	public function addT(
+	public function addImageT(
 		texture:Texture, 
 		transform:Matrix,
 		width:Float = 0, height:Float = 0, 
@@ -259,7 +254,7 @@ class SpriteCache {
 		}
 	}
 
-	public function addV(
+	public function addVertices(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		x:Float = 0, y:Float = 0, 
@@ -278,7 +273,7 @@ class SpriteCache {
 		}
 	}
 
-	public function addVT(
+	public function addVerticesT(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		transform:Matrix,
@@ -294,13 +289,23 @@ class SpriteCache {
 	}
 
 	inline function addInternal(texture:Texture, transform:FastMatrix3, width:Float, height:Float, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
-		var lastIndex = _currentCache.textures.length - 1;
+		var lastCommand = _currentCache.getLastCommand();
+		final lastTextureIndex = lastCommand.texturesUsed-1;
 
-		if(lastIndex < 0 || texture != _currentCache.textures[lastIndex]) {
-			_currentCache.textures.push(texture);
-			_currentCache.counts.push(1);
-		} else {
-			_currentCache.counts[lastIndex] = _currentCache.counts[lastIndex] + 1;
+		if(lastTextureIndex < 0 || texture != lastCommand.textures[lastTextureIndex]) {
+			if(lastCommand.texturesUsed >= Graphics.maxShaderTextures) {
+				final cmd = new DrawCommand();
+				cmd.offset = lastCommand.offset + lastCommand.count;
+				lastCommand = cmd;
+				_currentCache.commands.push(cmd);
+				_textureIds.clear();
+			}
+
+			if(!_textureIds.has(texture.id)) {
+				lastCommand.textures[lastCommand.texturesUsed] = texture;
+				lastCommand.texturesUsed++;
+				_textureIds.insert(texture.id);
+			}
 		}
 
 		if(width == 0 && height == 0) {
@@ -313,14 +318,16 @@ class SpriteCache {
 			regionH = texture.heightActual;
 		}
 
-		var left = regionX / texture.widthActual;
-		var top = regionY / texture.heightActual;
-		var right = (regionX + regionW) / texture.widthActual;
-		var bottom = (regionY + regionH) / texture.heightActual;
+		final left = regionX / texture.widthActual;
+		final top = regionY / texture.heightActual;
+		final right = (regionX + regionW) / texture.widthActual;
+		final bottom = (regionY + regionH) / texture.heightActual;
 
-		var m = transform;
+		final m = transform;
+		final textureId = _textureIds.getSparse(texture.id);
 
 		addVertices(
+			textureId,
 			m.getTransformX(0, 0), m.getTransformY(0, 0), color, left, top,
 			m.getTransformX(width, 0), m.getTransformY(width, 0), color, right, top,
 			m.getTransformX(width, height), m.getTransformY(width, height), color, right, bottom,
@@ -328,16 +335,27 @@ class SpriteCache {
 		);
 
 		_currentCache.used++;
+		lastCommand.count += 6;
 	}
 
 	inline function addVerticesInternal(texture:Texture, vertices:Array<Vertex>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
-		var lastIndex = _currentCache.textures.length - 1;
+		var lastCommand = _currentCache.getLastCommand();
+		final lastTextureIndex = lastCommand.texturesUsed-1;
 
-		if(lastIndex < 0 || texture != _currentCache.textures[lastIndex]) {
-			_currentCache.textures.push(texture);
-			_currentCache.counts.push(1);
-		} else {
-			_currentCache.counts[lastIndex] = _currentCache.counts[lastIndex] + 1;
+		if(lastTextureIndex < 0 || texture != lastCommand.textures[lastTextureIndex]) {
+			if(lastCommand.texturesUsed >= Graphics.maxShaderTextures) {
+				final cmd = new DrawCommand();
+				cmd.offset = lastCommand.offset + lastCommand.count;
+				lastCommand = cmd;
+				_currentCache.commands.push(cmd);
+				_textureIds.clear();
+			}
+
+			if(!_textureIds.has(texture.id)) {
+				lastCommand.textures[lastCommand.texturesUsed] = texture;
+				lastCommand.texturesUsed++;
+				_textureIds.insert(texture.id);
+			}
 		}
 
 		if(regionW == 0 && regionH == 0) {
@@ -345,7 +363,8 @@ class SpriteCache {
 			regionH = texture.heightActual;
 		}
 
-		var m = transform;
+		final m = transform;
+		final textureId = _textureIds.getSparse(texture.id);
 
 		var v1:Vertex;
 		var v2:Vertex;
@@ -361,6 +380,7 @@ class SpriteCache {
 			v4 = vertices[i++];
 
 			addVertices(
+				textureId,
 				m.getTransformX(v1.x, v1.y), m.getTransformY(v1.x, v1.y), v1.color, v1.u, v1.v,
 				m.getTransformX(v2.x, v2.y), m.getTransformY(v2.x, v2.y), v2.color, v2.u, v2.v,
 				m.getTransformX(v3.x, v3.y), m.getTransformY(v3.x, v3.y), v3.color, v3.u, v3.v,
@@ -368,6 +388,7 @@ class SpriteCache {
 			);
 
 			_currentCache.used++;
+			lastCommand.count += 6;
 		}
 	}
 
@@ -376,57 +397,66 @@ class SpriteCache {
 	}
 
 	inline function addVertices(
+		textureId:Int,
 		v1x:FastFloat, v1y:FastFloat, v1c:Color, v1u:FastFloat, v1v:FastFloat,
 		v2x:FastFloat, v2y:FastFloat, v2c:Color, v2u:FastFloat, v2v:FastFloat,
 		v3x:FastFloat, v3y:FastFloat, v3c:Color, v3u:FastFloat, v3v:FastFloat,
 		v4x:FastFloat, v4y:FastFloat, v4c:Color, v4u:FastFloat, v4v:FastFloat
 	) {
-		var idx = (_currentCache.offset + _currentCache.used) * Graphics.vertexSizeTextured * 4;
-		var opacity = this.opacity;
+		var i = (_currentCache.offset + _currentCache.used) * Graphics.vertexSizeMultiTextured * 4;
+		final opacity = this.opacity;
 
-		_vertices[idx+0] = v1x;
-		_vertices[idx+1] = v1y;
+		_vertices[i++] = v1x;
+		_vertices[i++] = v1y;
 
-		_vertices[idx+2] = v1c.r;
-		_vertices[idx+3] = v1c.g;
-		_vertices[idx+4] = v1c.b;
-		_vertices[idx+5] = v1c.a * opacity;
+		_vertices[i++] = v1c.r;
+		_vertices[i++] = v1c.g;
+		_vertices[i++] = v1c.b;
+		_vertices[i++] = v1c.a * opacity;
 
-		_vertices[idx+6] = v1u;
-		_vertices[idx+7] = v1v;
+		_vertices[i++] = v1u;
+		_vertices[i++] = v1v;
 
-		_vertices[idx+8] = v2x;
-		_vertices[idx+9] = v2y;
+		_vertices[i++] = textureId;
 
-		_vertices[idx+10] = v2c.r;
-		_vertices[idx+11] = v2c.g;
-		_vertices[idx+12] = v2c.b;
-		_vertices[idx+13] = v2c.a * opacity;
+		_vertices[i++] = v2x;
+		_vertices[i++] = v2y;
 
-		_vertices[idx+14] = v2u;
-		_vertices[idx+15] = v2v;
+		_vertices[i++] = v2c.r;
+		_vertices[i++] = v2c.g;
+		_vertices[i++] = v2c.b;
+		_vertices[i++] = v2c.a * opacity;
 
-		_vertices[idx+16] = v3x;
-		_vertices[idx+17] = v3y;
+		_vertices[i++] = v2u;
+		_vertices[i++] = v2v;
 
-		_vertices[idx+18] = v3c.r;
-		_vertices[idx+19] = v3c.g;
-		_vertices[idx+20] = v3c.b;
-		_vertices[idx+21] = v3c.a * opacity;
+		_vertices[i++] = textureId;
 
-		_vertices[idx+22] = v3u;
-		_vertices[idx+23] = v3v;
+		_vertices[i++] = v3x;
+		_vertices[i++] = v3y;
 
-		_vertices[idx+24] = v4x;
-		_vertices[idx+25] = v4y;	
+		_vertices[i++] = v3c.r;
+		_vertices[i++] = v3c.g;
+		_vertices[i++] = v3c.b;
+		_vertices[i++] = v3c.a * opacity;
 
-		_vertices[idx+26] = v4c.r;
-		_vertices[idx+27] = v4c.g;
-		_vertices[idx+28] = v4c.b;
-		_vertices[idx+29] = v4c.a * opacity;
+		_vertices[i++] = v3u;
+		_vertices[i++] = v3v;
 
-		_vertices[idx+30] = v4u;
-		_vertices[idx+31] = v4v;
+		_vertices[i++] = textureId;
+
+		_vertices[i++] = v4x;
+		_vertices[i++] = v4y;	
+
+		_vertices[i++] = v4c.r;
+		_vertices[i++] = v4c.g;
+		_vertices[i++] = v4c.b;
+		_vertices[i++] = v4c.a * opacity;
+
+		_vertices[i++] = v4u;
+		_vertices[i++] = v4v;
+
+		_vertices[i++] = textureId;
 	}
 
 }
@@ -434,18 +464,59 @@ class SpriteCache {
 private class Cache {
 
 	public var id:Int;
+
+	public var commands:Array<DrawCommand>;
+
 	public var offset:Int;
 	public var size:Int;
 	public var used:Int = 0;
-	public var textures:Array<Texture>;
-	public var counts:Array<Int>;
 
 	public function new(id:Int, offset:Int, size:Int) {
+		commands = [];
 		this.id = id;
 		this.offset = offset;
 		this.size = size;
-		textures = [];
-		counts = [];
+
+		var cmd = new DrawCommand();
+		cmd.offset = offset * 6;
+		commands.push(cmd);
+	}
+
+	public function reset() {
+		while(commands.length > 1) {
+			commands.pop();
+		}
+
+		final cmd = commands[0];
+		cmd.clear();
+		cmd.offset = offset * 6;
+
+		used = 0;
+	}
+
+	public inline function getLastCommand():DrawCommand {
+		return commands[commands.length-1];
+	}
+}
+
+private class DrawCommand {
+
+	public var textures:haxe.ds.Vector<Texture>;
+	public var texturesUsed:Int = 0;
+	public var offset:Int = 0;
+	public var count:Int = 0;
+
+	public function new() {
+		textures = new haxe.ds.Vector(Graphics.maxShaderTextures);
+	}
+
+	public function clear() {
+		while(texturesUsed > 0) {
+			texturesUsed--;
+			textures[texturesUsed] = null;
+		}
+		offset = 0;
+		count = 0;
 	}
 
 }
