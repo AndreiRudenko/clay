@@ -84,6 +84,7 @@ class Graphics {
 		initBuffers();
 	}
 
+	// TODO: prevent multiple times do g.begin()
 	static public function blit(src:Texture, ?dst:Texture, ?pipeline:Pipeline, 
 		clearDst:Bool = true, bilinear:Bool = true,
 		scaleX:Float = 1, scaleY:Float = 1, offsetX:Float = 0, offsetY:Float = 0
@@ -94,14 +95,14 @@ class Graphics {
 			g = dst.image.g4;
 
 			if (Texture.renderTargetsInvertedY) {
-				projection.orto(0, Clay.window.width, 0, Clay.window.height);
+				projection.orto(0, dst.widthActual, 0, dst.heightActual);
 			} else {
-				projection.orto(0, Clay.window.width, Clay.window.height, 0);
+				projection.orto(0, dst.widthActual, dst.heightActual, 0);
 			}
 		} else {
 			g = frameBuffer.g4;	
 			
-			projection.orto(0, Clay.window.width, Clay.window.height, 0);
+			projection.orto(0, frameBuffer.width, frameBuffer.height, 0);
 		}
 
 		if(pipeline == null) pipeline = Graphics.pipelineTexturedPremultAlpha;
