@@ -31,7 +31,7 @@ class SpriteCache {
 
 	public var pipeline:Pipeline;
 
-	public var textureFilter:TextureFilter = TextureFilter.PointFilter;
+	public var textureFilter:TextureFilter = TextureFilter.LinearFilter;
 	public var textureMipFilter:MipMapFilter = MipMapFilter.NoMipFilter;
 	public var textureAddressing:TextureAddressing = TextureAddressing.Clamp;
 
@@ -236,7 +236,7 @@ class SpriteCache {
 		}
 	}
 
-	public function addImageT(
+	public function addImageTransform(
 		texture:Texture, 
 		transform:Matrix,
 		width:Float = 0, height:Float = 0, 
@@ -251,7 +251,7 @@ class SpriteCache {
 		}
 	}
 
-	public function addVertices(
+	public function addImageVertices(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		x:Float = 0, y:Float = 0, 
@@ -259,33 +259,40 @@ class SpriteCache {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		offsetImg:Int = 0, countImg:Int = 0
 	) {
 		Log.assert(_currentCache != null, 'SpriteCache.beginCache must be called before add');
 		if(_currentCache.used * 4 + vertices.length >= _currentCache.size * 4) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
 			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
-			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
+			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
 		}
 	}
 
-	public function addVerticesT(
+	public function addImageVerticesTransform(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		transform:Matrix,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		offsetImg:Int = 0, countImg:Int = 0
 	) {
 		Log.assert(_currentCache != null, 'SpriteCache.beginCache must be called before add');
 		if(_currentCache.used * 4 + vertices.length >= _currentCache.size * 4) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
 			_drawMatrix.fromMatrix(transform).append(this.transform);
-			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
+			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
 		}
 	}
 
-	inline function addInternal(texture:Texture, transform:FastMatrix3, width:Float, height:Float, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
+	inline function addInternal(
+		texture:Texture, 
+		transform:FastMatrix3, 
+		width:Float, height:Float, 
+		regionX:Int, regionY:Int, regionW:Int, regionH:Int
+	) {
 		if(texture == null) texture = Graphics.textureDefault;
 
 		var lastCommand = _currentCache.getLastCommand();
@@ -338,7 +345,15 @@ class SpriteCache {
 		lastCommand.count += 6;
 	}
 
-	inline function addVerticesInternal(texture:Texture, vertices:Array<Vertex>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
+	inline function addVerticesInternal(
+		texture:Texture, 
+		vertices:Array<Vertex>, 
+		transform:FastMatrix3, 
+		regionX:Int, regionY:Int, regionW:Int, regionH:Int, 
+		offsetImg:Int, countImg:Int
+	) {
+		Log.assert(vertices.length % 4 == 0, 'SpriteCache.addImageVertices with non 4 vertices per image: (${vertices.length})');
+
 		if(texture == null) texture = Graphics.textureDefault;
 
 		var lastCommand = _currentCache.getLastCommand();
@@ -366,23 +381,26 @@ class SpriteCache {
 		}
 
 		final m = transform;
-		final textureId = _textureIds.getSparse(texture.id);
+		final texId = _textureIds.getSparse(texture.id);
+
+		if(countImg <= 0) countImg = Math.floor(vertices.length / 4);
+
+		var start:Int = offsetImg * 4;
+		var end:Int = (offsetImg + countImg) * 4;
 
 		var v1:Vertex;
 		var v2:Vertex;
 		var v3:Vertex;
 		var v4:Vertex;
 
-		var i:Int = 0;
-
-		while(i < vertices.length) {
-			v1 = vertices[i++];
-			v2 = vertices[i++];
-			v3 = vertices[i++];
-			v4 = vertices[i++];
+		while(start < end) {
+			v1 = vertices[start++];
+			v2 = vertices[start++];
+			v3 = vertices[start++];
+			v4 = vertices[start++];
 
 			addVerticesToBuffer(
-				textureId,
+				texId,
 				TextureFormat.RGBA32,
 				m.getTransformX(v1.x, v1.y), m.getTransformY(v1.x, v1.y), v1.color, v1.u, v1.v,
 				m.getTransformX(v2.x, v2.y), m.getTransformY(v2.x, v2.y), v2.color, v2.u, v2.v,

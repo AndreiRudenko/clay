@@ -228,7 +228,7 @@ class SpriteBatch {
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
-		drawImageVerticesInternal(texture, vertices, _drawMatrix, offsetImg, countImg, regionX, regionY, regionW, regionH);
+		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
 	}
 
 	public function drawImageVerticesTransform(
@@ -240,7 +240,7 @@ class SpriteBatch {
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		_drawMatrix.fromMatrix(transform).append(this.transform);
-		drawImageVerticesInternal(texture, vertices, _drawMatrix, offsetImg, countImg, regionX, regionY, regionW, regionH);
+		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
 	}
 
 	public function drawString(
@@ -319,8 +319,14 @@ class SpriteBatch {
 	}
 
 	#if !clay_debug inline #end
-	function drawImageVerticesInternal(texture:Texture, vertices:Array<Vertex>, transform:FastMatrix3, offset:Int, count:Int, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
-		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per quad: (${vertices.length})');
+	function drawImageVerticesInternal(
+		texture:Texture, 
+		vertices:Array<Vertex>, 
+		transform:FastMatrix3,  
+		regionX:Int, regionY:Int, regionW:Int, regionH:Int,
+		offsetImg:Int, countImg:Int
+	) {
+		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
 
 		if(texture == null) texture = Graphics.textureDefault;
 
@@ -349,10 +355,10 @@ class SpriteBatch {
 
 		var texId:Int = _textureIds.getSparse(texture.id);
 		
-		if(count <= 0) count = Math.floor(vertices.length / 4);
+		if(countImg <= 0) countImg = Math.floor(vertices.length / 4);
 
-		var start:Int = offset * 4;
-		var end:Int = (offset + count) * 4;
+		var start:Int = offsetImg * 4;
+		var end:Int = (offsetImg + countImg) * 4;
 
 		while(start < end) {
 
