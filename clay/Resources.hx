@@ -25,7 +25,7 @@ class Resources {
 	var _audioExt:Array<String>;
 	var _fontExt:Array<String>;
 	var _videoExt:Array<String>;
-	var _ids:IdGenerator;
+	// var _ids:IdGenerator;
 
 	function new() {
 		_textureExt = kha.Assets.imageFormats;
@@ -34,7 +34,7 @@ class Resources {
 		// _videoExt = kha.Assets.videoFormats; // TODO: bug on hl
 		_fontExt = kha.Assets.fontFormats;
 
-		_ids = new IdGenerator();
+		// _ids = new IdGenerator();
 
 		cache = new Map();
 		stats = new ResourceStats();
@@ -321,7 +321,7 @@ class Resources {
 	public function add(resource:Resource) {
 		Log.assert(!cache.exists(resource.name));
 
-		resource.id = _ids.get();
+		// resource.id = _ids.get();
 		cache.set(resource.name, resource);
 
 		updateStats(resource, 1);
@@ -331,7 +331,7 @@ class Resources {
 		Log.assert(cache.exists(resource.name));
 
 		updateStats(resource, -1);
-		_ids.put(resource.id);
+		// _ids.put(resource.id);
 		
 		return cache.remove(resource.name);
 	}
