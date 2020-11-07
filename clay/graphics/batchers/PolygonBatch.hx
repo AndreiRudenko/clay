@@ -41,7 +41,7 @@ class PolygonBatch {
 	}
 
 	public var textureFilter(get, set):TextureFilter;
-	var _textureFilter:TextureFilter = TextureFilter.PointFilter;
+	var _textureFilter:TextureFilter = TextureFilter.LinearFilter;
 	inline function get_textureFilter() return _textureFilter; 
 	function set_textureFilter(v:TextureFilter) {
 		if(isDrawing) flush();
@@ -208,21 +208,33 @@ class PolygonBatch {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
-		drawPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
+		drawPolyInternal(
+			polygon.texture, polygon.vertices, polygon.indices,
+			_drawMatrix, 
+			regionX, regionY, regionW, regionH, 
+			offsetVerts, countVerts, offsetInds, countInds
+		);
 	}
 
-	public function drawPolygonT(
+	public function drawPolygonTransform(
 		polygon:Polygon, 
 		transform:Matrix,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
 		_drawMatrix.fromMatrix(transform).append(this.transform);
-		drawPolyInternal(polygon.texture, polygon.vertices, polygon.indices, _drawMatrix, regionX, regionY, regionW, regionH);
+		drawPolyInternal(
+			polygon.texture, polygon.vertices, polygon.indices, 
+			_drawMatrix, 
+			regionX, regionY, regionW, regionH, 
+			offsetVerts, countVerts, offsetInds, countInds
+		);
 	}
 
 	public function drawVertices(
@@ -234,36 +246,59 @@ class PolygonBatch {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
-		drawPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
+		drawPolyInternal(
+			texture, vertices, indices, 
+			_drawMatrix, 
+			regionX, regionY, regionW, regionH, 
+			offsetVerts, countVerts, offsetInds, countInds
+		);
 	}
 
-	public function drawVerticesT(
+	public function drawVerticesTransform(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
 		transform:Matrix,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
 		_drawMatrix.fromMatrix(transform).append(this.transform);
-		drawPolyInternal(texture, vertices, indices, _drawMatrix, regionX, regionY, regionW, regionH);
+		drawPolyInternal(
+			texture, vertices, indices, 
+			_drawMatrix, 
+			regionX, regionY, regionW, regionH, 
+			offsetVerts, countVerts, offsetInds, countInds
+		);
 	}
 
-	inline function drawPolyInternal(texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
-		var indCount = _useIndices ? indices.length : _indicesPerGeom;
+	#if !clay_debug inline #end
+	function drawPolyInternal(
+		texture:Texture, 
+		vertices:Array<Vertex>, indices:Array<Int>, 
+		transform:FastMatrix3, 
+		regionX:Int, regionY:Int, regionW:Int, regionH:Int,
+		offsetVerts:Int, countVerts:Int, offsetInds:Int, countInds:Int
+	) {
+		var vertCount:Int = vertices.length;
+		var indCount:Int = indices.length;
+		if(_useIndices) {
+			final geomCount = 0;
+			Log.assert(vertices.length % _vertsPerGeom == 0, 'PolygonBatch.drawImageVertices with non 4 vertices per quad: (${vertices.length})');
+
+			vertCount = Std.int(vertCount / _vertsPerGeom);
+			indCount = _indicesPerGeom * geomCount;
+		}
 		var pipeline = _pipeline != null ? _pipeline : _pipelineDefault;
 
-		if(vertices.length >= _maxVertices || indCount >= _maxIndices) {
-			throw('can`t batch geometry with vertices(${vertices.length}/$_maxVertices), indices($indCount/$_maxIndices)');
-		} else if(
-			_vertPos + vertices.length >= _maxVertices || 
-			_indPos + indCount >= _maxIndices ||
-			pipeline != _currentPipeline
-		) {
+		if(vertCount >= _maxVertices || indCount >= _maxIndices) {
+			throw('PolygonBatch can`t batch geometry with vertices(${vertCount}/$_maxVertices), indices($indCount/$_maxIndices)');
+		} else if(_vertPos + vertCount >= _maxVertices || _indPos + indCount >= _maxIndices || pipeline != _currentPipeline ) {
 			flush();
 		}
 
@@ -289,13 +324,16 @@ class PolygonBatch {
 		final rsw = regionW / texture.widthActual;
 		final rsh = regionH / texture.heightActual;
 
-		var i:Int = 0;
+		// get last vertex and index idx
+		countVerts = countVerts <= 0 ? vertCount : countVerts + offsetVerts;
+		countInds = countInds <= 0 ? indCount : countInds + offsetInds;
+
 		if(_useIndices) {
-			while(i < indices.length) {
-				_indices[_indPos++] = _vertPos + indices[i++];
+			while(offsetInds < countInds) {
+				_indices[_indPos++] = _vertPos + indices[offsetInds++];
 			}
 		} else {
-			_indPos += _indicesPerGeom;
+			_indPos += countInds - offsetInds;
 		}
 
 		var vertIdx = _vertPos * Graphics.vertexSizeMultiTextured;
@@ -304,9 +342,8 @@ class PolygonBatch {
 		final texFormat = TextureFormat.RGBA32;
 		var v:Vertex;
 
-		i = 0;
-		while(i < vertices.length) {
-			v = vertices[i++];
+		while(offsetVerts < countVerts) {
+			v = vertices[offsetVerts++];
 
 			_vertices[vertIdx++] = m.getTransformX(v.x, v.y);
 			_vertices[vertIdx++] = m.getTransformY(v.x, v.y);
