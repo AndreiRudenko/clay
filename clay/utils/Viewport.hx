@@ -18,8 +18,8 @@ class Viewport {
 		this.camera = camera;
 		this.x = x;
 		this.y = y;
-		this.width = width > 0 ? width : Std.int(camera.width);
-		this.height = height > 0 ? height : Std.int(camera.height);
+		this.width = width > 0 ? width : Std.int(Clay.window.width);
+		this.height = height > 0 ? height : Std.int(Clay.window.height);
 		_scaledWidth = this.width;
 		_scaledHeight = this.height;
 		scaleMode = ScaleMode.NONE;
@@ -56,20 +56,22 @@ class Viewport {
 		_scaledHeight = height;
 		switch (scaleMode) {
 			case ScaleMode.FIT: {
-				var targetRatio = camera.height / camera.width;
-				var sourceRatio = height / width;
-				var scale = targetRatio > sourceRatio ? camera.width / width : camera.height / height;
-				_scaledWidth = width * scale;
-				_scaledHeight = height * scale;
+				var sW = width / camera.width;
+				var sH = height / camera.height;
+				var scale = sW < sH ? sW : sH;
+
+				_scaledWidth = camera.width * scale;
+				_scaledHeight = camera.height * scale;
 			}
 			case ScaleMode.FILL: {
-				var targetRatio = camera.height / camera.width;
-				var sourceRatio = height / width;
-				var scale = targetRatio < sourceRatio ? camera.width / width : camera.height / height;
-				_scaledWidth = width * scale;
-				_scaledHeight = height * scale;
+				var sW = width / camera.width;
+				var sH = height / camera.height;
+				var scale = sW > sH ? sW : sH;
+
+				_scaledWidth = camera.width * scale;
+				_scaledHeight = camera.height * scale;
 			}
-			case ScaleMode.STRETCH: {
+			case ScaleMode.NONE: {
 				_scaledWidth = camera.width;
 				_scaledHeight = camera.height;
 			}
