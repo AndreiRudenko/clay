@@ -10,7 +10,10 @@ class Viewport {
 	public var height:Int = 0;
 	public var camera:Camera;
 	public var scaleMode:ScaleMode;
+	public var centered:Bool = false;
 
+	var _scaledX:Float = 0;
+	var _scaledY:Float = 0;
 	var _scaledWidth:Float = 0;
 	var _scaledHeight:Float = 0;
 
@@ -20,6 +23,8 @@ class Viewport {
 		this.y = y;
 		this.width = width > 0 ? width : Std.int(Clay.window.width);
 		this.height = height > 0 ? height : Std.int(Clay.window.height);
+		_scaledX = this.x;
+		_scaledY = this.y;
 		_scaledWidth = this.width;
 		_scaledHeight = this.height;
 		scaleMode = ScaleMode.NONE;
@@ -28,8 +33,8 @@ class Viewport {
 	public function screenToWorld(v:Vector2, ?into:Vector2):Vector2 {
 		if(into == null) into = new Vector2();
 		
-		into.x = (v.x - x) * (camera.width / _scaledWidth);
-		into.y = (v.y - y) * (camera.height / _scaledHeight);
+		into.x = (v.x - _scaledX) * (camera.width / _scaledWidth);
+		into.y = (v.y - _scaledY) * (camera.height / _scaledHeight);
 		into.set(camera.view.getTransformX(into.x, into.y), camera.view.getTransformY(into.x, into.y));
 
 		return into;
@@ -40,8 +45,8 @@ class Viewport {
 		
 		into.copyFrom(v);
 		into.set(camera.invProjectionView.getTransformX(into.x, into.y), camera.invProjectionView.getTransformY(into.x, into.y));
-		into.x = (_scaledWidth / camera.width) * into.x + x;
-		into.y = (_scaledHeight / camera.height) * into.y + y;
+		into.x = (_scaledWidth / camera.width) * into.x + _scaledX;
+		into.y = (_scaledHeight / camera.height) * into.y + _scaledY;
 
 		return into;
 	}
@@ -52,8 +57,11 @@ class Viewport {
 	}
 
 	inline function applyScaledViewport() {
+		_scaledX = x;
+		_scaledY = y;
 		_scaledWidth = width;
 		_scaledHeight = height;
+		
 		switch (scaleMode) {
 			case ScaleMode.FIT: {
 				var sW = width / camera.width;
@@ -77,7 +85,13 @@ class Viewport {
 			}
 			default: 
 		}
-		Clay.graphics.viewport(x, y, _scaledWidth, _scaledHeight);
+
+		if(centered) {
+			_scaledX = (width - _scaledWidth) / 2;
+			_scaledY = (height - _scaledHeight) / 2;
+		}
+
+		Clay.graphics.viewport(_scaledX, _scaledY, _scaledWidth, _scaledHeight);
 	}
 	
 	inline function setScissor(x:Float, y:Float, w:Float, h:Float) {
