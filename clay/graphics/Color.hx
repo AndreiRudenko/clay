@@ -8,6 +8,12 @@ abstract Color(Int) from kha.Color to kha.Color {
 		return new Color(Math.random(), Math.random(), Math.random(), includeAlpha ? Math.random() : 1.0 );
 	}
 
+	static public function fromValue(value:Int):Color {
+		var c = new Color();
+		c.value = value;
+		return c;
+	}
+
 	static public inline var TRANSPARENT:Color = 0x00000000;
 	static public inline var BLACK:Color = 0xff000000;
 	static public inline var WHITE:Color = 0xffffffff;
