@@ -27,7 +27,6 @@ class PolygonCache {
 	inline function set_opacity(v:Float) return _opacityStack[_opacityStack.length-1] = v;
 
 	public var pipeline:Pipeline;
-	public var premultipliedAlpha:Bool = true;
 
 	public var textureFilter:TextureFilter = TextureFilter.PointFilter;
 	public var textureMipFilter:MipMapFilter = MipMapFilter.NoMipFilter;
@@ -47,7 +46,7 @@ class PolygonCache {
 
 	public var cacheCount(default, null):Int = 0;
 
-	var _pipelineAlpha:Pipeline;
+	var _pipelineDefault:Pipeline;
 	var _pipelinePremultAlpha:Pipeline;
 	var _caches:Array<Cache>;
 	var _currentCache:Cache;
@@ -72,15 +71,14 @@ class PolygonCache {
 		_verticesMax = verticesMax;
 		_indicesMax = indicesMax;
 
-		_pipelineAlpha = Graphics.pipelineTexturedM;
-		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlphaM;
+		_pipelineDefault = Graphics.pipelineMultiTextured;
 
 		_drawMatrix = new FastMatrix3();
 
 		_opacityStack = [1];
 		_caches = [];
 
-		_vertexBuffer = new VertexBuffer(_verticesMax, _pipelineAlpha.inputLayout[0], Usage.StaticUsage);
+		_vertexBuffer = new VertexBuffer(_verticesMax, _pipelineDefault.inputLayout[0], Usage.StaticUsage);
 		_vertices = _vertexBuffer.lock();
 
 		_indexBuffer = new IndexBuffer(_indicesMax, Usage.StaticUsage);
@@ -190,7 +188,7 @@ class PolygonCache {
 		Log.assert(isDrawing, 'PolygonCache.begin must be called before draw');
 
 		final commands = _caches[cacheID].commands;
-		final currentPipeline = getPipeline();
+		final currentPipeline = pipeline != null ? pipeline : _pipelineDefault;
 
 		_graphics.setPipeline(currentPipeline);
 		currentPipeline.setMatrix3('projectionMatrix', projection);
@@ -303,6 +301,8 @@ class PolygonCache {
 	}
 
 	inline function addPolygonInternal(texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
+		if(texture == null) texture = Graphics.textureDefault;
+
 		var lastCommand = _currentCache.getLastCommand();
 		var lastTextureIndex = lastCommand.texturesUsed-1;
 
@@ -344,8 +344,9 @@ class PolygonCache {
 		lastCommand.count += indices.length;
 
 		final m = transform;
-		final textureId = _textureIds.getSparse(texture.id);
+		final texId = _textureIds.getSparse(texture.id);
 		final opacity = this.opacity;
+		final texFormat = TextureFormat.RGBA32;
 		var vertIdx = vertPos * Graphics.vertexSizeMultiTextured;
 		var v:Vertex;
 
@@ -364,15 +365,12 @@ class PolygonCache {
 			_vertices[vertIdx++] = v.u * rsw + rsx;
 			_vertices[vertIdx++] = v.v * rsh + rsy;
 
-			_vertices[vertIdx++] = textureId;
+			_vertices[vertIdx++] = texId;
+			_vertices[vertIdx++] = texFormat;
 
 			vertPos++;
 		}
 		_currentCache.usedV = vertPos;
-	}
-
-	inline function getPipeline():Pipeline {
-		return pipeline != null ? pipeline : (premultipliedAlpha ? _pipelinePremultAlpha : _pipelineAlpha);		
 	}
 
 }

@@ -7,17 +7,16 @@ import haxe.macro.Expr;
 @:enum
 private abstract LogLevel(Int) from Int to Int {
 	var VERBOSE = 0;
-	var DEBUG = 10;
-	var INFO = 20;
-	var WARNING = 30;
-	var ERROR = 40;
-	var CRITICAL = 50;
+	var DEBUG = 1;
+	var INFO = 2;
+	var WARNING = 3;
+	var ERROR = 4;
+	var CRITICAL = 5;
 }
 
 class Log {
 
 	static inline var _spaces:String = '  ';
-	static inline var _logWidth:Int = 16;
 	static inline var _minLevel = 
 		#if (clay_loglevel == 'info') LogLevel.INFO
 		#elseif (clay_loglevel == 'verbose') LogLevel.VERBOSE

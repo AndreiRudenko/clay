@@ -2,9 +2,9 @@ package clay.graphics;
 
 import kha.Kravur;
 import kha.Kravur.KravurImage;
-using StringTools;
 import clay.resources.Resource;
 import clay.Resources;
+using StringTools;
 
 @:access(kha.Kravur)
 @:access(kha.KravurImage)

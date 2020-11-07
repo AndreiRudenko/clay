@@ -47,14 +47,6 @@ class SpriteBatch {
 		return _pipeline = v;
 	}
 
-	public var premultipliedAlpha(get, set):Bool;
-	var _premultipliedAlpha:Bool = true;
-	inline function get_premultipliedAlpha() return _premultipliedAlpha; 
-	function set_premultipliedAlpha(v:Bool) {
-		if(isDrawing && _pipeline == null && _premultipliedAlpha != v) flush();
-		return _premultipliedAlpha = v;
-	}
-
 	public var textureFilter(get, set):TextureFilter;
 	var _textureFilter:TextureFilter = TextureFilter.PointFilter;
 	inline function get_textureFilter() return _textureFilter; 
@@ -91,12 +83,9 @@ class SpriteBatch {
 	/** The maximum number of sprites rendered in one batch so far. **/
 	public var maxSpritesInBatch:Int = 0;
 
-	var _pipelineAlpha:Pipeline;
-	var _pipelinePremultAlpha:Pipeline;
+	var _pipelineDefault:Pipeline;
 
-	var _texture:Texture;
 	var _textureIds:SparseSet;
-	var _textures:haxe.ds.Vector<Texture>;
 
 	var _currentPipeline:Pipeline;
 	var _vertices:Float32Array;
@@ -110,32 +99,22 @@ class SpriteBatch {
 	var _bufferIdx:Int = 0;
 	var _bufferSize:Int = 0;
 
-	var _invTexWidth:Float = 0;
-	var _invTexHeight:Float = 0;
-
 	var _graphics:Graphics;
 
 	public function new(size:Int = 1024) {
 		_graphics = Clay.graphics;
 		_bufferSize = size;
 
-		var structure = new VertexStructure();
-		structure.add("vertexPosition", VertexData.Float2);
-		structure.add("vertexColor", VertexData.Float4);
-		structure.add("texPosition", VertexData.Float2);
-		structure.add("texId", VertexData.Float1);
+		_pipelineDefault = Graphics.pipelineMultiTextured;
 
-		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlphaM;
-		_pipelineAlpha = Graphics.pipelineTexturedM;
-
-		_currentPipeline = _pipelinePremultAlpha;
+		_currentPipeline = _pipelineDefault;
 
 		_drawMatrix = new FastMatrix3();
 		_bakedQuadCache = new AlignedQuad();
 
 		_opacityStack = [1];
 
-		_vertexBuffer = new VertexBuffer(_bufferSize * 4, _pipelineAlpha.inputLayout[0], Usage.DynamicUsage);
+		_vertexBuffer = new VertexBuffer(_bufferSize * 4, _pipelineDefault.inputLayout[0], Usage.DynamicUsage);
 		_vertices = _vertexBuffer.lock();
 
 		_indexBuffer = new IndexBuffer(_bufferSize * 3 * 2, Usage.StaticUsage);
@@ -156,7 +135,6 @@ class SpriteBatch {
 			_projection.orto(0, Clay.window.width, Clay.window.height, 0);
 		}
 
-		_textures = new haxe.ds.Vector(Graphics.maxShaderTextures);
 		_textureIds = new SparseSet(Texture.maxTextures);
 	}
 
@@ -171,7 +149,6 @@ class SpriteBatch {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before end');
 		flush();
 		isDrawing = false;
-		_texture = null;
 	}
 
 	public function flush() {
@@ -183,20 +160,13 @@ class SpriteBatch {
 
 		_currentPipeline.setMatrix3('projectionMatrix', _projection);
 
-		var i:Int = 0;
-		while(i < _textureIds.used) {
-			_currentPipeline.setTexture('tex[$i]', _textures[i]);
-			_currentPipeline.setTextureParameters('tex[$i]', _textureAddressing, _textureAddressing, _textureFilter, _textureFilter, _textureMipFilter);
-			_textures[i] = null;
-			i++;
-		}
-
 		_vertexBuffer.unlock(_bufferIdx * 4);
 		_vertices = _vertexBuffer.lock();
 
 		_graphics.setPipeline(_currentPipeline);
 		_graphics.applyUniforms(_currentPipeline);
 		_graphics.setVertexBuffer(_vertexBuffer);
+
 		_graphics.draw(0, _bufferIdx * 6);
 
 		_textureIds.clear();
@@ -257,7 +227,7 @@ class SpriteBatch {
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
-		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
+		drawVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
 	public function drawVerticesT(
@@ -268,7 +238,7 @@ class SpriteBatch {
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		_drawMatrix.fromMatrix(transform).append(this.transform);
-		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
+		drawVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH);
 	}
 
 	public function drawString(
@@ -281,10 +251,7 @@ class SpriteBatch {
 		skewX:Float = 0, skewY:Float = 0
 	) {		
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-
 		if(text.length == 0) return;
-		if(font == null) font = Graphics.fontDefault;
-
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
 		drawStringInternal(text, size, font, spacing, _drawMatrix);
 	}
@@ -295,41 +262,50 @@ class SpriteBatch {
 		size:Int = 16, ?font:Font, spacing:Int = 0
 	) {		
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-
 		if(text.length == 0) return;
-		if(font == null) font = Graphics.fontDefault;
-
 		_drawMatrix.fromMatrix(transform).append(this.transform);
 		drawStringInternal(text, size, font, spacing, _drawMatrix);
 	}
 
 	inline function drawImageInternal(texture:Texture, transform:FastMatrix3, width:Float, height:Float, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
-		final pipeline = getPipeline(_premultipliedAlpha);
-
+		final pipeline = getPipeline();
 		if(pipeline != _currentPipeline) switchPipeline(pipeline);
-		if(texture != _texture) switchTexture(texture);
+
 		if(_bufferIdx + 1 >= _bufferSize) flush();
 
+		if(texture == null) texture = Graphics.textureDefault;
+
+		var texId = _textureIds.getSparse(texture.id);
+		if(texId < 0) {
+			if(_textureIds.used >= Graphics.maxShaderTextures) flush();
+			texId = _textureIds.used;
+			bindTexture(texture, texId);
+			_textureIds.insert(texture.id);
+		}
+
+		final texWidth = texture.widthActual;
+		final texHeight = texture.heightActual;
+
 		if(width == 0 && height == 0) {
-			width = texture.widthActual;
-			height = texture.heightActual;
+			width = texWidth;
+			height = texHeight;
 		}
 
 		if(regionW == 0 && regionH == 0) {
-			regionW = texture.widthActual;
-			regionH = texture.heightActual;
+			regionW = texWidth;
+			regionH = texHeight;
 		}
 
-		final left = regionX * _invTexWidth;
-		final top = regionY * _invTexHeight;
-		final right = (regionX + regionW) * _invTexWidth;
-		final bottom = (regionY + regionH) * _invTexHeight;
+		final left = regionX / texWidth;
+		final top = regionY / texHeight;
+		final right = (regionX + regionW) / texWidth;
+		final bottom = (regionY + regionH) / texHeight;
 
 		final m = transform;
-		final textureId = _textureIds.getSparse(_texture.id);
 
-		addVertices(
-			textureId,
+		addQuadVertices(
+			texId,
+			TextureFormat.RGBA32,
 			m.getTransformX(0, 0), m.getTransformY(0, 0), color, left, top,
 			m.getTransformX(width, 0), m.getTransformY(width, 0), color, right, top,
 			m.getTransformX(width, height), m.getTransformY(width, height), color, right, bottom,
@@ -339,11 +315,11 @@ class SpriteBatch {
 		_bufferIdx++;
 	}
 
-	inline function drawImageVerticesInternal(texture:Texture, vertices:Array<Vertex>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
-		final pipeline = getPipeline(_premultipliedAlpha);
+	inline function drawVerticesInternal(texture:Texture, vertices:Array<Vertex>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
+		if(texture == null) texture = Graphics.textureDefault;
 
+		final pipeline = getPipeline();
 		if(pipeline != _currentPipeline) switchPipeline(pipeline);
-		if(texture != _texture) switchTexture(texture);
 
 		if(regionW == 0 && regionH == 0) {
 			regionW = texture.widthActual;
@@ -351,7 +327,6 @@ class SpriteBatch {
 		}
 
 		final m = transform;
-		final textureId = _textureIds.getSparse(_texture.id);
 
 		var v1:Vertex;
 		var v2:Vertex;
@@ -359,17 +334,30 @@ class SpriteBatch {
 		var v4:Vertex;
 
 		var i:Int = 0;
+		var texId:Int = _textureIds.getSparse(texture.id);
 
 		while(i < vertices.length) {
-			if(_bufferIdx + 1 >= _bufferSize) flush();
 
 			v1 = vertices[i++];
 			v2 = vertices[i++];
 			v3 = vertices[i++];
 			v4 = vertices[i++];
 
-			addVertices(
-				textureId,
+			if(_bufferIdx + 1 >= _bufferSize) {
+				flush();
+				texId = -1;
+			}
+
+			if(texId < 0) {
+				if(_textureIds.used >= Graphics.maxShaderTextures) flush();
+				texId = _textureIds.used;
+				bindTexture(texture, texId);
+				_textureIds.insert(texture.id);
+			}
+
+			addQuadVertices(
+				texId,
+				TextureFormat.RGBA32,
 				m.getTransformX(v1.x, v1.y), m.getTransformY(v1.x, v1.y), v1.color, v1.u, v1.v,
 				m.getTransformX(v2.x, v2.y), m.getTransformY(v2.x, v2.y), v2.color, v2.u, v2.v,
 				m.getTransformX(v3.x, v3.y), m.getTransformY(v3.x, v3.y), v3.color, v3.u, v3.v,
@@ -381,12 +369,12 @@ class SpriteBatch {
 	}
 
 	inline function drawStringInternal(text:String, size:Int, font:Font, spacing:Int, transform:FastMatrix3) {
-		final pipeline = getPipeline(false);
+		if(font == null) font = Graphics.fontDefault;
+
+		final pipeline = getPipeline();
 		if(pipeline != _currentPipeline) switchPipeline(pipeline);
 
 		final texture = font.getTexture(size);
-		if(texture != _texture) switchTexture(texture);
-	
 		final kravur = @:privateAccess font.font._get(size);
 
 		final image = texture.image;
@@ -408,16 +396,15 @@ class SpriteBatch {
 		var bottom:FastFloat;
 
 		var i:Int = 0;
+		var texId:Int = _textureIds.getSparse(texture.id);
 
 		final m = transform;
-		final textureId = _textureIds.getSparse(_texture.id);
 
 		while(i < text.length) {
 			charIndex = findCharIndex(text.fastCodeAt(i));
 			charQuad = kravur.getBakedQuad(_bakedQuadCache, charIndex, linePos, 0);
 			if (charQuad != null) {
 				if(charIndex > 0) { // skip space
-					if(_bufferIdx + 1 >= _bufferSize) flush();
 
 					x0 = charQuad.x0;
 					y0 = charQuad.y0;
@@ -429,8 +416,21 @@ class SpriteBatch {
 					right = charQuad.s1 * texRatioX;
 					bottom = charQuad.t1 * texRatioY;
 
-					addVertices(
-						textureId,
+					if(_bufferIdx + 1 >= _bufferSize) {
+						flush();
+						texId = -1;
+					}
+
+					if(texId < 0) {
+						if(_textureIds.used >= Graphics.maxShaderTextures) flush();
+						texId = _textureIds.used;
+						bindTexture(texture, texId);
+						_textureIds.insert(texture.id);
+					}
+
+					addQuadVertices(
+						texId,
+						TextureFormat.L8, // TODO: push to kha repo textureFormat variable for Image
 						m.getTransformX(x0, y0), m.getTransformY(x0, y0), color, left, top,
 						m.getTransformX(x1, y0), m.getTransformY(x1, y0), color, right, top,
 						m.getTransformX(x1, y1), m.getTransformY(x1, y1), color, right, bottom,
@@ -466,8 +466,8 @@ class SpriteBatch {
 		return idx;
 	}
 
-	inline function getPipeline(premultAlpha:Bool):Pipeline {
-		return _pipeline != null ? _pipeline : (premultAlpha ? _pipelinePremultAlpha : _pipelineAlpha);		
+	inline function getPipeline():Pipeline {
+		return _pipeline != null ? _pipeline : _pipelineDefault;		
 	}
 
 	inline function switchPipeline(pipeline:Pipeline) {
@@ -475,20 +475,13 @@ class SpriteBatch {
 		_currentPipeline = pipeline;
 	}
 
-	inline function switchTexture(texture:Texture) {
-		if(_textureIds.used >= Graphics.maxShaderTextures) flush();
-
-		if(!_textureIds.has(texture.id)) {
-			_textures[_textureIds.used] = texture;
-			_textureIds.insert(texture.id);
-		}
-		_texture = texture;
-		_invTexWidth = 1 / _texture.widthActual;
-		_invTexHeight = 1 / _texture.heightActual;
+	inline function bindTexture(texture:Texture, slot:Int) {
+		_currentPipeline.setTexture('tex[$slot]', texture);
+		_currentPipeline.setTextureParameters('tex[$slot]', _textureAddressing, _textureAddressing, _textureFilter, _textureFilter, _textureMipFilter);
 	}
 
-	inline function addVertices(
-		textureId:Int,
+	inline function addQuadVertices(
+		texId:Int, texFormat:Int,
 		v1x:FastFloat, v1y:FastFloat, v1c:Color, v1u:FastFloat, v1v:FastFloat,
 		v2x:FastFloat, v2y:FastFloat, v2c:Color, v2u:FastFloat, v2v:FastFloat,
 		v3x:FastFloat, v3y:FastFloat, v3c:Color, v3u:FastFloat, v3v:FastFloat,
@@ -508,7 +501,8 @@ class SpriteBatch {
 		_vertices[i++] = v1u;
 		_vertices[i++] = v1v;
 
-		_vertices[i++] = textureId;
+		_vertices[i++] = texId;
+		_vertices[i++] = texFormat;
 
 		_vertices[i++] = v2x;
 		_vertices[i++] = v2y;
@@ -521,7 +515,8 @@ class SpriteBatch {
 		_vertices[i++] = v2u;
 		_vertices[i++] = v2v;
 
-		_vertices[i++] = textureId;
+		_vertices[i++] = texId;
+		_vertices[i++] = texFormat;
 
 		_vertices[i++] = v3x;
 		_vertices[i++] = v3y;
@@ -534,7 +529,8 @@ class SpriteBatch {
 		_vertices[i++] = v3u;
 		_vertices[i++] = v3v;
 
-		_vertices[i++] = textureId;
+		_vertices[i++] = texId;
+		_vertices[i++] = texFormat;
 
 		_vertices[i++] = v4x;
 		_vertices[i++] = v4y;	
@@ -547,7 +543,8 @@ class SpriteBatch {
 		_vertices[i++] = v4u;
 		_vertices[i++] = v4v;
 
-		_vertices[i++] = textureId;
+		_vertices[i++] = texId;
+		_vertices[i++] = texFormat;
 
 	}
 

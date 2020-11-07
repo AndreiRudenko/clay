@@ -30,7 +30,6 @@ class SpriteCache {
 	inline function set_opacity(v:Float) return _opacityStack[_opacityStack.length-1] = v;
 
 	public var pipeline:Pipeline;
-	public var premultipliedAlpha:Bool = true;
 
 	public var textureFilter:TextureFilter = TextureFilter.PointFilter;
 	public var textureMipFilter:MipMapFilter = MipMapFilter.NoMipFilter;
@@ -50,8 +49,7 @@ class SpriteCache {
 
 	public var cacheCount(default, null):Int = 0;
 
-	var _pipelineAlpha:Pipeline;
-	var _pipelinePremultAlpha:Pipeline;
+	var _pipelineDefault:Pipeline;
 	var _caches:Array<Cache>;
 	var _currentCache:Cache;
 
@@ -72,15 +70,14 @@ class SpriteCache {
 		_graphics = Clay.graphics;
 		_bufferSize = size;
 
-		_pipelineAlpha = Graphics.pipelineTexturedM;
-		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlphaM;
+		_pipelineDefault = Graphics.pipelineMultiTextured;
 
 		_drawMatrix = new FastMatrix3();
 
 		_opacityStack = [1];
 		_caches = [];
 
-		_vertexBuffer = new VertexBuffer(_bufferSize * 4, _pipelineAlpha.inputLayout[0], Usage.StaticUsage);
+		_vertexBuffer = new VertexBuffer(_bufferSize * 4, _pipelineDefault.inputLayout[0], Usage.StaticUsage);
 		_vertices = _vertexBuffer.lock();
 
 		_indexBuffer = new IndexBuffer(_bufferSize * 3 * 2, Usage.StaticUsage);
@@ -177,7 +174,7 @@ class SpriteCache {
 		Log.assert(isDrawing, 'PolyCache.begin must be called before draw');
 
 		final commands = _caches[cacheID].commands;
-		final currentPipeline = getPipeline();
+		final currentPipeline = pipeline != null ? pipeline : _pipelineDefault;
 
 		_graphics.setPipeline(currentPipeline);
 		currentPipeline.setMatrix3('projectionMatrix', projection);
@@ -289,6 +286,8 @@ class SpriteCache {
 	}
 
 	inline function addInternal(texture:Texture, transform:FastMatrix3, width:Float, height:Float, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
+		if(texture == null) texture = Graphics.textureDefault;
+
 		var lastCommand = _currentCache.getLastCommand();
 		final lastTextureIndex = lastCommand.texturesUsed-1;
 
@@ -326,8 +325,9 @@ class SpriteCache {
 		final m = transform;
 		final textureId = _textureIds.getSparse(texture.id);
 
-		addVertices(
+		addVerticesToBuffer(
 			textureId,
+			TextureFormat.RGBA32,
 			m.getTransformX(0, 0), m.getTransformY(0, 0), color, left, top,
 			m.getTransformX(width, 0), m.getTransformY(width, 0), color, right, top,
 			m.getTransformX(width, height), m.getTransformY(width, height), color, right, bottom,
@@ -339,6 +339,8 @@ class SpriteCache {
 	}
 
 	inline function addVerticesInternal(texture:Texture, vertices:Array<Vertex>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
+		if(texture == null) texture = Graphics.textureDefault;
+
 		var lastCommand = _currentCache.getLastCommand();
 		final lastTextureIndex = lastCommand.texturesUsed-1;
 
@@ -379,8 +381,9 @@ class SpriteCache {
 			v3 = vertices[i++];
 			v4 = vertices[i++];
 
-			addVertices(
+			addVerticesToBuffer(
 				textureId,
+				TextureFormat.RGBA32,
 				m.getTransformX(v1.x, v1.y), m.getTransformY(v1.x, v1.y), v1.color, v1.u, v1.v,
 				m.getTransformX(v2.x, v2.y), m.getTransformY(v2.x, v2.y), v2.color, v2.u, v2.v,
 				m.getTransformX(v3.x, v3.y), m.getTransformY(v3.x, v3.y), v3.color, v3.u, v3.v,
@@ -392,12 +395,8 @@ class SpriteCache {
 		}
 	}
 
-	inline function getPipeline():Pipeline {
-		return pipeline != null ? pipeline : (premultipliedAlpha ? _pipelinePremultAlpha : _pipelineAlpha);		
-	}
-
-	inline function addVertices(
-		textureId:Int,
+	inline function addVerticesToBuffer(
+		texId:Int, texFormat:Int,
 		v1x:FastFloat, v1y:FastFloat, v1c:Color, v1u:FastFloat, v1v:FastFloat,
 		v2x:FastFloat, v2y:FastFloat, v2c:Color, v2u:FastFloat, v2v:FastFloat,
 		v3x:FastFloat, v3y:FastFloat, v3c:Color, v3u:FastFloat, v3v:FastFloat,
@@ -417,7 +416,8 @@ class SpriteCache {
 		_vertices[i++] = v1u;
 		_vertices[i++] = v1v;
 
-		_vertices[i++] = textureId;
+		_vertices[i++] = texId;
+		_vertices[i++] = texFormat;
 
 		_vertices[i++] = v2x;
 		_vertices[i++] = v2y;
@@ -430,7 +430,8 @@ class SpriteCache {
 		_vertices[i++] = v2u;
 		_vertices[i++] = v2v;
 
-		_vertices[i++] = textureId;
+		_vertices[i++] = texId;
+		_vertices[i++] = texFormat;
 
 		_vertices[i++] = v3x;
 		_vertices[i++] = v3y;
@@ -443,7 +444,8 @@ class SpriteCache {
 		_vertices[i++] = v3u;
 		_vertices[i++] = v3v;
 
-		_vertices[i++] = textureId;
+		_vertices[i++] = texId;
+		_vertices[i++] = texFormat;
 
 		_vertices[i++] = v4x;
 		_vertices[i++] = v4y;	
@@ -456,7 +458,9 @@ class SpriteCache {
 		_vertices[i++] = v4u;
 		_vertices[i++] = v4v;
 
-		_vertices[i++] = textureId;
+		_vertices[i++] = texId;
+		_vertices[i++] = texFormat;
+
 	}
 
 }

@@ -16,19 +16,18 @@ import clay.utils.Log;
 class Graphics {
 
 	static public var fontDefault:Font;
+	static public var textureDefault:Texture;
 
 	// hardcoded for now, TODO: get from project settings
 	static public inline var maxShaderTextures:Int = 16; 
 
-	static public inline var vertexSizeMultiTextured:Int = 9;
+	static public inline var vertexSizeMultiTextured:Int = 10;
 	static public inline var vertexSizeTextured:Int = 8;
 	static public inline var vertexSizeColored:Int = 6;
 
-	static public var pipelineTextured:Pipeline;
-	static public var pipelineTexturedPremultAlpha:Pipeline;
-	static public var pipelineTexturedM:Pipeline;
-	static public var pipelineTexturedPremultAlphaM:Pipeline;
 	static public var pipelineColored:Pipeline;
+	static public var pipelineTextured:Pipeline;
+	static public var pipelineMultiTextured:Pipeline;
 
 	static var frameBuffer:Framebuffer;
 	static var vertexBuffer:VertexBuffer;
@@ -36,50 +35,46 @@ class Graphics {
 	static var projection:FastMatrix3;
 
 	static public function setup() {
-		var structure = new VertexStructure();
-		structure.add("vertexPosition", VertexData.Float2);
-		structure.add("vertexColor", VertexData.Float4);
-		structure.add("texPosition", VertexData.Float2);
-
-		// textured
-		pipelineTexturedPremultAlpha = new Pipeline([structure], Shaders.textured_vert, Shaders.texturedpremult_frag);
-		pipelineTexturedPremultAlpha.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
-		pipelineTexturedPremultAlpha.compile();
-
-		// text
-		pipelineTextured = new Pipeline([structure], Shaders.textured_vert, Shaders.textured_frag);
-		pipelineTextured.setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
-		pipelineTextured.compile();
-
-		// multi texture
-		structure = new VertexStructure();
-		structure.add("vertexPosition", VertexData.Float2);
-		structure.add("vertexColor", VertexData.Float4);
-		structure.add("texPosition", VertexData.Float2);
-		structure.add("texId", VertexData.Float1);
-
-		// textured
-		pipelineTexturedPremultAlphaM = new Pipeline([structure], Shaders.multitexture_vert, Shaders.multitexturepremult16_frag);
-		pipelineTexturedPremultAlphaM.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
-		pipelineTexturedPremultAlphaM.compile();
-
-		// text
-		pipelineTexturedM = new Pipeline([structure], Shaders.multitexture_vert, Shaders.multitexture16_frag);
-		pipelineTexturedM.setBlending(BlendFactor.SourceAlpha, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
-		pipelineTexturedM.compile();
-
 		// colored
-		structure = new VertexStructure();
-		structure.add("vertexPosition", VertexData.Float2);
-		structure.add("vertexColor", VertexData.Float4);
+		var structure = new VertexStructure();
+		structure.add("position", VertexData.Float2);
+		structure.add("color", VertexData.Float4);
 
 		pipelineColored = new Pipeline([structure], Shaders.colored_vert, Shaders.colored_frag);
 		pipelineColored.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
 		pipelineColored.compile();
 
+		// textured
+		structure = new VertexStructure();
+		structure.add("position", VertexData.Float2);
+		structure.add("color", VertexData.Float4);
+		structure.add("texCoord", VertexData.Float2);
+
+		pipelineTextured = new Pipeline([structure], Shaders.textured_vert, Shaders.textured_frag);
+		pipelineTextured.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
+		pipelineTextured.compile();
+
+		// multi texture
+		structure = new VertexStructure();
+		structure.add("position", VertexData.Float2);
+		structure.add("color", VertexData.Float4);
+		structure.add("texCoord", VertexData.Float2);
+		structure.add("texId", VertexData.Float1);
+		structure.add("texFormat", VertexData.Float1);
+
+		pipelineMultiTextured = new Pipeline([structure], Shaders.multitextured_vert, Shaders.multitextured16_frag);
+		pipelineMultiTextured.setBlending(BlendFactor.BlendOne, BlendFactor.InverseSourceAlpha, BlendOperation.Add);
+		pipelineMultiTextured.compile();
+
 		#if !no_default_font
 		fontDefault = Clay.resources.font("Muli-Regular.ttf");
 		#end
+
+		textureDefault = Texture.create(1, 1, TextureFormat.RGBA32);
+		var pixels = textureDefault.lock();
+		pixels.setInt32(0, 0xffffffff);
+		textureDefault.unlock();
+
 		projection = new FastMatrix3();
 		initBuffers();
 	}
@@ -105,7 +100,7 @@ class Graphics {
 			projection.orto(0, frameBuffer.width, frameBuffer.height, 0);
 		}
 
-		if(pipeline == null) pipeline = Graphics.pipelineTexturedPremultAlpha;
+		if(pipeline == null) pipeline = Graphics.pipelineTextured;
 		
 		setBlitVertices(offsetX, offsetY, src.widthActual * scaleX, src.heightActual * scaleY);
 
@@ -137,7 +132,7 @@ class Graphics {
 	}
 
 	static function initBuffers() {
-		var pipeline = Graphics.pipelineTexturedPremultAlpha;
+		var pipeline = Graphics.pipelineTextured;
 		vertexBuffer = new VertexBuffer(
 			4, 
 			pipeline.inputLayout[0], 

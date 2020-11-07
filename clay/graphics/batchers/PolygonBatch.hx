@@ -40,14 +40,6 @@ class PolygonBatch {
 		return _pipeline = v;
 	}
 
-	public var premultipliedAlpha(get, set):Bool;
-	var _premultipliedAlpha:Bool = true;
-	inline function get_premultipliedAlpha() return _premultipliedAlpha; 
-	function set_premultipliedAlpha(v:Bool) {
-		if(isDrawing && _pipeline == null && _premultipliedAlpha != v) flush();
-		return _premultipliedAlpha = v;
-	}
-
 	public var textureFilter(get, set):TextureFilter;
 	var _textureFilter:TextureFilter = TextureFilter.PointFilter;
 	inline function get_textureFilter() return _textureFilter; 
@@ -84,12 +76,9 @@ class PolygonBatch {
 	/** The maximum number of vertices rendered in one batch so far. **/
 	public var maxVerticesInBatch:Int = 0;
 
-	var _pipelineAlpha:Pipeline;
-	var _pipelinePremultAlpha:Pipeline;
+	var _pipelineDefault:Pipeline;
 
-	var _texture:Texture;
 	var _textureIds:SparseSet;
-	var _textures:haxe.ds.Vector<Texture>;
 
 	var _currentPipeline:Pipeline;
 	var _vertexBuffer:VertexBuffer;
@@ -120,10 +109,8 @@ class PolygonBatch {
 		_bufferSize = size;
 		_vertsPerGeom = vertsPerGeom;
 
-		_pipelineAlpha = Graphics.pipelineTexturedM;
-		_pipelinePremultAlpha = Graphics.pipelineTexturedPremultAlphaM;
-
-		_currentPipeline = _pipelinePremultAlpha;
+		_pipelineDefault = Graphics.pipelineMultiTextured;
+		_currentPipeline = _pipelineDefault;
 
 		_drawMatrix = new FastMatrix3();
 
@@ -144,7 +131,7 @@ class PolygonBatch {
 			_indicesPerGeom = 0;
 		}
 
-		_vertexBuffer = new VertexBuffer(_maxVertices, _pipelineAlpha.inputLayout[0], Usage.DynamicUsage);
+		_vertexBuffer = new VertexBuffer(_maxVertices, _pipelineDefault.inputLayout[0], Usage.DynamicUsage);
 		_vertices = _vertexBuffer.lock();
 
 		if (Texture.renderTargetsInvertedY) {
@@ -152,7 +139,6 @@ class PolygonBatch {
 		} else {
 			_projection.orto(0, Clay.window.width, Clay.window.height, 0);
 		}
-		_textures = new haxe.ds.Vector(Graphics.maxShaderTextures);
 		_textureIds = new SparseSet(Texture.maxTextures);
 	}
 
@@ -172,7 +158,6 @@ class PolygonBatch {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before end');
 		flush();
 		isDrawing = false;
-		_texture = null;
 	}
 
 	public function flush() {
@@ -183,14 +168,6 @@ class PolygonBatch {
 		if(_vertPos > maxVerticesInBatch) maxVerticesInBatch = _vertPos;
 
 		_currentPipeline.setMatrix3('projectionMatrix', _projection);	
-
-		var i:Int = 0;
-		while(i < _textureIds.used) {
-			_currentPipeline.setTexture('tex[$i]', _textures[i]);
-			_currentPipeline.setTextureParameters('tex[$i]', _textureAddressing, _textureAddressing, _textureFilter, _textureFilter, _textureMipFilter);
-			_textures[i] = null;
-			i++;
-		}
 		
 		_graphics.setPipeline(_currentPipeline);
 		_graphics.applyUniforms(_currentPipeline);
@@ -278,7 +255,7 @@ class PolygonBatch {
 
 	inline function drawPolyInternal(texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, transform:FastMatrix3, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
 		var indCount = _useIndices ? indices.length : _indicesPerGeom;
-		var pipeline = getPipeline(_premultipliedAlpha);
+		var pipeline = _pipeline != null ? _pipeline : _pipelineDefault;
 
 		if(vertices.length >= _maxVertices || indCount >= _maxIndices) {
 			throw('can`t batch geometry with vertices(${vertices.length}/$_maxVertices), indices($indCount/$_maxIndices)');
@@ -290,7 +267,15 @@ class PolygonBatch {
 			flush();
 		}
 
-		if(texture != _texture) switchTexture(texture);
+		if(texture == null) texture = Graphics.textureDefault;
+
+		var texId = _textureIds.getSparse(texture.id);
+		if(texId < 0) {
+			if(_textureIds.used >= Graphics.maxShaderTextures) flush();
+			texId = _textureIds.used;
+			bindTexture(texture, texId);
+			_textureIds.insert(texture.id);
+		}
 
 		_currentPipeline = pipeline;
 
@@ -316,7 +301,7 @@ class PolygonBatch {
 		var vertIdx = _vertPos * Graphics.vertexSizeMultiTextured;
 		final m = transform;
 		final opacity = this.opacity;
-		final textureId = _textureIds.getSparse(_texture.id);
+		final texFormat = TextureFormat.RGBA32;
 		var v:Vertex;
 
 		i = 0;
@@ -334,10 +319,16 @@ class PolygonBatch {
 			_vertices[vertIdx++] = v.u * rsw + rsx;
 			_vertices[vertIdx++] = v.v * rsh + rsy;
 
-			_vertices[vertIdx++] = textureId;
+			_vertices[vertIdx++] = texId;
+			_vertices[vertIdx++] = texFormat;
 
 			_vertPos++;
 		}
+	}
+
+	inline function bindTexture(texture:Texture, slot:Int) {
+		_currentPipeline.setTexture('tex[$slot]', texture);
+		_currentPipeline.setTextureParameters('tex[$slot]', _textureAddressing, _textureAddressing, _textureFilter, _textureFilter, _textureMipFilter);
 	}
 
 	function createStaticIndexBuffer(geomCount:Int, vertsPerGeom:Int, geomIndices:Array<Int>) {
@@ -359,22 +350,6 @@ class PolygonBatch {
 		buffer.unlock();
 
 		return buffer;
-	}
-
-	inline function getPipeline(premultAlpha:Bool):Pipeline {
-		return _pipeline != null ? _pipeline : (premultAlpha ? _pipelinePremultAlpha : _pipelineAlpha);		
-	}
-
-	inline function switchTexture(texture:Texture) {
-		if(_textureIds.used >= Graphics.maxShaderTextures) flush();
-
-		if(!_textureIds.has(texture.id)) {
-			_textures[_textureIds.used] = texture;
-			_textureIds.insert(texture.id);
-		}
-		_texture = texture;
-		_invTexWidth = 1 / _texture.widthActual;
-		_invTexHeight = 1 / _texture.heightActual;
 	}
 
 }
