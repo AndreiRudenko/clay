@@ -23,6 +23,7 @@ class ImmediateColoredRenderer {
 	var _projection:FastMatrix3 = new FastMatrix3();
 	inline function get_projection() return _projection;
 	function set_projection(v:FastMatrix3) {
+		Log.assert(!_inGeometryMode, 'ImmediateColoredRenderer.endGeometry must be called before changing projection');
 		if(isDrawing) flush();
 		return _projection = v;
 	}
@@ -31,6 +32,7 @@ class ImmediateColoredRenderer {
 	var _pipeline:Pipeline;
 	inline function get_pipeline() return _pipeline;
 	function set_pipeline(v:Pipeline) {
+		Log.assert(!_inGeometryMode, 'ImmediateColoredRenderer.endGeometry must be called before changing pipeline');
 		if(isDrawing) flush();
 		_pipeline = v;
 		_currentPipeline = _pipeline != null ? _pipeline : _pipelineColored;
