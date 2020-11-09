@@ -63,6 +63,9 @@ class Texture extends Resource {
 	public var height(get, never):Int;
 	inline function get_height() return image.height;
 
+	public var format(get, never):TextureFormat;
+	inline function get_format() return image.format;
+
 	public var isRenderTarget(default, null):Bool;
 
 	public var image:kha.Image;

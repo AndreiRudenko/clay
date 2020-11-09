@@ -304,11 +304,12 @@ class SpriteBatch {
 		final right = (regionX + regionW) / texWidth;
 		final bottom = (regionY + regionH) / texHeight;
 
+		final texFormat = texture.format;
 		final m = transform;
 
 		addQuadVertices(
 			texId,
-			TextureFormat.RGBA32,
+			texFormat,
 			m.getTransformX(0, 0), m.getTransformY(0, 0), color, left, top,
 			m.getTransformX(width, 0), m.getTransformY(width, 0), color, right, top,
 			m.getTransformX(width, height), m.getTransformY(width, height), color, right, bottom,
@@ -354,6 +355,7 @@ class SpriteBatch {
 		var v4:Vertex;
 
 		var texId:Int = _textureIds.getSparse(texture.id);
+		final texFormat = texture.format;
 		
 		if(countImg <= 0) countImg = Math.floor(vertices.length / 4);
 
@@ -381,7 +383,7 @@ class SpriteBatch {
 
 			addQuadVertices(
 				texId,
-				TextureFormat.RGBA32,
+				texFormat,
 				m.getTransformX(v1.x, v1.y), m.getTransformY(v1.x, v1.y), v1.color, v1.u * rsw + rsx, v1.v * rsh + rsy,
 				m.getTransformX(v2.x, v2.y), m.getTransformY(v2.x, v2.y), v2.color, v2.u * rsw + rsx, v2.v * rsh + rsy,
 				m.getTransformX(v3.x, v3.y), m.getTransformY(v3.x, v3.y), v3.color, v3.u * rsw + rsx, v3.v * rsh + rsy,
@@ -422,6 +424,7 @@ class SpriteBatch {
 
 		var i:Int = 0;
 		var texId:Int = _textureIds.getSparse(texture.id);
+		final texFormat = texture.format;
 
 		final m = transform;
 
@@ -455,7 +458,7 @@ class SpriteBatch {
 
 					addQuadVertices(
 						texId,
-						TextureFormat.L8, // TODO: push to kha repo textureFormat variable for Image
+						texFormat,
 						m.getTransformX(x0, y0), m.getTransformY(x0, y0), color, left, top,
 						m.getTransformX(x1, y0), m.getTransformY(x1, y0), color, right, top,
 						m.getTransformX(x1, y1), m.getTransformY(x1, y1), color, right, bottom,

@@ -287,7 +287,8 @@ class SpriteCache {
 		}
 	}
 
-	inline function addInternal(
+	#if !clay_debug inline #end
+	function addInternal(
 		texture:Texture, 
 		transform:FastMatrix3, 
 		width:Float, height:Float, 
@@ -330,11 +331,12 @@ class SpriteCache {
 		final bottom = (regionY + regionH) / texture.heightActual;
 
 		final m = transform;
-		final textureId = _textureIds.getSparse(texture.id);
+		final texId = _textureIds.getSparse(texture.id);
+		final texFormat = texture.format;
 
 		addVerticesToBuffer(
-			textureId,
-			TextureFormat.RGBA32,
+			texId,
+			texFormat,
 			m.getTransformX(0, 0), m.getTransformY(0, 0), color, left, top,
 			m.getTransformX(width, 0), m.getTransformY(width, 0), color, right, top,
 			m.getTransformX(width, height), m.getTransformY(width, height), color, right, bottom,
@@ -345,7 +347,8 @@ class SpriteCache {
 		lastCommand.count += 6;
 	}
 
-	inline function addVerticesInternal(
+	#if !clay_debug inline #end
+	function addVerticesInternal(
 		texture:Texture, 
 		vertices:Array<Vertex>, 
 		transform:FastMatrix3, 
@@ -382,6 +385,7 @@ class SpriteCache {
 
 		final m = transform;
 		final texId = _textureIds.getSparse(texture.id);
+		final texFormat = texture.format;
 
 		if(countImg <= 0) countImg = Math.floor(vertices.length / 4);
 
@@ -401,7 +405,7 @@ class SpriteCache {
 
 			addVerticesToBuffer(
 				texId,
-				TextureFormat.RGBA32,
+				texFormat,
 				m.getTransformX(v1.x, v1.y), m.getTransformY(v1.x, v1.y), v1.color, v1.u, v1.v,
 				m.getTransformX(v2.x, v2.y), m.getTransformY(v2.x, v2.y), v2.color, v2.u, v2.v,
 				m.getTransformX(v3.x, v3.y), m.getTransformY(v3.x, v3.y), v3.color, v3.u, v3.v,

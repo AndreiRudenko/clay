@@ -339,7 +339,7 @@ class PolygonBatch {
 		var vertIdx = _vertPos * Graphics.vertexSizeMultiTextured;
 		final m = transform;
 		final opacity = this.opacity;
-		final texFormat = TextureFormat.RGBA32;
+		final texFormat = texture.format;
 		var v:Vertex;
 
 		while(offsetVerts < countVerts) {

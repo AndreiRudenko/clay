@@ -193,6 +193,8 @@ class ImmediateTexturedRenderer {
 			_textureIds.insert(texture.id);
 		}
 
+		_texFormat = texture.format;
+
 		_vertStartPos = _vertsDraw;
 		_vertPos = _vertsDraw;
 		_indPos = _indicesDraw;

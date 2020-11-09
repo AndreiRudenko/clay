@@ -380,7 +380,7 @@ class PolygonCache {
 		final m = transform;
 		final texId = _textureIds.getSparse(texture.id);
 		final opacity = this.opacity;
-		final texFormat = TextureFormat.RGBA32;
+		final texFormat = texture.format;
 		var vertIdx = vertPos * Graphics.vertexSizeMultiTextured;
 		var v:Vertex;
 
