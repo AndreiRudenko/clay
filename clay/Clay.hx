@@ -7,6 +7,7 @@ class Clay {
 	@:allow(clay.App)
 	public static var app(default, null):App;
 
+	public static var display(get, never):clay.Display;
 	public static var window(get, never):clay.Window;
 	public static var graphics(get, never):clay.Graphics;
 	public static var input(get, never):clay.Input;
@@ -41,6 +42,7 @@ class Clay {
 	public static inline function next(func:()->Void) app.next(func);
 	public static inline function defer(func:()->Void) app.defer(func);
 
+	static inline function get_display() return Display.primary;
 	static inline function get_window() return app.window;
 	static inline function get_graphics() return app.graphics;
 	static inline function get_input() return app.input;
