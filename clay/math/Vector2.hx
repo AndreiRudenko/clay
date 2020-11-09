@@ -1,12 +1,17 @@
 package clay.math;
 
+@:structInit
 class Vector2 {
 
 	public var x(default, set):Float;
-	function set_x(v:Float) return x = v;
+	var _x:Float;
+	inline function get_x() return _x;
+	function set_x(v:Float) return _x = v;
 
 	public var y(default, set):Float;
-	function set_y(v:Float) return y = v;
+	var _y:Float;
+	inline function get_y() return _y;
+	function set_y(v:Float) return _y = v;
 
 	public var length(get, set):Float;
 	inline function get_length() return Math.sqrt(x * x + y * y);
@@ -19,14 +24,14 @@ class Vector2 {
 	public var lengthSq(get, never):Float;
 	inline function get_lengthSq() return x * x + y * y;
 
-
-	public function new(x:Float = 0, y:Float = 0) {
-		set(x, y);
+	public inline function new(x:Float = 0, y:Float = 0) {
+		_x = x;
+		_y = y;
 	}
 
 	public function set(x:Float, y:Float) {
-		this.x = x;
-		this.y = y;
+		_x = x;
+		_y = y;
 		
 		return this;
 	}
@@ -125,7 +130,7 @@ class Vector2 {
 		return this;
 	}
 
-	public function perpendicular(clockwise:Bool = true) {
+	public inline function perpendicular(clockwise:Bool = true) {
 		if(clockwise) {
 			set(y, -x);
 		} else {
@@ -134,10 +139,15 @@ class Vector2 {
 		return this;
 	}
 
-	public function rotate(radians:Float) {
+	public inline function rotate(radians:Float) {
 		var ca = Math.cos(radians);
 		var sa = Math.sin(radians);
 		set(ca * x - sa * y, sa * x + ca * y);
+		return this;
+	}
+
+	public inline function transform(a:Float, b:Float, c:Float, d:Float, tx:Float, ty:Float) {
+		set(a * x + c * y + tx, b * x + d * y + ty);
 		return this;
 	}
 	

@@ -29,13 +29,13 @@ abstract FastVector2(kha.math.FastVector2) from kha.math.FastVector2 to kha.math
 	}
 
 	public inline function copyFrom(other:FastVector2) {
-		this.x = other.x;
-		this.y = other.y;
+		x = other.x;
+		y = other.y;
 	}
 
 	public inline function fromVector2(other:Vector2) {
-		this.x = other.x;
-		this.y = other.y;
+		x = other.x;
+		y = other.y;
 	}
 
 	public inline function equals(other:FastVector2):Bool {
@@ -79,8 +79,8 @@ abstract FastVector2(kha.math.FastVector2) from kha.math.FastVector2 to kha.math
 	}
 
 	public inline function add(other:FastVector2) {
-		this.x += other.x;
-		this.y += other.y;
+		x += other.x;
+		y += other.y;
 	}
 
 	public inline function addXY(x:FastFloat, y:FastFloat) {
@@ -89,13 +89,13 @@ abstract FastVector2(kha.math.FastVector2) from kha.math.FastVector2 to kha.math
 	}
 
 	public inline function addScalar(v:FastFloat) {
-		this.x += v;
-		this.y += v;
+		x += v;
+		y += v;
 	}
 
 	public inline function subtract(other:FastVector2) {
-		this.x -= other.x;
-		this.y -= other.y;
+		x -= other.x;
+		y -= other.y;
 	}
 
 	public inline function subtractXY(x:FastFloat, y:FastFloat) {
@@ -104,13 +104,13 @@ abstract FastVector2(kha.math.FastVector2) from kha.math.FastVector2 to kha.math
 	}
 
 	public inline function subtractScalar(v:FastFloat) {
-		this.x -= v;
-		this.y -= v;
+		x -= v;
+		y -= v;
 	}
 
 	public inline function multiply(other:FastVector2) {
-		this.x *= other.x;
-		this.y *= other.y;
+		x *= other.x;
+		y *= other.y;
 	}
 
 	public inline function multiplyXY(x:FastFloat, y:FastFloat) {
@@ -119,13 +119,13 @@ abstract FastVector2(kha.math.FastVector2) from kha.math.FastVector2 to kha.math
 	}
 
 	public inline function multiplyScalar(v:FastFloat) {
-		this.x *= v;
-		this.y *= v;
+		x *= v;
+		y *= v;
 	}
 
 	public inline function divide(other:FastVector2) {
-		this.x /= other.x;
-		this.y /= other.y;
+		x /= other.x;
+		y /= other.y;
 	}
 
 	public inline function divideXY(x:FastFloat, y:FastFloat) {
@@ -134,17 +134,24 @@ abstract FastVector2(kha.math.FastVector2) from kha.math.FastVector2 to kha.math
 	}
 
 	public inline function divideScalar(v:FastFloat) {
-		this.x /= v;
-		this.y /= v;
+		x /= v;
+		y /= v;
 	}
 
 	public inline function rotate(radians:FastFloat) {
 		var ca = Math.cos(radians);
 		var sa = Math.sin(radians);
+		var tmp = x;
 		this.x = ca * x - sa * y;
-		this.y = sa * x + ca * y;
+		this.y = sa * tmp + ca * y;
 	}
-	
+
+	public inline function transform(a:FastFloat, b:FastFloat, c:FastFloat, d:FastFloat, tx:FastFloat, ty:FastFloat) {
+		var tmp = x;
+		x = a * x + c * y + tx;
+		y = b * tmp + d * y + ty;
+	}
+
 	// return angle in radians
 	public inline function angle2D(other:FastVector2):FastFloat {
 		return Math.atan2(other.y - y, other.x - x);

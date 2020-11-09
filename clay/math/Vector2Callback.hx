@@ -1,32 +1,30 @@
 package clay.math;
 
-
+@:structInit
 class Vector2Callback extends Vector2 {
 
     public var ignoreListeners:Bool = false;
     public var listener:(v:Vector2)->Void;
 
-    public function new(x:Float = 0, y:Float = 0) {
+    public inline function new(x:Float = 0, y:Float = 0) {
         super(x, y);
     }
 
     override function set(x:Float, y:Float) {
-        var prev = ignoreListeners;
-        ignoreListeners = true;
-        super.set(x, y);
-        ignoreListeners = prev;
+        _x = x;
+        _y = y;
         callListener();
         return this;
     }
 
     override function set_x(v:Float):Float {
-        super.set_x(v);
+        _x = x;
         callListener();
         return v;
     }
 
     override function set_y(v:Float):Float {
-        super.set_y(v);
+        _y = y;
         callListener();
         return v;
     }

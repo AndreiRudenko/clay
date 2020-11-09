@@ -10,10 +10,10 @@ class RectangleCallback extends Rectangle {
 	}
 
 	override function set(x:Float, y:Float, w:Float, h:Float) {
-		var prev = ignoreListeners;
-		ignoreListeners = true;
-	    super.set(x, y, w, h);
-		ignoreListeners = prev;
+		_x = x;
+		_y = y;
+		_w = w;
+		_h = h;
 		callListener();
 	    return this;
 	}
@@ -42,7 +42,7 @@ class RectangleCallback extends Rectangle {
 		return v;
 	}
 
-	public function listen(f:(r:Rectangle)->Void):RectangleCallback {
+	public inline function listen(f:(r:Rectangle)->Void):RectangleCallback {
 		listener = f;
 		return this;
 	}
