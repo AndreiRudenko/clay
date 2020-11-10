@@ -18,13 +18,13 @@ class Vector2Callback extends Vector2 {
     }
 
     override function set_x(v:Float):Float {
-        _x = x;
+        _x = v;
         callListener();
         return v;
     }
 
     override function set_y(v:Float):Float {
-        _y = y;
+        _y = v;
         callListener();
         return v;
     }

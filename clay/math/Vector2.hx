@@ -3,12 +3,12 @@ package clay.math;
 @:structInit
 class Vector2 {
 
-	public var x(default, set):Float;
+	public var x(get, set):Float;
 	var _x:Float;
 	inline function get_x() return _x;
 	function set_x(v:Float) return _x = v;
 
-	public var y(default, set):Float;
+	public var y(get, set):Float;
 	var _y:Float;
 	inline function get_y() return _y;
 	function set_y(v:Float) return _y = v;
