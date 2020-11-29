@@ -366,7 +366,7 @@ class SpriteCache {
 		vertices:Array<Vertex>, 
 		transform:FastMatrix3, 
 		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int, 
-		offsetImg:Int, countImg:Int
+		offsetImg:Int, ?countImg:Int
 	) {
 		Log.assert(vertices.length % 4 == 0, 'SpriteCache.addImageVertices with non 4 vertices per image: (${vertices.length})');
 
@@ -374,6 +374,8 @@ class SpriteCache {
 
 		if(regionW == null) regionW = texture.widthActual;
 		if(regionH == null) regionH = texture.heightActual;
+
+		if(countImg == null) countImg = Math.floor(vertices.length / 4);
 
 		var lastCommand = _currentCache.getLastCommand();
 		final lastTextureIndex = lastCommand.texturesUsed-1;
@@ -402,8 +404,6 @@ class SpriteCache {
 		final m = transform;
 		final texId = _textureIds.getSparse(texture.id);
 		final texFormat = texture.format;
-
-		if(countImg <= 0) countImg = Math.floor(vertices.length / 4);
 
 		var start:Int = offsetImg * 4;
 		var end:Int = (offsetImg + countImg) * 4;

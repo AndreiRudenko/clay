@@ -255,14 +255,14 @@ class PolygonCache {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
-		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
 	) {
 		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before add');
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			if(scaleX == 0 || scaleY == 0) return;
+			if(scaleX == 0 || scaleY == 0 || countVerts <= 0 || countInds <= 0) return;
 			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 			addPolygonInternal(
 				polygon.texture, polygon.vertices, polygon.indices, 
@@ -276,13 +276,14 @@ class PolygonCache {
 	public function addPolygonTransform(
 		polygon:Polygon, 
 		transform:FastMatrix3,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
-		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
 	) {
 		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before add');
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
+			if(countVerts <= 0 || countInds <= 0) return;
 			addPolygonInternal(
 				polygon.texture, polygon.vertices, polygon.indices, 
 				transform, 
@@ -301,14 +302,14 @@ class PolygonCache {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
-		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
 	) {
 		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before add');
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			if(scaleX == 0 || scaleY == 0) return;
+			if(scaleX == 0 || scaleY == 0 || countVerts <= 0 || countInds <= 0) return;
 			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 			addPolygonInternal(
 				texture, vertices, indices, 
@@ -324,13 +325,14 @@ class PolygonCache {
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
 		transform:FastMatrix3,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
-		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
 	) {
 		Log.assert(_currentCache != null, 'PolygonCache.beginCache must be called before add');
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
+			if(countVerts <= 0 || countInds <= 0) return;
 			addPolygonInternal(
 				texture, vertices, indices, 
 				transform, 
@@ -345,7 +347,7 @@ class PolygonCache {
 		texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, 
 		transform:FastMatrix3, 
 		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int,
-		offsetVerts:Int, countVerts:Int, offsetInds:Int, countInds:Int
+		offsetVerts:Int, ?countVerts:Int, offsetInds:Int, ?countInds:Int
 	) {
 		if(texture == null) texture = Graphics.textureDefault;
 
@@ -377,8 +379,8 @@ class PolygonCache {
 		var rsh = regionH / texture.heightActual;
 
 		// get last vertex and index idx
-		countVerts = countVerts <= 0 ? vertices.length : countVerts + offsetVerts;
-		countInds = countInds <= 0 ? indices.length : countInds + offsetInds;
+		countVerts = countVerts == null ? vertices.length : countVerts + offsetVerts;
+		countInds = countInds == null ? indices.length : countInds + offsetInds;
 
 		var vertPos = _currentCache.usedV;
 		var indPos = _currentCache.usedI;
