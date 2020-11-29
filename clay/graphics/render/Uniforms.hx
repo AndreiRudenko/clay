@@ -75,7 +75,10 @@ class Uniforms {
 			boolMap.set(name, bool);
 		}
 
-		dirtyUniforms.push(bool);
+		if(!bool.used) {
+			dirtyUniforms.push(bool);
+			bool.used = true;
+		}
 
 		return bool;
 	}
@@ -91,7 +94,10 @@ class Uniforms {
 			intMap.set(name, int);
 		}
 
-		dirtyUniforms.push(int);
+		if(!int.used) {
+			dirtyUniforms.push(int);
+			int.used = true;
+		}
 
 		return int;
 	}
@@ -107,7 +113,10 @@ class Uniforms {
 			floatMap.set(name, float);
 		}
 
-		dirtyUniforms.push(float);
+		if(!float.used) {
+			dirtyUniforms.push(float);
+			float.used = true;
+		}
 
 		return float;
 	}
@@ -123,7 +132,10 @@ class Uniforms {
 			float2Map.set(name, float2);
 		}
 
-		dirtyUniforms.push(float2);
+		if(!float2.used) {
+			dirtyUniforms.push(float2);
+			float2.used = true;
+		}
 
 		return float2;
 	}
@@ -139,7 +151,10 @@ class Uniforms {
 			float3Map.set(name, float3);
 		}
 
-		dirtyUniforms.push(float3);
+		if(!float3.used) {
+			dirtyUniforms.push(float3);
+			float3.used = true;
+		}
 
 		return float3;
 	}
@@ -155,7 +170,10 @@ class Uniforms {
 			float4Map.set(name, float4);
 		}
 
-		dirtyUniforms.push(float4);
+		if(!float4.used) {
+			dirtyUniforms.push(float4);
+			float4.used = true;
+		}
 
 		return float4;
 	}
@@ -171,7 +189,10 @@ class Uniforms {
 			floatsMap.set(name, floats);
 		}
 
-		dirtyUniforms.push(floats);
+		if(!floats.used) {
+			dirtyUniforms.push(floats);
+			floats.used = true;
+		}
 
 		return floats;
 	}
@@ -187,7 +208,10 @@ class Uniforms {
 			vector2Map.set(name, vector2);
 		}
 
-		dirtyUniforms.push(vector2);
+		if(!vector2.used) {
+			dirtyUniforms.push(vector2);
+			vector2.used = true;
+		}
 
 		return vector2;
 	}
@@ -203,7 +227,10 @@ class Uniforms {
 			vector3Map.set(name, vector3);
 		}
 
-		dirtyUniforms.push(vector3);
+		if(!vector3.used) {
+			dirtyUniforms.push(vector3);
+			vector3.used = true;
+		}
 
 		return vector3;
 	}
@@ -219,7 +246,10 @@ class Uniforms {
 			vector4Map.set(name, vector4);
 		}
 
-		dirtyUniforms.push(vector4);
+		if(!vector4.used) {
+			dirtyUniforms.push(vector4);
+			vector4.used = true;
+		}
 
 		return vector4;
 	}
@@ -235,7 +265,10 @@ class Uniforms {
 			matrix3Map.set(name, matrix3);
 		}
 
-		dirtyUniforms.push(matrix3);
+		if(!matrix3.used) {
+			dirtyUniforms.push(matrix3);
+			matrix3.used = true;
+		}
 
 		return matrix3;
 	}
@@ -251,7 +284,10 @@ class Uniforms {
 			matrix4Map.set(name, matrix4);
 		}
 
-		dirtyUniforms.push(matrix4);
+		if(!matrix4.used) {
+			dirtyUniforms.push(matrix4);
+			matrix4.used = true;
+		}
 
 		return matrix4;
 	}
@@ -267,7 +303,10 @@ class Uniforms {
 			textureMap.set(name, texture);
 		}
 
-		dirtyUniforms.push(texture);
+		if(!texture.used) {
+			dirtyUniforms.push(texture);
+			texture.used = true;
+		}
 
 		return texture;
 	}
@@ -283,7 +322,10 @@ class Uniforms {
 			textureParamsMap.set(name, texParams);
 		}
 
-		dirtyUniforms.push(texParams);
+		if(!texParams.used) {
+			dirtyUniforms.push(texParams);
+			texParams.used = true;
+		}
 
 		return texParams;
 	}
@@ -299,7 +341,10 @@ class Uniforms {
 			videoMap.set(name, video);
 		}
 
-		dirtyUniforms.push(video);
+		if(!video.used) {
+			dirtyUniforms.push(video);
+			video.used = true;
+		}
 		
 		return video;
 	}
@@ -307,19 +352,22 @@ class Uniforms {
 	public inline function apply(g:Graphics) {
 		if(dirtyUniforms.length > 0) {
 			var i = 0;
+			var u:UniformBase;
 			while(i < dirtyUniforms.length) {
-				dirtyUniforms[i].commit(g);
+				u = dirtyUniforms[i];
+				u.commit(g);
+				u.used = false;
 				i++;
 			}
 			ArrayTools.clear(dirtyUniforms);
 		}
 	}
 
-
 }
 
 private class UniformBase {
 
+	public var used:Bool = false;
 	public function commit(g:Graphics) {}
 
 }
