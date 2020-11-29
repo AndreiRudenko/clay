@@ -3,10 +3,7 @@ package clay.utils;
 abstract Random(kha.math.Random) from kha.math.Random to kha.math.Random {
 
     public inline function new(?seed:Int) {
-        if(seed == null) {
-            seed = Std.random(0x7fffffff);
-        }
-
+        if(seed == null) seed = Std.random(0x7fffffff);
         this = new kha.math.Random(seed);
     }
 
