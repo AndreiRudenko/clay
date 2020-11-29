@@ -234,14 +234,9 @@ class App {
 
 	function render(f:Array<Framebuffer>) {
 		Log.verbose("render");
-
-		// debug.start(DebugTag.process);
-
-		// debug.start(DebugTag.update);
+		
 		step(); // TODO: move to another place?
-		// debug.end(DebugTag.update);
 
-		// debug.start(DebugTag.render);
 		_renderEvent.set(graphics, window.buffer.image.g2, window.buffer.image.g4);
 
 		emitter.emit(RenderEvent.PRERENDER, _renderEvent);
@@ -251,9 +246,6 @@ class App {
 		window.render();
 
 		emitter.emit(RenderEvent.POSTRENDER, _renderEvent);
-
-		// debug.end(DebugTag.render);
-		// debug.end(DebugTag.process);
 	}
 
 	function step() {
