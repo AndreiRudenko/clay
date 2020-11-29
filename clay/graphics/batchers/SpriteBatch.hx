@@ -24,14 +24,26 @@ using StringTools;
 class SpriteBatch {
 
 	public var projection(get, set):FastMatrix3;
-	var _projection:FastMatrix3 = new FastMatrix3();
+	final _projection:FastMatrix3 = new FastMatrix3();
 	inline function get_projection() return _projection;
 	function set_projection(v:FastMatrix3) {
 		if(isDrawing) flush();
-		return _projection = v;
+		_projection.copyFrom(v);
+		if(isDrawing) setupMatrices();
+		return v;
+	}
+
+	public var transform(get, set):FastMatrix3;
+	final _transform:FastMatrix3 = new FastMatrix3();
+	inline function get_transform() return _transform;
+	function set_transform(v:FastMatrix3) {
+		if(isDrawing) flush();
+		_transform.copyFrom(v);
+		if(isDrawing) setupMatrices();
+		return v;
 	}
 	
-	public var transform:FastMatrix3 = new FastMatrix3();
+	public final combined:FastMatrix3 = new FastMatrix3();
 
 	public var color:Color = Color.WHITE;
 
@@ -143,6 +155,7 @@ class SpriteBatch {
 		isDrawing = true;
 		renderCalls = 0;
 		_graphics.setIndexBuffer(_indexBuffer);
+		setupMatrices();
 	}
 
 	public function end() {
@@ -157,8 +170,6 @@ class SpriteBatch {
 		renderCalls++;
 		renderCallsTotal++;
 		if(_bufferIdx > maxSpritesInBatch) maxSpritesInBatch = _bufferIdx;
-
-		_currentPipeline.setMatrix3('projectionMatrix', _projection);
 
 		_vertexBuffer.unlock(_bufferIdx * 4);
 		_vertices = _vertexBuffer.lock();
@@ -193,54 +204,75 @@ class SpriteBatch {
 	public function drawImage(
 		texture:Texture, 
 		x:Float = 0, y:Float = 0, 
-		width:Float = 0, height:Float = 0, 
+		?width:Float, ?height:Float, 
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY).append(transform);
+		if(width == 0 || height == 0) return;
+		if(texture == null) texture = Graphics.textureDefault;
+		if(width == null) width = texture.widthActual;
+		if(height == null) height = texture.heightActual;
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
+		_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY);
 		drawImageInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 	}
 
 	public function drawImageTransform(
 		texture:Texture, 
-		transform:Matrix,
+		transform:FastMatrix3,
 		width:Float = 0, height:Float = 0, 
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		_drawMatrix.fromMatrix(transform).append(this.transform);
-		drawImageInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
+		if(width == 0 || height == 0) return;
+		if(texture == null) texture = Graphics.textureDefault;
+		if(width == null) width = texture.widthActual;
+		if(height == null) height = texture.heightActual;
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
+		drawImageInternal(texture, transform, width, height, regionX, regionY, regionW, regionH);
 	}
 
 	public function drawImageVertices(
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		x:Float = 0, y:Float = 0, 
-		scaleX:Float = 0, scaleY:Float = 0, 
+		scaleX:Float = 1, scaleY:Float = 1, 
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
-		offsetImg:Int = 0, countImg:Int = 0
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
+		offsetImg:Int = 0, ?countImg:Int
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
+		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
+		if(scaleX == 0 || scaleY == 0) return;
+		if(texture == null) texture = Graphics.textureDefault;
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
+		if(countImg == null) countImg = Math.floor(vertices.length / 4);
+		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
 	}
 
 	public function drawImageVerticesTransform(
 		texture:Texture,
 		vertices:Array<Vertex>, 
-		transform:Matrix,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
-		offsetImg:Int = 0, countImg:Int = 0
+		transform:FastMatrix3,
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
+		offsetImg:Int = 0, ?countImg:Int
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		_drawMatrix.fromMatrix(transform).append(this.transform);
-		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
+		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
+		if(texture == null) texture = Graphics.textureDefault;
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
+		if(countImg == null) countImg = Math.floor(vertices.length / 4);
+		drawImageVerticesInternal(texture, vertices, transform, regionX, regionY, regionW, regionH, offsetImg, countImg);
 	}
 
 	public function drawString(
@@ -254,25 +286,22 @@ class SpriteBatch {
 	) {		
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		if(text.length == 0) return;
-		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
+		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawStringInternal(text, size, font, spacing, _drawMatrix);
 	}
 
 	public function drawStringTransform(
 		text:String, 
-		transform:Matrix,
+		transform:FastMatrix3,
 		size:Int = 16, ?font:Font, spacing:Int = 0
 	) {		
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		if(text.length == 0) return;
-		_drawMatrix.fromMatrix(transform).append(this.transform);
-		drawStringInternal(text, size, font, spacing, _drawMatrix);
+		drawStringInternal(text, size, font, spacing, transform);
 	}
 
 	#if !clay_debug inline #end
 	function drawImageInternal(texture:Texture, transform:FastMatrix3, width:Float, height:Float, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
-		if(texture == null) texture = Graphics.textureDefault;
-
 		final pipeline = getPipeline();
 		if(pipeline != _currentPipeline) switchPipeline(pipeline);
 
@@ -288,16 +317,6 @@ class SpriteBatch {
 
 		final texWidth = texture.widthActual;
 		final texHeight = texture.heightActual;
-
-		if(width == 0 && height == 0) {
-			width = texWidth;
-			height = texHeight;
-		}
-
-		if(regionW == 0 && regionH == 0) {
-			regionW = texWidth;
-			regionH = texHeight;
-		}
 
 		final left = regionX / texWidth;
 		final top = regionY / texHeight;
@@ -327,20 +346,11 @@ class SpriteBatch {
 		regionX:Int, regionY:Int, regionW:Int, regionH:Int,
 		offsetImg:Int, countImg:Int
 	) {
-		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
-
-		if(texture == null) texture = Graphics.textureDefault;
-
 		final pipeline = getPipeline();
 		if(pipeline != _currentPipeline) switchPipeline(pipeline);
 
 		final texWidth = texture.widthActual;
 		final texHeight = texture.heightActual;
-
-		if(regionW == 0 && regionH == 0) {
-			regionW = texWidth;
-			regionH = texHeight;
-		}
 
 		final rsx = regionX / texWidth;
 		final rsy = regionY / texHeight;
@@ -357,8 +367,6 @@ class SpriteBatch {
 		var texId:Int = _textureIds.getSparse(texture.id);
 		final texFormat = texture.format;
 		
-		if(countImg <= 0) countImg = Math.floor(vertices.length / 4);
-
 		var start:Int = offsetImg * 4;
 		var end:Int = (offsetImg + countImg) * 4;
 
@@ -506,6 +514,11 @@ class SpriteBatch {
 	inline function bindTexture(texture:Texture, slot:Int) {
 		_currentPipeline.setTexture('tex[$slot]', texture);
 		_currentPipeline.setTextureParameters('tex[$slot]', _textureAddressing, _textureAddressing, _textureFilter, _textureFilter, _textureMipFilter);
+	}
+
+	inline function setupMatrices() {
+		combined.copyFrom(_projection).append(_transform);
+		_currentPipeline.setMatrix3('projectionMatrix', combined);
 	}
 
 	inline function addQuadVertices(

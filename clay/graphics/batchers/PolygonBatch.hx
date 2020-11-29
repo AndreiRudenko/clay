@@ -19,14 +19,26 @@ import clay.utils.SparseSet;
 class PolygonBatch {
 
 	public var projection(get, set):FastMatrix3;
-	var _projection:FastMatrix3 = new FastMatrix3();
+	final _projection:FastMatrix3 = new FastMatrix3();
 	inline function get_projection() return _projection;
 	function set_projection(v:FastMatrix3) {
 		if(isDrawing) flush();
-		return _projection = v;
+		_projection.copyFrom(v);
+		if(isDrawing) setupMatrices();
+		return v;
+	}
+
+	public var transform(get, set):FastMatrix3;
+	final _transform:FastMatrix3 = new FastMatrix3();
+	inline function get_transform() return _transform;
+	function set_transform(v:FastMatrix3) {
+		if(isDrawing) flush();
+		_transform.copyFrom(v);
+		if(isDrawing) setupMatrices();
+		return v;
 	}
 	
-	public var transform:FastMatrix3 = new FastMatrix3();
+	public final combined:FastMatrix3 = new FastMatrix3();
 
 	public var opacity(get, set):Float;
 	inline function get_opacity() return _opacityStack[_opacityStack.length-1];
@@ -152,6 +164,7 @@ class PolygonBatch {
 		isDrawing = true;
 		renderCalls = 0;	
 		if(!_useIndices) _graphics.setIndexBuffer(_indexBuffer);
+		setupMatrices();
 	}
 
 	public function end() {
@@ -166,8 +179,6 @@ class PolygonBatch {
 		renderCalls++;
 		renderCallsTotal++;
 		if(_vertPos > maxVerticesInBatch) maxVerticesInBatch = _vertPos;
-
-		_currentPipeline.setMatrix3('projectionMatrix', _projection);	
 		
 		_graphics.setPipeline(_currentPipeline);
 		_graphics.applyUniforms(_currentPipeline);
@@ -212,7 +223,7 @@ class PolygonBatch {
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
-		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
+		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawPolyInternal(
 			polygon.texture, polygon.vertices, polygon.indices,
 			_drawMatrix, 
@@ -223,15 +234,14 @@ class PolygonBatch {
 
 	public function drawPolygonTransform(
 		polygon:Polygon, 
-		transform:Matrix,
+		transform:FastMatrix3,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
-		_drawMatrix.fromMatrix(transform).append(this.transform);
 		drawPolyInternal(
 			polygon.texture, polygon.vertices, polygon.indices, 
-			_drawMatrix, 
+			transform, 
 			regionX, regionY, regionW, regionH, 
 			offsetVerts, countVerts, offsetInds, countInds
 		);
@@ -250,7 +260,7 @@ class PolygonBatch {
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
-		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
+		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawPolyInternal(
 			texture, vertices, indices, 
 			_drawMatrix, 
@@ -263,15 +273,14 @@ class PolygonBatch {
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
-		transform:Matrix,
+		transform:FastMatrix3,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
-		_drawMatrix.fromMatrix(transform).append(this.transform);
 		drawPolyInternal(
 			texture, vertices, indices, 
-			_drawMatrix, 
+			transform, 
 			regionX, regionY, regionW, regionH, 
 			offsetVerts, countVerts, offsetInds, countInds
 		);
@@ -366,6 +375,11 @@ class PolygonBatch {
 	inline function bindTexture(texture:Texture, slot:Int) {
 		_currentPipeline.setTexture('tex[$slot]', texture);
 		_currentPipeline.setTextureParameters('tex[$slot]', _textureAddressing, _textureAddressing, _textureFilter, _textureFilter, _textureMipFilter);
+	}
+
+	inline function setupMatrices() {
+		combined.copyFrom(_projection).append(_transform);
+		_currentPipeline.setMatrix3('projectionMatrix', combined);
 	}
 
 	function createStaticIndexBuffer(geomCount:Int, vertsPerGeom:Int, geomIndices:Array<Int>) {

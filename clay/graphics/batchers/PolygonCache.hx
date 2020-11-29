@@ -19,8 +19,23 @@ using clay.utils.ArrayTools;
 
 class PolygonCache {
 
-	public var projection:FastMatrix3 = new FastMatrix3();
-	public var transform:FastMatrix3 = new FastMatrix3();
+	public var projection(get, set):FastMatrix3;
+	final _projection:FastMatrix3 = new FastMatrix3();
+	inline function get_projection() return _projection;
+	function set_projection(v:FastMatrix3) {
+		_projection.copyFrom(v);
+		return v;
+	}
+
+	public var transform(get, set):FastMatrix3;
+	final _transform:FastMatrix3 = new FastMatrix3();
+	inline function get_transform() return _transform;
+	function set_transform(v:FastMatrix3) {
+		_transform.copyFrom(v);
+		return v;
+	}
+
+	public final combined:FastMatrix3 = new FastMatrix3();
 
 	public var opacity(get, set):Float;
 	inline function get_opacity() return _opacityStack[_opacityStack.length-1];
@@ -191,7 +206,8 @@ class PolygonCache {
 		final currentPipeline = pipeline != null ? pipeline : _pipelineDefault;
 
 		_graphics.setPipeline(currentPipeline);
-		currentPipeline.setMatrix3('projectionMatrix', projection);
+		combined.copyFrom(_projection).append(_transform);
+		currentPipeline.setMatrix3('projectionMatrix', combined);
 
 		var cmd:DrawCommand;
 		var i:Int = 0;
@@ -246,7 +262,7 @@ class PolygonCache {
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
+			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 			addPolygonInternal(
 				polygon.texture, polygon.vertices, polygon.indices, 
 				_drawMatrix, 
@@ -258,7 +274,7 @@ class PolygonCache {
 
 	public function addPolygonTransform(
 		polygon:Polygon, 
-		transform:Matrix,
+		transform:FastMatrix3,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
@@ -266,10 +282,9 @@ class PolygonCache {
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			_drawMatrix.fromMatrix(transform).append(this.transform);
 			addPolygonInternal(
 				polygon.texture, polygon.vertices, polygon.indices, 
-				_drawMatrix, 
+				transform, 
 				regionX, regionY, regionW, regionH,
 				offsetVerts, countVerts, offsetInds, countInds
 			);
@@ -292,7 +307,7 @@ class PolygonCache {
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
+			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 			addPolygonInternal(
 				texture, vertices, indices, 
 				_drawMatrix, 
@@ -306,7 +321,7 @@ class PolygonCache {
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
-		transform:Matrix,
+		transform:FastMatrix3,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
@@ -314,10 +329,9 @@ class PolygonCache {
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
-			_drawMatrix.fromMatrix(transform).append(this.transform);
 			addPolygonInternal(
 				texture, vertices, indices, 
-				_drawMatrix, 
+				transform, 
 				regionX, regionY, regionW, regionH,
 				offsetVerts, countVerts, offsetInds, countInds
 			);

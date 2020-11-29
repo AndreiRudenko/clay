@@ -20,8 +20,23 @@ using clay.utils.ArrayTools;
 
 class SpriteCache {
 
-	public var projection:FastMatrix3 = new FastMatrix3();
-	public var transform:FastMatrix3 = new FastMatrix3();
+	public var projection(get, set):FastMatrix3;
+	final _projection:FastMatrix3 = new FastMatrix3();
+	inline function get_projection() return _projection;
+	function set_projection(v:FastMatrix3) {
+		_projection.copyFrom(v);
+		return v;
+	}
+
+	public var transform(get, set):FastMatrix3;
+	final _transform:FastMatrix3 = new FastMatrix3();
+	inline function get_transform() return _transform;
+	function set_transform(v:FastMatrix3) {
+		_transform.copyFrom(v);
+		return v;
+	}
+
+	public final combined:FastMatrix3 = new FastMatrix3();
 
 	public var color:Color = Color.WHITE;
 
@@ -177,7 +192,8 @@ class SpriteCache {
 		final currentPipeline = pipeline != null ? pipeline : _pipelineDefault;
 
 		_graphics.setPipeline(currentPipeline);
-		currentPipeline.setMatrix3('projectionMatrix', projection);
+		combined.copyFrom(_projection).append(_transform);
+		currentPipeline.setMatrix3('projectionMatrix', combined);
 
 		var cmd:DrawCommand;
 		var i:Int = 0;
@@ -231,14 +247,14 @@ class SpriteCache {
 		if(_currentCache.used + 1 >= _currentCache.size) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
-			_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY).append(transform);
+			_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY);
 			addInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 		}
 	}
 
 	public function addImageTransform(
 		texture:Texture, 
-		transform:Matrix,
+		transform:FastMatrix3,
 		width:Float = 0, height:Float = 0, 
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
 	) {
@@ -246,8 +262,7 @@ class SpriteCache {
 		if(_currentCache.used + 1 >= _currentCache.size) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
-			_drawMatrix.fromMatrix(transform).append(this.transform);
-			addInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
+			addInternal(texture, transform, width, height, regionX, regionY, regionW, regionH);
 		}
 	}
 
@@ -266,7 +281,7 @@ class SpriteCache {
 		if(_currentCache.used * 4 + vertices.length >= _currentCache.size * 4) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
-			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY).append(transform);
+			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
 		}
 	}
@@ -274,7 +289,7 @@ class SpriteCache {
 	public function addImageVerticesTransform(
 		texture:Texture,
 		vertices:Array<Vertex>, 
-		transform:Matrix,
+		transform:FastMatrix3,
 		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
 		offsetImg:Int = 0, countImg:Int = 0
 	) {
@@ -282,8 +297,7 @@ class SpriteCache {
 		if(_currentCache.used * 4 + vertices.length >= _currentCache.size * 4) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
-			_drawMatrix.fromMatrix(transform).append(this.transform);
-			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
+			addVerticesInternal(texture, vertices, transform, regionX, regionY, regionW, regionH, offsetImg, countImg);
 		}
 	}
 
