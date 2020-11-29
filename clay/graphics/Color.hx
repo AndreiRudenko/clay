@@ -46,32 +46,23 @@ abstract Color(Int) from kha.Color to kha.Color {
 	}
 
 	public inline function set(r:Float, g:Float, b:Float, a:Float):Color {
-		set_r(r);
-		set_g(g);
-		set_b(b);
-		set_a(a);
-
+		this = (Std.int(a * 255) << 24) | (Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255);
 		return this;
 	}
 
-	public inline function setBytes(r:Int, g:Int, b:Int, a:Int):Color {
-		set_rB(r);
-		set_gB(g);
-		set_bB(b);
-		set_aB(a);
-		
+	public inline function setBytes(rB:Int, gB:Int, bB:Int, aB:Int):Color {
+		this = (aB << 24) | (rB << 16) | (gB << 8) | bB;		
 		return this;
 	}
 
 	public inline function lerp(to:Color, t:Float):Color {
 		t = Math.clamp(t, 0, 1);
-
-		set_r(r + t * (to.r - r));
-		set_g(g + t * (to.g - g));
-		set_b(b + t * (to.b - b));
-		set_a(a + t * (to.a - a));
-
-		return this;
+		return set(
+			r + t * (to.r - r),
+			g + t * (to.g - g),
+			b + t * (to.b - b),
+			a + t * (to.a - a)
+		);
 	}
 
 	public inline function setHSB(hue:Float, saturation:Float, brightness:Float):Color {
@@ -105,9 +96,7 @@ abstract Color(Int) from kha.Color to kha.Color {
 	}
 
 	inline function setRGB(r:Float, g:Float, b:Float) {
-		set_r(r);
-		set_g(g);
-		set_b(b);
+		this = (get_aB() << 24) | (Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255);
 	}
 
 	inline function get_r():Float {
