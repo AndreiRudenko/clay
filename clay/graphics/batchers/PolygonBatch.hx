@@ -220,7 +220,7 @@ class PolygonBatch {
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
 		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
-		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
 		if(scaleX == 0 || scaleY == 0) return;
@@ -237,9 +237,10 @@ class PolygonBatch {
 		polygon:Polygon, 
 		transform:FastMatrix3,
 		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
-		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
+		if(countVerts <= 0 || countInds <= 0) return;
 		drawPolyInternal(
 			polygon.texture, polygon.vertices, polygon.indices, 
 			transform, 
@@ -258,10 +259,10 @@ class PolygonBatch {
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
 		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
-		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
-		if(scaleX == 0 || scaleY == 0) return;
+		if(scaleX == 0 || scaleY == 0 || countVerts <= 0 || countInds <= 0) return;
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawPolyInternal(
 			texture, vertices, indices, 
@@ -277,9 +278,10 @@ class PolygonBatch {
 		indices:Array<Int>, 
 		transform:FastMatrix3,
 		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
-		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
+		if(countVerts <= 0 || countInds <= 0) return;
 		drawPolyInternal(
 			texture, vertices, indices, 
 			transform, 
@@ -288,13 +290,90 @@ class PolygonBatch {
 		);
 	}
 
+	// Draw vertices without matrix transformations, can be used for cached vertices for faster rendering
+	public function drawVerticesOnly(
+		texture:Texture,
+		vertices:Array<Vertex>, 
+		indices:Array<Int>, 
+		offsetVerts:Int = 0, ?countVerts:Int, offsetInds:Int = 0, ?countInds:Int
+	) {
+		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
+		if(countVerts <= 0 || countInds <= 0) return;
+
+		var vertCount:Int = vertices.length;
+		var indCount:Int = indices.length;
+		if(_useIndices) {
+			final geomCount = 0;
+			Log.assert(vertices.length % _vertsPerGeom == 0, 'PolygonBatch.drawImageVertices with non 4 vertices per quad: (${vertices.length})');
+
+			vertCount = Std.int(vertCount / _vertsPerGeom);
+			indCount = _indicesPerGeom * geomCount;
+		}
+		var pipeline = _pipeline != null ? _pipeline : _pipelineDefault;
+
+		if(vertCount >= _maxVertices || indCount >= _maxIndices) {
+			throw('PolygonBatch can`t batch geometry with vertices(${vertCount}/$_maxVertices), indices($indCount/$_maxIndices)');
+		} else if(_vertPos + vertCount >= _maxVertices || _indPos + indCount >= _maxIndices || pipeline != _currentPipeline ) {
+			flush();
+		}
+
+		if(texture == null) texture = Graphics.textureDefault;
+
+		var texId = _textureIds.getSparse(texture.id);
+		if(texId < 0) {
+			if(_textureIds.used >= Graphics.maxShaderTextures) flush();
+			texId = _textureIds.used;
+			bindTexture(texture, texId);
+			_textureIds.insert(texture.id);
+		}
+
+		_currentPipeline = pipeline;
+
+		// get last vertex and index idx
+		countVerts = countVerts == null ? vertCount : countVerts + offsetVerts;
+		countInds = countInds == null ? indCount : countInds + offsetInds;
+
+		if(_useIndices) {
+			while(offsetInds < countInds) {
+				_indices[_indPos++] = _vertPos + indices[offsetInds++];
+			}
+		} else {
+			_indPos += countInds - offsetInds;
+		}
+
+		var vertIdx = _vertPos * Graphics.vertexSizeMultiTextured;
+		final opacity = this.opacity;
+		final texFormat = texture.format;
+		var v:Vertex;
+
+		while(offsetVerts < countVerts) {
+			v = vertices[offsetVerts++];
+
+			_vertices[vertIdx++] = v.x;
+			_vertices[vertIdx++] = v.y;
+
+			_vertices[vertIdx++] = v.color.r;
+			_vertices[vertIdx++] = v.color.g;
+			_vertices[vertIdx++] = v.color.b;
+			_vertices[vertIdx++] = v.color.a * opacity;
+
+			_vertices[vertIdx++] = v.u;
+			_vertices[vertIdx++] = v.v;
+
+			_vertices[vertIdx++] = texId;
+			_vertices[vertIdx++] = texFormat;
+
+			_vertPos++;
+		}
+	}
+
 	#if !clay_debug inline #end
 	function drawPolyInternal(
 		texture:Texture, 
 		vertices:Array<Vertex>, indices:Array<Int>, 
 		transform:FastMatrix3, 
 		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int,
-		offsetVerts:Int, countVerts:Int, offsetInds:Int, countInds:Int
+		offsetVerts:Int, ?countVerts:Int, offsetInds:Int, ?countInds:Int
 	) {
 		var vertCount:Int = vertices.length;
 		var indCount:Int = indices.length;
@@ -334,8 +413,8 @@ class PolygonBatch {
 		final rsh = regionH / texture.heightActual;
 
 		// get last vertex and index idx
-		countVerts = countVerts <= 0 ? vertCount : countVerts + offsetVerts;
-		countInds = countInds <= 0 ? indCount : countInds + offsetInds;
+		countVerts = countVerts == null ? vertCount : countVerts + offsetVerts;
+		countInds = countInds == null ? indCount : countInds + offsetInds;
 
 		if(_useIndices) {
 			while(offsetInds < countInds) {

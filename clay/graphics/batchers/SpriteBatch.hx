@@ -241,8 +241,7 @@ class SpriteBatch {
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
-		if(scaleX == 0 || scaleY == 0) return;
-		if(countImg == null) countImg = Math.floor(vertices.length / 4);
+		if(scaleX == 0 || scaleY == 0 || countImg <= 0) return;
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
 	}
@@ -256,8 +255,65 @@ class SpriteBatch {
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
-		if(countImg == null) countImg = Math.floor(vertices.length / 4);
+		if(countImg <= 0) return;
 		drawImageVerticesInternal(texture, vertices, transform, regionX, regionY, regionW, regionH, offsetImg, countImg);
+	}
+
+	// Draw vertices without matrix transformations, can be used for cached vertices for faster rendering
+	public function drawImageVerticesOnly(
+		texture:Texture,
+		vertices:Array<Vertex>, 
+		offsetImg:Int = 0, ?countImg:Int
+	) {
+		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
+		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
+		if(countImg <= 0) return;
+		if(texture == null) texture = Graphics.textureDefault;
+		if(countImg == null) countImg = Math.floor(vertices.length / 4);
+
+		final pipeline = getPipeline();
+		if(pipeline != _currentPipeline) switchPipeline(pipeline);
+
+		var v1:Vertex;
+		var v2:Vertex;
+		var v3:Vertex;
+		var v4:Vertex;
+
+		var texId:Int = _textureIds.getSparse(texture.id);
+		final texFormat = texture.format;
+		
+		var start:Int = offsetImg * 4;
+		var end:Int = (offsetImg + countImg) * 4;
+
+		while(start < end) {
+			v1 = vertices[start++];
+			v2 = vertices[start++];
+			v3 = vertices[start++];
+			v4 = vertices[start++];
+
+			if(_bufferIdx + 1 >= _bufferSize) {
+				flush();
+				texId = -1;
+			}
+
+			if(texId < 0) {
+				if(_textureIds.used >= Graphics.maxShaderTextures) flush();
+				texId = _textureIds.used;
+				bindTexture(texture, texId);
+				_textureIds.insert(texture.id);
+			}
+
+			addQuadVertices(
+				texId,
+				texFormat,
+				v1.x, v1.y, v1.color, v1.u, v1.v,
+				v2.x, v2.y, v2.color, v2.u, v2.v,
+				v3.x, v3.y, v3.color, v3.u, v3.v,
+				v4.x, v4.y, v4.color, v4.u, v4.v
+			);
+
+			_bufferIdx++;
+		}
 	}
 
 	public function drawString(
@@ -270,7 +326,7 @@ class SpriteBatch {
 		skewX:Float = 0, skewY:Float = 0
 	) {		
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		if(text.length == 0) return;
+		if(text.length == 0 || size <= 0 || scaleX == 0 || scaleY == 0) return;
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawStringInternal(text, size, font, spacing, _drawMatrix);
 	}
@@ -281,7 +337,7 @@ class SpriteBatch {
 		size:Int = 16, ?font:Font, spacing:Int = 0
 	) {		
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
-		if(text.length == 0) return;
+		if(text.length == 0 || size <= 0) return;
 		drawStringInternal(text, size, font, spacing, transform);
 	}
 
@@ -337,12 +393,14 @@ class SpriteBatch {
 		vertices:Array<Vertex>, 
 		transform:FastMatrix3,  
 		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int,
-		offsetImg:Int, countImg:Int
+		offsetImg:Int, ?countImg:Int
 	) {
 		if(texture == null) texture = Graphics.textureDefault;
 
 		if(regionW == null) regionW = texture.widthActual;
 		if(regionH == null) regionH = texture.heightActual;
+
+		if(countImg == null) countImg = Math.floor(vertices.length / 4);
 
 		final pipeline = getPipeline();
 		if(pipeline != _currentPipeline) switchPipeline(pipeline);
@@ -366,7 +424,6 @@ class SpriteBatch {
 		var end:Int = (offsetImg + countImg) * 4;
 
 		while(start < end) {
-
 			v1 = vertices[start++];
 			v2 = vertices[start++];
 			v3 = vertices[start++];
