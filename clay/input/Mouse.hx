@@ -1,15 +1,17 @@
 package clay.input;
 
-import clay.system.App;
-import clay.utils.Log.*;
+import clay.App;
+import clay.utils.Log;
 import clay.utils.Bits;
 
 import clay.events.MouseEvent;
 
-@:allow(clay.input.InputManager)
-@:access(clay.system.App)
-class Mouse extends Input {
+@:allow(clay.Input)
+@:access(clay.App)
+class Mouse {
 
+	public var active(default, null):Bool = false;
+	
 	public var x(default, null):Int = 0;
 	public var y(default, null):Int = 0;
 
@@ -21,14 +23,12 @@ class Mouse extends Input {
 	var _mouseBindings:Map<String, UInt>;
 	var _binding:Bindings;
 
-	function new(app:App) {
-		super(app);
-
+	public function new() {
 		_mouseBindings = new Map();
 		_binding = Clay.input.binding;
 	}
 
-	override function enable() {
+	public function enable() {
 		if(active) {
 			return;
 		}
@@ -44,10 +44,10 @@ class Mouse extends Input {
 
 		#end
 
-		super.enable();
+		active = true;
 	}
 
-	override function disable() {
+	public function disable() {
 		if(!active) {
 			return;
 		}
@@ -63,7 +63,7 @@ class Mouse extends Input {
 		
 		_mouseEvent = null;
 
-		super.disable();
+		active = false;
 	}
 
 	public inline function pressed(button:Int):Bool {
@@ -120,7 +120,7 @@ class Mouse extends Input {
 	}
 
 	function _onPressed(button:Int, x:Int, y:Int) {
-		_debug('_onPressed x:$x, y$y, button:$button');
+		Log.debug('_onPressed x:$x, y$y, button:$button');
 
 		this.x = x;
 		this.y = y;
@@ -132,11 +132,11 @@ class Mouse extends Input {
 
 		checkBinding(button, true);
 
-		_app.emitter.emit(MouseEvent.MOUSE_DOWN, _mouseEvent);
+		Clay.app.emitter.emit(MouseEvent.MOUSE_DOWN, _mouseEvent);
 	}
 
 	function _onReleased(button:Int, x:Int, y:Int) {
-		_debug('_onPressed x:$x, y$y, button:$button');
+		Log.debug('_onPressed x:$x, y$y, button:$button');
 
 		this.x = x;
 		this.y = y;
@@ -149,28 +149,28 @@ class Mouse extends Input {
 
 		checkBinding(button, false);
 
-		_app.emitter.emit(MouseEvent.MOUSE_UP, _mouseEvent);
+		Clay.app.emitter.emit(MouseEvent.MOUSE_UP, _mouseEvent);
 	}
 
 	function _onWheel(d:Int) {
-		_debug('_onWheel delta:$d');
+		Log.debug('_onWheel delta:$d');
 
 		_mouseEvent.set(x, y, 0, 0, d, MouseEvent.MOUSE_WHEEL, MouseButton.NONE);
 
 		checkBinding(MouseButton.NONE, false); // todo: check this
 
-		_app.emitter.emit(MouseEvent.MOUSE_WHEEL, _mouseEvent);
+		Clay.app.emitter.emit(MouseEvent.MOUSE_WHEEL, _mouseEvent);
 	}
 
 	function _onMove(x:Int, y:Int, dx:Int, dy:Int) {
-		_verboser('_onMove x:$x, y$y, dx:$dx, dy:$dy');
+		Log.verbose('_onMove x:$x, y$y, dx:$dx, dy:$dy');
 
 		this.x = x;
 		this.y = y;
 
 		_mouseEvent.set(x, y, dx, dy, 0, MouseEvent.MOUSE_MOVE, MouseButton.NONE);
 
-		_app.emitter.emit(MouseEvent.MOUSE_MOVE, _mouseEvent);
+		Clay.app.emitter.emit(MouseEvent.MOUSE_MOVE, _mouseEvent);
 	}
 
 }

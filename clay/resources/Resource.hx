@@ -1,11 +1,13 @@
 package clay.resources;
 
-import clay.resources.ResourceManager;
+import clay.Resources;
 
+@:allow(clay.Resources)
 class Resource {
 
-	public var id:String;
-    public var resourceType:ResourceType;
+	public var name:String;
+	public var id(default, null):Int = -1;
+    public var resourceType(default, null):ResourceType;
     public var references(default, null):Int = 0;
 
 	public function unload() {}
@@ -14,11 +16,11 @@ class Resource {
 		return 0;
 	}
 
-	@:noCompletion public function ref() {
+	public function ref() {
 		references++;
 	}
 
-	@:noCompletion public function unref() {
+	public function unref() {
 		references--;
 	}
 

@@ -1,16 +1,16 @@
 package clay.audio.effects;
 
-import clay.utils.Mathf;
-import clay.utils.Log.*;
-import clay.audio.Audio;
+import clay.utils.Math;
+import clay.Audio;
+import clay.utils.DSP;
 
 class Compressor extends AudioEffect {
 
 	public var ratio(get, set):Float;
 
 	public var threshold(get, set):Float;
-	public var attackTime(get, set):Float; // sec
-	public var releaseTime(get, set):Float; // sec
+	public var attackTime(get, set):Float; // in seconds
+	public var releaseTime(get, set):Float; // in seconds
 
 	public var preGain(get, set):Float;
 	public var postGain(get, set):Float;
@@ -24,7 +24,7 @@ class Compressor extends AudioEffect {
 
 	var _slope:Float = 0;
 
-	var _lookaheadTime:Float = 0.005; // sec, 5ms: this introduces lag
+	var _lookaheadTimeMs:Int = 5; // sec, 5ms: this introduces lag
 
 	var _delayBuffer:kha.arrays.Float32Array;
 	var _envelopeBuffer:kha.arrays.Float32Array;
@@ -32,7 +32,7 @@ class Compressor extends AudioEffect {
 	var _delayReadPointer:Int;
 	var _delayWritePointer:Int;
 	var _envelopeSample:Float;
-	var _sampleRate:Float;
+	var _sampleRate:Int;
 
 	var _attackGain:Float;
 	var _releaseGain:Float;
@@ -40,13 +40,14 @@ class Compressor extends AudioEffect {
 	var _preGainAmp:Float;
 	var _postGainAmp:Float;
 
-	public function new(ratio:Float = 3, threshold:Float = -2, attack:Float = 0, release:Float = 0.5, preGain:Float = 0, postGain:Float = 0) {
+	public function new(ratio:Float = 3, threshold:Float = -2, attack:Float = 0, release:Float = 0.5, preGain:Float = 0, postGain:Float = 0, lookaheadTimeMs:Int = 5) {
 		super();
 
 		_sampleRate = Clay.audio.sampleRate;
-		
-		var n = Std.int(_lookaheadTime * _sampleRate);
-		_delayBuffer = new kha.arrays.Float32Array(n);
+
+		_lookaheadTimeMs = lookaheadTimeMs;
+		var n = DSP.toSamples(_lookaheadTimeMs, _sampleRate);
+		_delayBuffer = new kha.arrays.Float32Array(n); // this introduces lag
 
 		for (i in 0...n) { // this fix click on start in cpp build
 			_delayBuffer[i] = 0;
@@ -81,7 +82,7 @@ class Compressor extends AudioEffect {
 
 		var len = Std.int(samples/2);
 
-		if (_lookaheadTime > 0){
+		if (_lookaheadTimeMs > 0){
 			//write signal into buffer and read delayed signal
 			for (i in 0...len) {
 				_delayBuffer.set((_delayWritePointer*2) % _delayBuffer.length, data[i*2]);
@@ -113,7 +114,7 @@ class Compressor extends AudioEffect {
 		}
 		
 		for (i in 0...len) {
-			var envIn = Math.abs(toMono(data[i*2], data[i*2+1]));
+			var envIn = Math.abs(DSP.toMono(data[i*2], data[i*2+1]));
 			if (_envelopeSample < envIn){
 				_envelopeSample = envIn + _attackGain * (_envelopeSample - envIn);
 			} else {
@@ -224,7 +225,7 @@ class Compressor extends AudioEffect {
 	}
 
 	function _setRatio(v:Float) {
-		_ratio = Mathf.clampBottom(v, 1);
+		_ratio = Math.max(v, 1);
 		_slope = 1 - (1/_ratio);
 
 		return _ratio;
@@ -256,10 +257,6 @@ class Compressor extends AudioEffect {
 		_releaseGain = Math.exp(-1 / (_sampleRate * _releaseTime));	
 
 		return _releaseTime;
-	}
-
-	inline function toMono(l:Float, r:Float):Float {
-		return (l + r) / 2;
 	}
 
 	inline function log10(x:Float):Float {

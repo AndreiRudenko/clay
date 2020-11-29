@@ -1,10 +1,9 @@
 package clay.audio.effects;
 
 import clay.Clay;
-import clay.utils.Log.*;
 import clay.audio.AudioEffect;
 import kha.arrays.Float32Array;
-import clay.utils.Mathf;
+import clay.utils.Math;
 import clay.utils.DSP;
 import clay.audio.dsp.AllPassFilter;
 import clay.audio.dsp.CombFilter;
@@ -12,7 +11,11 @@ import clay.audio.dsp.Delay;
 import clay.audio.dsp.HighPassFilter;
 import clay.audio.dsp.LowPassFilter;
 
-// based on FreeVerb3
+/**
+ * based on FreeVerb3
+ * main difference is stereo channels crossfeed
+ */
+
 class Reverb extends AudioEffect {
 
 	static var FIXED_GAIN:Float = 0.05; // 0.015
@@ -109,15 +112,15 @@ class Reverb extends AudioEffect {
 		_highPassL = new HighPassFilter(0, Clay.audio.sampleRate);
 		_highPassR = new HighPassFilter(0, Clay.audio.sampleRate);
 
-		wet = def(options.wet, 0.5);
-		dry = def(options.dry, 1);
-		preDelay = def(options.preDelay, 10);
-		width = def(options.width, 0.5);
-		highCut = def(options.highCut, 0);
-		lowCut = def(options.highCut, 0);
-		damping = def(options.damping, 0.5);
-		roomSize = def(options.roomSize, 0.5);
-		frozen = def(options.frozen, false);
+		wet = options.wet != null ? options.wet : 0.5;
+		dry = options.dry != null ? options.dry : 1;
+		preDelay = options.preDelay != null ? options.preDelay : 10;
+		width = options.width != null ? options.width : 0.5;
+		highCut = options.highCut != null ? options.highCut : 0;
+		lowCut = options.lowCut != null ? options.lowCut : 0;
+		damping = options.damping != null ? options.damping : 0.5;
+		roomSize = options.roomSize != null ? options.roomSize : 0.5;
+		frozen = options.frozen != null ? options.frozen : false;
 	}
 
 	override function process(samples:Int, buffer:Float32Array, sampleRate:Int) {
@@ -216,37 +219,37 @@ class Reverb extends AudioEffect {
 	}
 
 	function set_wet(v:Float):Float {
-		_wet = Mathf.clamp(v, 0, 1);
+		_wet = Math.clamp(v, 0, 1);
 		updateWetGains();
 		return _wet;
 	}
 
 	function set_dry(v:Float):Float {
-		dry = Mathf.clamp(v, 0, 1);
+		dry = Math.clamp(v, 0, 1);
 		return dry;
 	}
 
 	function set_preDelay(v:Float):Float {
-		preDelay = Mathf.clampBottom(v, 1);
+		preDelay = Math.max(v, 1);
 		_preDelayLR = new Delay(toSamples(preDelay) * 2, 1);
 		return preDelay;
 	}
 
 	function set_width(v:Float):Float {
-		width = Mathf.clamp(v, 0, 1);
+		width = Math.clamp(v, 0, 1);
 		updateWetGains();
 		return width;
 	}
 
 	function set_highCut(v:Float):Float {
-		highCut = Mathf.clamp(v, 0, 20000);
+		highCut = Math.clamp(v, 0, 20000);
 		_lowPassL.freq = highCut;
 		_lowPassR.freq = highCut;
 		return highCut;
 	}
 
 	function set_lowCut(v:Float):Float {
-		lowCut = Mathf.clamp(v, 0, 20000);
+		lowCut = Math.clamp(v, 0, 20000);
 		_highPassL.freq = lowCut;
 		_highPassR.freq = lowCut;
 		return lowCut;
@@ -267,7 +270,7 @@ class Reverb extends AudioEffect {
 	}
 
 	function set_roomSize(v:Float):Float {
-		_roomSize = Mathf.clamp(v, 0, 1);
+		_roomSize = Math.clamp(v, 0, 1);
 		updateFeedback();
 		return _roomSize;
 	}
@@ -282,14 +285,13 @@ class Reverb extends AudioEffect {
 }
 
 typedef ReverbOptions = {
-
-	@:optional var wet:Float;
-	@:optional var width:Float;
-	@:optional var dry:Float;
-	@:optional var preDelay:Float;
-	@:optional var damping:Float;
-	@:optional var roomSize:Float;
-	@:optional var highCut:Float;
-	@:optional var frozen:Bool;
-
+	?wet:Float,
+	?width:Float,
+	?dry:Float,
+	?preDelay:Float,
+	?damping:Float,
+	?roomSize:Float,
+	?highCut:Float,
+	?lowCut:Float,
+	?frozen:Bool
 }

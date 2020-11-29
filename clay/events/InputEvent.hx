@@ -1,10 +1,12 @@
 package clay.events;
 
+import clay.utils.EventType;
+
 @:allow(clay.input.Bindings)
 class InputEvent implements IEvent {
 
-	public static inline var INPUT_UP:EventType<InputEvent>;
-	public static inline var INPUT_DOWN:EventType<InputEvent>;
+	static public inline var INPUT_UP:EventType<InputEvent>;
+	static public inline var INPUT_DOWN:EventType<InputEvent>;
 
 	public var name(default, null):String;
 	public var type(default, null):InputType;

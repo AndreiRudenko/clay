@@ -1,11 +1,13 @@
 package clay.events;
 
+import clay.utils.EventType;
+
 @:allow(clay.input.Touch)
 class TouchEvent implements IEvent{
 
-	public static inline var TOUCH_UP:EventType<TouchEvent>;
-	public static inline var TOUCH_DOWN:EventType<TouchEvent>;
-	public static inline var TOUCH_MOVE:EventType<TouchEvent>;
+	static public inline var TOUCH_UP:EventType<TouchEvent>;
+	static public inline var TOUCH_DOWN:EventType<TouchEvent>;
+	static public inline var TOUCH_MOVE:EventType<TouchEvent>;
 
 	public var id(default, null):Int = 0;
 
@@ -16,7 +18,7 @@ class TouchEvent implements IEvent{
 
 	public var state(default, null):EventType<TouchEvent> = TouchEvent.TOUCH_UP;
 
-	function new(id:Int) {
+	public function new(id:Int) {
 		this.id = id;
 	}
 

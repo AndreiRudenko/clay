@@ -10,10 +10,20 @@ private typedef IntArray = haxe.ds.Vector<Int>;
 
 abstract BitVector(IntArray) from IntArray {
 	
-	public inline static var BITS_PER_ELEMENT:Int = 32;
-	public inline static var BIT_SHIFT:Int = 5;
-	public inline static var BIT_MASK:Int = 0x1F;
+	static public inline var BITS_PER_ELEMENT:Int = 32;
+	static public inline var BIT_SHIFT:Int = 5;
+	static public inline var BIT_MASK:Int = 0x1F;
 
+	@:pure
+	static public inline function address(index:Int):Int {
+		return index >>> BIT_SHIFT;
+	}
+
+	@:pure
+	static public inline function mask(index:Int):Int {
+		return 0x1 << (index & BIT_MASK);
+	}
+	
 	public inline function new(count:Int) {
 		this = new IntArray(Math.ceil(count / BITS_PER_ELEMENT));
 	
@@ -97,16 +107,6 @@ abstract BitVector(IntArray) from IntArray {
 		}
 
 		return "[" + _list.join(", ") + "]";
-	}
-
-	@:pure
-	public inline static function address(index:Int):Int {
-		return index >>> BIT_SHIFT;
-	}
-
-	@:pure
-	public inline static function mask(index:Int):Int {
-		return 0x1 << (index & BIT_MASK);
 	}
 
 }

@@ -2,7 +2,7 @@ package clay.utils;
 
 class ArrayTools {
 
-	public static inline function clear<T>(array:Array<T>) {
+	static public inline function clear<T>(array:Array<T>) {
 #if cpp
 		// splice causes Array allocation, so prefer pop for most arrays
 		if (array.length > 256) {
@@ -15,7 +15,7 @@ class ArrayTools {
 #end
 	}
 
-	public static function shuffle<T>(a:Array<T>) {
+	static public function shuffle<T>(a:Array<T>) {
 		var i:Int = a.length, j:Int, t:T;
 		while (--i > 0) {
 			t = a[i];
@@ -24,7 +24,7 @@ class ArrayTools {
 		}
 	}
 
-	public static function insertSortedKey<T>(list:Array<T>, key:T, compare:(a:T, b:T)->Int):Void {
+	static public function insertSortedKey<T>(list:Array<T>, key:T, compare:(a:T, b:T)->Int):Void {
 		var result:Int = 0;
 		var mid:Int = 0;
 		var min:Int = 0;

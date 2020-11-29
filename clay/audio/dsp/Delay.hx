@@ -1,7 +1,7 @@
 package clay.audio.dsp;
 
 import clay.Clay;
-import clay.utils.Mathf;
+import clay.utils.Math;
 
 // Simple delay
 class Delay {
@@ -14,7 +14,7 @@ class Delay {
 		_buffer = new FloatRingBuffer(length);
 	}
 
-	public inline function process(input:Float):Float {
+	public function process(input:Float):Float {
 		var output = _buffer.read();
 		_buffer.insert(input * feedback);
 

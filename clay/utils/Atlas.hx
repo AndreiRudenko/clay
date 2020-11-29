@@ -7,7 +7,7 @@ import haxe.io.Path;
 
 class Atlas {
 
-	public static function loadFromPath(path:String):Atlas {
+	static public function loadFromPath(path:String):Atlas {
 		var jsonRes = Clay.resources.json(path);
 		var data:AtlasData = jsonRes.json;
 		var dir = Path.directory(path);
@@ -70,8 +70,8 @@ typedef AtlasData = {
 
 typedef AtlasRegionData = {
 	name:String,
-	x:Float,
-	y:Float,
-	w:Float,
-	h:Float
+	x:Int,
+	y:Int,
+	w:Int,
+	h:Int
 }

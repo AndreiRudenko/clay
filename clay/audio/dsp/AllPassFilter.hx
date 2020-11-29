@@ -1,7 +1,7 @@
 package clay.audio.dsp;
 
 import clay.Clay;
-import clay.utils.Mathf;
+import clay.utils.Math;
 
 class AllPassFilter {
 
@@ -13,7 +13,7 @@ class AllPassFilter {
 		_buffer = new FloatRingBuffer(length);
 	}
 
-	public inline function process(input:Float):Float {
+	public function process(input:Float):Float {
 		var delayed = _buffer.read();
 		var output = -input + delayed;
 		_buffer.insert(input + delayed * feedback);

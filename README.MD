@@ -8,15 +8,6 @@ git clone --recursive https://github.com/clay2d/clay.git
 haxelib dev clay2d path/to/clay2d
 ```
 
-## Features
-* Input: Mouse, Keyboard, Touch, Gamepad, Pen
-* Audio, DSP Effects
-* Particles
-* Tweening 
-* Animation
-* Timer
-* Events
-
 ### Command Line Interface
 - haxelib run clay2d init [ -t template ]: *initialize a new project*.
 - haxelib run clay2d build < target > [ -debug ]:  *build the current project*.

@@ -1,6 +1,6 @@
 package clay.resources;
 
-import clay.resources.ResourceManager;
+import clay.Resources;
 
 class JsonResource extends Resource {
 

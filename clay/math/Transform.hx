@@ -1,22 +1,37 @@
 package clay.math;
 
-import clay.math.Vector;
-import clay.math.VectorCallback;
+import clay.math.Vector2;
+import clay.math.Vector2Callback;
 import clay.math.Matrix;
-import clay.utils.Mathf;
-import clay.utils.Log.*;
+import clay.utils.Math;
 
 class Transform {
 
 	public var parent(default, set):Transform;
 
 	public var local(get, never):Spatial;
-	public var world(get, never):Spatial;
+	inline function get_local() return _local;
 
-	public var pos(get, never):VectorCallback;
-	public var scale(get, never):VectorCallback;
+	public var world(get, never):Spatial;
+	inline function get_world() return _world;
+
+	public var pos(get, never):Vector2Callback;
+	inline function get_pos() return _local.pos;
+
+	public var scale(get, never):Vector2Callback;
+	inline function get_scale() return _local.scale;
+
 	public var rotation(get, set):Float;
-	public var origin(default, null):VectorCallback;
+	inline function get_rotation() return _local.rotation;
+	function set_rotation(v:Float):Float {
+		setDirty();
+		return _local.rotation = v;
+	}
+
+	public var origin(default, null):Vector2Callback;
+
+	public var skew(get, never):Vector2Callback;
+	inline function get_skew() return _local.skew;
 
 	public var manualUpdate:Bool;
 	public var dirty:Bool;
@@ -29,7 +44,7 @@ class Transform {
 	public function new() {
 		_local = new Spatial();
 		_world = new Spatial();
-		origin = new VectorCallback();
+		origin = new Vector2Callback();
 
 		manualUpdate = false;
 		dirty = true;
@@ -37,6 +52,7 @@ class Transform {
 
 		_local.pos.listen(setDirtyCallback);
 		_local.scale.listen(setDirtyCallback);
+		_local.skew.listen(setDirtyCallback);
 		origin.listen(setDirtyCallback);
 	}
 
@@ -81,18 +97,19 @@ class Transform {
 	}
 
 	inline function updateLocalMatrix() {
+		// _local.matrix.setTransform(pos.x, pos.y, Math.radians(-rotation), scale.x, scale.y, origin.x, origin.y, skew.x, skew.y);
 		_local.matrix.identity()
 		.translate(pos.x, pos.y)
-		.rotate(Mathf.radians(-rotation))
+		.rotate(Math.radians(-rotation))
 		.scale(scale.x, scale.y)
-		.apply(-origin.x, -origin.y);
+		.prependTranslate(-origin.x, -origin.y);
 	}
 
 	inline function appendWorldMatrix() {
 		if(parent != null) {
-			_world.matrix.copy(parent._world.matrix).append(_local.matrix);
+			_world.matrix.copyFrom(parent._world.matrix).append(_local.matrix);
 		} else {
-			_world.matrix.copy(_local.matrix);
+			_world.matrix.copyFrom(_local.matrix);
 		}
 	}
 
@@ -115,21 +132,9 @@ class Transform {
 		return v;
 	}
 
-	function setDirtyCallback(v:Vector) {
+	function setDirtyCallback(v:Vector2) {
 		setDirty();
 	}
-
-	inline function get_pos() return _local.pos;
-	inline function get_scale() return _local.scale;
-	inline function get_rotation() return _local.rotation;
-
-	function set_rotation(v:Float):Float {
-		setDirty();
-		return _local.rotation = v;
-	}
-
-	inline function get_local() return _local;
-	inline function get_world() return _world;
 	
 	inline function onParentCleaned(p:Transform) {
 		setDirty();
@@ -143,39 +148,48 @@ class Transform {
 
 class Spatial {
 
-	public var pos:VectorCallback;
-	public var scale:VectorCallback;
+	public var pos:Vector2Callback;
+	public var scale:Vector2Callback;
+	public var skew:Vector2Callback;
 	public var rotation:Float;
 	public var matrix:Matrix;
 	public var autoDecompose:Bool = false;
 
 	public function new() {
-		pos = new VectorCallback();
-		scale = new VectorCallback(1,1);
+		pos = new Vector2Callback();
+		scale = new Vector2Callback(1,1);
+		skew = new Vector2Callback();
 		rotation = 0;
 		matrix = new Matrix();
 	}
 
-		//assigns the local values (pos/rotation/scale) according to the matrix
+		//assigns the local values (pos/rotation/scale/skew) according to the matrix
 		//when called manually, will make sure it happens using force.
 		//if force is false, autoDecompose will apply
-	public inline function decompose(_force:Bool = true):Spatial {
-		if(autoDecompose || _force) {
-			matrix.decompose(this);
+	public inline function decompose(force:Bool = true):Spatial {
+		if(autoDecompose || force) {
+		    var a = matrix.a;
+		    var b = matrix.b;
+		    var c = matrix.c;
+		    var d = matrix.d;
+
+		    var skewX = -Math.atan2(-c, d);
+		    var skewY = Math.atan2(b, a);
+
+		    var delta = Math.abs(skewX + skewY);
+
+		    if(delta < Math.EPSILON || Math.abs(Math.TAU - delta) < Math.EPSILON) {
+		    	rotation = skewY;
+		    	skew.set(0, 0);
+		    } else {
+		    	rotation = 0;
+		    	skew.set(skewX, skewY);
+		    }
+
+		    scale.set(Math.sqrt((a * a) + (b * b)), Math.sqrt((c * c) + (d * d)));
+		    pos.set(matrix.tx, matrix.ty);
 		}
 		return this;
 	} 
-
-}
-
-
-typedef TransformOptions = {
-
-	@:optional var pos:Vector;
-	@:optional var scale:Vector;
-	@:optional var origin:Vector;
-	@:optional var rotation:Float;
-	@:optional var manualUpdate:Bool;
-	@:optional var parent:Transform;
 
 }

@@ -2,13 +2,15 @@ package clay.input;
 
 import clay.utils.BitVector;
 import clay.input.Key;
-import clay.utils.Log.*;
+import clay.utils.Log;
 import clay.events.KeyEvent;
-import clay.system.App;
+import clay.App;
 
-@:allow(clay.input.InputManager)
-@:access(clay.system.App)
-class Keyboard extends Input {
+@:allow(clay.Input)
+@:access(clay.App)
+class Keyboard {
+
+	public var active(default, null):Bool = false;
 
 	var _keyCodePressed:BitVector;
 	var _keyCodeReleased:BitVector;
@@ -20,14 +22,12 @@ class Keyboard extends Input {
 	var _keyBindings:Map<String, Map<Int, Bool>>;
 	var _binding:Bindings;
 
-	function new(app:App) {
-		super(app);
-
+	public function new() {
 		_keyBindings = new Map();
 		_binding = Clay.input.binding;
 	}
 
-	override function enable() {
+	public function enable() {
 		if(active) {
 			return;
 		}
@@ -47,10 +47,10 @@ class Keyboard extends Input {
 
 		_keyEvent = new KeyEvent();
 
-		super.enable();
+		active = true;
 	}
 
-	override function disable() {
+	public function disable() {
 		if(!active) {
 			return;
 		}
@@ -70,7 +70,7 @@ class Keyboard extends Input {
 
 		_keyEvent = null;
 
-		super.disable();
+		active = true;
 	}
 
 	public function pressed(key:Key):Bool {
@@ -117,9 +117,9 @@ class Keyboard extends Input {
 
 	function reset() {
 		#if use_keyboard_input
-		_verboser("reset");
 
 		if(_dirty) {
+			Log.debug("reset");
 			_keyCodePressed.disableAll();
 			_keyCodeReleased.disableAll();
 			_dirty = false;
@@ -128,7 +128,7 @@ class Keyboard extends Input {
 	}
 
 	function onKeyPressed(key:Int) {
-		_verboser('onKeyPressed: $key');
+		Log.debug('onKeyPressed: $key');
 
 		_dirty = true;
 
@@ -139,28 +139,27 @@ class Keyboard extends Input {
 
 		checkBinding(key, true);
 
-		_app.emitter.emit(KeyEvent.KEY_DOWN, _keyEvent);
+		Clay.app.emitter.emit(KeyEvent.KEY_DOWN, _keyEvent);
 	}
 
 	function onKeyReleased(key:Int) {
-		_verboser('onKeyReleased: $key');
+		Log.debug('onKeyReleased: $key');
 
 		_dirty = true;
 
 		_keyCodeReleased.enable(key);
 		_keyCodePressed.disable(key);
 		_keyCodeDown.disable(key);
-
 		_keyEvent.set(key, KeyEvent.KEY_UP);
 
 		checkBinding(key, false);
 
-		_app.emitter.emit(KeyEvent.KEY_UP, _keyEvent);
+		Clay.app.emitter.emit(KeyEvent.KEY_UP, _keyEvent);
 	}
 	
 	function onTextInput(char:String) {
-		_verboser('onTextInput: $char');
-		_app.emitter.emit(KeyEvent.TEXT_INPUT, char);
+		Log.debug('onTextInput: $char');
+		Clay.app.emitter.emit(KeyEvent.TEXT_INPUT, char);
 	}
 
 }

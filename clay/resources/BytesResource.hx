@@ -1,16 +1,17 @@
 package clay.resources;
 
 import haxe.io.Bytes;
-import clay.resources.ResourceManager;
+import clay.Resources;
+import clay.resources.Resource;
 
 class BytesResource extends Resource {
 
-	public static function create(_size:Int):BytesResource {
+	static public function create(_size:Int):BytesResource {
 		var b = kha.Blob.alloc(_size);
 		return new BytesResource(b);
 	}
 
-	public static function createFromBytes(bytes:Bytes):BytesResource {
+	static public function createFromBytes(bytes:Bytes):BytesResource {
 		var b = kha.Blob.fromBytes(bytes);
 		return new BytesResource(b);
 	}
