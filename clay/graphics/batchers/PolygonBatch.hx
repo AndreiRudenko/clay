@@ -219,10 +219,11 @@ class PolygonBatch {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
+		if(scaleX == 0 || scaleY == 0) return;
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawPolyInternal(
 			polygon.texture, polygon.vertices, polygon.indices,
@@ -235,7 +236,7 @@ class PolygonBatch {
 	public function drawPolygonTransform(
 		polygon:Polygon, 
 		transform:FastMatrix3,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
@@ -256,10 +257,11 @@ class PolygonBatch {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
+		if(scaleX == 0 || scaleY == 0) return;
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawPolyInternal(
 			texture, vertices, indices, 
@@ -274,7 +276,7 @@ class PolygonBatch {
 		vertices:Array<Vertex>, 
 		indices:Array<Int>, 
 		transform:FastMatrix3,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
 		offsetVerts:Int = 0, countVerts:Int = 0, offsetInds:Int = 0, countInds:Int = 0
 	) {
 		Log.assert(isDrawing, 'PolygonBatch.begin must be called before draw');
@@ -291,7 +293,7 @@ class PolygonBatch {
 		texture:Texture, 
 		vertices:Array<Vertex>, indices:Array<Int>, 
 		transform:FastMatrix3, 
-		regionX:Int, regionY:Int, regionW:Int, regionH:Int,
+		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int,
 		offsetVerts:Int, countVerts:Int, offsetInds:Int, countInds:Int
 	) {
 		var vertCount:Int = vertices.length;
@@ -313,6 +315,9 @@ class PolygonBatch {
 
 		if(texture == null) texture = Graphics.textureDefault;
 
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
+
 		var texId = _textureIds.getSparse(texture.id);
 		if(texId < 0) {
 			if(_textureIds.used >= Graphics.maxShaderTextures) flush();
@@ -322,11 +327,6 @@ class PolygonBatch {
 		}
 
 		_currentPipeline = pipeline;
-
-		if(regionW == 0 && regionH == 0) {
-			regionW = texture.widthActual;
-			regionH = texture.heightActual;
-		}
 
 		final rsx = regionX / texture.widthActual;
 		final rsy = regionY / texture.heightActual;

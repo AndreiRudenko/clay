@@ -241,12 +241,13 @@ class SpriteCache {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int
 	) {
 		Log.assert(_currentCache != null, 'SpriteCache.beginCache must be called before add');
 		if(_currentCache.used + 1 >= _currentCache.size) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
+			if(width == 0 || height == 0) return;
 			_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY);
 			addInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 		}
@@ -256,12 +257,13 @@ class SpriteCache {
 		texture:Texture, 
 		transform:FastMatrix3,
 		width:Float = 0, height:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int
 	) {
 		Log.assert(_currentCache != null, 'SpriteCache.beginCache must be called before add');
 		if(_currentCache.used + 1 >= _currentCache.size) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
+			if(width == 0 || height == 0) return;
 			addInternal(texture, transform, width, height, regionX, regionY, regionW, regionH);
 		}
 	}
@@ -274,13 +276,14 @@ class SpriteCache {
 		angle:Float = 0, 
 		originX:Float = 0, originY:Float = 0, 
 		skewX:Float = 0, skewY:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
 		offsetImg:Int = 0, countImg:Int = 0
 	) {
 		Log.assert(_currentCache != null, 'SpriteCache.beginCache must be called before add');
 		if(_currentCache.used * 4 + vertices.length >= _currentCache.size * 4) {
 			Log.warning('cant add more than currentCache.size: ${_currentCache.size} sprites');
 		} else {
+			if(scaleX == 0 || scaleY == 0) return;
 			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 			addVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
 		}
@@ -290,7 +293,7 @@ class SpriteCache {
 		texture:Texture,
 		vertices:Array<Vertex>, 
 		transform:FastMatrix3,
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0,
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int,
 		offsetImg:Int = 0, countImg:Int = 0
 	) {
 		Log.assert(_currentCache != null, 'SpriteCache.beginCache must be called before add');
@@ -305,10 +308,16 @@ class SpriteCache {
 	function addInternal(
 		texture:Texture, 
 		transform:FastMatrix3, 
-		width:Float, height:Float, 
-		regionX:Int, regionY:Int, regionW:Int, regionH:Int
+		?width:Float, ?height:Float, 
+		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int
 	) {
 		if(texture == null) texture = Graphics.textureDefault;
+
+		if(width == null) width = texture.widthActual;
+		if(height == null) height = texture.heightActual;
+
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
 
 		var lastCommand = _currentCache.getLastCommand();
 		final lastTextureIndex = lastCommand.texturesUsed-1;
@@ -327,16 +336,6 @@ class SpriteCache {
 				lastCommand.texturesUsed++;
 				_textureIds.insert(texture.id);
 			}
-		}
-
-		if(width == 0 && height == 0) {
-			width = texture.widthActual;
-			height = texture.heightActual;
-		}
-
-		if(regionW == 0 && regionH == 0) {
-			regionW = texture.widthActual;
-			regionH = texture.heightActual;
 		}
 
 		final left = regionX / texture.widthActual;
@@ -366,12 +365,15 @@ class SpriteCache {
 		texture:Texture, 
 		vertices:Array<Vertex>, 
 		transform:FastMatrix3, 
-		regionX:Int, regionY:Int, regionW:Int, regionH:Int, 
+		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int, 
 		offsetImg:Int, countImg:Int
 	) {
 		Log.assert(vertices.length % 4 == 0, 'SpriteCache.addImageVertices with non 4 vertices per image: (${vertices.length})');
 
 		if(texture == null) texture = Graphics.textureDefault;
+
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
 
 		var lastCommand = _currentCache.getLastCommand();
 		final lastTextureIndex = lastCommand.texturesUsed-1;
@@ -392,10 +394,10 @@ class SpriteCache {
 			}
 		}
 
-		if(regionW == 0 && regionH == 0) {
-			regionW = texture.widthActual;
-			regionH = texture.heightActual;
-		}
+		final rsx = regionX / texture.widthActual;
+		final rsy = regionY / texture.heightActual;
+		final rsw = regionW / texture.widthActual;
+		final rsh = regionH / texture.heightActual;
 
 		final m = transform;
 		final texId = _textureIds.getSparse(texture.id);
@@ -420,10 +422,10 @@ class SpriteCache {
 			addVerticesToBuffer(
 				texId,
 				texFormat,
-				m.getTransformX(v1.x, v1.y), m.getTransformY(v1.x, v1.y), v1.color, v1.u, v1.v,
-				m.getTransformX(v2.x, v2.y), m.getTransformY(v2.x, v2.y), v2.color, v2.u, v2.v,
-				m.getTransformX(v3.x, v3.y), m.getTransformY(v3.x, v3.y), v3.color, v3.u, v3.v,
-				m.getTransformX(v4.x, v4.y), m.getTransformY(v4.x, v4.y), v4.color, v4.u, v4.v
+				m.getTransformX(v1.x, v1.y), m.getTransformY(v1.x, v1.y), v1.color, v1.u * rsw + rsx, v1.v * rsh + rsy,
+				m.getTransformX(v2.x, v2.y), m.getTransformY(v2.x, v2.y), v2.color, v2.u * rsw + rsx, v2.v * rsh + rsy,
+				m.getTransformX(v3.x, v3.y), m.getTransformY(v3.x, v3.y), v3.color, v3.u * rsw + rsx, v3.v * rsh + rsy,
+				m.getTransformX(v4.x, v4.y), m.getTransformY(v4.x, v4.y), v4.color, v4.u * rsw + rsx, v4.v * rsh + rsy
 			);
 
 			_currentCache.used++;

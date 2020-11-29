@@ -262,6 +262,7 @@ class PolygonCache {
 		if(_currentCache.usedV + polygon.vertices.length >= _currentCache.sizeV || _currentCache.usedI + polygon.indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${polygon.vertices.length} vertices and ${polygon.indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
+			if(scaleX == 0 || scaleY == 0) return;
 			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 			addPolygonInternal(
 				polygon.texture, polygon.vertices, polygon.indices, 
@@ -307,6 +308,7 @@ class PolygonCache {
 		if(_currentCache.usedV + vertices.length >= _currentCache.sizeV || _currentCache.usedI + indices.length >= _currentCache.sizeI) {
 			Log.warning('cant add polygon with ${vertices.length} vertices and ${indices.length} indices, to cache with (${_currentCache.usedV}/${_currentCache.sizeV}) vertices and (${_currentCache.usedI}/${_currentCache.sizeI}) indices');
 		} else {
+			if(scaleX == 0 || scaleY == 0) return;
 			_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 			addPolygonInternal(
 				texture, vertices, indices, 
@@ -342,11 +344,14 @@ class PolygonCache {
 	function addPolygonInternal(
 		texture:Texture, vertices:Array<Vertex>, indices:Array<Int>, 
 		transform:FastMatrix3, 
-		regionX:Int, regionY:Int, regionW:Int, regionH:Int,
+		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int,
 		offsetVerts:Int, countVerts:Int, offsetInds:Int, countInds:Int
 	) {
 		if(texture == null) texture = Graphics.textureDefault;
 
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
+		
 		var lastCommand = _currentCache.getLastCommand();
 		var lastTextureIndex = lastCommand.texturesUsed-1;
 
@@ -364,11 +369,6 @@ class PolygonCache {
 				lastCommand.texturesUsed++;
 				_textureIds.insert(texture.id);
 			}
-		}
-
-		if(regionW == 0 && regionH == 0) {
-			regionW = texture.widthActual;
-			regionH = texture.heightActual;
 		}
 		
 		var rsx = regionX / texture.widthActual;

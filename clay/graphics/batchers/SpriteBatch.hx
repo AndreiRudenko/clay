@@ -213,10 +213,6 @@ class SpriteBatch {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		if(width == 0 || height == 0) return;
 		if(texture == null) texture = Graphics.textureDefault;
-		if(width == null) width = texture.widthActual;
-		if(height == null) height = texture.heightActual;
-		if(regionW == null) regionW = texture.widthActual;
-		if(regionH == null) regionH = texture.heightActual;
 		_drawMatrix.setTransform(x, y, angle, 1, 1, originX, originY, skewX, skewY);
 		drawImageInternal(texture, _drawMatrix, width, height, regionX, regionY, regionW, regionH);
 	}
@@ -224,16 +220,11 @@ class SpriteBatch {
 	public function drawImageTransform(
 		texture:Texture, 
 		transform:FastMatrix3,
-		width:Float = 0, height:Float = 0, 
-		regionX:Int = 0, regionY:Int = 0, regionW:Int = 0, regionH:Int = 0
+		?width:Float, ?height:Float, 
+		regionX:Int = 0, regionY:Int = 0, ?regionW:Int, ?regionH:Int
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		if(width == 0 || height == 0) return;
-		if(texture == null) texture = Graphics.textureDefault;
-		if(width == null) width = texture.widthActual;
-		if(height == null) height = texture.heightActual;
-		if(regionW == null) regionW = texture.widthActual;
-		if(regionH == null) regionH = texture.heightActual;
 		drawImageInternal(texture, transform, width, height, regionX, regionY, regionW, regionH);
 	}
 
@@ -251,9 +242,6 @@ class SpriteBatch {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
 		if(scaleX == 0 || scaleY == 0) return;
-		if(texture == null) texture = Graphics.textureDefault;
-		if(regionW == null) regionW = texture.widthActual;
-		if(regionH == null) regionH = texture.heightActual;
 		if(countImg == null) countImg = Math.floor(vertices.length / 4);
 		_drawMatrix.setTransform(x, y, angle, scaleX, scaleY, originX, originY, skewX, skewY);
 		drawImageVerticesInternal(texture, vertices, _drawMatrix, regionX, regionY, regionW, regionH, offsetImg, countImg);
@@ -268,9 +256,6 @@ class SpriteBatch {
 	) {
 		Log.assert(isDrawing, 'SpriteBatch.begin must be called before draw');
 		Log.assert(vertices.length % 4 == 0, 'SpriteBatch.drawImageVertices with non 4 vertices per image: (${vertices.length})');
-		if(texture == null) texture = Graphics.textureDefault;
-		if(regionW == null) regionW = texture.widthActual;
-		if(regionH == null) regionH = texture.heightActual;
 		if(countImg == null) countImg = Math.floor(vertices.length / 4);
 		drawImageVerticesInternal(texture, vertices, transform, regionX, regionY, regionW, regionH, offsetImg, countImg);
 	}
@@ -301,7 +286,15 @@ class SpriteBatch {
 	}
 
 	#if !clay_debug inline #end
-	function drawImageInternal(texture:Texture, transform:FastMatrix3, width:Float, height:Float, regionX:Int, regionY:Int, regionW:Int, regionH:Int) {
+	function drawImageInternal(texture:Texture, transform:FastMatrix3, ?width:Float, ?height:Float, regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int) {
+		if(texture == null) texture = Graphics.textureDefault;
+
+		if(width == null) width = texture.widthActual;
+		if(height == null) height = texture.heightActual;
+
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
+
 		final pipeline = getPipeline();
 		if(pipeline != _currentPipeline) switchPipeline(pipeline);
 
@@ -343,19 +336,21 @@ class SpriteBatch {
 		texture:Texture, 
 		vertices:Array<Vertex>, 
 		transform:FastMatrix3,  
-		regionX:Int, regionY:Int, regionW:Int, regionH:Int,
+		regionX:Int, regionY:Int, ?regionW:Int, ?regionH:Int,
 		offsetImg:Int, countImg:Int
 	) {
+		if(texture == null) texture = Graphics.textureDefault;
+
+		if(regionW == null) regionW = texture.widthActual;
+		if(regionH == null) regionH = texture.heightActual;
+
 		final pipeline = getPipeline();
 		if(pipeline != _currentPipeline) switchPipeline(pipeline);
 
-		final texWidth = texture.widthActual;
-		final texHeight = texture.heightActual;
-
-		final rsx = regionX / texWidth;
-		final rsy = regionY / texHeight;
-		final rsw = regionW / texWidth;
-		final rsh = regionH / texHeight;
+		final rsx = regionX / texture.widthActual;
+		final rsy = regionY / texture.heightActual;
+		final rsw = regionW / texture.widthActual;
+		final rsh = regionH / texture.heightActual;
 
 		final m = transform;
 
