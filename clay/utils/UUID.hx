@@ -3,7 +3,7 @@ package clay.utils;
 class UUID {
 
 	static public function get(?val:Null<Int>):String {
-		// http://www.anotherchris.net/csharp/friendly-unique-id-generation-part-2/#base62
+		// https://web.archive.org/web/20190318040344/http://www.anotherchris.net/csharp/friendly-unique-id-generation-part-2/#base62
 
 		if(val == null) val = Std.random(0x7fffffff);
 
