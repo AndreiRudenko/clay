@@ -1,12 +1,9 @@
 package commands;
 
-
 import Config;
 import haxe.io.Path;
 
-
 class Server extends Command {
-
 
 	public function new() {
 		super(
@@ -16,7 +13,6 @@ class Server extends Command {
 	}
 
 	override function execute(args:Array<String>) {
-
 		var config:ConfigData = Config.get();
 		var port = 8080;
 
@@ -25,8 +21,6 @@ class Server extends Command {
 		}
 
 		CLI.execute('start', ['cmd', "/c", '${CLI.khamakePath}', '--server', '--port', '$port']);
-
 	}
-
 
 }

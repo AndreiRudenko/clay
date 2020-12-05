@@ -1,14 +1,11 @@
 package commands;
 
-
 import Config;
 import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
 
-
 class Build extends Command {
-
 
 	var windowsGraphics:Array<String> = ["direct3d9", "direct3d11", "direct3d12", "vulkan", "opengl"];
 	var uwpGraphics:Array<String> = ["direct3d11", "direct3d12"];
@@ -17,18 +14,14 @@ class Build extends Command {
 
 	var audio:Array<String> = ["wasapi", "directsound"];
 
-
 	public function new() {
-
 		super(
 			'build', 
 			'build current project: build <target> [--debug]'
 		);
-
 	}
 
 	override function execute(args:Array<String>) {
-
 		if(args.length == 0) {
 			CLI.error('Target not defined');
 		}
@@ -91,11 +84,9 @@ class Build extends Command {
         } else {
 			buildProject(config);
         }
-
 	}
 
 	function buildProject(config:ConfigData) {
-
 		var args:Array<String> = [];
 		args.push('--target');
 		args.push(config.target);
@@ -211,7 +202,6 @@ class Build extends Command {
 	}
 
 	function postbuildHtml5(config:ConfigData) {
-		
 		if(config.html5 != null) {
 			// copy favicon
 			if(config.html5.favicon != null && config.html5.favicon != '') {
@@ -263,11 +253,8 @@ class Build extends Command {
 			} else {
 				CLI.print('Can`t find html at: $htmlPath');
 			}
-
 		}
-			
 	}
-
 
 }
 

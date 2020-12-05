@@ -1,11 +1,9 @@
 package commands;
 
-
 import Config;
 import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
-
 
 class Clear extends Command {
 
@@ -13,16 +11,13 @@ class Clear extends Command {
 	var dirsRemoved:Int = 0;
 
 	public function new() {
-
 		super(
 			'clear', 
 			'remove project build files: clear <target>'
 		);
-
 	}
 
 	override function execute(args:Array<String>) {
-
 		if(args.length == 0) {
 			CLI.error('Target not defined');
 		}
@@ -58,7 +53,7 @@ class Clear extends Command {
 		for (s in toRemove) {
 			if (FileSystem.exists(s)) {
 				if(FileSystem.isDirectory(s)) {
-					deleteDir(s);
+					CLI.deleteDir(s);
 					FileSystem.deleteDirectory(s);
 					dirsRemoved++;
 				} else {
@@ -67,27 +62,9 @@ class Clear extends Command {
 				}
 			}
 		}
-
+		
+		// TODO: removed count is wrong
 		CLI.print('Done: $dirsRemoved directories with $filesRemoved files was removed');
-
-	}
-
-	function deleteDir(path:String) {
-
-		if (FileSystem.exists(path) && FileSystem.isDirectory(path)) {
-			var entries = FileSystem.readDirectory(path);
-			for (entry in entries) {
-				if (FileSystem.isDirectory(path + '/' + entry)) {
-					deleteDir(path + '/' + entry);
-					FileSystem.deleteDirectory(path + '/' + entry);
-					dirsRemoved++;
-				} else {
-					FileSystem.deleteFile(path + '/' + entry);
-					filesRemoved++;
-				}
-			}
-		}
-
 	}
 
 }
