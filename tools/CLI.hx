@@ -72,7 +72,7 @@ class CLI {
 		}
 	}
 
-	public static function copyDir(srcDir:String, dstDir:String, verbose:Bool = false) {
+	public static function copyDir(srcDir:String, dstDir:String, verbose:Bool = false, includeGit:Bool = false) {
 		if (!FileSystem.exists(dstDir)) {
 			if (verbose) CLI.print('create dir ${dstDir}');
 			FileSystem.createDirectory(dstDir);
@@ -81,6 +81,11 @@ class CLI {
 		for (name in FileSystem.readDirectory(srcDir)) {
 			var srcPath = Path.join([srcDir, name]);
 			var dstPath = Path.join([dstDir, name]);
+
+			if(!includeGit && name =='.git') {
+				if (verbose) CLI.print('skip copying .git folder');
+				continue;
+			}
 
 			if (FileSystem.isDirectory(srcPath)) {
 				copyDir(srcPath, dstPath, verbose);

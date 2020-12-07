@@ -11,7 +11,7 @@ class Collect extends Command {
 	public function new() {
 		super(
 			'collect', 
-			'collect all libraries to project folder: collect [--clear, --verbose]'
+			'collect all libraries to project folder: collect [--clear, --verbose, --includeGit]'
 		);
 	}
 
@@ -20,11 +20,13 @@ class Collect extends Command {
 
 		var clear = false;
 		var verbose = false;
+		var includeGit = false;
 
 		for (a in args) {
 			switch (a) {
 				case '--clear': clear = true;
 				case '--verbose': verbose = true;
+				case '--includeGit': includeGit = true;
 				default:
 			}
 		}
@@ -43,29 +45,35 @@ class Collect extends Command {
 				var pj = srcDir.split('/');
 				var name = pj[pj.length-1];
 				var dstDir = Path.join([CLI.userDir, name]);
-
-				if(srcDir == dstDir) {
-					CLI.error('can`t copy library from $srcDir to $dstDir');
-					process.close();
-					continue;
-				}
-
-				if (FileSystem.exists(dstDir)) {
-					if(clear) {
-						CLI.print('delete $dstDir');
-						CLI.deleteDir(dstDir, verbose);
-					} else {
-						CLI.error('directory $dstDir is not empty, skip copy $name library');
-						process.close();
-						continue;
-					}
-				}
-
-				CLI.print('copy $srcDir to ${CLI.userDir}');
-				CLI.copyDir(srcDir, dstDir, verbose);
+				copyDir(srcDir, dstDir, verbose, clear, includeGit);
 			}
 			process.close();
 		}
+
+		var khaPath = Path.join([CLI.engineDir, CLI.backendPath, CLI.khaPath]);
+		var dstDir = Path.join([CLI.userDir, CLI.khaPath]);
+		copyDir(khaPath, dstDir, verbose, clear, includeGit);
+	}
+
+	function copyDir(srcDir:String, dstDir:String, verbose:Bool, clear:Bool, includeGit:Bool) {
+		if(srcDir == dstDir) {
+			CLI.error('can`t copy library $srcDir to same folder');
+			return false;
+		}
+
+		if (FileSystem.exists(dstDir)) {
+			if(clear) {
+				CLI.print('delete $dstDir');
+				CLI.deleteDir(dstDir, verbose);
+			} else {
+				CLI.error('directory $dstDir is not empty, skip copy library');
+				return false;
+			}
+		}
+		CLI.print('copy $srcDir to ${CLI.userDir}');
+		CLI.copyDir(srcDir, dstDir, verbose, includeGit);
+
+		return true;
 	}
 
 }
