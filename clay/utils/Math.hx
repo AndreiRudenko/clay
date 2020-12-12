@@ -85,7 +85,7 @@ class Math {
 	}
 
 	static public inline function invSqrt(f:Float) {
-		return 1. / sqrt(f);
+		return 1.0 / sqrt(f);
 	}
 
 	static public inline function atan2(dy:Float, dx:Float) {
@@ -96,23 +96,23 @@ class Math {
 		return f < 0 ? -f : f;
 	}
 
-	static public inline function iabs( i : Int ) {
+	static public inline function iabs(i:Int) {
 		return i < 0 ? -i : i;
 	}
 
-	static public inline function max(a:Float, b:Float ) {
+	static public inline function max(a:Float, b:Float) {
 		return a < b ? b : a;
 	}
 
-	static public inline function imax( a : Int, b : Int ) {
+	static public inline function imax(a:Int, b:Int) {
 		return a < b ? b : a;
 	}
 
-	static public inline function min(a:Float, b:Float ) {
+	static public inline function min(a:Float, b:Float) {
 		return a > b ? b : a;
 	}
 
-	static public inline function imin( a : Int, b : Int ) {
+	static public inline function imin(a:Int, b:Int) {
 		return a > b ? b : a;
 	}
 
@@ -122,19 +122,18 @@ class Math {
 	}
 
 	static public inline function lerp(start:Float, end:Float, t:Float):Float {
-		t = clamp(t, 0, 1);
-		return (start + t * (end - start));
+		return start + t * (end - start);
 	}
 
 	static public inline function inverseLerp(start:Float, end:Float, value:Float):Float {
-		return clamp((value - start) / (end - start), 0, 1);
+		return end == start ? 0.0 : (value - start) / (end - start);
 	}
 
 	static public inline function map(istart:Float, iend:Float, ostart:Float, oend:Float, value:Float):Float {
 		return ostart + (oend - ostart) * ((value - istart) / (iend - istart));
 	}
 
-	static public inline function imap(istart:Float, iend:Float, ostart:Float, oend:Float, value:Float):Float {
+	static public inline function imap(istart:Int, iend:Int, ostart:Int, oend:Int, value:Int):Int {
 		return Std.int(map(istart, iend, ostart, oend, value));
 	}
 

@@ -304,7 +304,7 @@ class PolygonBatch {
 		var indCount:Int = indices.length;
 		if(_useIndices) {
 			final geomCount = 0;
-			Log.assert(vertices.length % _vertsPerGeom == 0, 'PolygonBatch.drawImageVertices with non 4 vertices per quad: (${vertices.length})');
+			Log.assert(vertices.length % _vertsPerGeom == 0, 'PolygonBatch.drawImageVertices with non $_vertsPerGeom vertices per geometry: (${vertices.length})');
 
 			vertCount = Std.int(vertCount / _vertsPerGeom);
 			indCount = _indicesPerGeom * geomCount;
@@ -379,8 +379,7 @@ class PolygonBatch {
 		var indCount:Int = indices.length;
 		if(_useIndices) {
 			final geomCount = 0;
-			Log.assert(vertices.length % _vertsPerGeom == 0, 'PolygonBatch.drawImageVertices with non 4 vertices per quad: (${vertices.length})');
-
+			Log.assert(vertices.length % _vertsPerGeom == 0, 'PolygonBatch.drawImageVertices with non $_vertsPerGeom vertices per geometry: (${vertices.length})');
 			vertCount = Std.int(vertCount / _vertsPerGeom);
 			indCount = _indicesPerGeom * geomCount;
 		}

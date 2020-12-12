@@ -1,5 +1,6 @@
 package clay.math;
 
+@:structInit
 class RectangleCallback extends Rectangle {
 
 	public var ignoreListeners:Bool = false;

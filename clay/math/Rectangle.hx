@@ -1,5 +1,6 @@
 package clay.math;
 
+@:structInit
 class Rectangle {
 
 	public var x(get, set):Float;
@@ -12,7 +13,6 @@ class Rectangle {
 	inline function get_y() return _y; 
 	function set_y(v:Float) return _y = v;
 	
-
 	public var w(get, set):Float;
 	var _w:Float;
 	inline function get_w() return _w; 
@@ -23,7 +23,6 @@ class Rectangle {
 	inline function get_h() return _h; 
 	function set_h(v:Float) return _h = v;
 	
-
 	public function new(x:Float = 0, y:Float = 0, w:Float = 0, h:Float = 0) {
 		_x = x;
 		_y = y;
