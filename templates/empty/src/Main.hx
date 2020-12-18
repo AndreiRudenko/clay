@@ -1,10 +1,10 @@
 package;
 
+import clay.Clay;
 
 class Main {
 
 	public static function main() {
-
 		Clay.init(
 			{
 				title: 'empty',
@@ -16,13 +16,10 @@ class Main {
 			}, 
 			onReady
 		);
-
 	}
 
 	static function onReady() {
-
 		new Game();
-
 	}
 
 }
