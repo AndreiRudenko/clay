@@ -9,7 +9,6 @@ class CLI {
 	public static final templatesPath:String = 'templates';
 	public static final backendPath:String = 'backend';
 	public static final khaPath:String = 'Kha';
-	public static final resourcesPath:String = 'data';
 
 	public static var commandMap:Map<String, Command>;
 	public static var userDir:String;

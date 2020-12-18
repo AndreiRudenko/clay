@@ -14,6 +14,7 @@ class Config {
 
 		var project = config.project;
 		var compiler = config.compiler;
+		var resourcesPath = project.resourcesPath;
 
 		var kfile = 'let p = new Project("${project.title}");\n';
 
@@ -79,14 +80,20 @@ class Config {
 			}
 		}
 
+		var destPath = '{name}';
+		if(resourcesPath != null && resourcesPath.length > 0) destPath = '$resourcesPath/{name}';
+
 		if(!noDefaultFont) {
 			var fp = Path.join([CLI.engineDir, 'assets/fonts']);
-			kfile += 'p.addAssets("${fp}", {destination: "${CLI.resourcesPath}/{name}", noprocessing: true, notinlist: true});\n';
+			kfile += 'p.addAssets("${fp}", {destination: "$destPath", noprocessing: true, notinlist: true});\n';
 		}
+
+		destPath = '{dir}/{name}';
+		if(resourcesPath != null && resourcesPath.length > 0) destPath = '$resourcesPath/{dir}/{name}';
 
 		if(project.assets != null) {
 			for (s in project.assets) {
-				kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "${CLI.resourcesPath}/{dir}/{name}", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
+				kfile += 'p.addAssets("${s}/**", {nameBaseDir: "${s}", destination: "$destPath", name: "{dir}/{name}", noprocessing: true, notinlist: true});\n';
 			}
 		}
 
@@ -199,6 +206,7 @@ typedef InputConfig = {
 typedef ProjectConfig = {
 	var title:String;
 	var version:String;
+	var resourcesPath:String;
 	var sources:Array<String>;
 	var authors:Array<String>;
 	var libraries:Array<String>;
