@@ -16,7 +16,6 @@ import haxe.io.Path;
 @:allow(clay.App)
 class Resources {
 
-	static final resourcesPath:String = 'data';
 
 	public var cache(default, null):Map<String, Resource>;
 	public var stats:ResourceStats;
@@ -26,6 +25,8 @@ class Resources {
 	var _fontExt:Array<String>;
 	var _videoExt:Array<String>;
 	// var _ids:IdGenerator;
+
+	var _resourcesPath:String = '';
 
 	function new() {
 		_textureExt = kha.Assets.imageFormats;
@@ -38,6 +39,9 @@ class Resources {
 
 		cache = new Map();
 		stats = new ResourceStats();
+		if(clay.utils.macro.MacroUtils.isDefined('clay_resources_path')){
+			_resourcesPath = clay.utils.macro.MacroUtils.getDefine('clay_resources_path');
+		}
 	}
 
 	function destroy() {
@@ -386,7 +390,7 @@ class Resources {
 	}
 
 	inline function getResourcePath(path:String):String {
-		return Path.join([resourcesPath, path]);
+		return Path.join([_resourcesPath, path]);
 	}
 	
 	function onError(err:kha.AssetError) { // TODO: remove from path resourcesPath

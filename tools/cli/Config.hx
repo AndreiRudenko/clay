@@ -81,7 +81,10 @@ class Config {
 		}
 
 		var destPath = '{name}';
-		if(resourcesPath != null && resourcesPath.length > 0) destPath = '$resourcesPath/{name}';
+		if(resourcesPath != null && resourcesPath.length > 0) {
+			kfile += 'p.addDefine("clay_resources_path=$resourcesPath");\n';
+			destPath = '$resourcesPath/{name}';
+		}
 
 		if(!noDefaultFont) {
 			var fp = Path.join([CLI.engineDir, 'assets/fonts']);
